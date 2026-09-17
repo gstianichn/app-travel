@@ -20,9 +20,33 @@
                     Daftar
                 </a>
             @else
-                <a href="{{ url('/dashboard') }}" class="btn btn-primary">
-                    Dashboard
-                </a>
+
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ url('/dashboard/admin') }}" class="btn btn-primary">
+                        Dashboard
+                    </a>
+
+                @elseif(auth()->user()->role === 'staff')
+                    <a href="{{ url('/admin/dashboard') }}" class="btn btn-primary">
+                        Dashboard
+                    </a>
+
+                @elseif(auth()->user()->role === 'driver')
+                    <a href="{{ url('/driver/dashboard') }}" class="btn btn-primary">
+                        Dashboard
+                    </a>
+
+                @elseif(auth()->user()->role === 'cs')
+                    <a href="{{ url('/customer-service/dashboard') }}" class="btn btn-primary">
+                        Dashboard
+                    </a>
+
+                @elseif(auth()->user()->role === 'user')
+                    <a href="{{ url('/user/dashboard') }}" class="btn btn-primary">
+                        Dashboard
+                    </a>
+                @endif
+
             @endguest
         </div>
 

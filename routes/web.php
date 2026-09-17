@@ -1,38 +1,37 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Auth\LoginController;
+
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\AdminBiasaDashboardController;
 use App\Http\Controllers\DriverDashboardController;
 use App\Http\Controllers\CustomerServiceDashboardController;
 use App\Http\Controllers\UserDashboardController;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/search', [SearchController::class, 'index'])->name('search');
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 
-require __DIR__.'/auth.php';
+Route::get('/', [HomeController::class, 'index'])
+    ->name('home');
 
-// Route::post('/logout', function () {
-//     Auth::logout();
+Route::get('/search', [SearchController::class, 'index'])
+    ->name('search');
 
-//     request()->session()->invalidate();
-//     request()->session()->regenerateToken();
 
-//     return redirect('/login');
-// })->name('logout');
+/*
+|--------------------------------------------------------------------------
+| Admin Utama
+|--------------------------------------------------------------------------
+*/
 
-// Route::middleware('auth')->group(function () {
-
-//     Route::get('/dashboard', [DashboardController::class,'index'
-//     ])->name('dashboard');
-// });
-
-Route::middleware(['auth', 'role:admin'])
+Route::middleware(['auth', 'role:admin_utama'])
     ->group(function () {
 
         Route::get('/dashboard/admin', [
@@ -40,10 +39,56 @@ Route::middleware(['auth', 'role:admin'])
             'index'
         ])->name('dashboard.admin.index');
 
+        Route::get( '/kelola-user', [
+            AdminDashboardController::class,
+            'users'
+        ])->name('dashboard.admin.kelola-user.index');
+
+        Route::get( '/kelola-user/create', [
+            AdminDashboardController::class,
+            'createUser'
+        ])->name('dashboard.admin.kelola-user.create');
+
+        Route::post( '/kelola-user', [
+            AdminDashboardController::class,
+            'storeUser'
+        ])->name('dashboard.admin.kelola-user.store');
+
+        Route::get( '/kelola-user/{user}', [
+            AdminDashboardController::class,
+            'showUser'
+        ])->name('dashboard.admin.kelola-user.show');
+        
+        Route::get( '/kelola-user/{user}/edit', [
+            AdminDashboardController::class,
+            'editUser'
+        ])->name('dashboard.admin.kelola-user.edit');
+        
+        Route::put( '/kelola-user/{user}', [
+            AdminDashboardController::class,
+            'updateUser'
+        ])->name('dashboard.admin.kelola-user.update');
+        
+        Route::patch( '/kelola-user/{user}/toggle-status', [
+            AdminDashboardController::class,
+            'toggleUserStatus'
+        ])->name('dashboard.admin.kelola-user.toggle-status');
+        
+        Route::delete( '/kelola-user/{user}', [
+            AdminDashboardController::class,
+            'destroyUser'
+        ])->name('dashboard.admin.kelola-user.destroy');
+
     });
 
 
-Route::middleware(['auth', 'role:admin_staff'])
+/*
+|--------------------------------------------------------------------------
+| Staff
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:staff'])
     ->group(function () {
 
         Route::get('/admin/dashboard', [
@@ -53,6 +98,12 @@ Route::middleware(['auth', 'role:admin_staff'])
 
     });
 
+
+/*
+|--------------------------------------------------------------------------
+| Driver
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:driver'])
     ->group(function () {
@@ -65,7 +116,13 @@ Route::middleware(['auth', 'role:driver'])
     });
 
 
-Route::middleware(['auth', 'role:customer_service'])
+/*
+|--------------------------------------------------------------------------
+| Customer Service
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:cs'])
     ->group(function () {
 
         Route::get('/customer-service/dashboard', [
@@ -73,8 +130,19 @@ Route::middleware(['auth', 'role:customer_service'])
             'index'
         ])->name('dashboard.customer-service.index');
 
+        Route::get('/customer-service/live-chat', [
+            CustomerServiceDashboardController::class,
+            'liveChat'
+        ])->name('dashboard.customer-service.live-chat');
+
     });
 
+
+/*
+|--------------------------------------------------------------------------
+| User
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:user'])
     ->group(function () {
@@ -84,7 +152,24 @@ Route::middleware(['auth', 'role:user'])
             'index'
         ])->name('dashboard.user.index');
 
+        Route::get('/booking/dashboard', [
+            UserDashboardController::class,
+            'index'
+        ])->name('dashboard.user.user-booking');
+
+        Route::get('/history/dashboard', [
+            UserDashboardController::class,
+            'index'
+        ])->name('dashboard.user.user-history');
+
+        Route::get('/refund/dashboard', [
+            UserDashboardController::class,
+            'index'
+        ])->name('dashboard.user.user-refund');
+
+        Route::get('/promo/dashboard', [
+            UserDashboardController::class,
+            'index'
+        ])->name('dashboard.user.user-promo');
+
     });
-
-
-

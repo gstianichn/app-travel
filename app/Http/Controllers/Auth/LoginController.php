@@ -3,160 +3,174 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
     public function create()
+    {
+        return $this->showLogin();
+    }
+
+    public function showLogin()
     {
         return view('auth.login');
     }
 
     public function store(Request $request)
     {
+        return $this->login($request);
+    }
+
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
             'email' => [
                 'required',
                 'email',
             ],
+
             'password' => [
                 'required',
                 'string',
             ],
+
+            'role' => [
+                'required',
+                'in:admin_utama,staff,cs,driver',
+            ],
+
+            'access_code' => [
+                'required',
+                'string',
+            ],
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'password.required' => 'Password wajib diisi.',
+            'role.required' => 'Silakan pilih role.',
+            'access_code.required' => 'Kode akses wajib diisi.',
         ]);
 
-        $user = User::where(
+        /*
+        |--------------------------------------------------------------------------
+        | Cari user berdasarkan email
+        |--------------------------------------------------------------------------
+        */
+
+        $user = \App\Models\User::where(
             'email',
             $credentials['email']
         )->first();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Cek akun yang sedang terkunci
-        |--------------------------------------------------------------------------
-        */
-        if ($user && $user->locked_until) {
-
-            if ($user->locked_until->isFuture()) {
-                return back()
-                    ->withErrors([
-                        'email' => 'Akun Anda terkunci sementara.',
-                    ])
-                    ->onlyInput('email');
-            }
-
-            $user->update([
-                'failed_login_attempts' => 0,
-                'locked_until' => null,
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Proses Login
-        |--------------------------------------------------------------------------
-        */
-        if (! Auth::attempt($credentials)) {
-
-            if ($user) {
-
-                $attempts = $user->failed_login_attempts + 1;
-
-                $data = [
-                    'failed_login_attempts' => $attempts,
-                ];
-
-                /*
-                |--------------------------------------------------------------------------
-                | Kunci akun setelah 5 kali gagal
-                |--------------------------------------------------------------------------
-                */
-                if ($attempts >= 5) {
-                    $data['locked_until'] = now()->addMinutes(15);
-                    $data['failed_login_attempts'] = 0;
-                }
-
-                $user->update($data);
-            }
-
+        if (!$user) {
             return back()
+                ->withInput($request->only('email', 'role'))
                 ->withErrors([
                     'email' => 'Email atau password salah.',
-                ])
-                ->onlyInput('email');
+                ]);
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Regenerate Session
+        | Validasi password
         |--------------------------------------------------------------------------
         */
+
+        if (!Hash::check(
+            $credentials['password'],
+            $user->password
+        )) {
+            return back()
+                ->withInput($request->only('email', 'role'))
+                ->withErrors([
+                    'email' => 'Email atau password salah.',
+                ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi role
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->role !== $credentials['role']) {
+            return back()
+                ->withInput($request->only('email', 'role'))
+                ->withErrors([
+                    'role' => 'Role yang dipilih tidak sesuai dengan akun Anda.',
+                ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi kode akses
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty($user->access_code) ||
+            !Hash::check(
+                $credentials['access_code'],
+                $user->access_code
+            )
+        ) {
+            return back()
+                ->withInput($request->only('email', 'role'))
+                ->withErrors([
+                    'access_code' => 'Kode akses tidak valid.',
+                ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login berhasil
+        |--------------------------------------------------------------------------
+        */
+
+        Auth::login($user);
+
         $request->session()->regenerate();
 
         /*
         |--------------------------------------------------------------------------
-        | Update Informasi Login
+        | Redirect berdasarkan role
         |--------------------------------------------------------------------------
         */
-        $request->user()->update([
-            'last_login_at' => now(),
-            'last_login_device' => $request->userAgent(),
-            'failed_login_attempts' => 0,
-            'locked_until' => null,
-        ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Redirect Berdasarkan Role
-        |--------------------------------------------------------------------------
-        */
-        return $this->redirectBasedOnRole($request->user());
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Redirect Dashboard Berdasarkan Role
-    |--------------------------------------------------------------------------
-    */
-    private function redirectBasedOnRole(User $user)
-    {
         return match ($user->role) {
 
-            'admin' => redirect()->route(
+            'admin_utama' => redirect()->route(
                 'dashboard.admin.index'
             ),
 
-            'admin_staff' => redirect()->route(
+            'staff' => redirect()->route(
                 'dashboard.admin-biasa.index'
+            ),
+
+            'cs' => redirect()->route(
+                'dashboard.customer-service.index'
             ),
 
             'driver' => redirect()->route(
                 'dashboard.driver.index'
             ),
 
-            'customer_service' => redirect()->route(
-                'dashboard.customer-service.index'
-            ),
-
-            'user' => redirect()->route(
-                'dashboard.user.index'
-            ),
-
             default => redirect()->route('login')
                 ->withErrors([
-                    'email' => 'Role akun tidak dikenali.',
+                    'role' => 'Role akun tidak dikenali.',
                 ]),
         };
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Logout
-    |--------------------------------------------------------------------------
-    */
     public function destroy(Request $request)
+    {
+        return $this->logout($request);
+    }
+
+    public function logout(Request $request)
     {
         Auth::logout();
 

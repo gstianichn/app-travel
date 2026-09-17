@@ -979,7 +979,7 @@
                 </div>
 
 
-                <a href="#">
+                <a href="{{ route('dashboard.admin.kelola-user.index')}}">
                     <span class="menu-icon">
                         👤
                     </span>

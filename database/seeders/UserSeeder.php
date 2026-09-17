@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
                 'name' => 'Admin Biasa',
                 'phone' => '081234567891',
                 'password' => 'password',
-                'role' => 'admin_staff',
+                'role' => 'staff',
             ],
         );
 
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
                 'name' => 'Customer Service',
                 'phone' => '081234567893',
                 'password' => 'password',
-                'role' => 'customer_service',
+                'role' => 'cs',
             ],
         );
 

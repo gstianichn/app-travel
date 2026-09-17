@@ -237,7 +237,8 @@
         }
 
         .logout-button:hover {
-            background: #FEF2F2;
+            background: #ff5050;
+            color: white;
         }
 
         /* ========================================
@@ -852,18 +853,22 @@
                 <li class="menu-item">
 
                     <a
-                        href="#"
-                        class="menu-link"
+                        href="{{ route('dashboard.customer-service.live-chat') }}"
+                        class="quick-item"
                     >
+                        <div class="quick-icon">
+                            💬
+                        </div>
 
-                        <span class="menu-icon">
-                            ▣
-                        </span>
+                        <div class="quick-text">
+                            <span class="quick-title">
+                                Layanan Pelanggan
+                            </span>
 
-                        <span>
-                            Pemesanan
-                        </span>
-
+                            <span class="quick-desc">
+                                Tangani pertanyaan pelanggan
+                            </span>
+                        </div>
                     </a>
 
                 </li>
@@ -974,7 +979,7 @@
                     </span>
 
                     <span>
-                        Keluar
+                        Logout
                     </span>
 
                 </button>

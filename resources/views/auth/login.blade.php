@@ -43,19 +43,26 @@
             color: #17221d;
         }
 
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
         .login-page {
             min-height: 100vh;
+
             display: grid;
             grid-template-columns: 1fr 1fr;
         }
 
         /* =====================================================
-           LEFT
+           LEFT BRANDING
         ===================================================== */
 
         .login-brand {
             position: relative;
+
             min-height: 100vh;
+
             overflow: hidden;
 
             background:
@@ -66,7 +73,7 @@
                     #076f49 100%
                 );
 
-            color: white;
+            color: #ffffff;
         }
 
         .brand-content {
@@ -85,6 +92,7 @@
         .brand-logo {
             display: flex;
             align-items: center;
+
             gap: 14px;
         }
 
@@ -130,6 +138,7 @@
         .brand-badge {
             display: inline-flex;
             align-items: center;
+
             gap: 8px;
 
             padding: 8px 14px;
@@ -137,6 +146,7 @@
             margin-bottom: 22px;
 
             border: 1px solid rgba(255, 255, 255, 0.16);
+
             border-radius: 999px;
 
             background: rgba(255, 255, 255, 0.09);
@@ -160,6 +170,7 @@
             margin: 0;
 
             font-size: clamp(42px, 4vw, 62px);
+
             line-height: 1.08;
 
             font-weight: 800;
@@ -179,6 +190,7 @@
             margin: 24px 0 0;
 
             font-size: 16px;
+
             line-height: 1.7;
 
             color: rgba(255, 255, 255, 0.76);
@@ -186,6 +198,7 @@
 
         .brand-features {
             display: grid;
+
             grid-template-columns: repeat(3, 1fr);
 
             gap: 12px;
@@ -205,6 +218,16 @@
             background: rgba(255, 255, 255, 0.09);
 
             backdrop-filter: blur(10px);
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .brand-feature:hover {
+            transform: translateY(-3px);
+
+            background: rgba(255, 255, 255, 0.13);
         }
 
         .brand-feature-icon {
@@ -217,6 +240,7 @@
             margin: 0;
 
             font-size: 14px;
+
             font-weight: 700;
         }
 
@@ -232,6 +256,7 @@
 
         .brand-footer {
             display: flex;
+
             justify-content: space-between;
 
             font-size: 11px;
@@ -239,7 +264,9 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        /* Decorative circles */
+        /* =====================================================
+           DECORATION
+        ===================================================== */
 
         .circle {
             position: absolute;
@@ -247,6 +274,8 @@
             border-radius: 50%;
 
             background: rgba(255, 255, 255, 0.07);
+
+            pointer-events: none;
         }
 
         .circle-one {
@@ -282,7 +311,7 @@
         }
 
         /* =====================================================
-           RIGHT
+           RIGHT PANEL
         ===================================================== */
 
         .login-panel {
@@ -297,12 +326,17 @@
 
         .login-wrapper {
             width: 100%;
+
             max-width: 440px;
         }
 
         .mobile-logo {
             display: none;
         }
+
+        /* =====================================================
+           HEADING
+        ===================================================== */
 
         .login-heading {
             margin-bottom: 28px;
@@ -314,9 +348,11 @@
             margin-bottom: 8px;
 
             font-size: 12px;
+
             font-weight: 700;
 
             letter-spacing: 0.18em;
+
             text-transform: uppercase;
 
             color: #078355;
@@ -326,6 +362,7 @@
             margin: 0;
 
             font-size: 36px;
+
             line-height: 1.15;
 
             font-weight: 800;
@@ -339,10 +376,15 @@
             margin: 10px 0 0;
 
             font-size: 14px;
+
             line-height: 1.6;
 
             color: #718078;
         }
+
+        /* =====================================================
+           CARD
+        ===================================================== */
 
         .login-card {
             padding: 32px;
@@ -356,6 +398,10 @@
             box-shadow:
                 0 20px 60px rgba(20, 50, 38, 0.08);
         }
+
+        /* =====================================================
+           ERROR
+        ===================================================== */
 
         .error-box {
             margin-bottom: 22px;
@@ -375,8 +421,22 @@
             line-height: 1.5;
         }
 
+        .error-message {
+            display: block;
+
+            margin-top: 7px;
+
+            font-size: 12px;
+
+            color: #dc2626;
+        }
+
+        /* =====================================================
+           FORM
+        ===================================================== */
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 19px;
         }
 
         .form-label {
@@ -385,6 +445,7 @@
             margin-bottom: 8px;
 
             font-size: 13px;
+
             font-weight: 700;
 
             color: #26342d;
@@ -402,16 +463,26 @@
 
             transform: translateY(-50%);
 
-            width: 19px;
-            height: 19px;
+            width: 20px;
+            height: 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
             color: #8a9991;
 
             pointer-events: none;
+
+            font-size: 16px;
+
+            z-index: 2;
         }
 
-        .form-input {
+        .form-input,
+        .form-select {
             width: 100%;
+
             height: 50px;
 
             padding: 0 46px;
@@ -426,6 +497,8 @@
 
             color: #17221d;
 
+            font-family: inherit;
+
             font-size: 14px;
 
             transition:
@@ -438,11 +511,13 @@
             color: #a5afa9;
         }
 
-        .form-input:hover {
+        .form-input:hover,
+        .form-select:hover {
             border-color: #b8c8bf;
         }
 
-        .form-input:focus {
+        .form-input:focus,
+        .form-select:focus {
             border-color: #078355;
 
             background: #ffffff;
@@ -451,43 +526,87 @@
                 0 0 0 4px rgba(7, 131, 85, 0.09);
         }
 
+        .form-select {
+            appearance: none;
+
+            cursor: pointer;
+
+            padding-right: 42px;
+
+            background-image:
+                linear-gradient(45deg, transparent 50%, #819088 50%),
+                linear-gradient(135deg, #819088 50%, transparent 50%);
+
+            background-position:
+                calc(100% - 18px) 21px,
+                calc(100% - 13px) 21px;
+
+            background-size:
+                5px 5px,
+                5px 5px;
+
+            background-repeat: no-repeat;
+        }
+
+        /* =====================================================
+           PASSWORD
+        ===================================================== */
+
         .password-toggle {
             position: absolute;
 
-            right: 14px;
+            right: 10px;
             top: 50%;
 
             transform: translateY(-50%);
+
+            width: 32px;
+            height: 32px;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
-            width: 30px;
-            height: 30px;
-
             border: 0;
+
+            border-radius: 8px;
 
             background: transparent;
 
             color: #8a9991;
 
             cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                color 0.2s ease;
         }
 
         .password-toggle:hover {
+            background: #eef7f2;
+
             color: #078355;
         }
 
-        .remember-row {
+        /* =====================================================
+           LOGIN OPTIONS
+        ===================================================== */
+
+        .login-options {
             display: flex;
+
             align-items: center;
 
-            margin-bottom: 22px;
+            justify-content: space-between;
+
+            gap: 12px;
+
+            margin: 2px 0 22px;
         }
 
-        .remember-label {
+        .remember {
             display: flex;
+
             align-items: center;
 
             gap: 9px;
@@ -497,33 +616,68 @@
             color: #718078;
 
             cursor: pointer;
+
+            user-select: none;
         }
 
-        .remember-label input {
+        .remember input {
             width: 16px;
             height: 16px;
 
+            margin: 0;
+
             accent-color: #078355;
+
+            cursor: pointer;
         }
+
+        .forgot-password {
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #078355;
+
+            text-decoration: none;
+
+            transition: color 0.2s ease;
+        }
+
+        .forgot-password:hover {
+            color: #066d47;
+
+            text-decoration: underline;
+        }
+
+        /* =====================================================
+           BUTTON
+        ===================================================== */
 
         .login-button {
             width: 100%;
+
             height: 50px;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             gap: 9px;
 
             border: 0;
+
             border-radius: 13px;
 
             background: #078355;
 
             color: #ffffff;
 
+            font-family: inherit;
+
             font-size: 14px;
+
             font-weight: 700;
 
             cursor: pointer;
@@ -550,8 +704,19 @@
             transform: translateY(0);
         }
 
+        .login-button span {
+            font-size: 18px;
+
+            line-height: 1;
+        }
+
+        /* =====================================================
+           DIVIDER
+        ===================================================== */
+
         .divider {
             display: flex;
+
             align-items: center;
 
             gap: 14px;
@@ -569,19 +734,29 @@
 
         .divider-text {
             font-size: 10px;
+
             font-weight: 600;
 
             letter-spacing: 0.08em;
 
             color: #98a49e;
+
+            white-space: nowrap;
         }
+
+        /* =====================================================
+           REGISTER
+        ===================================================== */
 
         .register-button {
             width: 100%;
+
             height: 50px;
 
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             border: 1px solid #dce4df;
@@ -595,12 +770,14 @@
             text-decoration: none;
 
             font-size: 14px;
+
             font-weight: 700;
 
             transition:
                 border-color 0.2s ease,
                 background 0.2s ease,
-                color 0.2s ease;
+                color 0.2s ease,
+                transform 0.2s ease;
         }
 
         .register-button:hover {
@@ -609,11 +786,19 @@
             background: #f2faf6;
 
             color: #078355;
+
+            transform: translateY(-1px);
         }
+
+        /* =====================================================
+           SECURITY
+        ===================================================== */
 
         .security-info {
             display: flex;
+
             align-items: center;
+
             justify-content: center;
 
             gap: 7px;
@@ -625,11 +810,15 @@
             color: #89958f;
         }
 
+        .security-info svg {
+            flex-shrink: 0;
+        }
+
         /* =====================================================
            RESPONSIVE
         ===================================================== */
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1100px) {
 
             .brand-content {
                 padding: 40px;
@@ -643,6 +832,44 @@
                 font-size: 46px;
             }
 
+            .brand-description {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 850px) {
+
+            .login-page {
+                grid-template-columns: 42% 58%;
+            }
+
+            .brand-content {
+                padding: 32px;
+            }
+
+            .brand-title {
+                font-size: 38px;
+            }
+
+            .brand-description {
+                font-size: 13px;
+            }
+
+            .brand-features {
+                grid-template-columns: 1fr;
+            }
+
+            .brand-feature {
+                padding: 13px;
+            }
+
+            .brand-feature-text {
+                display: none;
+            }
+
+            .login-panel {
+                padding: 24px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -667,12 +894,14 @@
 
             .mobile-logo {
                 display: flex;
+
                 align-items: center;
+
                 justify-content: center;
 
                 gap: 10px;
 
-                margin-bottom: 32px;
+                margin-bottom: 30px;
             }
 
             .mobile-logo-icon {
@@ -680,7 +909,9 @@
                 height: 44px;
 
                 display: flex;
+
                 align-items: center;
+
                 justify-content: center;
 
                 border-radius: 13px;
@@ -688,13 +919,21 @@
                 background: #078355;
 
                 font-size: 21px;
+
+                box-shadow:
+                    0 8px 20px rgba(7, 131, 85, 0.2);
             }
 
             .mobile-logo-title {
                 font-size: 20px;
+
                 font-weight: 800;
 
                 color: #078355;
+            }
+
+            .login-heading {
+                margin-bottom: 22px;
             }
 
             .login-title {
@@ -703,8 +942,9 @@
 
             .login-card {
                 padding: 24px;
-            }
 
+                border-radius: 20px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -713,16 +953,35 @@
                 padding: 24px 16px;
             }
 
-            .login-card {
-                padding: 20px;
-
-                border-radius: 20px;
+            .mobile-logo {
+                margin-bottom: 25px;
             }
 
             .login-title {
                 font-size: 28px;
             }
 
+            .login-description {
+                font-size: 13px;
+            }
+
+            .login-card {
+                padding: 20px;
+
+                border-radius: 18px;
+            }
+
+            .login-options {
+                align-items: flex-start;
+
+                flex-direction: column;
+
+                gap: 12px;
+            }
+
+            .forgot-password {
+                margin-left: 25px;
+            }
         }
     </style>
 </head>
@@ -742,7 +1001,6 @@
             <div class="circle circle-two"></div>
             <div class="circle circle-three"></div>
             <div class="circle circle-four"></div>
-
 
             <div class="brand-content">
 
@@ -770,11 +1028,8 @@
                 <div class="brand-hero">
 
                     <div class="brand-badge">
-
                         <span class="brand-badge-dot"></span>
-
                         Platform Travel Terpercaya
-
                     </div>
 
 
@@ -932,16 +1187,15 @@
                     @endif
 
 
-                    {{-- Form --}}
                     <form
                         method="POST"
-                        action="{{ route('login.store') }}"
+                        action="{{ route('login.process') }}"
                     >
 
                         @csrf
 
 
-                        {{-- Email --}}
+                        {{-- EMAIL --}}
                         <div class="form-group">
 
                             <label
@@ -953,46 +1207,36 @@
 
                             <div class="input-wrapper">
 
-                                <svg
-                                    class="input-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M3 8l9 6 9-6"
-                                    />
-
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                    />
-                                </svg>
-
+                                <span class="input-icon">
+                                    ✉
+                                </span>
 
                                 <input
-                                    id="email"
                                     type="email"
+                                    id="email"
                                     name="email"
+                                    class="form-input"
                                     value="{{ old('email') }}"
+                                    placeholder="nama@email.com"
+                                    autocomplete="email"
                                     required
                                     autofocus
-                                    autocomplete="email"
-                                    placeholder="nama@email.com"
-                                    class="form-input"
                                 >
 
                             </div>
 
+                            @error('email')
+
+                                <small class="error-message">
+                                    {{ $message }}
+                                </small>
+
+                            @enderror
+
                         </div>
 
 
-                        {{-- Password --}}
+                        {{-- PASSWORD --}}
                         <div class="form-group">
 
                             <label
@@ -1004,57 +1248,36 @@
 
                             <div class="input-wrapper">
 
-                                <svg
-                                    class="input-icon"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    stroke-width="1.8"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        d="M16 11V8a4 4 0 10-8 0v3"
-                                    />
-
-                                    <rect
-                                        x="4"
-                                        y="11"
-                                        width="16"
-                                        height="10"
-                                        rx="2"
-                                    />
-                                </svg>
-
+                                <span class="input-icon">
+                                    🔒
+                                </span>
 
                                 <input
-                                    id="password"
                                     type="password"
+                                    id="password"
                                     name="password"
-                                    required
-                                    autocomplete="current-password"
-                                    placeholder="Masukkan password"
                                     class="form-input"
+                                    placeholder="Masukkan password"
+                                    autocomplete="current-password"
+                                    required
                                 >
-
 
                                 <button
                                     type="button"
-                                    id="togglePassword"
                                     class="password-toggle"
+                                    id="togglePassword"
                                     aria-label="Tampilkan password"
                                 >
 
                                     <svg
                                         id="eyeIcon"
                                         xmlns="http://www.w3.org/2000/svg"
+                                        width="18"
+                                        height="18"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
                                         stroke-width="1.8"
-                                        width="20"
-                                        height="20"
                                     >
 
                                         <path
@@ -1075,17 +1298,136 @@
 
                             </div>
 
+                            @error('password')
+
+                                <small class="error-message">
+                                    {{ $message }}
+                                </small>
+
+                            @enderror
+
                         </div>
 
 
-                        {{-- Remember --}}
-                        <div class="remember-row">
+                        {{-- ROLE --}}
+                        <div class="form-group">
 
-                            <label class="remember-label">
+                            <label
+                                for="role"
+                                class="form-label"
+                            >
+                                Login sebagai
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    👤
+                                </span>
+
+                                <select
+                                    id="role"
+                                    name="role"
+                                    class="form-select"
+                                    required
+                                >
+
+                                    <option value="">
+                                        -- Pilih Role --
+                                    </option>
+
+                                    <option
+                                        value="admin_utama"
+                                        {{ old('role') === 'admin_utama' ? 'selected' : '' }}
+                                    >
+                                        Admin Utama
+                                    </option>
+
+                                    <option
+                                        value="staff"
+                                        {{ old('role') === 'staff' ? 'selected' : '' }}
+                                    >
+                                        Staff
+                                    </option>
+
+                                    <option
+                                        value="cs"
+                                        {{ old('role') === 'cs' ? 'selected' : '' }}
+                                    >
+                                        Customer Service
+                                    </option>
+
+                                    <option
+                                        value="driver"
+                                        {{ old('role') === 'driver' ? 'selected' : '' }}
+                                    >
+                                        Driver
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            @error('role')
+
+                                <small class="error-message">
+                                    {{ $message }}
+                                </small>
+
+                            @enderror
+
+                        </div>
+
+
+                        {{-- KODE AKSES --}}
+                        <div class="form-group">
+
+                            <label
+                                for="access_code"
+                                class="form-label"
+                            >
+                                Kode Akses
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    🔑
+                                </span>
+
+                                <input
+                                    type="password"
+                                    id="access_code"
+                                    name="access_code"
+                                    class="form-input"
+                                    placeholder="Masukkan kode akses"
+                                    autocomplete="off"
+                                    required
+                                >
+
+                            </div>
+
+                            @error('access_code')
+
+                                <small class="error-message">
+                                    {{ $message }}
+                                </small>
+
+                            @enderror
+
+                        </div>
+
+
+                        {{-- REMEMBER --}}
+                        <div class="login-options">
+
+                            <label class="remember">
 
                                 <input
                                     type="checkbox"
                                     name="remember"
+                                    value="1"
+                                    {{ old('remember') ? 'checked' : '' }}
                                 >
 
                                 <span>
@@ -1094,10 +1436,18 @@
 
                             </label>
 
+
+                            <a
+                                href="{{ route('password.request') }}"
+                                class="forgot-password"
+                            >
+                                Lupa password?
+                            </a>
+
                         </div>
 
 
-                        {{-- Submit --}}
+                        {{-- BUTTON --}}
                         <button
                             type="submit"
                             class="login-button"
@@ -1107,21 +1457,9 @@
                                 Masuk ke Akun
                             </span>
 
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="17"
-                                height="17"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                                />
-                            </svg>
+                            <span>
+                                →
+                            </span>
 
                         </button>
 
@@ -1165,6 +1503,7 @@
                         stroke="currentColor"
                         stroke-width="1.8"
                     >
+
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -1197,21 +1536,33 @@
     ====================================================== --}}
 
     <script>
+
         document.addEventListener('DOMContentLoaded', function () {
 
-            const button = document.getElementById('togglePassword');
-            const password = document.getElementById('password');
-            const icon = document.getElementById('eyeIcon');
+            const button =
+                document.getElementById('togglePassword');
+
+            const password =
+                document.getElementById('password');
+
+            const icon =
+                document.getElementById('eyeIcon');
+
 
             if (!button || !password || !icon) {
                 return;
             }
 
+
             button.addEventListener('click', function () {
 
-                const hidden = password.type === 'password';
+                const hidden =
+                    password.type === 'password';
 
-                password.type = hidden ? 'text' : 'password';
+
+                password.type =
+                    hidden ? 'text' : 'password';
+
 
                 button.setAttribute(
                     'aria-label',
@@ -1219,6 +1570,7 @@
                         ? 'Sembunyikan password'
                         : 'Tampilkan password'
                 );
+
 
                 if (hidden) {
 
@@ -1263,6 +1615,7 @@
             });
 
         });
+
     </script>
 
 </body>

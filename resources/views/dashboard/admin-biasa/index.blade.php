@@ -246,7 +246,7 @@
         }
 
         .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.14);
+            background: rgba(255, 0, 0, 1);
             color: var(--white);
         }
 
@@ -861,7 +861,7 @@
                 </div>
 
                 <span>
-                    Pemesanan
+                    Manajemen Booking
                 </span>
             </a>
 
@@ -872,7 +872,7 @@
                 </div>
 
                 <span>
-                    Jadwal Travel
+                    Validasi E-Ticket
                 </span>
             </a>
 
@@ -883,7 +883,7 @@
                 </div>
 
                 <span>
-                    Pelanggan
+                    Pemindaian QR Code
                 </span>
             </a>
 
@@ -894,7 +894,7 @@
                 </div>
 
                 <span>
-                    Pembayaran
+                    Validasi Booking Code
                 </span>
             </a>
 
@@ -905,7 +905,17 @@
                 </div>
 
                 <span>
-                    Laporan
+                    Manajemen Status Boarding
+                </span>
+            </a>
+
+            <a href="#">
+                <div class="menu-icon">
+                    📋
+                </div>
+
+                <span>
+                    Informasi Perjalanan
                 </span>
             </a>
 
