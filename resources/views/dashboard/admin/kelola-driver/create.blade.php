@@ -1,0 +1,703 @@
+@extends('layouts.admin')
+
+@section('title', 'Tambah Driver Baru')
+
+@section('page-title', 'Tambah Driver')
+
+@section('page-subtitle', 'Daftarkan pengemudi baru, lengkapi dokumen legalitas SIM, dan data kontak darurat keluarga.')
+
+@section('content')
+
+<style>
+    .form-page {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* BREADCRUMB */
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #7b8882;
+    }
+
+    .breadcrumb-nav a {
+        color: #087f55;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .breadcrumb-nav a:hover {
+        text-decoration: underline;
+    }
+
+    /* MAIN FORM CARD */
+    .form-card {
+        background: white;
+        border: 1px solid #e2eae6;
+        border-radius: 16px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        padding: 22px 25px;
+        border-bottom: 1px solid #edf1ef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .form-card-header h1 {
+        margin: 0 0 4px;
+        font-size: 18px;
+        color: #17221d;
+        font-weight: 700;
+    }
+
+    .form-card-header p {
+        margin: 0;
+        color: #89938e;
+        font-size: 12px;
+    }
+
+    .form-body {
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    /* SECTION TITLE */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed #e2eae6;
+        margin-bottom: 8px;
+    }
+
+    .section-header-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #e3f5ee;
+        color: #087f55;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+    }
+
+    .section-header-text h3 {
+        margin: 0 0 2px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #17221d;
+    }
+
+    .section-header-text p {
+        margin: 0;
+        font-size: 11px;
+        color: #7b8882;
+    }
+
+    /* FORM GRID */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        color: #34423b;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1px solid #dce5e1;
+        border-radius: 9px;
+        background: white;
+        color: #26332d;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 70px;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        border-color: #087f55;
+        box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.08);
+    }
+
+    .form-help {
+        color: #98a39e;
+        font-size: 11px;
+    }
+
+    .field-error {
+        color: #d33b49;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    /* STATUS SELECT CARDS */
+    .status-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .status-select-card {
+        border: 2px solid #e5ebe8;
+        border-radius: 12px;
+        padding: 14px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        cursor: pointer;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .status-select-card:hover {
+        border-color: #cbd5e1;
+    }
+
+    .status-select-card.active-standby {
+        border-color: #10b981;
+        background: #f0fdf4;
+    }
+
+    .status-select-card.active-onduty {
+        border-color: #0284c7;
+        background: #f0f9ff;
+    }
+
+    .status-select-card.active-onleave {
+        border-color: #f59e0b;
+        background: #fffbeb;
+    }
+
+    .status-card-radio {
+        margin-top: 2px;
+        accent-color: #087f55;
+    }
+
+    .status-card-info h4 {
+        margin: 0 0 2px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .status-card-info p {
+        margin: 0;
+        font-size: 11px;
+        color: #6b7280;
+        line-height: 1.3;
+    }
+
+    /* FORM ACTIONS */
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid #edf1ef;
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        padding: 11px 18px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        color: #607068;
+        background: #f3f6f4;
+        border: 1px solid #dce5e1;
+        transition: 0.15s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #e5ece8;
+        color: #1a2721;
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 22px;
+        border-radius: 9px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #087f55;
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(8, 127, 85, 0.22);
+        transition: all 0.2s ease;
+    }
+
+    .btn-save:hover {
+        background: #066b47;
+        box-shadow: 0 6px 18px rgba(8, 127, 85, 0.30);
+    }
+
+    @media (max-width: 768px) {
+        .form-grid,
+        .status-cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="form-page">
+
+    {{-- BREADCRUMB --}}
+    <div class="breadcrumb-nav">
+        <a href="{{ route('dashboard.admin.index') }}">Dashboard</a>
+        <span>/</span>
+        <a href="{{ route('dashboard.admin.kelola-driver.index') }}">Kelola Driver</a>
+        <span>/</span>
+        <span>Tambah Driver Baru</span>
+    </div>
+
+    {{-- MAIN FORM CARD --}}
+    <div class="form-card">
+
+        <div class="form-card-header">
+            <div>
+                <h1>Pendaftaran Pengemudi Baru</h1>
+                <p>Isi data profil pengemudi, kelengkapan legalitas lisensi SIM, serta kontak darurat keluarga.</p>
+            </div>
+            <a href="{{ route('dashboard.admin.kelola-driver.index') }}" class="btn-cancel">
+                ← Kembali
+            </a>
+        </div>
+
+        <form action="{{ route('dashboard.admin.kelola-driver.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            <div class="form-body">
+
+                {{-- =========================================
+                     BAGIAN 1: PROFIL & AKUN PENGEMUDI
+                ========================================== --}}
+                <div>
+                    <div class="section-header">
+                        <div class="section-header-icon">
+                            👤
+                        </div>
+                        <div class="section-header-text">
+                            <h3>1. Profil & Akun Pengemudi</h3>
+                            <p>Data pribadi, nomor WhatsApp pengemudi, dan akun login aplikasi.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        {{-- NAMA LENGKAP --}}
+                        <div class="form-group">
+                            <label class="form-label" for="name">
+                                Nama Lengkap Pengemudi <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                class="form-input @error('name') is-invalid @enderror"
+                                placeholder="Contoh: Joko Widodo"
+                                value="{{ old('name') }}"
+                                required
+                            >
+                            @error('name')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- EMAIL LOGIN --}}
+                        <div class="form-group">
+                            <label class="form-label" for="email">
+                                Alamat Email Login <span class="required">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-input @error('email') is-invalid @enderror"
+                                placeholder="Contoh: joko.driver@travelku.id"
+                                value="{{ old('email') }}"
+                                required
+                            >
+                            @error('email')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- NOMOR WHATSAPP PENGEMUDI --}}
+                        <div class="form-group">
+                            <label class="form-label" for="phone">
+                                Nomor WhatsApp Pengemudi <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="phone"
+                                name="phone"
+                                class="form-input @error('phone') is-invalid @enderror"
+                                placeholder="Contoh: 081234567890"
+                                value="{{ old('phone') }}"
+                                required
+                            >
+                            <span class="form-help">Digunakan untuk koordinasi rute & penjemputan penumpang.</span>
+                            @error('phone')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- KATA SANDI LOGIN --}}
+                        <div class="form-group">
+                            <label class="form-label" for="password">
+                                Kata Sandi Akun <span class="required">*</span>
+                            </label>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input @error('password') is-invalid @enderror"
+                                placeholder="Minimal 8 karakter"
+                                required
+                            >
+                            @error('password')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- FOTO PENGEMUDI --}}
+                        <div class="form-group full">
+                            <label class="form-label" for="photo">
+                                Foto Profil Pengemudi (Opsional)
+                            </label>
+                            <input
+                                type="file"
+                                id="photo"
+                                name="photo"
+                                class="form-input @error('photo') is-invalid @enderror"
+                                accept="image/png, image/jpeg, image/jpg, image/webp"
+                            >
+                            <span class="form-help">Format file: JPG, PNG, atau WEBP. Maksimal 2MB.</span>
+                            @error('photo')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- ALAMAT DOMISILI --}}
+                        <div class="form-group full">
+                            <label class="form-label" for="address">
+                                Alamat Domisili Pengemudi
+                            </label>
+                            <textarea
+                                id="address"
+                                name="address"
+                                class="form-textarea @error('address') is-invalid @enderror"
+                                placeholder="Alamat lengkap tempat tinggal pengemudi saat ini..."
+                            >{{ old('address') }}</textarea>
+                            @error('address')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- =========================================
+                     BAGIAN 2: LEGALITAS & LISENSI SIM
+                ========================================== --}}
+                <div>
+                    <div class="section-header">
+                        <div class="section-header-icon">
+                            🪪
+                        </div>
+                        <div class="section-header-text">
+                            <h3>2. Legalitas & Lisensi SIM</h3>
+                            <p>Nomor SIM, jenis golongan SIM, dan masa berlaku untuk verifikasi kelaikan jalan.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        {{-- NOMOR SIM --}}
+                        <div class="form-group">
+                            <label class="form-label" for="license_number">
+                                Nomor Surat Izin Mengemudi (SIM) <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="license_number"
+                                name="license_number"
+                                class="form-input @error('license_number') is-invalid @enderror"
+                                placeholder="Contoh: 9812-1234-5678"
+                                value="{{ old('license_number') }}"
+                                required
+                            >
+                            @error('license_number')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- JENIS SIM --}}
+                        <div class="form-group">
+                            <label class="form-label" for="license_type">
+                                Golongan / Jenis SIM <span class="required">*</span>
+                            </label>
+                            <select id="license_type" name="license_type" class="form-select @error('license_type') is-invalid @enderror" required>
+                                <option value="">Pilih Jenis SIM...</option>
+                                <option value="SIM B1 Umum" {{ old('license_type') === 'SIM B1 Umum' ? 'selected' : '' }}>SIM B1 Umum (Minibus / Van Komersial)</option>
+                                <option value="SIM B2 Umum" {{ old('license_type') === 'SIM B2 Umum' ? 'selected' : '' }}>SIM B2 Umum (Bus Besar / Kendaraan Berat)</option>
+                                <option value="SIM A Umum" {{ old('license_type') === 'SIM A Umum' ? 'selected' : '' }}>SIM A Umum (Angkutan Penumpang)</option>
+                                <option value="SIM B1" {{ old('license_type') === 'SIM B1' ? 'selected' : '' }}>SIM B1 Standar</option>
+                                <option value="SIM A" {{ old('license_type') === 'SIM A' ? 'selected' : '' }}>SIM A Standar</option>
+                            </select>
+                            @error('license_type')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- MASA BERLAKU SIM --}}
+                        <div class="form-group">
+                            <label class="form-label" for="license_expired_at">
+                                Masa Berlaku SIM Hingga <span class="required">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                id="license_expired_at"
+                                name="license_expired_at"
+                                class="form-input @error('license_expired_at') is-invalid @enderror"
+                                value="{{ old('license_expired_at') }}"
+                                required
+                            >
+                            <span class="form-help">Sistem akan memberi pengingat otomatis jika SIM mendekati kedaluwarsa.</span>
+                            @error('license_expired_at')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- =========================================
+                     BAGIAN 3: KONTAK DARURAT KELUARGA
+                ========================================== --}}
+                <div>
+                    <div class="section-header">
+                        <div class="section-header-icon">
+                            🚨
+                        </div>
+                        <div class="section-header-text">
+                            <h3>3. Kontak Darurat Keluarga</h3>
+                            <p>Data kontak keluarga terdekat yang wajib dihubungi saat situasi darurat di perjalanan.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+
+                        {{-- NAMA KONTAK DARURAT --}}
+                        <div class="form-group">
+                            <label class="form-label" for="emergency_contact_name">
+                                Nama Kontak Darurat <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="emergency_contact_name"
+                                name="emergency_contact_name"
+                                class="form-input @error('emergency_contact_name') is-invalid @enderror"
+                                placeholder="Contoh: Siti Aminah"
+                                value="{{ old('emergency_contact_name') }}"
+                                required
+                            >
+                            @error('emergency_contact_name')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- HUBUNGAN KELUARGA --}}
+                        <div class="form-group">
+                            <label class="form-label" for="emergency_contact_relation">
+                                Hubungan Keluarga <span class="required">*</span>
+                            </label>
+                            <select id="emergency_contact_relation" name="emergency_contact_relation" class="form-select @error('emergency_contact_relation') is-invalid @enderror" required>
+                                <option value="">Pilih Hubungan...</option>
+                                <option value="Istri" {{ old('emergency_contact_relation') === 'Istri' ? 'selected' : '' }}>Istri</option>
+                                <option value="Suami" {{ old('emergency_contact_relation') === 'Suami' ? 'selected' : '' }}>Suami</option>
+                                <option value="Orang Tua (Ayah/Ibu)" {{ old('emergency_contact_relation') === 'Orang Tua (Ayah/Ibu)' ? 'selected' : '' }}>Orang Tua (Ayah/Ibu)</option>
+                                <option value="Anak Kandung" {{ old('emergency_contact_relation') === 'Anak Kandung' ? 'selected' : '' }}>Anak Kandung</option>
+                                <option value="Saudara Kandung (Kakak/Adik)" {{ old('emergency_contact_relation') === 'Saudara Kandung (Kakak/Adik)' ? 'selected' : '' }}>Saudara Kandung</option>
+                                <option value="Kerabat Lainnya" {{ old('emergency_contact_relation') === 'Kerabat Lainnya' ? 'selected' : '' }}>Kerabat Lainnya</option>
+                            </select>
+                            @error('emergency_contact_relation')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        {{-- NOMOR TELEPON KONTAK DARURAT --}}
+                        <div class="form-group">
+                            <label class="form-label" for="emergency_contact_phone">
+                                Nomor Telepon / WA Darurat <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="emergency_contact_phone"
+                                name="emergency_contact_phone"
+                                class="form-input @error('emergency_contact_phone') is-invalid @enderror"
+                                placeholder="Contoh: 085298765432"
+                                value="{{ old('emergency_contact_phone') }}"
+                                required
+                            >
+                            @error('emergency_contact_phone')
+                                <span class="field-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- =========================================
+                     BAGIAN 4: STATUS KERJA AWAL
+                ========================================== --}}
+                <div>
+                    <div class="section-header">
+                        <div class="section-header-icon">
+                            🚦
+                        </div>
+                        <div class="section-header-text">
+                            <h3>4. Status Kesiapan Kerja Pengemudi</h3>
+                            <p>Tentukan status operasional awal driver.</p>
+                        </div>
+                    </div>
+
+                    @php
+                        $selectedStatus = old('status', 'standby');
+                    @endphp
+
+                    <div class="status-cards-grid">
+                        {{-- STANDBY --}}
+                        <label class="status-select-card {{ $selectedStatus === 'standby' ? 'active-standby' : '' }}" onclick="selectStatus('standby', this)">
+                            <input type="radio" name="status" value="standby" class="status-card-radio" {{ $selectedStatus === 'standby' ? 'checked' : '' }}>
+                            <div class="status-card-info">
+                                <h4>🟢 Siap Jalan (Standby)</h4>
+                                <p>Pengemudi siap di pool/loket untuk ditugaskan jadwal keberangkatan armada.</p>
+                            </div>
+                        </label>
+
+                        {{-- ON DUTY --}}
+                        <label class="status-select-card {{ $selectedStatus === 'on_duty' ? 'active-onduty' : '' }}" onclick="selectStatus('on_duty', this)">
+                            <input type="radio" name="status" value="on_duty" class="status-card-radio" {{ $selectedStatus === 'on_duty' ? 'checked' : '' }}>
+                            <div class="status-card-info">
+                                <h4>🔵 Sedang Bertugas</h4>
+                                <p>Pengemudi sedang dalam perjalanan melayani rute travel aktif.</p>
+                            </div>
+                        </label>
+
+                        {{-- ON LEAVE --}}
+                        <label class="status-select-card {{ $selectedStatus === 'on_leave' ? 'active-onleave' : '' }}" onclick="selectStatus('on_leave', this)">
+                            <input type="radio" name="status" value="on_leave" class="status-card-radio" {{ $selectedStatus === 'on_leave' ? 'checked' : '' }}>
+                            <div class="status-card-info">
+                                <h4>🟡 Sedang Libur / Cuti</h4>
+                                <p>Pengemudi sedang mengambil jadwal libur atau cuti istirahat.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    @error('status')
+                        <div class="field-error" style="margin-top: 8px;">{{ $message }}</div>
+                    @enderror
+
+                    {{-- CATATAN TAMBAHAN --}}
+                    <div class="form-group full" style="margin-top: 14px;">
+                        <label class="form-label" for="notes">
+                            Catatan Khusus Pengemudi (Opsional)
+                        </label>
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            class="form-textarea"
+                            placeholder="Catatan rute favorit, pengalaman berkendara, atau rekam jejak pengemudi..."
+                        >{{ old('notes') }}</textarea>
+                    </div>
+                </div>
+
+                {{-- FORM ACTIONS --}}
+                <div class="form-actions">
+                    <a href="{{ route('dashboard.admin.kelola-driver.index') }}" class="btn-cancel">
+                        Batal
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <span>💾</span>
+                        <span>Simpan & Daftarkan Driver</span>
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    function selectStatus(val, card) {
+        document.querySelectorAll('.status-select-card').forEach(c => {
+            c.classList.remove('active-standby', 'active-onduty', 'active-onleave');
+        });
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio) {
+            radio.checked = true;
+            if (val === 'standby') card.classList.add('active-standby');
+            else if (val === 'on_duty') card.classList.add('active-onduty');
+            else if (val === 'on_leave') card.classList.add('active-onleave');
+        }
+    }
+</script>
+
+@endsection

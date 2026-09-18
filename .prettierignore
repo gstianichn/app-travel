@@ -1,0 +1,23 @@
+# Dependensi & Hasil Build
+node_modules
+build
+dist
+.next
+
+# Sistem & Editor
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Lockfiles
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Aset & Gambar
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.gif

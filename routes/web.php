@@ -1,16 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SearchController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\Auth\LoginController;
-
-use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\AdminBiasaDashboardController;
-use App\Http\Controllers\DriverDashboardController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CustomerServiceDashboardController;
+use App\Http\Controllers\Dashboard\AdminDashboardController;
+use App\Http\Controllers\DriverDashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserDashboardController;
-
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +22,13 @@ Route::get('/', [HomeController::class, 'index'])
 Route::get('/search', [SearchController::class, 'index'])
     ->name('search');
 
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
+    ->middleware('guest')
+    ->name('password.reset');
+
+Route::post('/reset-password', [ResetPasswordController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.update');
 
 /*
 |--------------------------------------------------------------------------
@@ -36,51 +41,430 @@ Route::middleware(['auth', 'role:admin_utama'])
 
         Route::get('/dashboard/admin', [
             AdminDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.admin.index');
 
-        Route::get( '/kelola-user', [
+        Route::get('/kelola-user', [
             AdminDashboardController::class,
-            'users'
+            'users',
         ])->name('dashboard.admin.kelola-user.index');
 
-        Route::get( '/kelola-user/create', [
+        Route::get('/kelola-user/create', [
             AdminDashboardController::class,
-            'createUser'
+            'createUser',
         ])->name('dashboard.admin.kelola-user.create');
 
-        Route::post( '/kelola-user', [
+        Route::post('/kelola-user', [
             AdminDashboardController::class,
-            'storeUser'
+            'storeUser',
         ])->name('dashboard.admin.kelola-user.store');
 
-        Route::get( '/kelola-user/{user}', [
+        Route::get('/kelola-user/{user}', [
             AdminDashboardController::class,
-            'showUser'
+            'showUser',
         ])->name('dashboard.admin.kelola-user.show');
-        
-        Route::get( '/kelola-user/{user}/edit', [
+
+        Route::get('/kelola-user/{user}/edit', [
             AdminDashboardController::class,
-            'editUser'
+            'editUser',
         ])->name('dashboard.admin.kelola-user.edit');
-        
-        Route::put( '/kelola-user/{user}', [
+
+        Route::put('/kelola-user/{user}', [
             AdminDashboardController::class,
-            'updateUser'
+            'updateUser',
         ])->name('dashboard.admin.kelola-user.update');
-        
-        Route::patch( '/kelola-user/{user}/toggle-status', [
+
+        Route::patch('/kelola-user/{user}/toggle-status', [
             AdminDashboardController::class,
-            'toggleUserStatus'
+            'toggleUserStatus',
         ])->name('dashboard.admin.kelola-user.toggle-status');
-        
-        Route::delete( '/kelola-user/{user}', [
+
+        Route::patch('/kelola-user/{user}/reset-password', [
             AdminDashboardController::class,
-            'destroyUser'
+            'resetPassword',
+        ])->name('dashboard.admin.kelola-user.reset-password');
+
+        Route::delete('/kelola-user/{user}', [
+            AdminDashboardController::class,
+            'destroyUser',
         ])->name('dashboard.admin.kelola-user.destroy');
 
-    });
+        /*
+        |--------------------------------------------------------------------------
+        | Kelola Staff (Profil Cabang/Loket, Hak Akses, Status Akun)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/kelola-staff', [
+            AdminDashboardController::class,
+            'staffIndex',
+        ])->name('dashboard.admin.kelola-staff.index');
 
+        Route::get('/kelola-staff/create', [
+            AdminDashboardController::class,
+            'createStaff',
+        ])->name('dashboard.admin.kelola-staff.create');
+
+        Route::post('/kelola-staff', [
+            AdminDashboardController::class,
+            'storeStaff',
+        ])->name('dashboard.admin.kelola-staff.store');
+
+        Route::get('/kelola-staff/{staff}', [
+            AdminDashboardController::class,
+            'showStaff',
+        ])->name('dashboard.admin.kelola-staff.show');
+
+        Route::get('/kelola-staff/{staff}/edit', [
+            AdminDashboardController::class,
+            'editStaff',
+        ])->name('dashboard.admin.kelola-staff.edit');
+
+        Route::put('/kelola-staff/{staff}', [
+            AdminDashboardController::class,
+            'updateStaff',
+        ])->name('dashboard.admin.kelola-staff.update');
+
+        Route::patch('/kelola-staff/{staff}/toggle-status', [
+            AdminDashboardController::class,
+            'toggleStaffStatus',
+        ])->name('dashboard.admin.kelola-staff.toggle-status');
+
+        Route::patch('/kelola-staff/{staff}/reset-password', [
+            AdminDashboardController::class,
+            'resetStaffPassword',
+        ])->name('dashboard.admin.kelola-staff.reset-password');
+
+        Route::delete('/kelola-staff/{staff}', [
+            AdminDashboardController::class,
+            'destroyStaff',
+        ])->name('dashboard.admin.kelola-staff.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kelola Driver
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/kelola-driver', [
+            AdminDashboardController::class,
+            'driverIndex',
+        ])->name('dashboard.admin.kelola-driver.index');
+
+        Route::get('/kelola-driver/create', [
+            AdminDashboardController::class,
+            'createDriver',
+        ])->name('dashboard.admin.kelola-driver.create');
+
+        Route::post('/kelola-driver', [
+            AdminDashboardController::class,
+            'storeDriver',
+        ])->name('dashboard.admin.kelola-driver.store');
+
+        Route::get('/kelola-driver/{driver}', [
+            AdminDashboardController::class,
+            'showDriver',
+        ])->name('dashboard.admin.kelola-driver.show');
+
+        Route::get('/kelola-driver/{driver}/edit', [
+            AdminDashboardController::class,
+            'editDriver',
+        ])->name('dashboard.admin.kelola-driver.edit');
+
+        Route::put('/kelola-driver/{driver}', [
+            AdminDashboardController::class,
+            'updateDriver',
+        ])->name('dashboard.admin.kelola-driver.update');
+
+        Route::patch('/kelola-driver/{driver}/status', [
+            AdminDashboardController::class,
+            'updateDriverStatus',
+        ])->name('dashboard.admin.kelola-driver.update-status');
+
+        Route::delete('/kelola-driver/{driver}', [
+            AdminDashboardController::class,
+            'destroyDriver',
+        ])->name('dashboard.admin.kelola-driver.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Memantau Kendaraan (Fleet Monitoring, Legalitas KIR & Pajak STNK)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/memantau-kendaraan', [
+            AdminDashboardController::class,
+            'vehicleIndex',
+        ])->name('dashboard.admin.memantau-kendaraan.index');
+
+        Route::get('/memantau-kendaraan/create', [
+            AdminDashboardController::class,
+            'createVehicle',
+        ])->name('dashboard.admin.memantau-kendaraan.create');
+
+        Route::post('/memantau-kendaraan', [
+            AdminDashboardController::class,
+            'storeVehicle',
+        ])->name('dashboard.admin.memantau-kendaraan.store');
+
+        Route::get('/memantau-kendaraan/{vehicle}', [
+            AdminDashboardController::class,
+            'showVehicle',
+        ])->name('dashboard.admin.memantau-kendaraan.show');
+
+        Route::get('/memantau-kendaraan/{vehicle}/edit', [
+            AdminDashboardController::class,
+            'editVehicle',
+        ])->name('dashboard.admin.memantau-kendaraan.edit');
+
+        Route::put('/memantau-kendaraan/{vehicle}', [
+            AdminDashboardController::class,
+            'updateVehicle',
+        ])->name('dashboard.admin.memantau-kendaraan.update');
+
+        Route::patch('/memantau-kendaraan/{vehicle}/status', [
+            AdminDashboardController::class,
+            'updateVehicleStatus',
+        ])->name('dashboard.admin.memantau-kendaraan.update-status');
+
+        Route::delete('/memantau-kendaraan/{vehicle}', [
+            AdminDashboardController::class,
+            'destroyVehicle',
+        ])->name('dashboard.admin.memantau-kendaraan.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pemesanan Tiket (Seat Map, Input Manual, Manifes, Reschedule)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/pemesanan', [
+            AdminDashboardController::class,
+            'bookingIndex',
+        ])->name('dashboard.admin.pemesanan.index');
+
+        Route::get('/pemesanan/create-manual', [
+            AdminDashboardController::class,
+            'createManualBooking',
+        ])->name('dashboard.admin.pemesanan.create-manual');
+
+        Route::post('/pemesanan/manual', [
+            AdminDashboardController::class,
+            'storeManualBooking',
+        ])->name('dashboard.admin.pemesanan.store-manual');
+
+        Route::get('/pemesanan/jadwal/{schedule}/seat-map', [
+            AdminDashboardController::class,
+            'bookingSeatMap',
+        ])->name('dashboard.admin.pemesanan.seat-map');
+
+        Route::get('/pemesanan/jadwal/{schedule}/manifes', [
+            AdminDashboardController::class,
+            'tripManifest',
+        ])->name('dashboard.admin.pemesanan.manifes');
+
+        Route::get('/pemesanan/{booking}', [
+            AdminDashboardController::class,
+            'showBooking',
+        ])->name('dashboard.admin.pemesanan.show');
+
+        Route::get('/pemesanan/{booking}/reschedule', [
+            AdminDashboardController::class,
+            'rescheduleBookingForm',
+        ])->name('dashboard.admin.pemesanan.reschedule');
+
+        Route::put('/pemesanan/{booking}/reschedule', [
+            AdminDashboardController::class,
+            'updateRescheduleBooking',
+        ])->name('dashboard.admin.pemesanan.reschedule.update');
+
+        Route::patch('/pemesanan/{booking}/cancel', [
+            AdminDashboardController::class,
+            'cancelBooking',
+        ])->name('dashboard.admin.pemesanan.cancel');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pembayaran (Invoice, Verifikasi Manual Bukti Transfer, Gateway Log)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/pembayaran', [
+            AdminDashboardController::class,
+            'paymentIndex',
+        ])->name('dashboard.admin.pembayaran.index');
+
+        Route::get('/pembayaran/{payment}', [
+            AdminDashboardController::class,
+            'showPayment',
+        ])->name('dashboard.admin.pembayaran.show');
+
+        Route::patch('/pembayaran/{payment}/verify', [
+            AdminDashboardController::class,
+            'verifyPayment',
+        ])->name('dashboard.admin.pembayaran.verify');
+
+        Route::post('/pembayaran/{payment}/upload-proof', [
+            AdminDashboardController::class,
+            'uploadPaymentProof',
+        ])->name('dashboard.admin.pembayaran.upload-proof');
+
+        Route::post('/pembayaran/{payment}/sync-gateway', [
+            AdminDashboardController::class,
+            'syncGatewayStatus',
+        ])->name('dashboard.admin.pembayaran.sync-gateway');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Rute Perjalanan & Jadwal Keberangkatan (Pool, Pricing, Assignment)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/rute', [
+            AdminDashboardController::class,
+            'routeIndex',
+        ])->name('dashboard.admin.rute.index');
+
+        Route::post('/rute', [
+            AdminDashboardController::class,
+            'storeRoute',
+        ])->name('dashboard.admin.rute.store');
+
+        Route::put('/rute/{route}', [
+            AdminDashboardController::class,
+            'updateRoute',
+        ])->name('dashboard.admin.rute.update');
+
+        Route::patch('/rute/{route}/toggle-status', [
+            AdminDashboardController::class,
+            'toggleRouteStatus',
+        ])->name('dashboard.admin.rute.toggle-status');
+
+        Route::delete('/rute/{route}', [
+            AdminDashboardController::class,
+            'destroyRoute',
+        ])->name('dashboard.admin.rute.destroy');
+
+        Route::post('/rute/lokasi', [
+            AdminDashboardController::class,
+            'storeLocation',
+        ])->name('dashboard.admin.rute.lokasi.store');
+
+        Route::get('/rute/jadwal', [
+            AdminDashboardController::class,
+            'scheduleIndex',
+        ])->name('dashboard.admin.rute.jadwal');
+
+        Route::post('/rute/jadwal', [
+            AdminDashboardController::class,
+            'storeSchedule',
+        ])->name('dashboard.admin.rute.jadwal.store');
+
+        Route::post('/rute/jadwal/batch-generate', [
+            AdminDashboardController::class,
+            'batchGenerateSchedules',
+        ])->name('dashboard.admin.rute.jadwal.batch-generate');
+
+        Route::patch('/rute/jadwal/{schedule}/assign', [
+            AdminDashboardController::class,
+            'assignScheduleVehicleDriver',
+        ])->name('dashboard.admin.rute.jadwal.assign');
+
+        Route::patch('/rute/jadwal/{schedule}/status', [
+            AdminDashboardController::class,
+            'updateScheduleStatus',
+        ])->name('dashboard.admin.rute.jadwal.update-status');
+
+        Route::delete('/rute/jadwal/{schedule}', [
+            AdminDashboardController::class,
+            'destroySchedule',
+        ])->name('dashboard.admin.rute.jadwal.destroy');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kelola Refund (Cancellation, Approval, Transparent Outflow, Seat Release)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/refund', [
+            AdminDashboardController::class,
+            'refundIndex',
+        ])->name('dashboard.admin.refund.index');
+
+        Route::post('/refund', [
+            AdminDashboardController::class,
+            'storeRefund',
+        ])->name('dashboard.admin.refund.store');
+
+        Route::patch('/refund/{refund}/approve', [
+            AdminDashboardController::class,
+            'approveRefund',
+        ])->name('dashboard.admin.refund.approve');
+
+        Route::patch('/refund/{refund}/reject', [
+            AdminDashboardController::class,
+            'rejectRefund',
+        ])->name('dashboard.admin.refund.reject');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Laporan (Rekonsiliasi Pembukuan, Keterisian Kursi, Manifes, & Refund)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/laporan', [
+            AdminDashboardController::class,
+            'reportIndex',
+        ])->name('dashboard.admin.laporan.index');
+
+        Route::get('/laporan/export/excel', [
+            AdminDashboardController::class,
+            'exportReportExcel',
+        ])->name('dashboard.admin.laporan.export.excel');
+
+        Route::get('/laporan/export/pdf', [
+            AdminDashboardController::class,
+            'exportReportPdf',
+        ])->name('dashboard.admin.laporan.export.pdf');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pengaturan (Profil, Kebijakan, Pembayaran, Lokasi, Keamanan)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/pengaturan', [
+            AdminDashboardController::class,
+            'settingIndex',
+        ])->name('dashboard.admin.pengaturan.index');
+
+        Route::post('/pengaturan/profil', [
+            AdminDashboardController::class,
+            'settingUpdateProfile',
+        ])->name('dashboard.admin.pengaturan.profil');
+
+        Route::post('/pengaturan/kebijakan', [
+            AdminDashboardController::class,
+            'settingUpdatePolicy',
+        ])->name('dashboard.admin.pengaturan.kebijakan');
+
+        Route::post('/pengaturan/pembayaran', [
+            AdminDashboardController::class,
+            'settingUpdatePayment',
+        ])->name('dashboard.admin.pengaturan.pembayaran');
+
+        Route::post('/pengaturan/lokasi', [
+            AdminDashboardController::class,
+            'settingStoreLocation',
+        ])->name('dashboard.admin.pengaturan.lokasi.store');
+
+        Route::put('/pengaturan/lokasi/{id}', [
+            AdminDashboardController::class,
+            'settingUpdateLocation',
+        ])->name('dashboard.admin.pengaturan.lokasi.update');
+
+        Route::delete('/pengaturan/lokasi/{id}', [
+            AdminDashboardController::class,
+            'settingDestroyLocation',
+        ])->name('dashboard.admin.pengaturan.lokasi.destroy');
+
+        Route::post('/pengaturan/keamanan', [
+            AdminDashboardController::class,
+            'settingUpdateSecurity',
+        ])->name('dashboard.admin.pengaturan.keamanan');
+
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -93,11 +477,10 @@ Route::middleware(['auth', 'role:staff'])
 
         Route::get('/admin/dashboard', [
             AdminBiasaDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.admin-biasa.index');
 
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -110,11 +493,10 @@ Route::middleware(['auth', 'role:driver'])
 
         Route::get('/driver/dashboard', [
             DriverDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.driver.index');
 
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -127,16 +509,15 @@ Route::middleware(['auth', 'role:cs'])
 
         Route::get('/customer-service/dashboard', [
             CustomerServiceDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.customer-service.index');
 
         Route::get('/customer-service/live-chat', [
             CustomerServiceDashboardController::class,
-            'liveChat'
+            'liveChat',
         ])->name('dashboard.customer-service.live-chat');
 
     });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -149,27 +530,27 @@ Route::middleware(['auth', 'role:user'])
 
         Route::get('/user/dashboard', [
             UserDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.user.index');
 
         Route::get('/booking/dashboard', [
             UserDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.user.user-booking');
 
         Route::get('/history/dashboard', [
             UserDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.user.user-history');
 
         Route::get('/refund/dashboard', [
             UserDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.user.user-refund');
 
         Route::get('/promo/dashboard', [
             UserDashboardController::class,
-            'index'
+            'index',
         ])->name('dashboard.user.user-promo');
 
     });

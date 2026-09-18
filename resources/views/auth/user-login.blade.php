@@ -431,20 +431,51 @@
             color: #7a8881;
         }
 
-        .forgot-password {
+        .form-footer {
             display: flex;
 
-            justify-content: flex-end;
+            align-items: center;
+            justify-content: space-between;
 
-            margin-top: -8px;
-
+            margin-top: 10px;
             margin-bottom: 22px;
+        }
 
+        .remember-me {
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            cursor: pointer;
+
+            font-size: 13px;
+
+            color: #29362f;
+
+            font-weight: 600;
+
+            user-select: none;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+
+            accent-color: #0c7950;
+
+            cursor: pointer;
+        }
+
+        .forgot-password {
             font-size: 13px;
 
             color: #087f52;
 
             font-weight: 600;
+
+            text-decoration: none;
         }
 
         .forgot-password:hover {
@@ -758,10 +789,6 @@
                 {{-- Heading --}}
                 <div class="login-heading">
 
-                    <span class="login-label">
-                        Login User
-                    </span>
-
                     <h1 class="login-title">
                         Selamat Datang 👋
                     </h1>
@@ -879,19 +906,25 @@
                     </div>
 
 
-                    {{-- Forgot Password --}}
-                    <div style="text-align: right; margin-top: 8px;">
+                    {{-- Ingat Saya + Lupa Password --}}
+                    <div class="form-footer">
+
+                        <label class="remember-me">
+                            <input
+                                type="checkbox"
+                                id="remember"
+                                name="remember"
+                            >
+                            Ingat saya
+                        </label>
+
                         <a
                             href="{{ route('password.request') }}"
-                            style="
-                                color: #16a34a;
-                                font-size: 14px;
-                                font-weight: 600;
-                                text-decoration: none;
-                            "
+                            class="forgot-password"
                         >
                             Lupa password?
                         </a>
+
                     </div>
 
 

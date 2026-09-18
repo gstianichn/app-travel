@@ -1,415 +1,442 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.admin')
 
-<head>
+@section('title', 'Edit User')
 
-    <meta charset="UTF-8">
+@section('page-title', 'Edit User')
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+@section('page-subtitle', 'Perbarui informasi pengguna yang terdaftar pada sistem.')
 
-    <title>Edit User - Admin Utama</title>
+@section('content')
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+<style>
+    .form-page {
+        max-width: 850px;
+        margin: 0 auto;
+    }
 
-    <style>
+    .form-card {
+        background: white;
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        border: 1px solid #e2eae6;
+        border-radius: 16px;
+
+        box-shadow: 0 5px 20px rgba(0,0,0,.03);
+
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        padding: 22px 25px;
+
+        border-bottom: 1px solid #edf1ef;
+    }
+
+    .form-card-header h1 {
+        margin: 0 0 5px;
+
+        font-size: 18px;
+        color: #17221d;
+    }
+
+    .form-card-header p {
+        margin: 0;
+
+        color: #89938e;
+        font-size: 12px;
+    }
+
+    .form-body {
+        padding: 25px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        color: #34423b;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+
+        padding: 11px 13px;
+
+        border: 1px solid #dce5e1;
+        border-radius: 9px;
+
+        background: white;
+
+        color: #26332d;
+
+        font-family: inherit;
+        font-size: 13px;
+
+        outline: none;
+
+        transition: .2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        border-color: #087f55;
+
+        box-shadow:
+            0 0 0 3px rgba(8,127,85,.08);
+    }
+
+    .form-help {
+        color: #98a39e;
+        font-size: 10px;
+    }
+
+    .field-error {
+        color: #d33b49;
+        font-size: 10px;
+    }
+
+    .password-section {
+        grid-column: 1 / -1;
+
+        margin-top: 4px;
+        padding-top: 20px;
+
+        border-top: 1px solid #edf1ef;
+    }
+
+    .password-section-title {
+        margin-bottom: 15px;
+
+        color: #35423c;
+
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        gap: 10px;
+
+        margin-top: 25px;
+        padding-top: 20px;
+
+        border-top: 1px solid #edf1ef;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 11px 18px;
+
+        border-radius: 9px;
+
+        font-size: 12px;
+        font-weight: 600;
+
+        text-decoration: none;
+
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        border: 1px solid #dce5e1;
+
+        background: white;
+        color: #68766f;
+    }
+
+    .btn-save {
+        border: none;
+
+        background: #087f55;
+        color: white;
+    }
+
+    .btn-save:hover {
+        background: #066b47;
+    }
+
+    @media (max-width: 650px) {
+
+        .form-grid {
+            grid-template-columns: 1fr;
         }
 
-        body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f5f7fb;
-            color: #1f2937;
+        .form-group.full,
+        .password-section {
+            grid-column: auto;
         }
 
-        .main {
-            min-height: 100vh;
-            padding: 35px;
+        .form-body {
+            padding: 20px;
         }
 
-        .container {
-            max-width: 850px;
-            margin: auto;
+        .form-actions {
+            flex-direction: column-reverse;
         }
 
-        .breadcrumb {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-bottom: 20px;
-        }
-
-        .breadcrumb a {
-            color: #2563eb;
-            text-decoration: none;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .header {
-            padding: 24px 28px;
-            border-bottom: 1px solid #edf0f5;
-        }
-
-        .title {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .description {
-            margin-top: 5px;
-            font-size: 12px;
-            color: #9ca3af;
-        }
-
-        .form {
-            padding: 28px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .input,
-        .select {
+        .btn-cancel,
+        .btn-save {
             width: 100%;
-            height: 45px;
-            border: 1px solid #dfe3eb;
-            border-radius: 8px;
-            padding: 0 13px;
-            font-size: 13px;
-            outline: none;
-            background: white;
         }
 
-        .input:focus,
-        .select:focus {
-            border-color: #2563eb;
-        }
+    }
+</style>
 
-        .help {
-            margin-top: 6px;
-            font-size: 10px;
-            color: #9ca3af;
-        }
 
-        .error {
-            margin-top: 6px;
-            color: #dc2626;
-            font-size: 11px;
-        }
+<div class="form-page">
 
-        .buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 25px;
-        }
+    <div class="form-card">
 
-        .button {
-            height: 42px;
-            padding: 0 18px;
-            border-radius: 8px;
-            border: none;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
 
-        .cancel {
-            background: #f3f4f6;
-            color: #4b5563;
-        }
+        <div class="form-card-header">
 
-        .save {
-            background: #2563eb;
-            color: white;
-        }
+            <h1>
+                Edit Data User
+            </h1>
 
-        .save:hover {
-            background: #1d4ed8;
-        }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 700;
-            margin: 28px 0 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #edf0f5;
-        }
-
-        @media(max-width:600px) {
-
-            .main {
-                padding: 20px;
-            }
-
-            .form {
-                padding: 20px;
-            }
-
-            .buttons {
-                flex-direction: column;
-            }
-
-            .button {
-                width: 100%;
-            }
-
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-<main class="main">
-
-    <div class="container">
-
-        <div class="breadcrumb">
-
-            <a href="{{ route('dashboard.admin.kelola-user.index') }}">
-                Kelola User
-            </a>
-
-            &nbsp;/&nbsp;
-
-            Edit User
+            <p>
+                Perbarui informasi pengguna sesuai kebutuhan.
+            </p>
 
         </div>
 
 
-        <div class="card">
-
-            <div class="header">
-
-                <div class="title">
-                    Edit User
-                </div>
-
-                <div class="description">
-                    Perbarui informasi akun pelanggan.
-                </div>
-
-            </div>
-
+        <div class="form-body">
 
             <form
                 action="{{ route('dashboard.admin.kelola-user.update', $user->id) }}"
                 method="POST"
-                class="form"
             >
 
                 @csrf
+
                 @method('PUT')
 
 
-                {{-- DATA AKUN --}}
-
-                <div class="section-title">
-                    Informasi Akun
-                </div>
+                <div class="form-grid">
 
 
-                <div class="form-group">
+                    {{-- NAMA --}}
 
-                    <label>
-                        Nama Lengkap
-                    </label>
+                    <div class="form-group full">
 
-                    <input
-                        type="text"
-                        name="name"
-                        class="input"
-                        value="{{ old('name', $user->name) }}"
-                        required
-                    >
+                        <label class="form-label">
+                            Nama Lengkap
+                            <span class="required">*</span>
+                        </label>
 
-                    @error('name')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        name="email"
-                        class="input"
-                        value="{{ old('email', $user->email) }}"
-                        required
-                    >
-
-                    @error('email')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Nomor Telepon
-                    </label>
-
-                    <input
-                        type="text"
-                        name="phone"
-                        class="input"
-                        value="{{ old('phone', $user->phone) }}"
-                    >
-
-                    @error('phone')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                {{-- STATUS --}}
-
-                <div class="form-group">
-
-                    <label>
-                        Status Akun
-                    </label>
-
-                    <select
-                        name="status"
-                        class="select"
-                        required
-                    >
-
-                        <option
-                            value="active"
-                            {{ old('status', $user->status) === 'active' ? 'selected' : '' }}
+                        <input
+                            type="text"
+                            name="name"
+                            value="{{ old('name', $user->name) }}"
+                            class="form-input"
+                            required
                         >
-                            Aktif
-                        </option>
 
-                        <option
-                            value="inactive"
-                            {{ old('status', $user->status) === 'inactive' ? 'selected' : '' }}
-                        >
-                            Nonaktif
-                        </option>
+                        @error('name')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
 
-                    </select>
-
-                    @error('status')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                {{-- PASSWORD --}}
-
-                <div class="section-title">
-                    Ubah Password
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Password Baru
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password"
-                        class="input"
-                        placeholder="Kosongkan jika tidak ingin mengubah"
-                    >
-
-                    <div class="help">
-                        Password minimal 8 karakter.
                     </div>
 
-                    @error('password')
-                        <div class="error">
-                            {{ $message }}
+
+                    {{-- EMAIL --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Email
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ old('email', $user->email) }}"
+                            class="form-input"
+                            required
+                        >
+
+                        @error('email')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- ROLE --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Role
+                            <span class="required">*</span>
+                        </label>
+
+                        <select
+                            name="role"
+                            class="form-select"
+                            required
+                        >
+
+                            <option
+                                value="admin"
+                                {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}
+                            >
+                                Admin Utama
+                            </option>
+
+                            <option
+                                value="staff"
+                                {{ old('role', $user->role) == 'staff' ? 'selected' : '' }}
+                            >
+                                Staff
+                            </option>
+
+                            <option
+                                value="cs"
+                                {{ old('role', $user->role) == 'cs' ? 'selected' : '' }}
+                            >
+                                Customer Service
+                            </option>
+
+                            <option
+                                value="driver"
+                                {{ old('role', $user->role) == 'driver' ? 'selected' : '' }}
+                            >
+                                Driver
+                            </option>
+
+                            <option
+                                value="user"
+                                {{ old('role', $user->role) == 'user' ? 'selected' : '' }}
+                            >
+                                User
+                            </option>
+
+                        </select>
+
+                        @error('role')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- PASSWORD --}}
+
+                    <div class="password-section">
+
+                        <div class="password-section-title">
+                            Ubah Password
                         </div>
-                    @enderror
+
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Password Baru
+                                </label>
+
+                                <input
+                                    type="password"
+                                    name="password"
+                                    class="form-input"
+                                    placeholder="Kosongkan jika tidak diubah"
+                                >
+
+                                <span class="form-help">
+                                    Kosongkan apabila password tidak ingin diubah.
+                                </span>
+
+                                @error('password')
+                                    <span class="field-error">
+                                        {{ $message }}
+                                    </span>
+                                @enderror
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label class="form-label">
+                                    Konfirmasi Password
+                                </label>
+
+                                <input
+                                    type="password"
+                                    name="password_confirmation"
+                                    class="form-input"
+                                    placeholder="Ulangi password baru"
+                                >
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
 
                 </div>
 
 
-                <div class="form-group">
+                {{-- ACTION --}}
 
-                    <label>
-                        Konfirmasi Password Baru
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password_confirmation"
-                        class="input"
-                        placeholder="Ulangi password baru"
-                    >
-
-                </div>
-
-
-                <div class="buttons">
+                <div class="form-actions">
 
                     <a
                         href="{{ route('dashboard.admin.kelola-user.index') }}"
-                        class="button cancel"
+                        class="btn-cancel"
                     >
                         Batal
                     </a>
 
                     <button
                         type="submit"
-                        class="button save"
+                        class="btn-save"
                     >
                         Simpan Perubahan
                     </button>
 
                 </div>
+
 
             </form>
 
@@ -417,8 +444,6 @@
 
     </div>
 
-</main>
+</div>
 
-</body>
-
-</html>
+@endsection

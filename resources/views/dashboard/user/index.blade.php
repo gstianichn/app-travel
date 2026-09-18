@@ -569,7 +569,7 @@
     <nav class="navbar">
 
         <a href="{{ route('dashboard.user.index') }}" class="logo">
-            <div class="logo-icon">✈</div>
+            <div class="logo-icon">🚍</div>
             TravelKu
         </a>
 

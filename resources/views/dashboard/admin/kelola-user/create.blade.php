@@ -1,392 +1,420 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.admin')
 
-<head>
+@section('title', 'Tambah User')
 
-    <meta charset="UTF-8">
+@section('page-title', 'Tambah User')
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+@section('page-subtitle', 'Tambahkan pengguna baru ke dalam sistem Travel.')
 
-    <title>Tambah User - Admin Utama</title>
+@section('content')
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+<style>
+    .form-page {
+        max-width: 850px;
+        margin: 0 auto;
+    }
 
-    <style>
+    .form-card {
+        background: white;
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        border: 1px solid #e2eae6;
+        border-radius: 16px;
+
+        box-shadow: 0 5px 20px rgba(0,0,0,.03);
+
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        padding: 22px 25px;
+
+        border-bottom: 1px solid #edf1ef;
+    }
+
+    .form-card-header h1 {
+        margin: 0 0 5px;
+
+        font-size: 18px;
+        color: #17221d;
+    }
+
+    .form-card-header p {
+        margin: 0;
+
+        color: #89938e;
+        font-size: 12px;
+    }
+
+    .form-body {
+        padding: 25px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        color: #34423b;
+
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .required {
+        color: #dc3545;
+    }
+
+    .form-input,
+    .form-select {
+        width: 100%;
+
+        padding: 11px 13px;
+
+        border: 1px solid #dce5e1;
+        border-radius: 9px;
+
+        background: white;
+
+        color: #26332d;
+
+        font-family: inherit;
+        font-size: 13px;
+
+        outline: none;
+
+        transition: .2s ease;
+    }
+
+    .form-input:focus,
+    .form-select:focus {
+        border-color: #087f55;
+
+        box-shadow:
+            0 0 0 3px rgba(8,127,85,.08);
+    }
+
+    .form-help {
+        color: #98a39e;
+        font-size: 10px;
+    }
+
+    .field-error {
+        color: #d33b49;
+        font-size: 10px;
+    }
+
+    .form-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        gap: 10px;
+
+        margin-top: 25px;
+        padding-top: 20px;
+
+        border-top: 1px solid #edf1ef;
+    }
+
+    .btn-cancel,
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 11px 18px;
+
+        border-radius: 9px;
+
+        font-size: 12px;
+        font-weight: 600;
+
+        text-decoration: none;
+
+        cursor: pointer;
+    }
+
+    .btn-cancel {
+        border: 1px solid #dce5e1;
+
+        background: white;
+        color: #68766f;
+    }
+
+    .btn-save {
+        border: none;
+
+        background: #087f55;
+        color: white;
+    }
+
+    .btn-save:hover {
+        background: #066b47;
+    }
+
+    @media (max-width: 650px) {
+
+        .form-grid {
+            grid-template-columns: 1fr;
         }
 
-        :root {
-            --primary: #087f55;
-            --primary-dark: #066b47;
-            --primary-light: #e3f5ee;
-            --accent: #066b47;
-            --accent-light: #e8f8fc;
+        .form-group.full {
+            grid-column: auto;
         }
 
-        body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f5f7fb;
-            color: #1f2937;
+        .form-body {
+            padding: 20px;
         }
 
-        .main {
-            min-height: 100vh;
-            padding: 35px;
+        .form-actions {
+            flex-direction: column-reverse;
         }
 
-        .container {
-            max-width: 850px;
-            margin: auto;
-        }
-
-        .breadcrumb {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-bottom: 20px;
-        }
-
-        .breadcrumb a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid var(--accent-light);
-            overflow: hidden; 
-        }
-
-        .card-header {
-            padding: 24px 28px;
-            border-bottom: 1px solid var(--primary-dark);
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .card-description {
-            margin-top: 5px;
-            color: #9ca3af;
-            font-size: 12px;
-        }
-
-        .form {
-            padding: 28px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .required {
-            color: #dc2626;
-        }
-
-        .input {
+        .btn-cancel,
+        .btn-save {
             width: 100%;
-            height: 45px;
-            padding: 0 13px;
-            border: 1px solid #dfe3eb;
-            border-radius: 8px;
-            outline: none;
-            font-size: 13px;
         }
 
-        .input:focus {
-            border-color: var(--accent);
-        }
+    }
+</style>
 
-        .error {
-            margin-top: 6px;
-            color: #dc2626;
-            font-size: 11px;
-        }
 
-        .info-box {
-            padding: 14px;
-            border-radius: 9px;
-            background: #eff6ff;
-            color: var(--accent);
-            font-size: 11px;
-            line-height: 1.6;
-            margin-bottom: 22px;
-        }
+<div class="form-page">
 
-        .buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 25px;
-        }
+    <div class="form-card">
 
-        .button {
-            height: 42px;
-            padding: 0 18px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            cursor: pointer;
-        }
 
-        .button-cancel {
-            background: #f3f4f6;
-            color: #4b5563;
-        }
+        <div class="form-card-header">
 
-        .button-save {
-            background: var(--primary);
-            color: white;
-        }
+            <h1>
+                Tambah User Baru
+            </h1>
 
-        .button-save:hover {
-            background: var(--primary-dark);
-        }
-
-        @media (max-width: 600px) {
-
-            .main {
-                padding: 20px;
-            }
-
-            .form {
-                padding: 20px;
-            }
-
-            .buttons {
-                flex-direction: column;
-            }
-
-            .button {
-                width: 100%;
-            }
-
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-<main class="main">
-
-    <div class="container">
-
-        <div class="breadcrumb">
-
-            <a href="{{ route('dashboard.admin.kelola-user.index') }}">
-                Kelola User
-            </a>
-
-            &nbsp;/&nbsp;
-
-            Tambah User
+            <p>
+                Isi informasi berikut untuk menambahkan pengguna baru.
+            </p>
 
         </div>
 
 
-        <div class="card">
-
-            <div class="card-header">
-
-                <div class="card-title">
-                    Tambah User
-                </div>
-
-                <div class="card-description">
-                    Tambahkan akun pelanggan baru ke sistem TravelKu.
-                </div>
-
-            </div>
-
+        <div class="form-body">
 
             <form
                 action="{{ route('dashboard.admin.kelola-user.store') }}"
                 method="POST"
-                class="form"
             >
 
                 @csrf
 
 
-                <div class="info-box">
+                <div class="form-grid">
 
-                    Akun yang dibuat melalui halaman ini akan otomatis
-                    memiliki role <strong>User</strong> dan status
-                    <strong>Aktif</strong>.
+
+                    {{-- NAMA --}}
+
+                    <div class="form-group full">
+
+                        <label class="form-label">
+                            Nama Lengkap
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            value="{{ old('name') }}"
+                            class="form-input"
+                            placeholder="Masukkan nama lengkap"
+                            required
+                        >
+
+                        @error('name')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- EMAIL --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Email
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            class="form-input"
+                            placeholder="contoh@email.com"
+                            required
+                        >
+
+                        @error('email')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- ROLE --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Role
+                            <span class="required">*</span>
+                        </label>
+
+                        <select
+                            name="role"
+                            class="form-select"
+                            required
+                        >
+
+                            <option value="">
+                                Pilih Role
+                            </option>
+
+                            <option
+                                value="admin"
+                                {{ old('role') == 'admin' ? 'selected' : '' }}
+                            >
+                                Admin Utama
+                            </option>
+
+                            <option
+                                value="staff"
+                                {{ old('role') == 'staff' ? 'selected' : '' }}
+                            >
+                                Staff
+                            </option>
+
+                            <option
+                                value="cs"
+                                {{ old('role') == 'cs' ? 'selected' : '' }}
+                            >
+                                Customer Service
+                            </option>
+
+                            <option
+                                value="driver"
+                                {{ old('role') == 'driver' ? 'selected' : '' }}
+                            >
+                                Driver
+                            </option>
+
+                            <option
+                                value="user"
+                                {{ old('role') == 'user' ? 'selected' : '' }}
+                            >
+                                User
+                            </option>
+
+                        </select>
+
+                        @error('role')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- PASSWORD --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Password
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="password"
+                            name="password"
+                            class="form-input"
+                            placeholder="Masukkan password"
+                            required
+                        >
+
+                        <span class="form-help">
+                            Minimal 8 karakter.
+                        </span>
+
+                        @error('password')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- KONFIRMASI PASSWORD --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Konfirmasi Password
+                            <span class="required">*</span>
+                        </label>
+
+                        <input
+                            type="password"
+                            name="password_confirmation"
+                            class="form-input"
+                            placeholder="Ulangi password"
+                            required
+                        >
+
+                    </div>
+
 
                 </div>
 
 
-                {{-- NAMA --}}
+                {{-- ACTION --}}
 
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Nama Lengkap
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="text"
-                        name="name"
-                        class="input"
-                        value="{{ old('name') }}"
-                        placeholder="Masukkan nama lengkap"
-                        required
-                    >
-
-                    @error('name')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                {{-- EMAIL --}}
-
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Email
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="email"
-                        name="email"
-                        class="input"
-                        value="{{ old('email') }}"
-                        placeholder="contoh@email.com"
-                        required
-                    >
-
-                    @error('email')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                {{-- TELEPON --}}
-
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Nomor Telepon
-                    </label>
-
-                    <input
-                        type="text"
-                        name="phone"
-                        class="input"
-                        value="{{ old('phone') }}"
-                        placeholder="08xxxxxxxxxx"
-                    >
-
-                    @error('phone')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                {{-- PASSWORD --}}
-
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Password
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password"
-                        class="input"
-                        placeholder="Minimal 8 karakter"
-                        required
-                    >
-
-                    @error('password')
-                        <div class="error">
-                            {{ $message }}
-                        </div>
-                    @enderror
-
-                </div>
-
-
-                {{-- CONFIRM PASSWORD --}}
-
-                <div class="form-group">
-
-                    <label class="form-label">
-                        Konfirmasi Password
-                        <span class="required">*</span>
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password_confirmation"
-                        class="input"
-                        placeholder="Ulangi password"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="buttons">
+                <div class="form-actions">
 
                     <a
                         href="{{ route('dashboard.admin.kelola-user.index') }}"
-                        class="button button-cancel"
+                        class="btn-cancel"
                     >
                         Batal
                     </a>
 
                     <button
                         type="submit"
-                        class="button button-save"
+                        class="btn-save"
                     >
                         Simpan User
                     </button>
 
                 </div>
+
 
             </form>
 
@@ -394,8 +422,6 @@
 
     </div>
 
-</main>
+</div>
 
-</body>
-
-</html>
+@endsection

@@ -43,7 +43,7 @@ class UserLoginController extends Controller
                 'email' => $credentials['email'],
                 'password' => $credentials['password'],
                 'role' => 'user',
-            ])
+            ], $request->boolean('remember'))
         ) {
             $request->session()->regenerate();
 

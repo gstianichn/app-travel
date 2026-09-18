@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class AppSetting extends Model
+{
+    /** @var array<int, string> */
+    protected $fillable = ['key', 'value'];
+
+    /**
+     * Retrieve a setting value by key.
+     */
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        $record = static::where('key', $key)->first();
+
+        return $record ? $record->value : $default;
+    }
+
+    /**
+     * Persist a setting value by key (upsert).
+     */
+    public static function set(string $key, mixed $value): void
+    {
+        static::updateOrCreate(['key' => $key], ['value' => $value]);
+    }
+
+    /**
+     * Remove a setting by key.
+     */
+    public static function forget(string $key): void
+    {
+        static::where('key', $key)->delete();
+    }
+}
