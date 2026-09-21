@@ -550,8 +550,38 @@ Route::middleware(['auth', 'role:user'])
 
         Route::get('/promo/dashboard', [
             UserDashboardController::class,
-            'index',
+            'promo',
         ])->name('dashboard.user.user-promo');
+
+        Route::post('/user/voucher/claim', [
+            UserDashboardController::class,
+            'claimVoucher',
+        ])->name('dashboard.user.voucher.claim');
+
+        Route::post('/user/penumpang-tersimpan', [
+            UserDashboardController::class,
+            'storeSavedPassenger',
+        ])->name('dashboard.user.saved-passenger.store');
+
+        Route::put('/user/penumpang-tersimpan/{savedPassenger}', [
+            UserDashboardController::class,
+            'updateSavedPassenger',
+        ])->name('dashboard.user.saved-passenger.update');
+
+        Route::delete('/user/penumpang-tersimpan/{savedPassenger}', [
+            UserDashboardController::class,
+            'destroySavedPassenger',
+        ])->name('dashboard.user.saved-passenger.destroy');
+
+        Route::post('/user/profil/update', [
+            UserDashboardController::class,
+            'updateProfile',
+        ])->name('dashboard.user.profil.update');
+
+        Route::post('/user/profil/password', [
+            UserDashboardController::class,
+            'updatePassword',
+        ])->name('dashboard.user.profil.password');
 
         Route::get('/user/cari-jadwal', [
             UserDashboardController::class,
@@ -567,6 +597,26 @@ Route::middleware(['auth', 'role:user'])
             UserDashboardController::class,
             'notifikasi',
         ])->name('dashboard.user.user-notifikasi');
+
+        Route::get('/user/notifikasi/{id}/open', [
+            UserDashboardController::class,
+            'openNotification',
+        ])->name('dashboard.user.notifikasi.open');
+
+        Route::post('/user/notifikasi/mark-all-read', [
+            UserDashboardController::class,
+            'markAllAsRead',
+        ])->name('dashboard.user.notifikasi.mark-all-read');
+
+        Route::delete('/user/notifikasi/{id}', [
+            UserDashboardController::class,
+            'destroyNotification',
+        ])->name('dashboard.user.notifikasi.destroy');
+
+        Route::post('/user/notifikasi/simulate', [
+            UserDashboardController::class,
+            'simulateNotification',
+        ])->name('dashboard.user.notifikasi.simulate');
 
         Route::get('/akun/dashboard', [
             UserDashboardController::class,

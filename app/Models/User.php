@@ -129,6 +129,16 @@ class User extends Authenticatable
         return $this->hasMany(Refund::class);
     }
 
+    public function savedPassengers()
+    {
+        return $this->hasMany(SavedPassenger::class);
+    }
+
+    public function vouchers()
+    {
+        return $this->hasMany(UserVoucher::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

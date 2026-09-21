@@ -1,647 +1,401 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>@yield('page-title', 'Portal Penumpang') — FastShuttle</title>
+    <title>@yield('page-title', 'Client Area Penumpang') — TravelKu FastShuttle</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS & AlpineJS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50:  '#eefbf5',
+                            100: '#d7f6e7',
+                            200: '#b1eed1',
+                            300: '#7be1b4',
+                            400: '#3ecc91',
+                            500: '#087f55', // Primary brand color
+                            600: '#066b47',
+                            700: '#055c3d',
+                            800: '#064932',
+                            900: '#063c2a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --brand:        #087f55;
-            --brand-dark:   #066b47;
-            --brand-deep:   #055c3d;
-            --brand-light:  #e3f5ee;
-            --brand-soft:   #f0f8f5;
-            --accent:       #0a9e6a;
-            --accent-light: #d4f0e5;
-            --page:         #f5f8f7;
-            --surface:      #ffffff;
-            --text:         #17221d;
-            --text-sec:     #68766f;
-            --text-muted:   #98a39e;
-            --border:       #e2eae6;
-            --sidebar-w:    268px;
-        }
-
+        [x-cloak] { display: none !important; }
         html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
-            background: var(--page);
-            color: var(--text);
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ============================================================
-           SIDEBAR
-        ============================================================ */
-        .u-sidebar {
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            width: var(--sidebar-w);
-            display: flex;
-            flex-direction: column;
-            z-index: 100;
-            background: linear-gradient(175deg, #055c3d 0%, #087f55 45%, #0a9e6a 100%);
-            box-shadow: 6px 0 40px rgba(8,127,85,.20);
-            overflow: hidden;
-        }
-
-        /* subtle decorative circles */
-        .u-sidebar::before {
-            content: '';
-            position: absolute;
-            top: -60px; right: -60px;
-            width: 200px; height: 200px;
-            border-radius: 50%;
-            background: rgba(255,255,255,.06);
-            pointer-events: none;
-        }
-        .u-sidebar::after {
-            content: '';
-            position: absolute;
-            bottom: 60px; left: -80px;
-            width: 240px; height: 240px;
-            border-radius: 50%;
-            background: rgba(10,158,106,.20);
-            pointer-events: none;
-        }
-
-        /* ---- BRAND ---- */
-        .u-brand {
-            padding: 22px 22px 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid rgba(255,255,255,.10);
-            flex-shrink: 0;
-            position: relative;
-            z-index: 1;
-        }
-        .u-brand-logo {
-            width: 42px; height: 42px;
-            border-radius: 14px;
-            background: rgba(255,255,255,.15);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-            border: 1px solid rgba(255,255,255,.12);
-            backdrop-filter: blur(4px);
-        }
-        .u-brand-name  { font-size: 17px; font-weight: 800; color: #fff; line-height: 1.2; letter-spacing: -.3px; }
-        .u-brand-sub   { font-size: 10px; color: rgba(255,255,255,.55); font-weight: 500; }
-
-        /* ---- NAV SECTIONS ---- */
-        .u-nav { flex: 1; padding: 18px 14px; overflow-y: auto; position: relative; z-index: 1; }
-
-        .u-nav::-webkit-scrollbar { width: 4px; }
-        .u-nav::-webkit-scrollbar-track { background: transparent; }
-        .u-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 99px; }
-
-        .u-nav-section-title {
-            font-size: 9.5px; font-weight: 700; letter-spacing: 1.4px;
-            text-transform: uppercase; color: rgba(255,255,255,.40);
-            padding: 0 10px; margin-bottom: 8px;
-        }
-        .u-nav-section + .u-nav-section { margin-top: 20px; }
-
-        .u-nav-link {
-            display: flex; align-items: center; gap: 11px;
-            padding: 11px 12px;
-            border-radius: 12px;
-            margin-bottom: 3px;
-            color: rgba(255,255,255,.72);
-            text-decoration: none;
-            font-size: 13.5px; font-weight: 500;
-            transition: all .18s ease;
-            position: relative;
-        }
-        .u-nav-link:hover {
-            background: rgba(255,255,255,.10);
-            color: #fff;
-            transform: translateX(3px);
-        }
-        .u-nav-link.active {
-            background: #fff;
-            color: var(--brand);
-            font-weight: 700;
-            box-shadow: 0 4px 20px rgba(0,0,0,.12), 0 1px 4px rgba(0,0,0,.08);
-        }
-        .u-nav-link.active svg { color: var(--brand); }
-        .u-nav-icon { width: 20px; min-width: 20px; display: flex; align-items: center; justify-content: center; }
-
-        .u-nav-badge {
-            margin-left: auto;
-            background: #ef4444;
-            color: #fff;
-            font-size: 9px; font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 99px;
-        }
-        .u-nav-link.active .u-nav-badge { background: var(--brand); }
-
-        .u-nav-sublink {
-            display: flex; align-items: center; gap: 11px;
-            padding: 8px 12px;
-            border-radius: 10px; margin-bottom: 2px;
-            color: rgba(255,255,255,.50);
-            font-size: 12.5px; font-weight: 500;
-            text-decoration: none; transition: .16s;
-        }
-        .u-nav-sublink:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.8); }
-        .u-nav-sublink.active { background: rgba(255,255,255,.14); color: #fff; }
-
-        .u-nav-divider { border: none; border-top: 1px solid rgba(255,255,255,.09); margin: 12px 0; }
-
-        /* ---- SIDEBAR PROFILE ---- */
-        .u-sidebar-profile {
-            padding: 14px;
-            border-top: 1px solid rgba(255,255,255,.10);
-            flex-shrink: 0;
-            position: relative; z-index: 1;
-        }
-        .u-profile-card {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 12px;
-            border-radius: 14px;
-            background: rgba(255,255,255,.10);
-            border: 1px solid rgba(255,255,255,.10);
-            backdrop-filter: blur(4px);
-        }
-        .u-avatar {
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, rgba(255,255,255,.30), rgba(255,255,255,.10));
-            border: 1px solid rgba(255,255,255,.20);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 700; color: #fff;
-            flex-shrink: 0;
-        }
-        .u-profile-name  { font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-        .u-profile-role  { font-size: 10px; color: rgba(255,255,255,.50); }
-        .u-logout-btn {
-            margin-left: auto; background: none; border: none; cursor: pointer;
-            color: rgba(255,255,255,.45); padding: 6px; border-radius: 8px;
-            transition: .18s; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .u-logout-btn:hover { background: rgba(239,68,68,.75); color: #fff; }
-
-        /* ============================================================
-           MAIN CONTENT
-        ============================================================ */
-        .u-main {
-            margin-left: var(--sidebar-w);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ---- TOPBAR ---- */
-        .u-topbar {
-            position: sticky; top: 0; z-index: 50;
-            background: rgba(245,248,247,.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            height: 66px;
-            display: flex; align-items: center;
-            padding: 0 28px;
-            gap: 16px;
-        }
-
-        /* Breadcrumb / page title area */
-        .u-topbar-title {
-            font-size: 15px; font-weight: 700;
-            color: var(--text);
-            flex: 1;
-        }
-        .u-topbar-subtitle {
-            font-size: 11px; color: var(--text-muted); font-weight: 400;
-            margin-top: 1px;
-        }
-
-        /* Mobile brand (hidden on desktop) */
-        .u-topbar-mobile-brand {
-            display: none;
-            font-size: 16px; font-weight: 800; color: var(--brand);
-            align-items: center; gap: 8px;
-        }
-
-        .u-topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-
-        /* Notif button */
-        .u-notif-btn {
-            position: relative;
-            width: 38px; height: 38px;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 11px; border: 1px solid var(--border);
-            background: #fff;
-            color: var(--text-sec);
-            text-decoration: none;
-            transition: .18s;
-        }
-        .u-notif-btn:hover { background: var(--brand-light); color: var(--brand); border-color: #cdeadd; }
-        .u-notif-dot {
-            position: absolute; top: 7px; right: 7px;
-            width: 8px; height: 8px;
-            background: #ef4444; border-radius: 50%;
-            border: 2px solid var(--page);
-        }
-
-        /* Help button */
-        .u-help-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 0 14px; height: 38px;
-            border-radius: 11px;
-            background: var(--brand); color: #fff;
-            font-size: 12px; font-weight: 600;
-            text-decoration: none; transition: .18s;
-            border: none; cursor: pointer;
-        }
-        .u-help-btn:hover { background: var(--brand-dark); }
-
-        /* User chip (topbar right) */
-        .u-user-chip {
-            display: flex; align-items: center; gap: 8px;
-            padding: 4px 12px 4px 4px;
-            border-radius: 99px;
-            background: #fff; border: 1px solid var(--border);
-            cursor: default;
-        }
-        .u-user-chip-avatar {
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-            color: #fff; font-size: 11px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .u-user-chip-name { font-size: 12px; font-weight: 600; color: var(--text); }
-
-        /* ---- CONTENT AREA ---- */
-        .u-content { padding: 24px 28px 60px; flex: 1; }
-
-        /* ============================================================
-           BOTTOM NAV (Mobile only)
-        ============================================================ */
-        .u-bottom-nav {
-            display: none;
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(255,255,255,.96);
-            backdrop-filter: blur(16px);
-            border-top: 1px solid var(--border);
-            z-index: 200;
-            padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-            box-shadow: 0 -8px 30px rgba(8,127,85,.08);
-        }
-
-        .u-bottom-nav-inner {
-            display: flex;
-            max-width: 420px;
-            margin: 0 auto;
-        }
-
-        .u-tab {
-            flex: 1;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 3px;
-            padding: 6px 4px;
-            text-decoration: none;
-            font-size: 9.5px; font-weight: 500;
-            color: var(--text-muted);
-            border-radius: 12px;
-            transition: all .18s;
-            position: relative;
-        }
-        .u-tab:not(.active):hover { color: var(--text-sec); background: var(--brand-light); }
-        .u-tab.active { color: var(--brand); font-weight: 700; }
-
-        /* Pill indicator on active tab */
-        .u-tab-pill {
-            position: absolute;
-            top: 0; left: 50%; transform: translateX(-50%);
-            width: 32px; height: 3px;
-            border-radius: 0 0 6px 6px;
-            background: var(--brand);
-        }
-
-        .u-tab svg { width: 22px; height: 22px; transition: .18s; }
-        .u-tab.active svg { transform: scale(1.08); }
-
-        /* Notif badge on tab */
-        .u-tab-badge {
-            position: absolute;
-            top: 4px;
-            width: 16px; height: 16px;
-            background: #ef4444; color: #fff;
-            font-size: 8px; font-weight: 700;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid #fff;
-        }
-        #tab-notifikasi .u-tab-badge { right: calc(50% - 20px); }
-
-        /* Avatar tab */
-        .u-tab-avatar {
-            width: 22px; height: 22px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-            color: #fff; font-size: 9px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-        }
-
-        /* ============================================================
-           RESPONSIVE
-        ============================================================ */
-        @media (max-width: 1024px) {
-            :root { --sidebar-w: 230px; }
-        }
-
-        @media (max-width: 768px) {
-            .u-sidebar { display: none; }
-            .u-main { margin-left: 0; }
-            .u-content { padding: 16px 16px 100px; }
-            .u-topbar { padding: 0 16px; height: 58px; }
-            .u-topbar-title { display: none; }
-            .u-topbar-mobile-brand { display: flex; }
-            .u-user-chip { display: none; }
-            .u-help-btn span { display: none; }
-            .u-help-btn { padding: 0; width: 38px; border-radius: 11px; justify-content: center; }
-            .u-bottom-nav { display: block; }
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body>
+<body class="min-h-full flex flex-col bg-slate-50 text-slate-800 antialiased" x-data="{ mobileMenuOpen: false, userMenuOpen: false }">
 
-<div style="display:flex; min-height:100vh;">
+@php
+    $layoutUser = auth()->user();
+    $layoutUnreadNotif = $layoutUser ? $layoutUser->unreadNotifications()->count() : 0;
+@endphp
 
-    {{-- ===================== SIDEBAR ===================== --}}
-    <aside class="u-sidebar">
+    <!-- ============================================================
+         TOP NAVIGATION BAR (FRONT-END CLIENT AREA HEADER)
+    ============================================================ -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-18">
 
-        {{-- Brand --}}
-        <div class="u-brand">
-            <div class="u-brand-logo">🚌</div>
-            <div>
-                <div class="u-brand-name">FastShuttle</div>
-                <div class="u-brand-sub">Portal Penumpang</div>
+                <!-- Left: Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('dashboard.user.index') }}" class="flex items-center gap-2.5 group">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition-transform duration-200">
+                            🚐
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-extrabold text-slate-900 text-lg tracking-tight group-hover:text-brand-600 transition">TravelKu</span>
+                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-brand-50 text-brand-700 border border-brand-200">FastShuttle</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 font-medium">Client Area & Portal Penumpang</p>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Center: Front-End Navigation Links (Desktop) -->
+                <nav class="hidden md:flex items-center gap-1 text-sm font-semibold text-slate-600">
+                    {{-- Beranda --}}
+                    @php $isHome = request()->routeIs('dashboard.user.index'); @endphp
+                    <a href="{{ route('dashboard.user.index') }}"
+                       class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 {{ $isHome ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-slate-100 text-slate-700' }}">
+                        <svg class="w-4 h-4 {{ $isHome ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span>Beranda</span>
+                    </a>
+
+                    {{-- Cari Tiket --}}
+                    @php $isSearch = request()->routeIs('dashboard.user.search*') || request()->routeIs('dashboard.user.booking*'); @endphp
+                    <a href="{{ route('dashboard.user.search') }}"
+                       class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 {{ $isSearch ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-slate-100 text-slate-700' }}">
+                        <svg class="w-4 h-4 {{ $isSearch ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>
+                        <span>Cari Jadwal</span>
+                    </a>
+
+                    {{-- Tiket Saya --}}
+                    @php $isTicket = request()->routeIs('dashboard.user.user-tiket*'); @endphp
+                    <a href="{{ route('dashboard.user.user-tiket') }}"
+                       class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 {{ $isTicket ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-slate-100 text-slate-700' }}">
+                        <svg class="w-4 h-4 {{ $isTicket ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/></svg>
+                        <span>Tiket Saya</span>
+                    </a>
+
+                    {{-- Promo --}}
+                    @php $isPromo = request()->routeIs('dashboard.user.user-promo*'); @endphp
+                    <a href="{{ route('dashboard.user.user-promo') }}"
+                       class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 {{ $isPromo ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-slate-100 text-slate-700' }}">
+                        <svg class="w-4 h-4 {{ $isPromo ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        <span>Promo</span>
+                    </a>
+
+                    {{-- Notifikasi --}}
+                    @php $isNotif = request()->routeIs('dashboard.user.user-notifikasi*'); @endphp
+                    <a href="{{ route('dashboard.user.user-notifikasi') }}"
+                       class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 relative {{ $isNotif ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-slate-100 text-slate-700' }}">
+                        <svg class="w-4 h-4 {{ $isNotif ? 'text-brand-600' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/></svg>
+                        <span>Notifikasi</span>
+                        @if($layoutUnreadNotif > 0)
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white">
+                                {{ $layoutUnreadNotif }}
+                            </span>
+                        @endif
+                    </a>
+
+                    {{-- Bantuan WhatsApp --}}
+                    <a href="https://wa.me/62812345678" target="_blank"
+                       class="px-3 py-2 rounded-xl text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                        </svg>
+                        <span>CS 24/7</span>
+                    </a>
+                </nav>
+
+                <!-- Right: Quick Actions & User Dropdown -->
+                <div class="flex items-center gap-2 sm:gap-3">
+
+                    <!-- Notifikasi Icon Shortcut -->
+                    <a href="{{ route('dashboard.user.user-notifikasi') }}"
+                       class="relative w-10 h-10 rounded-xl bg-slate-100 hover:bg-brand-50 text-slate-600 hover:text-brand-600 flex items-center justify-center transition"
+                       title="Pemberitahuan Sistem">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        @if($layoutUnreadNotif > 0)
+                            <span class="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white animate-ping"></span>
+                            <span class="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white"></span>
+                        @endif
+                    </a>
+
+                    <!-- User Profile Dropdown -->
+                    <div class="relative" @click.outside="userMenuOpen = false">
+                        <button type="button" @click="userMenuOpen = !userMenuOpen"
+                                class="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition shadow-2xs">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-500 text-white font-bold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
+                                {{ strtoupper(substr($layoutUser->name ?? 'U', 0, 1)) }}
+                            </div>
+                            <div class="hidden sm:block text-left">
+                                <p class="text-xs font-bold text-slate-800 leading-tight truncate max-w-[120px]">
+                                    {{ $layoutUser->name ?? 'Penumpang' }}
+                                </p>
+                                <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    Terverifikasi
+                                </span>
+                            </div>
+                            <svg class="w-4 h-4 text-slate-400 hidden sm:block transition-transform" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="userMenuOpen" x-cloak x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl py-2 z-50">
+                            
+                            <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/70 rounded-t-2xl">
+                                <p class="text-xs text-slate-400 font-medium">Masuk sebagai Penumpang</p>
+                                <p class="text-sm font-bold text-slate-900 truncate">{{ $layoutUser->name ?? 'Penumpang' }}</p>
+                                <p class="text-xs text-slate-500 truncate">{{ $layoutUser->email ?? '' }}</p>
+                            </div>
+
+                            <div class="py-1 text-xs font-semibold text-slate-700">
+                                <a href="{{ route('dashboard.user.user-akun') }}" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-slate-50 transition">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                                    <span>Profil & Akun Penumpang</span>
+                                </a>
+
+                                <a href="{{ route('dashboard.user.user-tiket') }}" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-slate-50 transition">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/></svg>
+                                    <span>Tiket & E-Ticket Boarding Pass</span>
+                                </a>
+
+                                <a href="{{ route('dashboard.user.user-notifikasi') }}" class="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 transition">
+                                    <div class="flex items-center gap-2.5">
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/></svg>
+                                        <span>Notifikasi Sistem</span>
+                                    </div>
+                                    @if($layoutUnreadNotif > 0)
+                                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-rose-500 text-white">{{ $layoutUnreadNotif }}</span>
+                                    @endif
+                                </a>
+
+                                <a href="{{ route('home') }}" class="flex items-center gap-2.5 px-4 py-2.5 hover:bg-slate-50 transition text-slate-600">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                    <span>Halaman Utama Website</span>
+                                </a>
+                            </div>
+
+                            <div class="pt-1 border-t border-slate-100">
+                                <form action="{{ route('user.logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition">
+                                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                        <span>Keluar (Logout)</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu Hamburger Button -->
+                    <button type="button" @click="mobileMenuOpen = !mobileMenuOpen"
+                            class="md:hidden w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-200 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" x-show="!mobileMenuOpen"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" x-show="mobileMenuOpen" x-cloak><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+
+                </div>
             </div>
         </div>
 
-        {{-- Navigation --}}
-        <nav class="u-nav">
-
-            {{-- Menu Utama --}}
-            <div class="u-nav-section">
-                <div class="u-nav-section-title">Menu Utama</div>
-
-                <a href="{{ route('dashboard.user.index') }}"
-                   class="u-nav-link {{ request()->routeIs('dashboard.user.index') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                            <polyline points="9 22 9 12 15 12 15 22"/>
-                        </svg>
-                    </span>
-                    <span>Beranda</span>
-                </a>
-
-                <a href="{{ route('dashboard.user.search') }}"
-                   class="u-nav-link {{ request()->routeIs('dashboard.user.search') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/>
-                        </svg>
-                    </span>
-                    <span>Cari Jadwal</span>
-                </a>
-
-                <a href="{{ route('dashboard.user.user-tiket') }}"
-                   class="u-nav-link {{ request()->routeIs('dashboard.user.user-tiket') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/>
-                        </svg>
-                    </span>
-                    <span>Tiket Saya</span>
-                </a>
-
-                <a href="{{ route('dashboard.user.user-notifikasi') }}"
-                   class="u-nav-link {{ request()->routeIs('dashboard.user.user-notifikasi') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/>
-                        </svg>
-                    </span>
-                    <span>Notifikasi</span>
-                    <span class="u-nav-badge">3</span>
-                </a>
-
-                <a href="{{ route('dashboard.user.user-akun') }}"
-                   class="u-nav-link {{ request()->routeIs('dashboard.user.user-akun') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <circle cx="12" cy="8" r="4"/>
-                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                        </svg>
-                    </span>
-                    <span>Akun & Profil</span>
-                </a>
-            </div>
-
-            <hr class="u-nav-divider">
-
-            {{-- Perjalanan --}}
-            <div class="u-nav-section">
-                <div class="u-nav-section-title">Perjalanan</div>
-
-                <a href="{{ route('dashboard.user.user-promo') }}"
-                   class="u-nav-sublink {{ request()->routeIs('dashboard.user.user-promo') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="m9 9 6 6m0-6-6 6"/>
-                        </svg>
-                    </span>
-                    <span>Voucher Promo</span>
-                </a>
-
-                <a href="{{ route('dashboard.user.user-refund') }}"
-                   class="u-nav-sublink {{ request()->routeIs('dashboard.user.user-refund') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6m-6-6 6-6"/>
-                        </svg>
-                    </span>
-                    <span>Refund & Pembatalan</span>
-                </a>
-
-                <a href="{{ route('dashboard.user.user-history') }}"
-                   class="u-nav-sublink {{ request()->routeIs('dashboard.user.user-history') ? 'active' : '' }}">
-                    <span class="u-nav-icon">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
-                        </svg>
-                    </span>
-                    <span>Riwayat Perjalanan</span>
-                </a>
-            </div>
-
-            <hr class="u-nav-divider">
-
-            {{-- Bantuan --}}
-            <div class="u-nav-section">
-                <div class="u-nav-section-title">Bantuan</div>
-                <a href="https://wa.me/62812345678" target="_blank" class="u-nav-sublink">
-                    <span class="u-nav-icon">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
-                        </svg>
-                    </span>
-                    <span>WhatsApp CS</span>
-                </a>
-            </div>
-
-        </nav>
-
-        {{-- Profile & Logout --}}
-        <div class="u-sidebar-profile">
-            <div class="u-profile-card">
-                <div class="u-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
-                <div style="flex:1; min-width:0;">
-                    <div class="u-profile-name">{{ auth()->user()->name ?? 'Penumpang' }}</div>
-                    <div class="u-profile-role">Pelanggan</div>
-                </div>
-                <form action="{{ route('logout') }}" method="POST">
+        <!-- Mobile Drawer Navigation -->
+        <div x-show="mobileMenuOpen" x-cloak class="md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1 shadow-lg">
+            <a href="{{ route('dashboard.user.index') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.index') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                🏠 Beranda Client Area
+            </a>
+            <a href="{{ route('dashboard.user.search') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.search*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                🔍 Cari Jadwal Shuttle
+            </a>
+            <a href="{{ route('dashboard.user.user-tiket') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-tiket*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                🎫 Tiket Saya & Boarding Pass
+            </a>
+            <a href="{{ route('dashboard.user.user-promo') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-promo*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                🏷️ Voucher Promo & Diskon
+            </a>
+            <a href="{{ route('dashboard.user.user-notifikasi') }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-notifikasi*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                <span>🔔 Notifikasi Sistem</span>
+                @if($layoutUnreadNotif > 0)
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500 text-white">{{ $layoutUnreadNotif }}</span>
+                @endif
+            </a>
+            <a href="{{ route('dashboard.user.user-akun') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-akun*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                👤 Profil & Pengaturan Akun
+            </a>
+            <div class="pt-2 border-t border-slate-100">
+                <form action="{{ route('user.logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="u-logout-btn" title="Keluar">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>
-                        </svg>
+                    <button type="submit" class="w-full text-left px-3 py-2.5 rounded-xl font-bold text-sm text-rose-600 hover:bg-rose-50">
+                        🚪 Keluar (Logout)
                     </button>
                 </form>
             </div>
         </div>
+    </header>
 
-    </aside>
+    <!-- ============================================================
+         MAIN CONTENT WRAPPER (CONSUMER CLIENT AREA CONTAINER)
+    ============================================================ -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
+        @yield('content')
+    </main>
 
-    {{-- ===================== MAIN WRAPPER ===================== --}}
-    <div class="u-main">
-
-        {{-- TOPBAR --}}
-        <header class="u-topbar">
-
-            {{-- Mobile brand --}}
-            <div class="u-topbar-mobile-brand">
-                <span style="font-size:20px;">🚌</span>
-                <span>FastShuttle</span>
-            </div>
-
-            {{-- Desktop title --}}
-            <div class="u-topbar-title" style="display:block;">
-                <div style="font-size:15px; font-weight:700; color:var(--text);">@yield('page-title', 'Dashboard')</div>
-                <div class="u-topbar-subtitle">Selamat datang, {{ auth()->user()->name ?? 'Penumpang' }} 👋</div>
-            </div>
-
-            <div class="u-topbar-actions">
-
-                {{-- Notifikasi --}}
-                <a href="{{ route('dashboard.user.user-notifikasi') }}" class="u-notif-btn" id="topbar-notif-btn">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    <span class="u-notif-dot"></span>
-                </a>
-
-                {{-- Bantuan --}}
-                <a href="https://wa.me/62812345678" target="_blank" class="u-help-btn">
-                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
-                    </svg>
-                    <span>Bantuan</span>
-                </a>
-
-                {{-- User chip --}}
-                <div class="u-user-chip">
-                    <div class="u-user-chip-avatar">
-                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+    <!-- ============================================================
+         CONSUMER CLIENT AREA FOOTER
+    ============================================================ -->
+    <footer class="bg-white border-t border-slate-200 mt-auto hidden md:block">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                
+                <!-- Col 1: Brand & Desc -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-base font-bold">🚐</div>
+                        <span class="font-extrabold text-slate-900 text-base">TravelKu FastShuttle</span>
                     </div>
-                    <span class="u-user-chip-name">{{ auth()->user()->name ?? 'Penumpang' }}</span>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Layanan pemesanan tiket travel minibus eksekutif antar kota dengan armada Toyota HiAce Premio pilihan, jadwal tepat waktu, dan kenyamanan terjamin.
+                    </p>
+                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                        <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                            🛡️ Berasuransi Resmi Jasa Raharja
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Col 2: Rute Populer -->
+                <div class="space-y-2">
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-900">Rute Shuttle Favorit</h5>
+                    <ul class="text-xs text-slate-500 space-y-1.5 font-medium">
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bandung (Dipatiukur) ➔ Jakarta (Semanggi)</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Jakarta (Semanggi) ➔ Bandung (Dipatiukur)</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bandung (Pasteur) ➔ Bandara Soekarno-Hatta</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bekasi / Tangerang ➔ Bandung Kota</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Layanan Penumpang -->
+                <div class="space-y-2">
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-900">Layanan Penumpang</h5>
+                    <ul class="text-xs text-slate-500 space-y-1.5 font-medium">
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Cari Jadwal & Harga Tiket</a></li>
+                        <li><a href="{{ route('dashboard.user.user-tiket') }}" class="hover:text-brand-600 transition">Lihat E-Ticket & Boarding Pass</a></li>
+                        <li><a href="{{ route('dashboard.user.user-promo') }}" class="hover:text-brand-600 transition">Kupon Diskon & Voucher Promo</a></li>
+                        <li><a href="{{ route('dashboard.user.user-notifikasi') }}" class="hover:text-brand-600 transition">Pemberitahuan & Info Operasional</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Bantuan & Pembayaran -->
+                <div class="space-y-2">
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-slate-900">Pusat Bantuan & Pembayaran</h5>
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Layanan Pelanggan 24 Jam via WhatsApp Official:
+                    </p>
+                    <a href="https://wa.me/62812345678" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 hover:bg-emerald-100 transition">
+                        💬 +62 812-3456-7890 (CS FastShuttle)
+                    </a>
+                    <div class="pt-2 text-[11px] text-slate-400">
+                        Metode Bayar: Virtual Account BCA, Mandiri, BRI, BNI, QRIS & E-Wallet
+                    </div>
                 </div>
 
             </div>
-        </header>
 
-        {{-- PAGE CONTENT --}}
-        <main class="u-content">
-            @yield('content')
-        </main>
+            <div class="pt-8 mt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+                <p>© {{ date('Y') }} PT Fast Travel Indonesia. Hak Cipta Dilindungi.</p>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="hover:text-slate-600 transition">Syarat & Ketentuan</a>
+                    <span>•</span>
+                    <a href="#" class="hover:text-slate-600 transition">Kebijakan Privasi</a>
+                    <span>•</span>
+                    <a href="#" class="hover:text-slate-600 transition">Panduan Refund & Reschedule</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
-    </div>
-
-    {{-- ===================== BOTTOM NAV (Mobile) ===================== --}}
-    <nav class="u-bottom-nav" role="navigation" aria-label="Navigasi Utama">
-        <div class="u-bottom-nav-inner">
-
+    <!-- ============================================================
+         MOBILE BOTTOM NAVIGATION (ERGONOMIC 1-THUMB EXPERIENCE)
+    ============================================================ -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-2 py-1.5">
+        <div class="grid grid-cols-5 gap-1 text-center">
+            
             {{-- Beranda --}}
             @php $isHome = request()->routeIs('dashboard.user.index'); @endphp
-            <a href="{{ route('dashboard.user.index') }}" id="tab-beranda" class="u-tab {{ $isHome ? 'active' : '' }}">
-                @if($isHome)<span class="u-tab-pill"></span>@endif
-                <svg fill="{{ $isHome ? 'rgba(8,127,85,.15)' : 'none' }}" stroke="{{ $isHome ? 'var(--brand)' : 'var(--text-muted)' }}" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                <span>Beranda</span>
+            <a href="{{ route('dashboard.user.index') }}" class="py-1 flex flex-col items-center gap-0.5 {{ $isHome ? 'text-brand-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="text-[10px]">Beranda</span>
+            </a>
+
+            {{-- Cari --}}
+            @php $isSearch = request()->routeIs('dashboard.user.search*') || request()->routeIs('dashboard.user.booking*'); @endphp
+            <a href="{{ route('dashboard.user.search') }}" class="py-1 flex flex-col items-center gap-0.5 {{ $isSearch ? 'text-brand-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>
+                <span class="text-[10px]">Cari Tiket</span>
             </a>
 
             {{-- Tiket --}}
-            @php $isTicket = request()->routeIs('dashboard.user.user-tiket'); @endphp
-            <a href="{{ route('dashboard.user.user-tiket') }}" id="tab-tiket" class="u-tab {{ $isTicket ? 'active' : '' }}">
-                @if($isTicket)<span class="u-tab-pill"></span>@endif
-                <svg fill="{{ $isTicket ? 'rgba(8,127,85,.15)' : 'none' }}" stroke="{{ $isTicket ? 'var(--brand)' : 'var(--text-muted)' }}" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/>
-                </svg>
-                <span>Tiket Saya</span>
+            @php $isTicket = request()->routeIs('dashboard.user.user-tiket*'); @endphp
+            <a href="{{ route('dashboard.user.user-tiket') }}" class="py-1 flex flex-col items-center gap-0.5 {{ $isTicket ? 'text-brand-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/></svg>
+                <span class="text-[10px]">Tiket Saya</span>
             </a>
 
             {{-- Notifikasi --}}
-            @php $isNotif = request()->routeIs('dashboard.user.user-notifikasi'); @endphp
-            <a href="{{ route('dashboard.user.user-notifikasi') }}" id="tab-notifikasi" class="u-tab {{ $isNotif ? 'active' : '' }}" style="position:relative;">
-                @if($isNotif)<span class="u-tab-pill"></span>@endif
-                <svg fill="{{ $isNotif ? 'rgba(8,127,85,.15)' : 'none' }}" stroke="{{ $isNotif ? 'var(--brand)' : 'var(--text-muted)' }}" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/>
-                </svg>
-                <span class="u-tab-badge">3</span>
-                <span>Notifikasi</span>
+            @php $isNotif = request()->routeIs('dashboard.user.user-notifikasi*'); @endphp
+            <a href="{{ route('dashboard.user.user-notifikasi') }}" class="py-1 flex flex-col items-center gap-0.5 relative {{ $isNotif ? 'text-brand-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9m-4.27 13a2 2 0 0 1-3.46 0"/></svg>
+                @if($layoutUnreadNotif > 0)
+                    <span class="absolute top-0 right-4 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">
+                        {{ $layoutUnreadNotif }}
+                    </span>
+                @endif
+                <span class="text-[10px]">Notifikasi</span>
             </a>
 
             {{-- Akun --}}
-            @php $isAccount = request()->routeIs('dashboard.user.user-akun'); @endphp
-            <a href="{{ route('dashboard.user.user-akun') }}" id="tab-akun" class="u-tab {{ $isAccount ? 'active' : '' }}">
-                @if($isAccount)<span class="u-tab-pill"></span>@endif
-                @if($isAccount)
-                    <div class="u-tab-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</div>
-                @else
-                    <svg fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="8" r="4"/>
-                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                    </svg>
-                @endif
-                <span>Akun</span>
+            @php $isAccount = request()->routeIs('dashboard.user.user-akun*'); @endphp
+            <a href="{{ route('dashboard.user.user-akun') }}" class="py-1 flex flex-col items-center gap-0.5 {{ $isAccount ? 'text-brand-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                <span class="text-[10px]">Akun</span>
             </a>
 
         </div>
     </nav>
-
-</div>
 
 </body>
 </html>

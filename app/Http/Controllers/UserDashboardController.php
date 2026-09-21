@@ -7,16 +7,24 @@ use App\Models\BookingPassenger;
 use App\Models\Location;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\SavedPassenger;
 use App\Models\Schedule;
 use App\Models\Ticket;
 use App\Models\TripReview;
+use App\Models\User;
+use App\Models\UserVoucher;
+use App\Notifications\BookingStatusNotification;
+use App\Notifications\OperationalInfoNotification;
+use App\Notifications\TripReminderNotification;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class UserDashboardController extends Controller
@@ -67,13 +75,41 @@ class UserDashboardController extends Controller
 
         // Riwayat tiket terakhir
         $recentBookings = Booking::query()
-            ->with(['schedule.route.origin', 'schedule.route.destination', 'payment'])
+            ->with(['schedule.route.origin', 'schedule.route.destination', 'payment', 'schedule.vehicle'])
             ->where('user_id', Auth::id())
             ->latest()
-            ->take(3)
+            ->take(5)
             ->get();
 
-        return view('dashboard.user.index', compact('locations', 'activeBooking', 'promos', 'recentBookings'));
+        // Metrik statistik Client Area
+        $activeTicketsCount = Booking::where('user_id', Auth::id())
+            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
+            ->whereHas('schedule', function ($q) {
+                $q->whereDate('departure_date', '>=', Carbon::today()->toDateString());
+            })
+            ->count();
+
+        $completedTripsCount = Booking::where('user_id', Auth::id())
+            ->where('status', 'completed')
+            ->count();
+
+        $pendingPaymentsCount = Booking::where('user_id', Auth::id())
+            ->where('status', 'pending')
+            ->where('expired_at', '>', Carbon::now())
+            ->count();
+
+        $unreadNotifCount = Auth::user()?->unreadNotifications()->count() ?? 0;
+
+        return view('dashboard.user.index', compact(
+            'locations',
+            'activeBooking',
+            'promos',
+            'recentBookings',
+            'activeTicketsCount',
+            'completedTripsCount',
+            'pendingPaymentsCount',
+            'unreadNotifCount'
+        ));
     }
 
     /**
@@ -247,31 +283,35 @@ class UserDashboardController extends Controller
         // Hitung sisa detik penguncian kursi
         $remainingSeconds = max(0, Carbon::now()->diffInSeconds($booking->expired_at, false));
 
-        // Quick Passenger Presets dari Tab Akun / Profil Pengguna
+        // Quick Passenger Presets dari Tab Akun / Profil Pengguna (Database)
         $user = Auth::user();
-        $quickPassengers = [
-            [
+        if ($user) {
+            $this->ensureUserPresets($user);
+        }
+
+        $savedList = $user ? $user->savedPassengers()->orderByDesc('is_primary')->get() : collect();
+        $quickPassengers = [];
+
+        foreach ($savedList as $sp) {
+            $quickPassengers[] = [
+                'id' => $sp->id,
+                'name' => $sp->name,
+                'phone' => $sp->phone ?? '',
+                'nik' => $sp->nik ?? '',
+                'label' => $sp->name.($sp->is_primary ? ' (Utama)' : ''),
+            ];
+        }
+
+        // Jika kosong sama sekali, sediakan fallback data akun
+        if (empty($quickPassengers) && $user) {
+            $quickPassengers[] = [
                 'id' => 'user-me',
                 'name' => $user->name,
-                'phone' => $user->phone ?? '081234567890',
-                'nik' => '3273010198000001',
+                'phone' => $user->phone ?? '',
+                'nik' => '',
                 'label' => $user->name.' (Saya / Akun)',
-            ],
-            [
-                'id' => 'saved-1',
-                'name' => 'Budi Santoso',
-                'phone' => '081234567891',
-                'nik' => '3273021405880002',
-                'label' => 'Budi Santoso (Penumpang Tersimpan)',
-            ],
-            [
-                'id' => 'saved-2',
-                'name' => 'Sari Dewi',
-                'phone' => '081298765432',
-                'nik' => '3273045209930003',
-                'label' => 'Sari Dewi (Penumpang Tersimpan)',
-            ],
-        ];
+            ];
+        }
 
         return view('dashboard.user.booking-data', compact('booking', 'remainingSeconds', 'quickPassengers'));
     }
@@ -345,6 +385,56 @@ class UserDashboardController extends Controller
                 'formatted_new_total' => 'Rp '.number_format(max(0, $subtotal - $discount), 0, ',', '.'),
                 'message' => 'Voucer TRAVELHEMAT berhasil dipasang! Diskon Rp 20.000',
             ]);
+        }
+
+        // Cek apakah ada di dompet voucher pengguna (UserVoucher)
+        $user = Auth::user();
+        if ($user) {
+            $userVoucher = $user->vouchers()->where('code', $code)->first();
+            if ($userVoucher) {
+                if (! $userVoucher->isActive()) {
+                    $statusMsg = $userVoucher->isUsed() ? 'sudah pernah digunakan' : 'sudah kedaluwarsa';
+
+                    return response()->json([
+                        'valid' => false,
+                        'message' => "Voucher {$code} {$statusMsg}.",
+                    ], 422);
+                }
+
+                if ($userVoucher->applicable_route) {
+                    $routeMatch = str_contains(strtolower($originName), 'bandung') || str_contains(strtolower($destinationName), 'jakarta');
+                    if (! $routeMatch) {
+                        return response()->json([
+                            'valid' => false,
+                            'message' => "Voucher {$code} hanya berlaku untuk rute: {$userVoucher->applicable_route}.",
+                        ], 422);
+                    }
+                }
+
+                if ($subtotal < $userVoucher->min_transaction) {
+                    return response()->json([
+                        'valid' => false,
+                        'message' => 'Minimum order untuk voucher '.$code.' adalah Rp '.number_format($userVoucher->min_transaction, 0, ',', '.').'.',
+                    ], 422);
+                }
+
+                if ($userVoucher->discount_type === 'percent') {
+                    $rawDiscount = $subtotal * ($userVoucher->discount_value / 100);
+                    $discount = $userVoucher->max_discount ? min($userVoucher->max_discount, $rawDiscount) : $rawDiscount;
+                } else {
+                    $discount = min($subtotal, (float) $userVoucher->discount_value);
+                }
+
+                return response()->json([
+                    'valid' => true,
+                    'code' => $code,
+                    'discount' => $discount,
+                    'formatted_discount' => 'Rp '.number_format($discount, 0, ',', '.'),
+                    'new_total' => max(0, $subtotal - $discount),
+                    'formatted_new_total' => 'Rp '.number_format(max(0, $subtotal - $discount), 0, ',', '.'),
+                    'message' => "Voucher {$code} ({$userVoucher->title}) berhasil dipasang! Hemat Rp ".number_format($discount, 0, ',', '.'),
+                ]);
+            }
         }
 
         return response()->json([
@@ -423,6 +513,10 @@ class UserDashboardController extends Controller
                 'expired_at' => $booking->expired_at,
             ]
         );
+
+        // Event Trigger: Status Transaksi - Menunggu Bayar (disertai batas waktu & deep link bayar)
+        $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
+        $booking->user?->notify(new BookingStatusNotification($booking, 'pending'));
 
         return redirect()->route('dashboard.user.booking.pembayaran', $booking);
     }
@@ -507,6 +601,10 @@ class UserDashboardController extends Controller
             $booking->update(['status' => 'cancelled']);
             $payment->update(['status' => 'expired']);
             $booking->schedule?->recalculateAvailableSeats();
+
+            // Event Trigger: Transaksi Dibatalkan karena waktu habis
+            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
+            $booking->user?->notify(new BookingStatusNotification($booking, 'expired'));
 
             return response()->json([
                 'status' => 'cancelled',
@@ -771,14 +869,555 @@ class UserDashboardController extends Controller
         }
     }
 
-    public function notifikasi(): View
+    public function notifikasi(Request $request): View
     {
-        return view('dashboard.user.user-notifikasi');
+        $user = Auth::user();
+        $selectedCategory = $request->query('category');
+
+        $query = $user->notifications()->latest();
+
+        if ($selectedCategory && in_array($selectedCategory, ['transaksi', 'pengingat', 'operasional'])) {
+            $query->where('data->category', $selectedCategory);
+        }
+
+        $notifications = $query->paginate(15)->withQueryString();
+
+        // Hitung unread per kategori
+        $allNotifications = $user->notifications()->get();
+        $unreadCount = $user->unreadNotifications()->count();
+        $countTransaksi = $allNotifications->where('data.category', 'transaksi')->count();
+        $countPengingat = $allNotifications->where('data.category', 'pengingat')->count();
+        $countOperasional = $allNotifications->where('data.category', 'operasional')->count();
+
+        return view('dashboard.user.user-notifikasi', compact(
+            'notifications',
+            'unreadCount',
+            'selectedCategory',
+            'countTransaksi',
+            'countPengingat',
+            'countOperasional'
+        ));
     }
 
+    /**
+     * Deep Linking: Menandai notifikasi sebagai dibaca dan langsung mengarahkan ke layar terkait.
+     */
+    public function openNotification(string $id): RedirectResponse
+    {
+        $user = Auth::user();
+        $notification = $user->notifications()->where('id', $id)->firstOrFail();
+
+        if ($notification->unread()) {
+            $notification->markAsRead();
+        }
+
+        $deepLinkUrl = $notification->data['deep_link_url'] ?? route('dashboard.user.user-tiket');
+
+        return redirect()->to($deepLinkUrl);
+    }
+
+    /**
+     * Menandai semua notifikasi pengguna sebagai sudah dibaca.
+     */
+    public function markAllAsRead(): RedirectResponse
+    {
+        Auth::user()->unreadNotifications->markAsRead();
+
+        return back()->with('success', 'Semua notifikasi telah ditandai sebagai sudah dibaca.');
+    }
+
+    /**
+     * Menghapus notifikasi spesifik dari database riwayat pengguna.
+     */
+    public function destroyNotification(string $id): RedirectResponse
+    {
+        $user = Auth::user();
+        $notification = $user->notifications()->where('id', $id)->first();
+        if ($notification) {
+            $notification->delete();
+        }
+
+        return back()->with('success', 'Notifikasi berhasil dihapus dari riwayat.');
+    }
+
+    /**
+     * Panel Pengujian: Memicu simulasi notifikasi (Status Transaksi, Pengingat H-2 Jam, Info Operasional).
+     */
+    public function simulateNotification(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+        $type = $request->input('type', 'pending');
+
+        $booking = Booking::with(['schedule.route.origin', 'schedule.route.destination', 'schedule.vehicle', 'schedule.driver.user', 'passengers.seat', 'ticket'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->first();
+
+        if (! $booking) {
+            $schedule = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user'])->first();
+            if ($schedule) {
+                $booking = Booking::create([
+                    'booking_code' => 'TRV-'.strtoupper(Str::random(6)),
+                    'user_id' => $user->id,
+                    'schedule_id' => $schedule->id,
+                    'total_passenger' => 1,
+                    'subtotal' => 125000,
+                    'total_price' => 125000,
+                    'status' => 'pending',
+                    'expired_at' => Carbon::now()->addMinutes(15),
+                ]);
+                $booking->load(['schedule.route.origin', 'schedule.route.destination', 'schedule.vehicle', 'schedule.driver.user']);
+            }
+        }
+
+        if (! $booking) {
+            return back()->with('error', 'Belum ada data jadwal untuk pengujian simulasi.');
+        }
+
+        switch ($type) {
+            case 'pending':
+                $user->notify(new BookingStatusNotification($booking, 'pending'));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Menunggu Bayar (Batas Waktu 15 Menit)';
+                break;
+
+            case 'confirmed':
+                if (! $booking->ticket) {
+                    Ticket::firstOrCreate(
+                        ['booking_id' => $booking->id],
+                        [
+                            'ticket_number' => 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(Str::random(5)),
+                            'qr_code' => 'QR-'.$booking->booking_code,
+                            'status' => 'active',
+                        ]
+                    );
+                    $booking->load('ticket');
+                }
+                $user->notify(new BookingStatusNotification($booking, 'confirmed'));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Pembayaran Berhasil ✅ (E-Ticket Terbit)';
+                break;
+
+            case 'expired':
+                $user->notify(new BookingStatusNotification($booking, 'expired'));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Transaksi Dibatalkan ⚠️ (Waktu Habis)';
+                break;
+
+            case 'reminder_2h':
+                $user->notify(new TripReminderNotification(
+                    $booking,
+                    departureTime: '14:30',
+                    requiredArrivalTime: '14:15 WIB',
+                    seatNumbers: '1A, 1B'
+                ));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Pengingat Perjalanan H-2 Jam ⏰ (Rute, Jam Tiba Pool, Kursi)';
+                break;
+
+            case 'operational_vehicle':
+                $user->notify(new OperationalInfoNotification(
+                    $booking,
+                    infoType: 'vehicle_assigned',
+                    plateNumber: 'B 1234 XYZ',
+                    driverName: 'Pak Budi Santoso',
+                    pickupLocation: 'Pool Dipatiukur (Gate 2)'
+                ));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Info Operasional Hari-H 🚐 (Pelat Minibus & Lokasi Pool)';
+                break;
+
+            case 'operational_delay':
+                $user->notify(new OperationalInfoNotification(
+                    $booking,
+                    infoType: 'delay_traffic',
+                    plateNumber: 'B 1234 XYZ',
+                    driverName: 'Pak Budi Santoso',
+                    delayReason: 'Kepadatan arus di Tol Cipularang KM 90',
+                    delayMinutes: 20
+                ));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Peringatan Keterlambatan Armada ⚠️ (+20 Menit)';
+                break;
+
+            default:
+                $msg = 'Tipe notifikasi tidak dikenal.';
+                break;
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Tab Akun & Profil (Manajemen Identitas, Data Tersimpan, & CS).
+     */
     public function akun(): View
     {
-        return view('dashboard.user.user-akun');
+        $user = Auth::user();
+        if ($user) {
+            $this->ensureUserPresets($user);
+        }
+
+        $savedPassengers = $user ? $user->savedPassengers()
+            ->orderByDesc('is_primary')
+            ->latest()
+            ->get() : collect();
+
+        $vouchers = $user ? $user->vouchers()->latest()->get() : collect();
+        $activeVouchersCount = $vouchers->filter->isActive()->count();
+
+        // Ambil tiket terbaru untuk konteks bantuan otomatis (WhatsApp CS & Live Chat)
+        $recentBookings = $user ? $user->bookings()
+            ->with(['schedule.route.origin', 'schedule.route.destination', 'schedule.vehicle', 'ticket'])
+            ->latest()
+            ->take(8)
+            ->get() : collect();
+
+        return view('dashboard.user.user-akun', compact(
+            'user',
+            'savedPassengers',
+            'vouchers',
+            'activeVouchersCount',
+            'recentBookings'
+        ));
+    }
+
+    /**
+     * Simpan data penumpang baru (Saved Passenger List).
+     */
+    public function storeSavedPassenger(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'nik' => ['nullable', 'string', 'regex:/^[0-9]{16}$/'],
+            'phone' => ['nullable', 'string', 'max:25'],
+            'is_primary' => ['nullable', 'boolean'],
+        ], [
+            'nik.regex' => 'Nomor Identitas Kependudukan (NIK) harus terdiri dari 16 digit angka.',
+        ]);
+
+        $user = $request->user();
+        $isPrimary = $request->boolean('is_primary');
+
+        if ($isPrimary) {
+            $user->savedPassengers()->update(['is_primary' => false]);
+        }
+
+        $user->savedPassengers()->create([
+            'name' => $validated['name'],
+            'nik' => $validated['nik'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'is_primary' => $isPrimary,
+        ]);
+
+        return back()->with('success', 'Data penumpang tersimpan berhasil ditambahkan.');
+    }
+
+    /**
+     * Update data penumpang tersimpan.
+     */
+    public function updateSavedPassenger(Request $request, SavedPassenger $savedPassenger): RedirectResponse
+    {
+        if ($savedPassenger->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'nik' => ['nullable', 'string', 'regex:/^[0-9]{16}$/'],
+            'phone' => ['nullable', 'string', 'max:25'],
+            'is_primary' => ['nullable', 'boolean'],
+        ], [
+            'nik.regex' => 'Nomor Identitas Kependudukan (NIK) harus terdiri dari 16 digit angka.',
+        ]);
+
+        $isPrimary = $request->boolean('is_primary');
+
+        if ($isPrimary) {
+            $request->user()->savedPassengers()
+                ->where('id', '!=', $savedPassenger->id)
+                ->update(['is_primary' => false]);
+        }
+
+        $savedPassenger->update([
+            'name' => $validated['name'],
+            'nik' => $validated['nik'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'is_primary' => $isPrimary,
+        ]);
+
+        return back()->with('success', 'Data penumpang tersimpan berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus data penumpang tersimpan.
+     */
+    public function destroySavedPassenger(SavedPassenger $savedPassenger): RedirectResponse
+    {
+        if ($savedPassenger->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $savedPassenger->delete();
+
+        return back()->with('success', 'Data penumpang berhasil dihapus dari daftar.');
+    }
+
+    /**
+     * Tab Dompet Voucher & Manajemen Promo (My Vouchers).
+     */
+    public function promo(Request $request): View
+    {
+        $user = Auth::user();
+        if ($user) {
+            $this->ensureUserPresets($user);
+        }
+
+        $filterStatus = $request->query('status', 'all');
+
+        $allVouchers = $user ? $user->vouchers()->latest()->get() : collect();
+
+        $totalCount = $allVouchers->count();
+        $activeCount = $allVouchers->filter->isActive()->count();
+        $usedCount = $allVouchers->filter->isUsed()->count();
+        $expiredCount = $allVouchers->filter->isExpired()->count();
+
+        $vouchers = match ($filterStatus) {
+            'active' => $allVouchers->filter->isActive(),
+            'used' => $allVouchers->filter->isUsed(),
+            'expired' => $allVouchers->filter->isExpired(),
+            default => $allVouchers,
+        };
+
+        return view('dashboard.user.user-promo', compact(
+            'vouchers',
+            'filterStatus',
+            'totalCount',
+            'activeCount',
+            'usedCount',
+            'expiredCount'
+        ));
+    }
+
+    /**
+     * Klaim kode voucher promo atau kompensasi tiket ke Dompet Voucher.
+     */
+    public function claimVoucher(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'code' => ['required', 'string', 'max:50'],
+        ]);
+
+        $user = $request->user();
+        if ($user) {
+            $this->ensureUserPresets($user);
+        }
+
+        $code = strtoupper(trim($validated['code']));
+
+        // Master Katalog Promo & Voucher Resmi
+        $catalog = [
+            'HEMATLIBURAN' => [
+                'title' => 'Diskon Spesial Liburan 25%',
+                'discount_type' => 'percent',
+                'discount_value' => 25,
+                'max_discount' => 50000,
+                'min_transaction' => 100000,
+                'applicable_route' => 'Bandung - Jakarta',
+                'source' => 'claim_promo',
+                'valid_days' => 90,
+            ],
+            'TRAVELHEMAT' => [
+                'title' => 'Potongan Langsung Rp 20.000',
+                'discount_type' => 'fixed',
+                'discount_value' => 20000,
+                'max_discount' => null,
+                'min_transaction' => 100000,
+                'applicable_route' => null,
+                'source' => 'claim_promo',
+                'valid_days' => 60,
+            ],
+            'KOMPENSASI50' => [
+                'title' => 'Kompensasi Keterlambatan Shuttle Rp 50.000',
+                'discount_type' => 'fixed',
+                'discount_value' => 50000,
+                'max_discount' => null,
+                'min_transaction' => 50000,
+                'applicable_route' => null,
+                'source' => 'compensation',
+                'valid_days' => 180,
+            ],
+            'WELCOME2026' => [
+                'title' => 'Voucher Pengguna Baru Fast Travel Rp 20.000',
+                'discount_type' => 'fixed',
+                'discount_value' => 20000,
+                'max_discount' => null,
+                'min_transaction' => 75000,
+                'applicable_route' => null,
+                'source' => 'welcome_gift',
+                'valid_days' => 30,
+            ],
+            'SUPERDISCOUNT' => [
+                'title' => 'Promo Super Hemat 30%',
+                'discount_type' => 'percent',
+                'discount_value' => 30,
+                'max_discount' => 60000,
+                'min_transaction' => 150000,
+                'applicable_route' => null,
+                'source' => 'claim_promo',
+                'valid_days' => 45,
+            ],
+        ];
+
+        if (! isset($catalog[$code])) {
+            return back()->with('error', "Kode voucher '{$code}' tidak valid atau promo sudah berakhir.");
+        }
+
+        // Cek apakah voucher dengan kode ini sudah ada dan masih aktif
+        $existing = $user->vouchers()->where('code', $code)->first();
+        if ($existing && $existing->isActive()) {
+            return back()->with('error', "Voucher '{$code}' sudah ada di Dompet Voucher Anda dan masih aktif.");
+        }
+
+        $meta = $catalog[$code];
+
+        $user->vouchers()->create([
+            'code' => $code,
+            'title' => $meta['title'],
+            'discount_type' => $meta['discount_type'],
+            'discount_value' => $meta['discount_value'],
+            'max_discount' => $meta['max_discount'],
+            'min_transaction' => $meta['min_transaction'],
+            'applicable_route' => $meta['applicable_route'],
+            'source' => $meta['source'],
+            'status' => 'active',
+            'expires_at' => Carbon::now()->addDays($meta['valid_days']),
+        ]);
+
+        return back()->with('success', "Selamat! Voucher '{$code}' berhasil diklaim dan disimpan ke Dompet Voucher Anda.");
+    }
+
+    /**
+     * Perbarui profil akun pengguna.
+     */
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'phone' => ['nullable', 'string', 'max:25'],
+        ]);
+
+        $user->update($validated);
+
+        return back()->with('success', 'Profil Anda berhasil diperbarui.');
+    }
+
+    /**
+     * Perbarui kata sandi akun pengguna.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Kata sandi saat ini yang Anda masukkan salah.',
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return back()->with('success', 'Kata sandi Anda berhasil diperbarui.');
+    }
+
+    /**
+     * Helper: Inisialisasi data bawaan untuk demo/testing (Saved Passengers & Vouchers).
+     */
+    protected function ensureUserPresets(User $user): void
+    {
+        // 1. Saved Passengers
+        if ($user->savedPassengers()->count() === 0) {
+            $user->savedPassengers()->create([
+                'name' => $user->name,
+                'nik' => '3273010198000001',
+                'phone' => $user->phone ?? '081234567890',
+                'is_primary' => true,
+            ]);
+
+            $user->savedPassengers()->create([
+                'name' => 'Budi Santoso',
+                'nik' => '3273021405880002',
+                'phone' => '081234567891',
+                'is_primary' => false,
+            ]);
+
+            $user->savedPassengers()->create([
+                'name' => 'Sari Dewi',
+                'nik' => '3273045209930003',
+                'phone' => '081298765432',
+                'is_primary' => false,
+            ]);
+        }
+
+        // 2. User Vouchers
+        if ($user->vouchers()->count() === 0) {
+            $user->vouchers()->create([
+                'code' => 'HEMATLIBURAN',
+                'title' => 'Diskon Spesial Liburan 25%',
+                'discount_type' => 'percent',
+                'discount_value' => 25,
+                'max_discount' => 50000,
+                'min_transaction' => 100000,
+                'applicable_route' => 'Bandung - Jakarta',
+                'source' => 'claim_promo',
+                'status' => 'active',
+                'expires_at' => Carbon::now()->addMonths(3),
+            ]);
+
+            $user->vouchers()->create([
+                'code' => 'KOMPENSASI50',
+                'title' => 'Kompensasi Keterlambatan Shuttle Rp 50.000',
+                'discount_type' => 'fixed',
+                'discount_value' => 50000,
+                'max_discount' => null,
+                'min_transaction' => 50000,
+                'applicable_route' => null,
+                'source' => 'compensation',
+                'status' => 'active',
+                'expires_at' => Carbon::now()->addMonths(6),
+            ]);
+
+            $user->vouchers()->create([
+                'code' => 'WELCOME2026',
+                'title' => 'Voucher Pengguna Baru Rp 20.000',
+                'discount_type' => 'fixed',
+                'discount_value' => 20000,
+                'max_discount' => null,
+                'min_transaction' => 80000,
+                'applicable_route' => null,
+                'source' => 'welcome_gift',
+                'status' => 'used',
+                'used_at' => Carbon::now()->subDays(4),
+                'expires_at' => Carbon::now()->addMonths(1),
+            ]);
+
+            $user->vouchers()->create([
+                'code' => 'KILATHEMAT',
+                'title' => 'Flash Sale Libur Panjang',
+                'discount_type' => 'percent',
+                'discount_value' => 30,
+                'max_discount' => 40000,
+                'min_transaction' => 120000,
+                'applicable_route' => null,
+                'source' => 'claim_promo',
+                'status' => 'expired',
+                'expires_at' => Carbon::now()->subDays(2),
+            ]);
+        }
     }
 
     /**
@@ -793,6 +1432,8 @@ class UserDashboardController extends Controller
 
         foreach ($expiredBookings as $booking) {
             $booking->update(['status' => 'cancelled']);
+            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
+            $booking->user?->notify(new BookingStatusNotification($booking, 'expired'));
         }
 
         if ($expiredBookings->isNotEmpty()) {
@@ -884,7 +1525,7 @@ class UserDashboardController extends Controller
 
             // Terbitkan E-Ticket Boarding Pass
             $ticketNumber = 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(Str::random(5));
-            Ticket::updateOrCreate(
+            $ticket = Ticket::updateOrCreate(
                 ['booking_id' => $booking->id],
                 [
                     'ticket_number' => $ticketNumber,
@@ -895,6 +1536,11 @@ class UserDashboardController extends Controller
 
             // Perbarui sisa kursi
             $booking->schedule?->recalculateAvailableSeats();
+
+            // Event Trigger: Pembayaran Sukses & Terbit E-Ticket
+            $booking->setRelation('ticket', $ticket);
+            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user', 'ticket']);
+            $booking->user?->notify(new BookingStatusNotification($booking, 'confirmed'));
         });
     }
 }

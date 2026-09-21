@@ -112,19 +112,27 @@
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-[11px] text-slate-400">Isi Cepat:</span>
                                         <div class="relative inline-block text-left" x-data="{ open: false }">
-                                            <button type="button" @click="open = !open" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
-                                                <span>⚡ Quick Passenger</span>
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                                            <button type="button" @click="open = !open" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition shadow-2xs">
+                                                <span>⚡ Pilih Penumpang Tersimpan</span>
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
-                                            <div x-show="open" @click.outside="open = false" class="origin-top-right absolute right-0 mt-1 w-64 rounded-xl shadow-lg bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-20">
-                                                <div class="p-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pilih dari Tersimpan:</div>
-                                                <div class="py-1">
+                                            <div x-show="open" @click.outside="open = false" class="origin-top-right absolute right-0 mt-1 w-72 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-30 p-1">
+                                                <div class="p-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                                                    <span>Data Tersimpan (Tab Akun):</span>
+                                                    <a href="{{ route('dashboard.user.user-akun') }}" target="_blank" class="text-[10px] text-emerald-600 hover:underline">Kelola ➔</a>
+                                                </div>
+                                                <div class="py-1 space-y-1">
                                                     @foreach($quickPassengers as $qp)
                                                         <button type="button" 
-                                                                @click="fillPassenger({{ $passenger->id }}, '{{ addslashes($qp['name']) }}', '{{ $qp['phone'] }}'); open = false;"
-                                                                class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition flex items-center justify-between">
-                                                            <span class="font-medium truncate">{{ $qp['name'] }}</span>
-                                                            <span class="text-[10px] text-slate-400 font-mono">{{ $qp['phone'] }}</span>
+                                                                @click="fillPassenger({{ $passenger->id }}, '{{ addslashes($qp['name']) }}', '{{ $qp['phone'] }}', '{{ $qp['nik'] }}'); open = false;"
+                                                                class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition flex items-center justify-between group">
+                                                            <div class="min-w-0 pr-2">
+                                                                <span class="font-bold block truncate text-slate-800 group-hover:text-emerald-900">{{ $qp['name'] }}</span>
+                                                                <span class="text-[10px] text-slate-400 block truncate">
+                                                                    NIK: {{ $qp['nik'] ? substr($qp['nik'], 0, 4) . '••••' . substr($qp['nik'], -4) : '-' }}
+                                                                </span>
+                                                            </div>
+                                                            <span class="text-[10px] text-emerald-700 font-mono bg-emerald-100/70 px-2 py-0.5 rounded-md flex-shrink-0">Pilih</span>
                                                         </button>
                                                     @endforeach
                                                 </div>
@@ -133,15 +141,37 @@
                                     </div>
                                 </div>
 
+                                {{-- Quick Chips Horizontal untuk opsi klik centang cepat --}}
+                                @if(count($quickPassengers) > 0)
+                                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                                        <span class="text-slate-400 text-[10px] flex-shrink-0 font-medium">Gunakan:</span>
+                                        @foreach($quickPassengers as $qp)
+                                            <button type="button"
+                                                    @click="fillPassenger({{ $passenger->id }}, '{{ addslashes($qp['name']) }}', '{{ $qp['phone'] }}', '{{ $qp['nik'] }}')"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition flex-shrink-0">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                <span class="font-semibold">{{ Str::limit($qp['name'], 15) }}</span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @endif
+
                                 <input type="hidden" name="passengers[{{ $idx }}][id]" value="{{ $passenger->id }}">
 
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                                     <div>
                                         <label class="block font-semibold text-slate-600 mb-1">Nama Lengkap Penumpang *</label>
                                         <input type="text" name="passengers[{{ $idx }}][name]" id="p_name_{{ $passenger->id }}" required
                                                value="{{ old('passengers.'.$idx.'.name', $passenger->name) }}"
                                                placeholder="Contoh: Budi Santoso"
                                                class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none transition focus:border-emerald-600">
+                                    </div>
+                                    <div>
+                                        <label class="block font-semibold text-slate-600 mb-1">NIK / ID Asuransi (16 Digit)</label>
+                                        <input type="text" name="passengers[{{ $idx }}][nik]" id="p_nik_{{ $passenger->id }}" maxlength="16"
+                                               value="{{ old('passengers.'.$idx.'.nik', $passenger->nik ?? '') }}"
+                                               placeholder="3273xxxxxxxxxxxx"
+                                               class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none transition focus:border-emerald-600 font-mono">
                                     </div>
                                     <div>
                                         <label class="block font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP</label>
@@ -304,11 +334,13 @@ function bookingDataHandler(config) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
         },
 
-        fillPassenger(id, name, phone) {
+        fillPassenger(id, name, phone, nik = '') {
             const nameInput = document.getElementById('p_name_' + id);
             const phoneInput = document.getElementById('p_phone_' + id);
+            const nikInput = document.getElementById('p_nik_' + id);
             if (nameInput) nameInput.value = name;
             if (phoneInput) phoneInput.value = phone;
+            if (nikInput && nik) nikInput.value = nik;
         },
 
         async applyPromo() {
