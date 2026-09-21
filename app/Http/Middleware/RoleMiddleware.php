@@ -16,9 +16,9 @@ class RoleMiddleware
         Closure $next,
         ...$roles
     ): Response {
-        
+
         // Pastikan user sudah login
-        if (!$request->user()) {
+        if (! $request->user()) {
             abort(401);
         }
 
@@ -31,7 +31,7 @@ class RoleMiddleware
         }
 
         // Cek apakah role user termasuk role yang diizinkan
-        if (!in_array($userRole, $roles, true)) {
+        if (! in_array($userRole, $roles, true)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

@@ -31,7 +31,7 @@ return new class extends Migration
 
             $table->unique([
                 'vehicle_id',
-                'seat_number'
+                'seat_number',
             ]);
         });
     }

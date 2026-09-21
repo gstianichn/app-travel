@@ -1,1246 +1,246 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.dashboard')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@section('page-title', 'Beranda Penumpang')
 
-    <title>TravelKu - Beranda</title>
+@section('content')
+<div class="space-y-6 max-w-6xl mx-auto">
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #087f55;
-            --primary-dark: #066b47;
-            --primary-light: #e3f5ee;
-            --accent: #066b47;
-            --accent-light: #e8f8fc;
-        }
-
-        body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f6f8fc;
-            color: #1f2937;
-        }
-
-        /* =========================
-           NAVBAR
-        ========================== */
-
-        .navbar {
-            height: 72px;
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 7%;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .logo-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 19px;
-        }
-
-        .nav-menu {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-        }
-
-        .nav-menu a {
-            text-decoration: none;
-            color: #4b5563;
-            font-size: 14px;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-
-        .nav-menu a:hover {
-            color: var(--primary);
-        }
-
-        .notification {
-            position: relative;
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: #f3f6fb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: #374151;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -3px;
-            right: -3px;
-            min-width: 17px;
-            height: 17px;
-            padding: 0 4px;
-            border-radius: 20px;
-            background: #ef4444;
-            color: white;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-left: 18px;
-            border-left: 1px solid #e5e7eb;
-        }
-
-        .avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #dbeafe;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .user-label {
-            font-size: 11px;
-            color: #9ca3af;
-        }
-
-        /* =========================
-           HERO
-        ========================== */
-
-        .hero {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            padding: 65px 7% 115px;
-            color: white;
-        }
-
-        .hero-content {
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        .hero h1 {
-            font-size: 38px;
-            line-height: 1.2;
-            margin-bottom: 12px;
-        }
-
-        .hero p {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        /* =========================
-           SEARCH BOX
-        ========================== */
-
-        .search-card {
-            max-width: 1200px;
-            margin: -65px auto 0;
-            position: relative;
-            z-index: 10;
-            background: white;
-            border-radius: 18px;
-            padding: 26px;
-            box-shadow: 0 15px 40px rgba(15, 23, 42, 0.12);
-        }
-
-        .search-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .search-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr auto;
-            gap: 14px;
-            align-items: end;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #6b7280;
-        }
-
-        .form-control {
-            width: 100%;
-            height: 48px;
-            padding: 0 14px;
-            border: 1px solid #dfe3eb;
-            border-radius: 10px;
-            background: #fff;
-            color: #374151;
-            outline: none;
-            font-size: 13px;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-dark);
-        }
-
-        .search-btn {
-            height: 48px;
-            padding: 0 23px;
-            border: none;
-            border-radius: 10px;
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .search-btn:hover {
-            background: var(--primary-dark);
-        }
-
-        /* =========================
-           MAIN
-        ========================== */
-
-        .main-container {
-            max-width: 1200px;
-            margin: 45px auto;
-        }
-
-        .section {
-            margin-bottom: 45px;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 21px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .section-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* =========================
-           QUICK MENU
-        ========================== */
-
-        .quick-menu {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 15px;
-        }
-
-        .quick-card {
-            background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 14px;
-            padding: 20px 12px;
-            text-align: center;
-            text-decoration: none;
-            color: #374151;
-            transition: 0.2s;
-        }
-
-        .quick-card:hover {
-            transform: translateY(-3px);
-            border-color: #bfdbfe;
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.08);
-        }
-
-        .quick-icon {
-            width: 44px;
-            height: 44px;
-            margin: auto auto 10px;
-            border-radius: 12px;
-            background: #eff6ff;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .quick-card span {
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* =========================
-           PROMO
-        ========================== */
-
-        .promo-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-        }
-
-        .promo-card {
-            border-radius: 16px;
-            padding: 24px;
-            min-height: 150px;
-            background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border: 1px solid #bfdbfe;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .promo-card:nth-child(2) {
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-            border-color: #bbf7d0;
-        }
-
-        .promo-card:nth-child(3) {
-            background: linear-gradient(135deg, #fff7ed, #ffedd5);
-            border-color: #fed7aa;
-        }
-
-        .promo-card h3 {
-            font-size: 17px;
-            margin-bottom: 7px;
-        }
-
-        .promo-card p {
-            font-size: 12px;
-            color: #6b7280;
-            max-width: 220px;
-        }
-
-        .promo-code {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            background: white;
-            font-size: 11px;
-            font-weight: 700;
-            color: #2563eb;
-        }
-
-        /* =========================
-           BOOKING
-        ========================== */
-
-        .booking-card {
-            background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 16px;
-            padding: 23px;
-        }
-
-        .booking-empty {
-            text-align: center;
-            padding: 25px;
-            color: #9ca3af;
-            font-size: 13px;
-        }
-
-        .booking-button {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 18px;
-            border-radius: 8px;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* =========================
-           FEATURES
-        ========================== */
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-
-        .feature-card {
-            background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 14px;
-            padding: 20px;
-        }
-
-        .feature-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: #eff6ff;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 13px;
-        }
-
-        .feature-card h3 {
-            font-size: 14px;
-            margin-bottom: 7px;
-        }
-
-        .feature-card p {
-            font-size: 12px;
-            color: #6b7280;
-            line-height: 1.6;
-        }
-
-        /* =========================
-           FOOTER
-        ========================== */
-
-        footer {
-            margin-top: 60px;
-            background: var(--primary-dark);
-            color: white;
-            padding: 40px 7%;
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .footer-logo {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .footer-text {
-            color: #9ca3af;
-            font-size: 12px;
-        }
-
-        /* =========================
-           RESPONSIVE
-        ========================== */
-
-        @media (max-width: 1000px) {
-            .nav-menu {
-                display: none;
-            }
-
-            .search-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .search-btn {
-                width: 100%;
-            }
-
-            .quick-menu {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .feature-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 650px) {
-            .navbar {
-                padding: 0 5%;
-            }
-
-            .user-info {
-                display: none;
-            }
-
-            .hero {
-                padding: 45px 5% 100px;
-            }
-
-            .hero h1 {
-                font-size: 28px;
-            }
-
-            .main-container {
-                margin: 35px 5%;
-            }
-
-            .search-card {
-                margin-left: 5%;
-                margin-right: 5%;
-                padding: 18px;
-            }
-
-            .search-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .quick-menu {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .promo-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-container {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    {{-- =========================
-         NAVBAR
-    ========================== --}}
-
-    <nav class="navbar">
-
-        <a href="{{ route('dashboard.user.index') }}" class="logo">
-            <div class="logo-icon">🚍</div>
-            TravelKu
-        </a>
-
-        <div class="nav-menu">
-
-            <a href="{{ route('dashboard.user.index') }}">
-                Beranda
-            </a>
-
-            <a href="{{ route('dashboard.user.user-booking') }}">
-                Booking Saya
-            </a>
-
-            <a href="{{ route('dashboard.user.user-history') }}">
-                Riwayat
-            </a>
-
-            <a href="{{ route('dashboard.user.user-refund') }}">
-                Refund
-            </a>
-
-            <a href="{{ route('dashboard.user.user-promo') }}">
-                Promo
-            </a>
-
-        </div>
-
-        <div class="user-menu">
-
-            <a href="#" class="notification">
-                🔔
-                <span class="notification-badge">3</span>
-            </a>
-
-            <div class="avatar">
-                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-            </div>
-
-            <div class="user-info">
-                <span class="user-name">
-                    {{ auth()->user()->name ?? 'User' }}
-                </span>
-
-                <span class="user-label">
-                    Pelanggan
-                </span>
-            </div>
-
+    <!-- 1. BANNER STATUS PERJALANAN AKTIF (JIKA ADA TIKET TERKONFIRMASI) -->
+    @if ($activeBooking && $activeBooking->schedule)
+        <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="rounded-2xl p-6 text-white shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button class="background: red; color: white; padding: 4px 2px;">
-                        Logout
-                    </button>
-                </form>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="inline-block px-2.5 py-1 bg-white/20 rounded-full text-xs font-semibold uppercase tracking-wider">Perjalanan Mendatang</span>
+                    <span class="text-xs bg-emerald-400 text-emerald-950 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Terkonfirmasi</span>
+                </div>
+                <h3 class="text-xl font-bold">
+                    {{ $activeBooking->schedule->route?->origin?->name ?? 'Asal' }} ➔ {{ $activeBooking->schedule->route?->destination?->name ?? 'Tujuan' }}
+                </h3>
+                <p class="text-sm mt-1" style="color:rgba(255,255,255,.85);">
+                    {{ $activeBooking->schedule->vehicle?->type ?? 'Toyota HiAce Premio' }} ({{ $activeBooking->schedule->vehicle?->plate_number ?? '-' }}) • 
+                    {{ \Carbon\Carbon::parse($activeBooking->schedule->departure_date)->translatedFormat('d M Y') }}, 
+                    {{ \Carbon\Carbon::parse($activeBooking->schedule->departure_time)->format('H:i') }} WIB • 
+                    Kursi: <span class="font-bold text-white">{{ $activeBooking->passengerSeatNumbers() }}</span>
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('dashboard.user.user-tiket') }}" style="background:white; color:#087f55;" class="px-5 py-2.5 font-bold text-sm rounded-xl hover:opacity-90 transition shadow-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1zm12 0h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1zM5 20h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1z"/></svg>
+                    Lihat E-Ticket QR
+                </a>
+            </div>
+        </div>
+    @else
+        <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="rounded-2xl p-6 text-white shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <span class="inline-block px-2.5 py-1 bg-white/20 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">Pemesanan Shuttle Cepat</span>
+                <h3 class="text-xl font-bold">Siap Berangkat Hari Ini?</h3>
+                <p class="text-sm mt-1" style="color:rgba(255,255,255,.80);">Nikmati perjalanan nyaman minibus eksekutif Toyota HiAce Premio dengan fasilitas lengkap & aman.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="#widget-pencarian" style="background:white; color:#087f55;" class="px-5 py-2.5 font-bold text-sm rounded-xl hover:opacity-90 transition shadow-sm">
+                    Pesan Tiket Sekarang ↓
+                </a>
+            </div>
+        </div>
+    @endif
+
+    <!-- 2. WIDGET PENCARIAN RUTE & PENJADWALAN -->
+    <div id="widget-pencarian" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 border-b border-slate-100 pb-3 gap-2">
+            <div>
+                <h4 class="font-bold text-slate-800 text-base">Cari Jadwal Shuttle & Armada</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Tentukan rute asal, tujuan, tanggal keberangkatan, dan jumlah kursi</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold" style="background:#e3f5ee; color:#087f55;">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Armada Aktif Siap Jalan
+                </span>
+            </div>
+        </div>
+
+        <form action="{{ route('dashboard.user.search') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {{-- Titik Asal --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">DARI (TITIK ASAL)</label>
+                <div class="relative">
+                    <select name="origin" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
+                        <option value="">Pilih Titik Asal</option>
+                        @foreach($locations as $location)
+                            <option value="{{ $location->id }}" {{ (request('origin') == $location->id || (empty(request('origin')) && str_contains(strtolower($location->name), 'bandung'))) ? 'selected' : '' }}>
+                                {{ $location->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-        </div>
-
-    </nav>
-
-
-    {{-- =========================
-         HERO
-    ========================== --}}
-
-    <section class="hero">
-
-        <div class="hero-content">
-
-            <h1>
-                Mau pergi ke mana hari ini?
-            </h1>
-
-            <p>
-                Cari rute travel, pilih jadwal, kursi favorit,
-                dan pesan perjalananmu dengan mudah.
-            </p>
-
-        </div>
-
-    </section>
-
-
-    {{-- =========================
-         SEARCH
-    ========================== --}}
-
-    <div class="search-card">
-
-        <div class="search-title">
-            🔎 Cari Perjalanan
-        </div>
-
-        <form action="#" method="GET">
-
-            <div class="search-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        Kota Asal
-                    </label>
-
-                    <select
-                        name="origin"
-                        class="form-control"
-                        required
-                    >
-                        <option value="">
-                            Pilih kota asal
-                        </option>
-
-                        <option value="Jakarta">
-                            Jakarta
-                        </option>
-
-                        <option value="Bandung">
-                            Bandung
-                        </option>
-
-                        <option value="Cianjur">
-                            Cianjur
-                        </option>
-
-                        <option value="Sukabumi">
-                            Sukabumi
-                        </option>
-
+            {{-- Titik Tujuan --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">KE (TITIK TUJUAN)</label>
+                <div class="relative">
+                    <select name="destination" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
+                        <option value="">Pilih Titik Tujuan</option>
+                        @foreach($locations as $location)
+                            <option value="{{ $location->id }}" {{ (request('destination') == $location->id || (empty(request('destination')) && str_contains(strtolower($location->name), 'jakarta'))) ? 'selected' : '' }}>
+                                {{ $location->name }}
+                            </option>
+                        @endforeach
                     </select>
-
                 </div>
+            </div>
 
+            {{-- Tanggal Perjalanan --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">TANGGAL PERJALANAN</label>
+                <input type="date" name="departure_date" required min="{{ date('Y-m-d') }}" value="{{ request('departure_date', date('Y-m-d')) }}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
+            </div>
 
-                <div class="form-group">
+            {{-- Jumlah Kursi --}}
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">JUMLAH KURSI</label>
+                <select name="passengers" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
+                    @for($i = 1; $i <= 10; $i++)
+                        <option value="{{ $i }}" {{ request('passengers', 1) == $i ? 'selected' : '' }}>{{ $i }} Kursi Penumpang</option>
+                    @endfor
+                </select>
+            </div>
 
-                    <label>
-                        Kota Tujuan
-                    </label>
-
-                    <select
-                        name="destination"
-                        class="form-control"
-                        required
-                    >
-                        <option value="">
-                            Pilih kota tujuan
-                        </option>
-
-                        <option value="Jakarta">
-                            Jakarta
-                        </option>
-
-                        <option value="Bandung">
-                            Bandung
-                        </option>
-
-                        <option value="Cianjur">
-                            Cianjur
-                        </option>
-
-                        <option value="Sukabumi">
-                            Sukabumi
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Tanggal Berangkat
-                    </label>
-
-                    <input
-                        type="date"
-                        name="date"
-                        class="form-control"
-                        min="{{ date('Y-m-d') }}"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Jumlah Penumpang
-                    </label>
-
-                    <select
-                        name="passengers"
-                        class="form-control"
-                        required
-                    >
-                        <option value="1">
-                            1 Penumpang
-                        </option>
-
-                        <option value="2">
-                            2 Penumpang
-                        </option>
-
-                        <option value="3">
-                            3 Penumpang
-                        </option>
-
-                        <option value="4">
-                            4 Penumpang
-                        </option>
-
-                        <option value="5">
-                            5 Penumpang
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="search-btn"
-                >
-                    Cari Travel
+            {{-- Tombol Cari --}}
+            <div class="flex items-end">
+                <button type="submit" class="w-full text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-sm" style="background:#087f55;" onmouseover="this.style.background='#066b47'" onmouseout="this.style.background='#087f55'">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>
+                    Cari Tiket
                 </button>
+            </div>
+        </form>
 
+        {{-- Quick Rute Populer --}}
+        <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
+            <span class="text-slate-400 font-medium">Rute Cepat:</span>
+            @php
+                $bandungLoc = $locations->first(fn($l) => str_contains(strtolower($l->name), 'bandung'));
+                $jakartaLoc = $locations->first(fn($l) => str_contains(strtolower($l->name), 'jakarta'));
+            @endphp
+            @if ($bandungLoc && $jakartaLoc)
+                <a href="{{ route('dashboard.user.search', ['origin' => $bandungLoc->id, 'destination' => $jakartaLoc->id, 'departure_date' => date('Y-m-d'), 'passengers' => 1]) }}" class="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition font-medium">
+                    ⚡ Bandung (Dipatiukur) ➔ Jakarta (Semanggi)
+                </a>
+                <a href="{{ route('dashboard.user.search', ['origin' => $jakartaLoc->id, 'destination' => $bandungLoc->id, 'departure_date' => date('Y-m-d'), 'passengers' => 1]) }}" class="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition font-medium">
+                    ⚡ Jakarta (Semanggi) ➔ Bandung (Dipatiukur)
+                </a>
+            @endif
+        </div>
+    </div>
+
+    <!-- 3. KARTU VOUCHER PROMO & RIWAYAT TERAKHIR -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Voucher Promo Aktif -->
+        <div class="space-y-4">
+            @foreach($promos as $promo)
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold uppercase text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-md">{{ $promo['discount_label'] }}</span>
+                            <span class="text-xs text-slate-400">s/d {{ $promo['valid_until'] }}</span>
+                        </div>
+                        <h5 class="font-bold text-slate-800 text-base">{{ $promo['title'] }}</h5>
+                        <p class="text-xs text-slate-500 mt-1 leading-relaxed">{{ $promo['description'] }}</p>
+                        
+                        <div class="mt-3.5 p-2.5 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-between bg-slate-50">
+                            <span class="font-mono font-bold tracking-wider text-sm" style="color:#087f55;">
+                                {{ $promo['code'] }}
+                            </span>
+                            <button type="button" onclick="navigator.clipboard.writeText('{{ $promo['code'] }}'); alert('Kode promo {{ $promo['code'] }} berhasil disalin!');" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
+                                Salin Kode
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Ringkasan Tiket & Transaksi Terakhir -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-base">Aktivitas Pemesanan Terakhir</h4>
+                        <p class="text-xs text-slate-400 mt-0.5">Pantau status transaksi tiket perjalanan Anda</p>
+                    </div>
+                    <a href="{{ route('dashboard.user.user-tiket') }}" class="text-xs font-semibold hover:underline" style="color:#087f55;">
+                        Lihat Semua Tiket →
+                    </a>
+                </div>
+
+                @if ($recentBookings->isNotEmpty())
+                    <div class="space-y-3">
+                        @foreach ($recentBookings as $recent)
+                            @php
+                                $isPaid = in_array(strtolower($recent->status), ['paid', 'confirmed', 'success', 'lunas']);
+                                $isPending = strtolower($recent->status) === 'pending';
+                            @endphp
+                            <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs hover:border-slate-200 transition">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-mono font-bold text-slate-800">{{ $recent->booking_code }}</span>
+                                        @if ($recent->schedule?->vehicle)
+                                            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-200 text-slate-700 font-medium">
+                                                {{ $recent->schedule->vehicle->type }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-slate-600 font-medium">
+                                        {{ $recent->schedule?->route?->origin?->name ?? '-' }} ➔ {{ $recent->schedule?->route?->destination?->name ?? '-' }}
+                                    </p>
+                                    <p class="text-[11px] text-slate-400">
+                                        {{ $recent->schedule?->departure_date ? \Carbon\Carbon::parse($recent->schedule->departure_date)->translatedFormat('d M Y') : '-' }} • 
+                                        {{ $recent->total_passenger }} Penumpang (Kursi: {{ $recent->passengerSeatNumbers() }})
+                                    </p>
+                                </div>
+                                <div class="text-right space-y-1.5">
+                                    @if ($isPaid)
+                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            Lunas / Terkonfirmasi
+                                        </span>
+                                    @elseif ($isPending)
+                                        <a href="{{ route('dashboard.user.booking.pembayaran', $recent) }}" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">
+                                            Menunggu Pembayaran →
+                                        </a>
+                                    @else
+                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                            {{ ucfirst($recent->status) }}
+                                        </span>
+                                    @endif
+                                    <p class="font-bold text-slate-800 text-sm">
+                                        Rp {{ number_format($recent->total_price, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-10">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background:#e3f5ee;">
+                            <svg class="w-6 h-6" fill="none" stroke="#087f55" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/></svg>
+                        </div>
+                        <p class="font-semibold text-slate-700 text-sm">Belum Ada Transaksi</p>
+                        <p class="text-xs text-slate-400 mt-1">Cari jadwal shuttle di atas untuk memulai pemesanan perjalanan Anda.</p>
+                    </div>
+                @endif
             </div>
 
-        </form>
+            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>Butuh bantuan customer support?</span>
+                <a href="{{ route('dashboard.user.user-akun') }}" class="font-semibold hover:underline" style="color:#087f55;">
+                    Pusat Bantuan & WhatsApp CS
+                </a>
+            </div>
+        </div>
 
     </div>
 
-
-    {{-- =========================
-         MAIN CONTENT
-    ========================== --}}
-
-    <main class="main-container">
-
-
-        {{-- QUICK MENU --}}
-
-        <section class="section">
-
-            <div class="section-header">
-
-                <h2 class="section-title">
-                    Menu Utama
-                </h2>
-
-            </div>
-
-            <div class="quick-menu">
-
-                <a
-                    href="#"
-                    class="quick-card"
-                >
-                    <div class="quick-icon">
-                        🔎
-                    </div>
-
-                    <span>
-                        Cari Rute
-                    </span>
-                </a>
-
-
-                <a
-                    href="#"
-                    class="quick-card"
-                >
-                    <div class="quick-icon">
-                        📅
-                    </div>
-
-                    <span>
-                        Jadwal
-                    </span>
-                </a>
-
-
-                <a
-                    href="#"
-                    class="quick-card"
-                >
-                    <div class="quick-icon">
-                        🚐
-                    </div>
-
-                    <span>
-                        Kendaraan
-                    </span>
-                </a>
-
-
-                <a
-                    href="#"
-                    class="quick-card"
-                >
-                    <div class="quick-icon">
-                        🎫
-                    </div>
-
-                    <span>
-                        Booking Saya
-                    </span>
-                </a>
-
-
-                <a
-                    href="#"
-                    class="quick-card"
-                >
-                    <div class="quick-icon">
-                        🎟️
-                    </div>
-
-                    <span>
-                        E-Ticket
-                    </span>
-                </a>
-
-
-                <a
-                    href="#"
-                    class="quick-card"
-                >
-                    <div class="quick-icon">
-                        📋
-                    </div>
-
-                    <span>
-                        Riwayat
-                    </span>
-                </a>
-
-            </div>
-
-        </section>
-
-
-        {{-- BOOKING AKTIF --}}
-
-        <section class="section">
-
-            <div class="section-header">
-
-                <h2 class="section-title">
-                    Booking Saya
-                </h2>
-
-                <a
-                    href="#"
-                    class="section-link"
-                >
-                    Lihat Semua
-                </a>
-
-            </div>
-
-            <div class="booking-card">
-
-                @if(isset($activeBookings) && $activeBookings->count())
-
-                    @foreach($activeBookings as $booking)
-
-                        <div>
-
-                            <strong>
-                                {{ $booking->origin }}
-                                →
-                                {{ $booking->destination }}
-                            </strong>
-
-                            <p>
-                                {{ $booking->travel_date }}
-                                ·
-                                {{ $booking->departure_time }}
-                            </p>
-
-                        </div>
-
-                    @endforeach
-
-                @else
-
-                    <div class="booking-empty">
-
-                        <div style="font-size: 35px; margin-bottom: 10px;">
-                            🎫
-                        </div>
-
-                        <p>
-                            Belum ada booking aktif.
-                        </p>
-
-                        <a
-                            href="#"
-                            class="booking-button"
-                        >
-                            Cari Perjalanan
-                        </a>
-
-                    </div>
-
-                @endif
-
-            </div>
-
-        </section>
-
-
-        {{-- PROMO --}}
-
-        <section class="section">
-
-            <div class="section-header">
-
-                <h2 class="section-title">
-                    Promo Untuk Kamu
-                </h2>
-
-                <a
-                    href="#"
-                    class="section-link"
-                >
-                    Lihat Semua
-                </a>
-
-            </div>
-
-
-            <div class="promo-grid">
-
-                <div class="promo-card">
-
-                    <h3>
-                        Diskon Perjalanan
-                    </h3>
-
-                    <p>
-                        Dapatkan potongan harga untuk perjalanan pilihanmu.
-                    </p>
-
-                    <span class="promo-code">
-                        TRAVEL10
-                    </span>
-
-                </div>
-
-
-                <div class="promo-card">
-
-                    <h3>
-                        Promo Pelanggan
-                    </h3>
-
-                    <p>
-                        Gunakan promo khusus pelanggan untuk perjalanan berikutnya.
-                    </p>
-
-                    <span class="promo-code">
-                        USER20
-                    </span>
-
-                </div>
-
-
-                <div class="promo-card">
-
-                    <h3>
-                        Hemat Lebih Banyak
-                    </h3>
-
-                    <p>
-                        Nikmati harga perjalanan yang lebih hemat dengan kode promo.
-                    </p>
-
-                    <span class="promo-code">
-                        HEMAT15
-                    </span>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        {{-- FITUR --}}
-
-        <section class="section">
-
-            <div class="section-header">
-
-                <h2 class="section-title">
-                    Fitur TravelKu
-                </h2>
-
-            </div>
-
-
-            <div class="feature-grid">
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        🪑
-                    </div>
-
-                    <h3>
-                        Pilih Kursi
-                    </h3>
-
-                    <p>
-                        Pilih kursi yang tersedia sesuai dengan posisi yang kamu inginkan.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        💳
-                    </div>
-
-                    <h3>
-                        Pembayaran
-                    </h3>
-
-                    <p>
-                        Lakukan pembayaran booking melalui metode pembayaran yang tersedia.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        🎟️
-                    </div>
-
-                    <h3>
-                        E-Ticket
-                    </h3>
-
-                    <p>
-                        Dapatkan e-ticket setelah pembayaran berhasil dilakukan.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        ⭐
-                    </div>
-
-                    <h3>
-                        Rating & Review
-                    </h3>
-
-                    <p>
-                        Berikan rating dan review terhadap perjalanan yang telah kamu lakukan.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        ❌
-                    </div>
-
-                    <h3>
-                        Pembatalan Booking
-                    </h3>
-
-                    <p>
-                        Batalkan booking sesuai dengan ketentuan pembatalan yang berlaku.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        💰
-                    </div>
-
-                    <h3>
-                        Refund
-                    </h3>
-
-                    <p>
-                        Ajukan refund dan pantau status pengajuan refund perjalananmu.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        📢
-                    </div>
-
-                    <h3>
-                        Notifikasi
-                    </h3>
-
-                    <p>
-                        Dapatkan informasi terbaru mengenai booking, pembayaran, dan perjalanan.
-                    </p>
-
-                </div>
-
-
-                <div class="feature-card">
-
-                    <div class="feature-icon">
-                        🔐
-                    </div>
-
-                    <h3>
-                        Akun Aman
-                    </h3>
-
-                    <p>
-                        Kelola akun, verifikasi OTP, dan gunakan fitur lupa password dengan mudah.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    {{-- =========================
-         FOOTER
-    ========================== --}}
-
-    <footer>
-
-        <div class="footer-container">
-
-            <div class="footer-logo">
-                ✈ TravelKu
-            </div>
-
-            <div class="footer-text">
-                © {{ date('Y') }} TravelKu. Semua hak dilindungi.
-            </div>
-
-        </div>
-
-    </footer>
-
-</body>
-
-</html>
+</div>
+@endsection

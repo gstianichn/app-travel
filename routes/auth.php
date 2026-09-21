@@ -1,12 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\UserLoginController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,14 +22,13 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/login', [
         LoginController::class,
-        'create'
+        'create',
     ])->name('login');
 
     Route::post('/login', [
         LoginController::class,
-        'store'
+        'store',
     ])->name('login.process');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -41,14 +38,13 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/user/login', [
         UserLoginController::class,
-        'create'
+        'create',
     ])->name('user.login');
 
     Route::post('/user/login', [
         UserLoginController::class,
-        'store'
+        'store',
     ])->name('user.login.store');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -58,14 +54,13 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [
         RegisterController::class,
-        'create'
+        'create',
     ])->name('register');
 
     Route::post('/register', [
         RegisterController::class,
-        'store'
+        'store',
     ])->name('register.store');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -76,17 +71,16 @@ Route::middleware('guest')->group(function () {
     // Menampilkan halaman Forgot Password
     Route::get('/forgot-password', [
         ForgotPasswordController::class,
-        'create'
+        'create',
     ])->name('password.request');
 
     // Memproses permintaan Forgot Password
     Route::post('/forgot-password', [
         ForgotPasswordController::class,
-        'store'
+        'store',
     ])->name('password.email');
 
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -97,16 +91,15 @@ Route::middleware('guest')->group(function () {
 // Logout Login Umum
 Route::post('/logout', [
     LoginController::class,
-    'destroy'
+    'destroy',
 ])
     ->middleware('auth')
     ->name('logout');
 
-
 // Logout User
 Route::post('/user/logout', [
     UserLoginController::class,
-    'destroy'
+    'destroy',
 ])
     ->middleware(['auth', 'role:user'])
     ->name('user.logout');

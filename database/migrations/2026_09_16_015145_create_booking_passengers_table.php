@@ -34,7 +34,7 @@ return new class extends Migration
 
             $table->unique([
                 'booking_id',
-                'seat_id'
+                'seat_id',
             ]);
         });
     }

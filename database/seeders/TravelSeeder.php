@@ -80,19 +80,42 @@ class TravelSeeder extends Seeder
             ]
         );
 
-        $jakarta = Location::firstOrCreate(
+        $vehicle1->ensureSeatsExist();
+        $vehicle2->ensureSeatsExist();
+        $vehicle3->ensureSeatsExist();
+        $vehicle4->ensureSeatsExist();
+
+        $jakarta = Location::updateOrCreate(
             ['code' => 'JKT'],
-            ['name' => 'Jakarta'],
+            [
+                'name' => 'Semanggi (Jakarta)',
+                'city' => 'Jakarta',
+                'address' => 'Jl. Jend. Sudirman Kav. 50, Semanggi, Jakarta Selatan',
+                'type' => 'pool',
+                'is_active' => true,
+            ]
         );
 
-        $bandung = Location::firstOrCreate(
+        $bandung = Location::updateOrCreate(
             ['code' => 'BDO'],
-            ['name' => 'Bandung'],
+            [
+                'name' => 'Pool Dipatiukur (Bandung)',
+                'city' => 'Bandung',
+                'address' => 'Jl. Dipati Ukur No. 45, Lebakgede, Coblong, Bandung',
+                'type' => 'pool',
+                'is_active' => true,
+            ]
         );
 
-        $cianjur = Location::firstOrCreate(
+        $cianjur = Location::updateOrCreate(
             ['code' => 'CJR'],
-            ['name' => 'Cianjur'],
+            [
+                'name' => 'Terminal Pasirhayam (Cianjur)',
+                'city' => 'Cianjur',
+                'address' => 'Jl. Raya Cibeber, Pasirhayam, Cianjur',
+                'type' => 'pool',
+                'is_active' => true,
+            ]
         );
 
         $jakartaBandung = Route::firstOrCreate(
@@ -101,9 +124,9 @@ class TravelSeeder extends Seeder
                 'destination_id' => $bandung->id,
             ],
             [
-                'price' => 100000,
-                'duration' => '3 Jam',
-            ],
+                'price' => 125000,
+                'duration' => '2 Jam 45 Menit',
+            ]
         );
 
         $bandungJakarta = Route::firstOrCreate(
@@ -112,9 +135,9 @@ class TravelSeeder extends Seeder
                 'destination_id' => $jakarta->id,
             ],
             [
-                'price' => 100000,
-                'duration' => '3 Jam',
-            ],
+                'price' => 125000,
+                'duration' => '2 Jam 45 Menit',
+            ]
         );
 
         $jakartaCianjur = Route::firstOrCreate(
@@ -125,54 +148,98 @@ class TravelSeeder extends Seeder
             [
                 'price' => 85000,
                 'duration' => '2 Jam 30 Menit',
-            ],
-        );
-
-        Schedule::firstOrCreate(
-            [
-                'route_id' => $jakartaBandung->id,
-                'departure_date' => now()->addDay()->toDateString(),
-                'departure_time' => '07:00',
-            ],
-            [
-                'vehicle_id' => $vehicle1->id,
-                'available_seats' => 8,
-                'status' => 'Scheduled',
             ]
         );
 
-        Schedule::firstOrCreate(
-            [
-                'route_id' => $jakartaBandung->id,
-                'departure_date' => now()->addDay()->toDateString(),
-                'departure_time' => '10:00',
-            ],
-            [
-                'vehicle_id' => $vehicle2->id,
-                'available_seats' => 5,
-                'status' => 'Scheduled',
-            ]
-        );
+        $dates = [now()->toDateString(), now()->addDay()->toDateString()];
 
-        Schedule::firstOrCreate([
-            'route_id' => $jakartaBandung->id,
-            'departure_date' => now()->addDay()->toDateString(),
-            'departure_time' => '14:00',
-            'available_seats' => 3,
-        ]);
+        foreach ($dates as $date) {
+            // Bandung -> Jakarta
+            Schedule::updateOrCreate(
+                [
+                    'route_id' => $bandungJakarta->id,
+                    'departure_date' => $date,
+                    'departure_time' => '08:00',
+                ],
+                [
+                    'vehicle_id' => $vehicle1->id,
+                    'available_seats' => 8,
+                    'price' => 125000,
+                    'status' => 'Scheduled',
+                ]
+            );
 
-        Schedule::firstOrCreate([
-            'route_id' => $bandungJakarta->id,
-            'departure_date' => now()->addDay()->toDateString(),
-            'departure_time' => '08:00',
-            'available_seats' => 7,
-        ]);
+            Schedule::updateOrCreate(
+                [
+                    'route_id' => $bandungJakarta->id,
+                    'departure_date' => $date,
+                    'departure_time' => '14:30',
+                ],
+                [
+                    'vehicle_id' => $vehicle4->id,
+                    'available_seats' => 9,
+                    'price' => 125000,
+                    'status' => 'Scheduled',
+                ]
+            );
 
-        Schedule::firstOrCreate([
-            'route_id' => $jakartaCianjur->id,
-            'departure_date' => now()->addDay()->toDateString(),
-            'departure_time' => '09:00',
-            'available_seats' => 6,
-        ]);
+            // Jakarta -> Bandung
+            Schedule::updateOrCreate(
+                [
+                    'route_id' => $jakartaBandung->id,
+                    'departure_date' => $date,
+                    'departure_time' => '07:00',
+                ],
+                [
+                    'vehicle_id' => $vehicle1->id,
+                    'available_seats' => 7,
+                    'price' => 125000,
+                    'status' => 'Scheduled',
+                ]
+            );
+
+            Schedule::updateOrCreate(
+                [
+                    'route_id' => $jakartaBandung->id,
+                    'departure_date' => $date,
+                    'departure_time' => '10:00',
+                ],
+                [
+                    'vehicle_id' => $vehicle2->id,
+                    'available_seats' => 12,
+                    'price' => 110000,
+                    'status' => 'Scheduled',
+                ]
+            );
+
+            Schedule::updateOrCreate(
+                [
+                    'route_id' => $jakartaBandung->id,
+                    'departure_date' => $date,
+                    'departure_time' => '14:00',
+                ],
+                [
+                    'vehicle_id' => $vehicle4->id,
+                    'available_seats' => 6,
+                    'price' => 125000,
+                    'status' => 'Scheduled',
+                ]
+            );
+
+            // Jakarta -> Cianjur
+            Schedule::updateOrCreate(
+                [
+                    'route_id' => $jakartaCianjur->id,
+                    'departure_date' => $date,
+                    'departure_time' => '09:00',
+                ],
+                [
+                    'vehicle_id' => $vehicle2->id,
+                    'available_seats' => 10,
+                    'price' => 85000,
+                    'status' => 'Scheduled',
+                ]
+            );
+        }
     }
 }

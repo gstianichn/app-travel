@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -60,12 +61,12 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $user = \App\Models\User::where(
+        $user = User::where(
             'email',
             $credentials['email']
         )->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()
                 ->withInput($request->only('email', 'role'))
                 ->withErrors([
@@ -79,7 +80,7 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (!Hash::check(
+        if (! Hash::check(
             $credentials['password'],
             $user->password
         )) {
@@ -112,7 +113,7 @@ class LoginController extends Controller
 
         if (
             empty($user->access_code) ||
-            !Hash::check(
+            ! Hash::check(
                 $credentials['access_code'],
                 $user->access_code
             )

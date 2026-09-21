@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -67,6 +69,11 @@ class Booking extends Model
     public function refund(): HasOne
     {
         return $this->hasOne(Refund::class);
+    }
+
+    public function review(): HasOne
+    {
+        return $this->hasOne(TripReview::class);
     }
 
     /**
@@ -152,5 +159,57 @@ class Booking extends Model
     public function customerPhone(): string
     {
         return $this->user?->phone ?? ($this->passengers->first()?->phone ?? '-');
+    }
+
+    /**
+     * Dapatkan Carbon instance waktu keberangkatan yang akurat.
+     */
+    public function getDepartureDateTimeAttribute(): Carbon
+    {
+        if (! $this->schedule) {
+            return Carbon::now();
+        }
+
+        $dateStr = $this->schedule->departure_date ? $this->schedule->departure_date->format('Y-m-d') : date('Y-m-d');
+        $rawTime = $this->schedule->departure_time;
+
+        if ($rawTime instanceof CarbonInterface) {
+            $timeStr = $rawTime->format('H:i:s');
+        } elseif (is_string($rawTime)) {
+            $parts = explode(' ', trim($rawTime));
+            $timeStr = end($parts);
+        } else {
+            $timeStr = '00:00:00';
+        }
+
+        return Carbon::parse($dateStr.' '.$timeStr);
+    }
+
+    /**
+     * Evaluasi apakah pemesanan masih berada dalam cut-off time pembatalan & refund (maks. H-1 jam).
+     */
+    public function canRefund(): bool
+    {
+        if (! in_array(strtolower($this->status ?? ''), ['paid', 'confirmed', 'success', 'lunas'])) {
+            return false;
+        }
+
+        if (! $this->schedule) {
+            return false;
+        }
+
+        return Carbon::now()->diffInHours($this->departure_date_time, false) >= 1;
+    }
+
+    /**
+     * Hitung sisa jam hingga keberangkatan.
+     */
+    public function hoursUntilDeparture(): int
+    {
+        if (! $this->schedule) {
+            return 0;
+        }
+
+        return (int) Carbon::now()->diffInHours($this->departure_date_time, false);
     }
 }

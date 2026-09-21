@@ -553,4 +553,85 @@ Route::middleware(['auth', 'role:user'])
             'index',
         ])->name('dashboard.user.user-promo');
 
+        Route::get('/user/cari-jadwal', [
+            UserDashboardController::class,
+            'search',
+        ])->name('dashboard.user.search');
+
+        Route::get('/tiket/dashboard', [
+            UserDashboardController::class,
+            'tiket',
+        ])->name('dashboard.user.user-tiket');
+
+        Route::get('/notifikasi/dashboard', [
+            UserDashboardController::class,
+            'notifikasi',
+        ])->name('dashboard.user.user-notifikasi');
+
+        Route::get('/akun/dashboard', [
+            UserDashboardController::class,
+            'akun',
+        ])->name('dashboard.user.user-akun');
+
+        // Sub-Flow Transaksi (Pencarian s/d Pembayaran)
+        Route::get('/user/booking/pilih-kursi/{schedule}', [
+            UserDashboardController::class,
+            'selectSeat',
+        ])->name('dashboard.user.booking.pilih-kursi');
+
+        Route::post('/user/booking/lock-seats', [
+            UserDashboardController::class,
+            'lockSeats',
+        ])->name('dashboard.user.booking.lock-seats');
+
+        Route::get('/user/booking/data-penumpang/{booking}', [
+            UserDashboardController::class,
+            'passengerData',
+        ])->name('dashboard.user.booking.data-penumpang');
+
+        Route::post('/user/booking/validate-promo', [
+            UserDashboardController::class,
+            'validatePromo',
+        ])->name('dashboard.user.booking.validate-promo');
+
+        Route::post('/user/booking/save-passenger/{booking}', [
+            UserDashboardController::class,
+            'savePassengerData',
+        ])->name('dashboard.user.booking.save-passenger');
+
+        Route::get('/user/booking/pembayaran/{booking}', [
+            UserDashboardController::class,
+            'payment',
+        ])->name('dashboard.user.booking.pembayaran');
+
+        Route::post('/user/booking/simulate-payment/{booking}', [
+            UserDashboardController::class,
+            'simulatePayment',
+        ])->name('dashboard.user.booking.simulate-payment');
+
+        Route::get('/user/booking/sukses/{booking}', [
+            UserDashboardController::class,
+            'paymentSuccess',
+        ])->name('dashboard.user.booking.sukses');
+
+        // Sub-Flow Tab Tiket Saya: Check-in, Pembatalan & Refund, Ulasan
+        Route::post('/user/tiket/{ticket}/check-in', [
+            UserDashboardController::class,
+            'checkInTicket',
+        ])->name('dashboard.user.tiket.check-in');
+
+        Route::post('/user/tiket/{booking}/refund', [
+            UserDashboardController::class,
+            'submitRefund',
+        ])->name('dashboard.user.tiket.refund');
+
+        Route::post('/user/tiket/review/{booking}', [
+            UserDashboardController::class,
+            'submitReview',
+        ])->name('dashboard.user.tiket.review');
+
     });
+
+// Webhook Payment Gateway Otomatis
+Route::post('/api/payment/webhook', [UserDashboardController::class, 'paymentWebhook'])->name('payment.webhook');
+Route::post('/payment/webhook', [UserDashboardController::class, 'paymentWebhook']);

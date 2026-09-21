@@ -38,7 +38,7 @@ return new class extends Migration
 
             $table->index([
                 'travel_route_id',
-                'departure_at'
+                'departure_at',
             ]);
         });
     }
