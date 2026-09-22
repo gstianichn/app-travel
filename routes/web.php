@@ -472,7 +472,7 @@ Route::middleware(['auth', 'role:admin_utama'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:staff'])
+Route::middleware(['auth', 'role:staff,admin_utama'])
     ->group(function () {
 
         Route::get('/admin/dashboard', [
@@ -489,6 +489,21 @@ Route::middleware(['auth', 'role:staff'])
             AdminBiasaDashboardController::class,
             'informasiPerjalanan',
         ])->name('dashboard.admin-biasa.perjalanan');
+
+        Route::get('/admin/validasi-tiket', [
+            AdminBiasaDashboardController::class,
+            'validasiTiket',
+        ])->name('dashboard.admin-biasa.validasi-tiket');
+
+        Route::post('/admin/validasi-tiket/validate', [
+            AdminBiasaDashboardController::class,
+            'ajaxValidateTicket',
+        ])->name('dashboard.admin-biasa.validasi-tiket.validate');
+
+        Route::patch('/admin/validasi-tiket/passenger/{passenger}/status', [
+            AdminBiasaDashboardController::class,
+            'ajaxUpdatePassengerBoardingStatus',
+        ])->name('dashboard.admin-biasa.validasi-tiket.update-status');
 
     });
 

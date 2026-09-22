@@ -916,7 +916,7 @@
             </a>
 
             <!-- VALIDASI E-TICKET -->
-            <a href="{{ route('dashboard.admin-biasa.index') }}">
+            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}">
                 <div class="menu-icon">🎟️</div>
                 <span>Validasi E-Ticket</span>
             </a>

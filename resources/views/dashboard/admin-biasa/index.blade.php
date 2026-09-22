@@ -1572,7 +1572,7 @@
             </a>
 
 
-            <a href="#">
+            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}">
                 <div class="menu-icon">
                     🎟️
                 </div>
@@ -1869,13 +1869,13 @@
 
                         <!-- Tombol Aksi Cepat Kartu -->
                         <div class="dep-card-actions">
-                            <button
-                                type="button"
+                            <a
+                                href="{{ route('dashboard.admin-biasa.validasi-tiket') }}?schedule_id={{ $dep->id }}"
                                 class="btn-action-primary"
-                                onclick="openScannerForTrip('{{ $dep->id }}', '{{ $dep->route_name }}', '{{ $dep->plate_number }}')"
+                                style="text-align: center; text-decoration: none;"
                             >
                                 📷 Scan Boarding Pass
-                            </button>
+                            </a>
 
                             <a
                                 href="{{ route('dashboard.admin-biasa.booking') }}?schedule_id={{ $dep->id }}"
@@ -1908,7 +1908,7 @@
 
                     <div class="quick-menu">
 
-                        <a href="javascript:void(0)" onclick="openScannerModal()" class="quick-item">
+                        <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}" class="quick-item">
                             <div class="quick-icon" style="background: #eefbf5; color: #087f55;">
                                 📷
                             </div>

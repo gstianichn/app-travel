@@ -15,7 +15,16 @@ class BookingPassenger extends Model
         'name',
         'phone',
         'special_request',
+        'boarding_status',
+        'boarded_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'boarded_at' => 'datetime',
+        ];
+    }
 
     public function booking()
     {
