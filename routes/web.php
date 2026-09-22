@@ -480,6 +480,16 @@ Route::middleware(['auth', 'role:staff'])
             'index',
         ])->name('dashboard.admin-biasa.index');
 
+        Route::get('/admin/manajemen-booking', [
+            AdminBiasaDashboardController::class,
+            'manajemenBooking',
+        ])->name('dashboard.admin-biasa.booking');
+
+        Route::get('/admin/informasi-perjalanan', [
+            AdminBiasaDashboardController::class,
+            'informasiPerjalanan',
+        ])->name('dashboard.admin-biasa.perjalanan');
+
     });
 
 /*

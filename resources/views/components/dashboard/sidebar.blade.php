@@ -122,29 +122,29 @@
 
 
                     <div class="px-4 pb-2 pt-5 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                        Operasional
+                        Menu Utama
                     </div>
 
 
                     <a
-                        href="{{ url('/dashboard/admin-biasa/schedules') }}"
+                        href="{{ route('dashboard.admin-biasa.booking') }}"
                         class="flex items-center rounded-lg px-4 py-3 text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
                     >
-                        Jadwal
+                        Manajemen Booking
                     </a>
 
                     <a
-                        href="{{ url('/dashboard/admin-biasa/bookings') }}"
+                        href="{{ route('dashboard.admin-biasa.perjalanan') }}"
                         class="flex items-center rounded-lg px-4 py-3 text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
                     >
-                        Pemesanan
+                        Melihat Informasi Perjalanan
                     </a>
 
                     <a
-                        href="{{ url('/dashboard/admin-biasa/customers') }}"
+                        href="#"
                         class="flex items-center rounded-lg px-4 py-3 text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-600"
                     >
-                        Customer
+                        Validasi E-Ticket
                     </a>
 
 
