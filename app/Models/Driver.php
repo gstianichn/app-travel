@@ -42,6 +42,11 @@ class Driver extends Model
         return $this->hasMany(Schedule::class);
     }
 
+    public function incidents()
+    {
+        return $this->hasMany(TripIncident::class);
+    }
+
     /**
      * Pilihan status kerja pengemudi
      */
@@ -150,7 +155,59 @@ class Driver extends Model
     public function completedTripsCount(): int
     {
         return $this->schedules()
-            ->whereIn('status', ['completed', 'selesai'])
+            ->where(function ($q) {
+                $q->whereIn('status', ['completed', 'selesai'])
+                    ->orWhere('trip_status', 'completed');
+            })
             ->count();
+    }
+
+    /**
+     * Jadwal perjalanan aktif saat ini (Belum selesai)
+     */
+    public function activeSchedule(): ?Schedule
+    {
+        return $this->schedules()
+            ->whereDate('departure_date', '>=', Carbon::today()->subDays(1))
+            ->whereNotIn('trip_status', ['completed', 'cancelled'])
+            ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+            ->with(['route.origin', 'route.destination', 'vehicle', 'bookings.passengers.seat', 'bookings.user', 'bookings.payment', 'incidents'])
+            ->orderByRaw("CASE 
+                WHEN trip_status = 'departed' THEN 1 
+                WHEN trip_status = 'pickup' THEN 2 
+                WHEN trip_status = 'arrived' THEN 3 
+                ELSE 4 END")
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->first();
+    }
+
+    /**
+     * Jadwal perjalanan hari ini
+     */
+    public function todaySchedules()
+    {
+        return $this->schedules()
+            ->whereDate('departure_date', Carbon::today())
+            ->with(['route.origin', 'route.destination', 'vehicle'])
+            ->orderBy('departure_time')
+            ->get();
+    }
+
+    /**
+     * Arsip riwayat ritase yang telah selesai
+     */
+    public function completedRitaseList(int $limit = 15)
+    {
+        return $this->schedules()
+            ->where(function ($q) {
+                $q->whereIn('status', ['completed', 'selesai'])
+                    ->orWhere('trip_status', 'completed');
+            })
+            ->with(['route.origin', 'route.destination', 'vehicle', 'bookings.passengers'])
+            ->orderByDesc('departure_date')
+            ->orderByDesc('departure_time')
+            ->take($limit)
+            ->get();
     }
 }

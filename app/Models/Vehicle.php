@@ -13,6 +13,7 @@ class Vehicle extends Model
 
     protected $fillable = [
         'plate_number',
+        'hull_number',
         'name',
         'type',
         'capacity',
@@ -25,6 +26,7 @@ class Vehicle extends Model
         'chassis_number',
         'engine_number',
         'notes',
+        'parking_location',
     ];
 
     protected function casts(): array
@@ -115,6 +117,50 @@ class Vehicle extends Model
             'maintenance', 'perbaikan', 'bengkel' => 'badge-maintenance',
             default => 'badge-ready',
         };
+    }
+
+    /**
+     * Nomor lambung armada fisik (misal: HCE-08, ELF-02).
+     */
+    public function hullNumber(): string
+    {
+        if (! empty($this->hull_number)) {
+            return $this->hull_number;
+        }
+
+        $typePrefix = 'HCE';
+        if (stripos($this->type ?? '', 'elf') !== false || stripos($this->name ?? '', 'elf') !== false) {
+            $typePrefix = 'ELF';
+        } elseif (stripos($this->type ?? '', 'sprinter') !== false) {
+            $typePrefix = 'SPT';
+        }
+
+        return $typePrefix.'-'.str_pad((string) ($this->id ?: 1), 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Lokasi fisik unit kendaraan diparkir di garasi/pool.
+     */
+    public function parkingLocation(): string
+    {
+        if (! empty($this->parking_location)) {
+            return $this->parking_location;
+        }
+
+        $bayNum = (($this->id ?: 1) % 5) + 1;
+
+        return "Bay {$bayNum} - Garasi Timur Pool";
+    }
+
+    /**
+     * Nomor Surat Perintah Jalan (SPJ) resmi.
+     */
+    public function spjNumber(?Schedule $schedule = null): string
+    {
+        $dateStr = Carbon::today()->format('Ymd');
+        $code = $this->hullNumber();
+
+        return "SPJ/{$dateStr}/{$code}";
     }
 
     /**

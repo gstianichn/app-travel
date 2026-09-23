@@ -521,6 +521,31 @@ Route::middleware(['auth', 'role:driver'])
             'index',
         ])->name('dashboard.driver.index');
 
+        Route::post('/driver/schedule/{schedule}/status', [
+            DriverDashboardController::class,
+            'updateTripStatus',
+        ])->name('dashboard.driver.schedule.status');
+
+        Route::post('/driver/schedule/{schedule}/gps', [
+            DriverDashboardController::class,
+            'updateGps',
+        ])->name('dashboard.driver.schedule.gps');
+
+        Route::patch('/driver/passenger/{passenger}/checkin', [
+            DriverDashboardController::class,
+            'updateCheckin',
+        ])->name('dashboard.driver.passenger.checkin');
+
+        Route::post('/driver/schedule/{schedule}/incident', [
+            DriverDashboardController::class,
+            'reportIncident',
+        ])->name('dashboard.driver.schedule.incident');
+
+        Route::post('/driver/schedule/{schedule}/sos', [
+            DriverDashboardController::class,
+            'triggerSos',
+        ])->name('dashboard.driver.schedule.sos');
+
     });
 
 /*
