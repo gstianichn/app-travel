@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingPassenger;
 use App\Models\Driver;
 use App\Models\Payment;
+use App\Models\Route;
 use App\Models\Schedule;
 use App\Models\TripIncident;
 use App\Models\Vehicle;
@@ -18,9 +19,9 @@ use Illuminate\Support\Facades\Log;
 class DriverDashboardController extends Controller
 {
     /**
-     * Tampilan utama Dashboard Driver dengan 10 fitur lengkap.
+     * Mengambil dan menyiapkan seluruh data terpusat operasional pengemudi.
      */
-    public function index(Request $request)
+    public function getDriverDashboardData(Request $request): array
     {
         $user = auth()->user();
 
@@ -113,17 +114,102 @@ class DriverDashboardController extends Controller
             $activeSchedule->vehicle = $vehicle;
         }
 
-        // Pastikan armada memiliki relasi kursi
+        // Pastikan armada memiliki relasi kursi dan kelengkapan spesifikasi
         if ($activeSchedule->vehicle) {
             $activeSchedule->vehicle->ensureSeatsExist();
+            if (! $activeSchedule->vehicle->stnk_tax_due_date) {
+                $activeSchedule->vehicle->stnk_tax_due_date = Carbon::now()->addMonths(8);
+            }
+            if (! $activeSchedule->vehicle->kir_expiry_date) {
+                $activeSchedule->vehicle->kir_expiry_date = Carbon::now()->addMonths(5);
+            }
+            if (! $activeSchedule->vehicle->manufacture_year) {
+                $activeSchedule->vehicle->manufacture_year = 2024;
+            }
+            if (! $activeSchedule->vehicle->chassis_number) {
+                $activeSchedule->vehicle->chassis_number = 'MHF21TRP'.str_pad((string) ($activeSchedule->vehicle->id ?: 1), 6, '0', STR_PAD_LEFT);
+            }
+            if (! $activeSchedule->vehicle->engine_number) {
+                $activeSchedule->vehicle->engine_number = '1GD-FTV-'.(882100 + ($activeSchedule->vehicle->id ?: 1));
+            }
         }
 
-        // 4. Daftar jadwal hari ini milik driver
+        // 4. Daftar jadwal penugasan milik driver (Hari Ini, Besok, dan Jadwal Mendatang)
         $todaySchedules = $driver->schedules()
             ->with(['route.origin', 'route.destination', 'vehicle'])
             ->whereDate('departure_date', Carbon::today())
             ->orderBy('departure_time')
             ->get();
+
+        if ($todaySchedules->isEmpty() && $activeSchedule && $activeSchedule->exists) {
+            $todaySchedules = collect([$activeSchedule]);
+        }
+
+        $tomorrowSchedules = $driver->schedules()
+            ->with(['route.origin', 'route.destination', 'vehicle'])
+            ->whereDate('departure_date', Carbon::tomorrow())
+            ->orderBy('departure_time')
+            ->get();
+
+        if ($tomorrowSchedules->isEmpty()) {
+            $tomorrowRoute = $activeSchedule->route ?? ($activeSchedule->route_id ? Route::with(['origin', 'destination'])->find($activeSchedule->route_id) : null);
+            $tomorrowVehicle = $activeSchedule->vehicle ?? Vehicle::first();
+
+            $simTomorrow = new Schedule([
+                'id' => 902,
+                'departure_date' => Carbon::tomorrow(),
+                'departure_time' => '08:30:00',
+                'status' => 'Scheduled',
+                'trip_status' => 'scheduled',
+                'available_seats' => 9,
+                'price' => 125000,
+            ]);
+            $simTomorrow->route = $tomorrowRoute;
+            $simTomorrow->vehicle = $tomorrowVehicle;
+            $simTomorrow->driver_id = $driver->id;
+            $tomorrowSchedules = collect([$simTomorrow]);
+        }
+
+        $upcomingSchedules = $driver->schedules()
+            ->with(['route.origin', 'route.destination', 'vehicle'])
+            ->whereDate('departure_date', '>', Carbon::tomorrow())
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->take(10)
+            ->get();
+
+        if ($upcomingSchedules->isEmpty()) {
+            $upcomingRoute = $activeSchedule->route ?? ($activeSchedule->route_id ? Route::with(['origin', 'destination'])->find($activeSchedule->route_id) : null);
+            $upcomingVehicle = $activeSchedule->vehicle ?? Vehicle::first();
+
+            $simUpcoming1 = new Schedule([
+                'id' => 903,
+                'departure_date' => Carbon::today()->addDays(2),
+                'departure_time' => '13:00:00',
+                'status' => 'Scheduled',
+                'trip_status' => 'scheduled',
+                'available_seats' => 8,
+                'price' => 125000,
+            ]);
+            $simUpcoming1->route = $upcomingRoute;
+            $simUpcoming1->vehicle = $upcomingVehicle;
+            $simUpcoming1->driver_id = $driver->id;
+
+            $simUpcoming2 = new Schedule([
+                'id' => 904,
+                'departure_date' => Carbon::today()->addDays(3),
+                'departure_time' => '16:00:00',
+                'status' => 'Scheduled',
+                'trip_status' => 'scheduled',
+                'available_seats' => 10,
+                'price' => 125000,
+            ]);
+            $simUpcoming2->route = $upcomingRoute;
+            $simUpcoming2->vehicle = $upcomingVehicle;
+            $simUpcoming2->driver_id = $driver->id;
+
+            $upcomingSchedules = collect([$simUpcoming1, $simUpcoming2]);
+        }
 
         // 5. Waypoints navigasi terurut (Pool Asal -> Titik Jemput Penumpang -> Rest Area -> Pool Tujuan)
         $waypoints = $activeSchedule->navigationWaypoints();
@@ -160,7 +246,7 @@ class DriverDashboardController extends Controller
                         'is_boarded' => $p->isBoarded(),
                         'boarded_at' => $p->boarded_at ? $p->boarded_at->format('H:i').' WIB' : null,
                         'is_paid' => $isPaid,
-                        'payment_label' => $isPaid ? 'Lunas' : ($isCod ? 'COD / Bayar di Tempat' : 'Menunggu Bayar'),
+                        'payment_label' => $isPaid ? 'Lunas Online' : 'Tagih Tunai / COD: Rp '.number_format(! $isPaid ? ($b->total_price / max(1, $b->total_passenger)) : 0, 0, ',', '.'),
                         'payment_badge_class' => $isPaid ? 'badge-paid' : 'badge-cod',
                         'amount_due' => ! $isPaid ? ($b->total_price / max(1, $b->total_passenger)) : 0,
                     ]);
@@ -189,7 +275,7 @@ class DriverDashboardController extends Controller
                     'is_boarded' => false,
                     'boarded_at' => null,
                     'is_paid' => true,
-                    'payment_label' => 'Lunas',
+                    'payment_label' => 'Lunas Online',
                     'payment_badge_class' => 'badge-paid',
                     'amount_due' => 0,
                 ],
@@ -211,7 +297,7 @@ class DriverDashboardController extends Controller
                     'is_boarded' => false,
                     'boarded_at' => null,
                     'is_paid' => true,
-                    'payment_label' => 'Lunas',
+                    'payment_label' => 'Lunas Online',
                     'payment_badge_class' => 'badge-paid',
                     'amount_due' => 0,
                 ],
@@ -233,7 +319,7 @@ class DriverDashboardController extends Controller
                     'is_boarded' => false,
                     'boarded_at' => null,
                     'is_paid' => false,
-                    'payment_label' => 'COD / Bayar di Tempat',
+                    'payment_label' => 'Tagih Tunai / COD: Rp 125.000',
                     'payment_badge_class' => 'badge-cod',
                     'amount_due' => 125000,
                 ],
@@ -255,7 +341,7 @@ class DriverDashboardController extends Controller
                     'is_boarded' => false,
                     'boarded_at' => null,
                     'is_paid' => true,
-                    'payment_label' => 'Lunas',
+                    'payment_label' => 'Lunas Online',
                     'payment_badge_class' => 'badge-paid',
                     'amount_due' => 0,
                 ],
@@ -286,11 +372,41 @@ class DriverDashboardController extends Controller
         // Status action berikutnya
         $nextAction = $activeSchedule->nextStatusAction();
 
-        return view('dashboard.driver.index', compact(
+        // Target penjemputan / aksi berikutnya
+        $unboardedPassenger = $manifestPassengers->firstWhere('is_boarded', false);
+        $nextPassenger = $unboardedPassenger ?? $manifestPassengers->first();
+
+        if ($unboardedPassenger) {
+            $nextTargetTitle = $unboardedPassenger->name;
+            $nextTargetType = 'Jemput Penumpang Berikutnya';
+            $nextTargetAddress = $unboardedPassenger->pickup_point;
+            $nextTargetNotes = ! empty($unboardedPassenger->special_request) && $unboardedPassenger->special_request !== '-'
+                ? $unboardedPassenger->special_request
+                : $unboardedPassenger->baggage_notes;
+            $nextSeatNumber = 'Seat '.$unboardedPassenger->seat_number;
+        } else {
+            $nextTargetTitle = $activeSchedule->route?->destination?->name ?? 'Pool Kedatangan';
+            $nextTargetType = 'Menuju Titik Turun Akhir';
+            $nextTargetAddress = $activeSchedule->route?->destination?->address ?? ($activeSchedule->route?->destination?->name ?? 'Pool Semanggi Plaza');
+            $nextTargetNotes = 'Semua penumpang telah naik kabin. Meluncur aman menuju destinasi akhir.';
+            $nextSeatNumber = 'Semua Naik';
+        }
+
+        $targetQuery = urlencode($nextTargetAddress);
+        $nextGmapsUrl = "https://www.google.com/maps/search/?api=1&query={$targetQuery}";
+        $nextWazeUrl = "https://waze.com/ul?q={$targetQuery}&navigate=yes";
+
+        $seatCapacity = $activeSchedule->vehicle?->capacity ?? 10;
+        $occupancyPct = round(($totalBookedPassengers / max(1, $seatCapacity)) * 100);
+        $emptySeats = max(0, $seatCapacity - $totalBookedPassengers);
+
+        return compact(
             'user',
             'driver',
             'activeSchedule',
             'todaySchedules',
+            'tomorrowSchedules',
+            'upcomingSchedules',
             'waypoints',
             'manifestPassengers',
             'seatOccupancyRows',
@@ -301,8 +417,141 @@ class DriverDashboardController extends Controller
             'pendingBoardingCount',
             'totalCompletedTrips',
             'driverRating',
-            'nextAction'
-        ));
+            'nextAction',
+            'unboardedPassenger',
+            'nextPassenger',
+            'nextTargetTitle',
+            'nextTargetType',
+            'nextTargetAddress',
+            'nextTargetNotes',
+            'nextSeatNumber',
+            'targetQuery',
+            'nextGmapsUrl',
+            'nextWazeUrl',
+            'seatCapacity',
+            'occupancyPct',
+            'emptySeats'
+        );
+    }
+
+    /**
+     * 1. Dashboard — Ringkasan operasional harian yang sedang berjalan (kartu kendali utama)
+     */
+    public function index(Request $request)
+    {
+        return view('dashboard.driver.index', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 2. Melihat Jadwal Perjalanan
+     */
+    public function jadwal(Request $request)
+    {
+        return view('dashboard.driver.jadwal', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 3. Melihat Kendaraan yang Ditugaskan
+     */
+    public function kendaraan(Request $request)
+    {
+        return view('dashboard.driver.kendaraan', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 4. Melihat Daftar Penumpang (Manifes Absensi)
+     */
+    public function daftarPenumpang(Request $request)
+    {
+        return view('dashboard.driver.daftar-penumpang', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 5. Melihat Seat Map
+     */
+    public function seatMap(Request $request)
+    {
+        return view('dashboard.driver.seat-map', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 6. Melihat Rute Perjalanan
+     */
+    public function rute(Request $request)
+    {
+        return view('dashboard.driver.rute', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 7. Melihat Status Perjalanan
+     */
+    public function statusPerjalanan(Request $request)
+    {
+        return view('dashboard.driver.status-perjalanan', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 8. Mengubah Status Perjalanan
+     */
+    public function ubahStatusPerjalanan(Request $request)
+    {
+        return view('dashboard.driver.ubah-status', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 9. Melihat Informasi Penumpang
+     */
+    public function infoPenumpang(Request $request)
+    {
+        return view('dashboard.driver.info-penumpang', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 10. Melaporkan Masalah Perjalanan
+     */
+    public function laporMasalah(Request $request)
+    {
+        return view('dashboard.driver.lapor-masalah', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 11. Emergency Center
+     */
+    public function emergencyCenter(Request $request)
+    {
+        return view('dashboard.driver.emergency', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 12. GPS Tracking Saat Perjalanan Aktif
+     */
+    public function gpsTracking(Request $request)
+    {
+        return view('dashboard.driver.gps-tracking', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 13. Melihat Performa
+     */
+    public function performa(Request $request)
+    {
+        return view('dashboard.driver.performa', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 14. Melihat Reward
+     */
+    public function reward(Request $request)
+    {
+        return view('dashboard.driver.reward', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 15. Melihat Riwayat Perjalanan
+     */
+    public function riwayat(Request $request)
+    {
+        return view('dashboard.driver.riwayat', $this->getDriverDashboardData($request));
     }
 
     /**

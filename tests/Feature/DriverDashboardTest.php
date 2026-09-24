@@ -254,3 +254,187 @@ test('driver can trigger emergency SOS broadcast', function () {
     expect($sosIncident->severity)->toBe('darurat');
     expect($sosIncident->emergency_dispatched)->toBeTrue();
 });
+
+test('driver dashboard displays cockpit master card with all 4 essential operational elements', function () {
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.index'))
+        ->assertOk()
+        ->assertSee('Ringkasan Operasional Harian Berjalan')
+        ->assertSee('Status Tugas Hari Ini')
+        ->assertSee($this->schedule->tripCode())
+        ->assertSee('Pool Dipatiukur (Bandung)')
+        ->assertSee('Pool Semanggi (Jakarta)')
+        ->assertSee('Jam Keberangkatan')
+        ->assertSee('Indikator Cepat Ketersediaan Kursi')
+        ->assertSee('Penumpang Terisi')
+        ->assertSee('Kursi Kosong')
+        ->assertSee('Pintasan Aksi Berikutnya (Next Action Card)')
+        ->assertSee('Google Maps')
+        ->assertSee('Waze')
+        ->assertSee('Tombol Pintas Cepat (Quick Shortcuts)')
+        ->assertSee('Lapor Masalah')
+        ->assertSee('Emergency SOS');
+});
+
+test('driver can view schedule page with duty calendar and schedule agenda with standby time, departure time, and total duration', function () {
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.jadwal'))
+        ->assertOk()
+        ->assertSee('Kalender Kerja')
+        ->assertSee('Agenda Penugasan Driver')
+        ->assertSee('Hari Ini')
+        ->assertSee('Besok')
+        ->assertSee('Jadwal Mendatang')
+        ->assertSee('Waktu Berkumpul (Standby)')
+        ->assertSee('Waktu Keberangkatan')
+        ->assertSee('Estimasi Total Durasi')
+        ->assertSee($this->schedule->gatheringTime())
+        ->assertSee($this->schedule->formattedDepartureTime());
+});
+
+test('driver can view assigned vehicle details, technical specs, capacity, parking location, and active legal documents on dedicated page', function () {
+    $this->vehicle->update([
+        'plate_number' => 'D 7812 AB',
+        'hull_number' => 'HCE-07',
+        'name' => 'Toyota HiAce Premio Luxury',
+        'type' => 'Toyota HiAce Premio',
+        'capacity' => 10,
+        'parking_location' => 'Bay 3 - Garasi Barat Pool Dipatiukur',
+        'stnk_tax_due_date' => now()->addMonths(8),
+        'kir_expiry_date' => now()->addMonths(5),
+    ]);
+
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.kendaraan'))
+        ->assertOk()
+        ->assertSee('Melihat Kendaraan yang Ditugaskan')
+        ->assertSee('Spesifikasi teknis dan fisik unit mini bus')
+        ->assertSee('D 7812 AB')
+        ->assertSee('HCE-07')
+        ->assertSee('Toyota HiAce Premio Luxury')
+        ->assertSee('Toyota HiAce Premio')
+        ->assertSee('10 Kursi Penumpang')
+        ->assertSee('Bay 3 - Garasi Barat Pool Dipatiukur')
+        ->assertSee('Masa Berlaku Pajak STNK')
+        ->assertSee('Masa Berlaku Uji Berkala (KIR Dishub)')
+        ->assertSee('Surat Perintah Jalan (SPJ)')
+        ->assertSee('Pencocokan Fisik Unit & Verifikasi SPJ (Cegah Tertukar)');
+});
+
+test('driver can view passenger manifest page with attendance rekapitulasi, seat rows, payment labels, and check-in buttons', function () {
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.penumpang'))
+        ->assertOk()
+        ->assertSee('Melihat Daftar Penumpang')
+        ->assertSee('Manifes absensi dan status kehadiran seluruh penumpang dalam satu perjalanan')
+        ->assertSee('Total Penumpang')
+        ->assertSee('Sudah Naik')
+        ->assertSee('Belum Naik')
+        ->assertSee('Seat 1A')
+        ->assertSee('Ahmad Penumpang')
+        ->assertSee('Lunas Online')
+        ->assertSee('Check-in / Boarded');
+});
+
+test('driver passenger manifest page displays COD payment warning and quick check-in for unpaid passengers', function () {
+    $this->booking->update(['status' => 'pending']);
+
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.penumpang'))
+        ->assertOk()
+        ->assertSee('Tagih Tunai / COD')
+        ->assertSee('Terima COD & Check-in');
+});
+
+test('driver has dedicated per-feature pages for all 15 operational features', function () {
+    // 1. Dashboard Utama
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.index'))
+        ->assertOk()
+        ->assertSee('Ringkasan Operasional Harian Berjalan')
+        ->assertSee('Akses Seluruh Fitur Pengemudi Per-Halaman');
+
+    // 2. Melihat Jadwal Perjalanan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.jadwal'))
+        ->assertOk()
+        ->assertSee('Melihat Jadwal Perjalanan');
+
+    // 3. Melihat Kendaraan yang Ditugaskan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.kendaraan'))
+        ->assertOk()
+        ->assertSee('Melihat Kendaraan yang Ditugaskan');
+
+    // 4. Melihat Daftar Penumpang
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.penumpang'))
+        ->assertOk()
+        ->assertSee('Melihat Daftar Penumpang');
+
+    // 5. Melihat Seat Map
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.seatmap'))
+        ->assertOk()
+        ->assertSee('Melihat Seat Map');
+
+    // 6. Melihat Rute Perjalanan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.rute'))
+        ->assertOk()
+        ->assertSee('Melihat Rute Perjalanan');
+
+    // 7. Melihat Status Perjalanan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.status'))
+        ->assertOk()
+        ->assertSee('Alur Status Perjalanan Bertahap');
+
+    // 8. Mengubah Status Perjalanan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.ubah-status'))
+        ->assertOk()
+        ->assertSee('Titik Tugas Berikutnya');
+
+    // 9. Melihat Informasi Penumpang
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.info-penumpang'))
+        ->assertOk()
+        ->assertSee('Melihat Informasi Penumpang');
+
+    // 10. Melaporkan Masalah Perjalanan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.lapor-masalah'))
+        ->assertOk()
+        ->assertSee('Form Melaporkan Masalah Perjalanan');
+
+    // 11. Emergency Center
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.emergency'))
+        ->assertOk()
+        ->assertSee('Emergency Center');
+
+    // 12. GPS Tracking Saat Perjalanan Aktif
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.gps'))
+        ->assertOk()
+        ->assertSee('GPS Tracking Latar Belakang Aktif');
+
+    // 13. Melihat Performa
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.performa'))
+        ->assertOk()
+        ->assertSee('Melihat Performa Pengemudi');
+
+    // 14. Melihat Reward
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.reward'))
+        ->assertOk()
+        ->assertSee('Melihat Reward Pengemudi');
+
+    // 15. Melihat Riwayat Perjalanan
+    $this->actingAs($this->driverUser)
+        ->get(route('dashboard.driver.riwayat'))
+        ->assertOk()
+        ->assertSee('Riwayat Perjalanan (Ritase Selesai & Rekap Harian)');
+});

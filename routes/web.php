@@ -516,11 +516,97 @@ Route::middleware(['auth', 'role:staff,admin_utama'])
 Route::middleware(['auth', 'role:driver'])
     ->group(function () {
 
+        // 1. Dashboard Utama
         Route::get('/driver/dashboard', [
             DriverDashboardController::class,
             'index',
         ])->name('dashboard.driver.index');
 
+        // 2. Melihat Jadwal Perjalanan
+        Route::get('/driver/jadwal', [
+            DriverDashboardController::class,
+            'jadwal',
+        ])->name('dashboard.driver.jadwal');
+
+        // 3. Melihat Kendaraan yang Ditugaskan
+        Route::get('/driver/kendaraan', [
+            DriverDashboardController::class,
+            'kendaraan',
+        ])->name('dashboard.driver.kendaraan');
+
+        // 4. Melihat Daftar Penumpang (Manifes)
+        Route::get('/driver/daftar-penumpang', [
+            DriverDashboardController::class,
+            'daftarPenumpang',
+        ])->name('dashboard.driver.penumpang');
+
+        // 5. Melihat Seat Map
+        Route::get('/driver/seat-map', [
+            DriverDashboardController::class,
+            'seatMap',
+        ])->name('dashboard.driver.seatmap');
+
+        // 6. Melihat Rute Perjalanan
+        Route::get('/driver/rute', [
+            DriverDashboardController::class,
+            'rute',
+        ])->name('dashboard.driver.rute');
+
+        // 7. Melihat Status Perjalanan
+        Route::get('/driver/status-perjalanan', [
+            DriverDashboardController::class,
+            'statusPerjalanan',
+        ])->name('dashboard.driver.status');
+
+        // 8. Mengubah Status Perjalanan
+        Route::get('/driver/ubah-status', [
+            DriverDashboardController::class,
+            'ubahStatusPerjalanan',
+        ])->name('dashboard.driver.ubah-status');
+
+        // 9. Melihat Informasi Penumpang
+        Route::get('/driver/info-penumpang', [
+            DriverDashboardController::class,
+            'infoPenumpang',
+        ])->name('dashboard.driver.info-penumpang');
+
+        // 10. Melaporkan Masalah Perjalanan
+        Route::get('/driver/lapor-masalah', [
+            DriverDashboardController::class,
+            'laporMasalah',
+        ])->name('dashboard.driver.lapor-masalah');
+
+        // 11. Emergency Center
+        Route::get('/driver/emergency', [
+            DriverDashboardController::class,
+            'emergencyCenter',
+        ])->name('dashboard.driver.emergency');
+
+        // 12. GPS Tracking Saat Perjalanan Aktif
+        Route::get('/driver/gps-tracking', [
+            DriverDashboardController::class,
+            'gpsTracking',
+        ])->name('dashboard.driver.gps');
+
+        // 13. Melihat Performa
+        Route::get('/driver/performa', [
+            DriverDashboardController::class,
+            'performa',
+        ])->name('dashboard.driver.performa');
+
+        // 14. Melihat Reward
+        Route::get('/driver/reward', [
+            DriverDashboardController::class,
+            'reward',
+        ])->name('dashboard.driver.reward');
+
+        // 15. Melihat Riwayat Perjalanan
+        Route::get('/driver/riwayat', [
+            DriverDashboardController::class,
+            'riwayat',
+        ])->name('dashboard.driver.riwayat');
+
+        // Action Routes
         Route::post('/driver/schedule/{schedule}/status', [
             DriverDashboardController::class,
             'updateTripStatus',
