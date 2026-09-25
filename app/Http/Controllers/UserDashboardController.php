@@ -7,6 +7,7 @@ use App\Models\BookingPassenger;
 use App\Models\Location;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\Route;
 use App\Models\SavedPassenger;
 use App\Models\Schedule;
 use App\Models\Ticket;
@@ -122,6 +123,9 @@ class UserDashboardController extends Controller
         $searchPerformed = $request->hasAny(['origin', 'destination', 'departure_date', 'passengers']);
 
         $schedules = collect();
+        $routeConnected = false;
+        $originLoc = null;
+        $destLoc = null;
 
         if ($searchPerformed) {
             $validated = $request->validate([
@@ -130,6 +134,44 @@ class UserDashboardController extends Controller
                 'departure_date' => ['required', 'date', 'after_or_equal:today'],
                 'passengers' => ['required', 'integer', 'min:1', 'max:10'],
             ]);
+
+            $originLoc = Location::find($validated['origin']);
+            $destLoc = Location::find($validated['destination']);
+
+            // Cek apakah rute antara kedua kota terhubung ke jaringan shuttle aktif
+            $route = Route::with(['origin', 'destination'])
+                ->where('origin_id', $validated['origin'])
+                ->where('destination_id', $validated['destination'])
+                ->where(function ($q) {
+                    $q->where('is_active', true)->orWhereNull('is_active');
+                })
+                ->first();
+
+            $routeConnected = ($route !== null);
+            $transitHub = null;
+
+            // Jika rute terhubung, pastikan jadwal harian tersedia
+            if ($routeConnected) {
+                Schedule::ensureSchedulesExistForDateAndRoute($route, $validated['departure_date']);
+            } elseif ($originLoc && $destLoc) {
+                // Temukan kota transit hub yang menghubungkan origin -> hub dan hub -> dest
+                $originConnectedDestIds = Route::where('origin_id', $originLoc->id)
+                    ->where(function ($q) {
+                        $q->where('is_active', true)->orWhereNull('is_active');
+                    })
+                    ->pluck('destination_id');
+
+                $destConnectedOriginIds = Route::where('destination_id', $destLoc->id)
+                    ->where(function ($q) {
+                        $q->where('is_active', true)->orWhereNull('is_active');
+                    })
+                    ->pluck('origin_id');
+
+                $hubIds = $originConnectedDestIds->intersect($destConnectedOriginIds);
+                if ($hubIds->isNotEmpty()) {
+                    $transitHub = Location::find($hubIds->first());
+                }
+            }
 
             $schedules = Schedule::query()
                 ->with(['route.origin', 'route.destination', 'vehicle.seats', 'driver.user'])
@@ -145,9 +187,19 @@ class UserDashboardController extends Controller
                 })
                 ->orderBy('departure_time')
                 ->get();
+        } else {
+            $transitHub = null;
         }
 
-        return view('dashboard.user.user-search', compact('locations', 'schedules', 'searchPerformed'));
+        return view('dashboard.user.user-search', compact(
+            'locations',
+            'schedules',
+            'searchPerformed',
+            'routeConnected',
+            'originLoc',
+            'destLoc',
+            'transitHub'
+        ));
     }
 
     /**
@@ -1336,9 +1388,14 @@ class UserDashboardController extends Controller
 
     /**
      * Helper: Inisialisasi data bawaan untuk demo/testing (Saved Passengers & Vouchers).
+     * Hanya dijalankan pada automated test suite agar simulasi lokal pengguna tetap bersih.
      */
     protected function ensureUserPresets(User $user): void
     {
+        if (! app()->runningUnitTests()) {
+            return;
+        }
+
         // 1. Saved Passengers
         if ($user->savedPassengers()->count() === 0) {
             $user->savedPassengers()->create([

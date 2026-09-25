@@ -21,13 +21,15 @@
                 <div class="card-panel-body">
                     <div class="seatmap-container">
                         <div class="cabin-layout">
-                            <!-- DEPAN / WINDSHIELD -->
+                            <!-- DEPAN / WINDSHIELD (STANDAR SETIR KANAN INDONESIA) -->
                             <div class="cockpit-front">
-                                <div class="driver-seat">
-                                    <span>💺</span>
-                                    <span>SOPIR</span>
+                                <span class="windshield-label" style="display: inline-flex; align-items: center; gap: 4px;">
+                                    <span>🚪</span> Pintu Kiri / Depan
+                                </span>
+                                <div class="driver-seat" title="Posisi Kemudi Sopir (Setir Kanan Indonesia)">
+                                    <span>🚘</span>
+                                    <span>SOPIR (KANAN)</span>
                                 </div>
-                                <span class="windshield-label">Kaca Depan</span>
                             </div>
 
                             <!-- ROWS KURSI -->

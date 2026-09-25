@@ -309,14 +309,19 @@
 
 
                                 <div class="schedule-action">
-
-                                    <button
-                                        type="button"
-                                        class="btn btn-primary"
-                                    >
-                                        Pilih Travel
-                                    </button>
-
+                                    @auth
+                                        <a href="{{ route('dashboard.user.booking.pilih-kursi', ['schedule' => $schedule->id, 'passengers' => request('passengers', 1)]) }}"
+                                           class="btn btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none;">
+                                            <span>Pilih Kursi</span>
+                                            <span aria-hidden="true">→</span>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('user.login') }}?redirect={{ urlencode(route('dashboard.user.booking.pilih-kursi', ['schedule' => $schedule->id, 'passengers' => request('passengers', 1)])) }}"
+                                           class="btn btn-primary" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none;">
+                                            <span>Pesan Tiket</span>
+                                            <span aria-hidden="true">→</span>
+                                        </a>
+                                    @endauth
                                 </div>
 
                             </article>
@@ -327,16 +332,53 @@
 
                 @else
 
-                    <div class="empty-result">
+                    <div class="empty-result" style="padding: 40px 20px; text-align: center;">
 
-                        <h3>
-                            Jadwal tidak ditemukan
-                        </h3>
+                        @if(!($routeConnected ?? false))
+                            <div style="font-size: 2.2rem; margin-bottom: 10px;">⚠️</div>
+                            <h3 style="margin-bottom: 8px; font-weight: 800;">
+                                Jadwal Shuttle Belum Tersedia
+                            </h3>
+                            <p style="max-width: 540px; margin: 0 auto 16px auto; color: #475569; line-height: 1.6; font-size: 0.95rem;">
+                                Mohon maaf, rute langsung dari <strong>{{ $originLoc?->name ?? 'Kota Asal' }}</strong> ke <strong>{{ $destLoc?->name ?? 'Kota Tujuan' }}</strong> saat ini belum tersedia. Silakan pilih rute transit atau hub terdekat.
+                            </p>
 
-                        <p>
-                            Belum ada perjalanan yang tersedia
-                            sesuai dengan pencarian Anda.
-                        </p>
+                            @if($transitHub)
+                                <div style="background: #e6fcf5; border: 1px solid #b2f2bb; border-radius: 12px; padding: 14px 18px; max-width: 520px; margin: 0 auto 16px auto; text-align: left;">
+                                    <strong style="color: #087f55; display: block; margin-bottom: 4px; font-size: 0.85rem;">
+                                        💡 Rekomendasi Transit via {{ $transitHub->name }}:
+                                    </strong>
+                                    <p style="font-size: 0.8rem; color: #2b8a3e; margin: 0 0 10px 0;">
+                                        Anda dapat bepergian melalui 2 ritase terhubung via hub transit <strong>{{ $transitHub->city }}</strong>:
+                                    </p>
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                        <a href="{{ route('search', ['origin' => $originLoc->id, 'destination' => $transitHub->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
+                                           style="padding: 6px 12px; border-radius: 8px; background: #ffffff; border: 1px solid #b2f2bb; color: #087f55; text-decoration: none; font-size: 0.8rem; font-weight: 700;">
+                                            1. {{ $originLoc->city }} ➔ {{ $transitHub->city }}
+                                        </a>
+                                        <a href="{{ route('search', ['origin' => $transitHub->id, 'destination' => $destLoc->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
+                                           style="padding: 6px 12px; border-radius: 8px; background: #ffffff; border: 1px solid #b2f2bb; color: #087f55; text-decoration: none; font-size: 0.8rem; font-weight: 700;">
+                                            2. {{ $transitHub->city }} ➔ {{ $destLoc->city }}
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; max-width: 520px; margin: 0 auto; text-align: left; font-size: 0.85rem;">
+                                <strong style="color: #334155; display: block; margin-bottom: 6px;">Standar Koridor Shuttle Aktif (Jadwal Selalu Tersedia):</strong>
+                                <span style="color: #64748b; line-height: 1.6;">
+                                    Bandung ⇄ Jakarta (Semanggi, Tebet, Cikini) • Bandung ⇄ Bekasi (Summarecon) • Bandung ⇄ Bogor (Baranangsiang) • Bandung ⇄ Depok (Margonda) • Bandung ⇄ Bandara Soetta (CGK) • Bandung ⇄ Cianjur ⇄ Bogor • Sukabumi ⇄ Bogor / Jakarta • Bandung ⇄ Cirebon &amp; Jakarta ⇄ Cirebon.
+                                </span>
+                            </div>
+                        @else
+                            <div style="font-size: 2.2rem; margin-bottom: 10px;">🚐</div>
+                            <h3 style="margin-bottom: 8px; font-weight: 800;">
+                                Seluruh Kursi Telah Terisi
+                            </h3>
+                            <p style="max-width: 450px; margin: 0 auto; color: #64748b;">
+                                Kursi untuk {{ request('passengers', 1) }} penumpang pada tanggal yang dipilih sedang penuh. Silakan pilih tanggal atau jam lainnya.
+                            </p>
+                        @endif
 
                     </div>
 

@@ -111,7 +111,7 @@
     @if ($searchPerformed)
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-                <h3 class="font-bold text-slate-900 text-lg">Jadwal & Armada Tersedia</h3>
+                <h3 class="font-bold text-slate-900 text-lg">Jadwal &amp; Armada Tersedia</h3>
                 <p class="text-xs text-slate-500 mt-0.5">
                     Ditemukan <span class="font-bold text-slate-800">{{ $schedules->count() }} armada aktif</span> 
                     untuk {{ \Carbon\Carbon::parse(request('departure_date'))->translatedFormat('l, d F Y') }}
@@ -228,32 +228,93 @@
                 @endforeach
             </div>
         @else
-            {{-- Empty State --}}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 text-center">
-                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:#e3f5ee;">
-                    <svg width="28" height="28" fill="none" stroke="#087f55" stroke-width="1.5" viewBox="0 0 24 24">
-                        <rect x="1" y="3" width="15" height="13" rx="2"/>
-                        <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
-                        <circle cx="5.5" cy="18.5" r="2.5"/>
-                        <circle cx="18.5" cy="18.5" r="2.5"/>
-                    </svg>
-                </div>
-                <h4 class="font-bold text-slate-800 text-base mb-2">Jadwal Shuttle Belum Tersedia</h4>
-                <p class="text-sm text-slate-500 max-w-sm mx-auto">
-                    Tidak ditemukan armada aktif untuk rute dan tanggal yang dipilih. Silakan coba pilih tanggal lain atau rute alternatif di atas.
-                </p>
+            {{-- Empty State: Rute Belum Terhubung vs Kursi Penuh --}}
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 sm:p-12 text-center">
+                @if(!($routeConnected ?? false))
+                    {{-- 1. KOTA / RUTE BELUM TERHUBUNG KE JADWAL SHUTTLE --}}
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-amber-50 text-amber-600 border border-amber-200">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 mb-3">
+                        ⚠️ Rute Belum Terhubung Langsung
+                    </span>
+                    <h4 class="font-extrabold text-slate-900 text-lg mb-2">Jadwal Shuttle Belum Tersedia</h4>
+                    <p class="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed mb-6">
+                        Mohon maaf, rute langsung dari <strong>{{ $originLoc?->name ?? 'Kota Asal' }}</strong> ke <strong>{{ $destLoc?->name ?? 'Kota Tujuan' }}</strong> saat ini belum tersedia. Silakan pilih rute transit atau hub terdekat.
+                    </p>
+
+                    @if($transitHub)
+                        {{-- REKOMENDASI TRANSIT HUB OTOMATIS --}}
+                        <div class="max-w-xl mx-auto p-4 mb-6 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-left">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-bold text-[10px] uppercase">Rekomendasi Transit</span>
+                                <h5 class="text-xs font-bold text-emerald-950">Rekomendasi Rute Transit Terdekat via {{ $transitHub->name }}</h5>
+                            </div>
+                            <p class="text-xs text-emerald-800 mb-3 leading-relaxed">
+                                Anda dapat memesan 2 perjalanan terhubung secara praktis melalui hub transit <strong>{{ $transitHub->city }}</strong>:
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                <a href="{{ route('dashboard.user.search', ['origin' => $originLoc->id, 'destination' => $transitHub->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
+                                   class="p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-xs transition flex items-center justify-between text-slate-800 font-semibold group">
+                                    <span>1. {{ $originLoc->city }} ➔ {{ $transitHub->city }}</span>
+                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition">Cari Tiket ➔</span>
+                                </a>
+                                <a href="{{ route('dashboard.user.search', ['origin' => $transitHub->id, 'destination' => $destLoc->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
+                                   class="p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-xs transition flex items-center justify-between text-slate-800 font-semibold group">
+                                    <span>2. {{ $transitHub->city }} ➔ {{ $destLoc->city }}</span>
+                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition">Cari Tiket ➔</span>
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="max-w-xl mx-auto p-4 rounded-xl bg-slate-50 border border-slate-200 text-left">
+                        <p class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <span>ℹ️</span> Standar Koridor Shuttle Aktif (Jadwal Selalu Tersedia):
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Jakarta (Semanggi, Tebet, Cikini)</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Bekasi (Summarecon)</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Bogor (Baranangsiang)</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Depok (Margonda)</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Bandara Soetta (CGK)</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Cianjur ⇄ Bogor</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Sukabumi ⇄ Bogor / Jakarta</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Cirebon &amp; Jakarta ⇄ Cirebon</span>
+                        </div>
+                    </div>
+                @else
+                    {{-- 2. RUTE TERHUBUNG TETAPI SEMUA KURSI PENUH --}}
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:#e3f5ee;">
+                        <svg width="28" height="28" fill="none" stroke="#087f55" stroke-width="1.5" viewBox="0 0 24 24">
+                            <rect x="1" y="3" width="15" height="13" rx="2"/>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                    </div>
+                    <h4 class="font-bold text-slate-800 text-base mb-2">Seluruh Kursi Telah Terisi</h4>
+                    <p class="text-sm text-slate-500 max-w-sm mx-auto">
+                        Kursi untuk {{ request('passengers', 1) }} penumpang pada tanggal {{ \Carbon\Carbon::parse(request('departure_date'))->translatedFormat('d F Y') }} sedang penuh. Silakan coba pilih jam atau tanggal keberangkatan lainnya.
+                    </p>
+                @endif
             </div>
         @endif
     @else
         {{-- Belum mencari --}}
-        <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+        <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-8 sm:p-12 text-center">
             <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:#f5f8f7;">
-                <svg width="28" height="28" fill="none" stroke="#98a39e" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/>
+                <svg width="28" height="28" fill="none" stroke="#087f55" stroke-width="1.8" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
             </div>
-            <h4 class="font-semibold text-slate-700 text-sm">Pilih rute dan tanggal keberangkatan</h4>
-            <p class="text-xs text-slate-400 mt-1">Daftar jadwal armada aktif akan tampil di sini setelah Anda menekan tombol Cari Tiket.</p>
+            <h4 class="font-bold text-slate-800 text-base mb-1">Siap Bepergian dengan Shuttle TravelKu?</h4>
+            <p class="text-xs text-slate-500 max-w-md mx-auto">
+                Pilih pool keberangkatan dan tujuan Anda pada form di atas, lalu klik <strong>Cari Tiket</strong> untuk melihat puluhan jadwal armada HiAce &amp; Elf aktif setiap harinya.
+            </p>
         </div>
     @endif
 

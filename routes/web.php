@@ -36,7 +36,7 @@ Route::post('/reset-password', [ResetPasswordController::class, 'store'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin_utama'])
+Route::middleware(['auth', 'role:admin_utama,admin'])
     ->group(function () {
 
         Route::get('/dashboard/admin', [
@@ -640,7 +640,7 @@ Route::middleware(['auth', 'role:driver'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:cs'])
+Route::middleware(['auth', 'role:cs,customer_service'])
     ->group(function () {
 
         Route::get('/customer-service/dashboard', [
@@ -652,6 +652,26 @@ Route::middleware(['auth', 'role:cs'])
             CustomerServiceDashboardController::class,
             'liveChat',
         ])->name('dashboard.customer-service.live-chat');
+
+        Route::get('/customer-service/booking-context', [
+            CustomerServiceDashboardController::class,
+            'bookingContext',
+        ])->name('dashboard.customer-service.booking-context');
+
+        Route::get('/customer-service/chat-history', [
+            CustomerServiceDashboardController::class,
+            'chatHistory',
+        ])->name('dashboard.customer-service.chat-history');
+
+        Route::get('/customer-service/send-file', [
+            CustomerServiceDashboardController::class,
+            'sendFile',
+        ])->name('dashboard.customer-service.send-file');
+
+        Route::get('/customer-service/escalation', [
+            CustomerServiceDashboardController::class,
+            'escalation',
+        ])->name('dashboard.customer-service.escalation');
 
     });
 

@@ -459,17 +459,8 @@
                         <div class="seat-picker-chassis">
                             <div class="picker-windshield">Kaca Depan Minibus</div>
 
-                            {{-- BARIS DEPAN --}}
+                            {{-- BARIS DEPAN (STANDAR SETIR KANAN INDONESIA) --}}
                             <div class="picker-front-row">
-                                <div class="picker-driver-seat">
-                                    <span style="font-size: 16px;">🚘</span>
-                                    <span>Sopir</span>
-                                </div>
-
-                                <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
-                                    Lorong Kabin
-                                </div>
-
                                 @php
                                     $seat1A = null;
                                     if (isset($occupancyMap['1'])) {
@@ -492,6 +483,7 @@
                                         class="pick-seat-btn {{ $cls }}"
                                         data-seat-id="{{ $seat1A['seat_id'] }}"
                                         data-seat-num="{{ $seat1A['seat_number'] }}"
+                                        title="Kursi 1A (Depan Kiri Samping Pintu)"
                                         @if(!$isAvail) disabled title="Kursi sudah terisi" @else onclick="toggleSeat(this)" @endif
                                     >
                                         {{ $seat1A['seat_number'] }}
@@ -500,16 +492,29 @@
                                         </span>
                                     </button>
                                 @else
-                                    <div style="width: 64px; height: 64px;"></div>
+                                    <div style="width: 64px; height: 64px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #94a3b8;">
+                                        🚪 Pintu Kiri
+                                    </div>
                                 @endif
+
+                                <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
+                                    🚪 Lorong / Pintu
+                                </div>
+
+                                <div class="picker-driver-seat" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
+                                    <span style="font-size: 16px;">🚘</span>
+                                    <span>Sopir</span>
+                                    <span style="font-size: 8px; opacity: 0.85; font-weight: 800;">(KANAN)</span>
+                                </div>
                             </div>
 
                             {{-- BARIS BELAKANG --}}
                             <div class="picker-cabin-grid">
                                 @foreach($occupancyMap as $rowNum => $rowSeats)
                                     @if((string) $rowNum === '1') @continue @endif
-                                    <div class="picker-row">
-                                        @foreach($rowSeats as $seat)
+                                    @php $seatCount = count($rowSeats); @endphp
+                                    <div class="picker-row" @if($seatCount === 2) style="justify-content: space-between; padding: 0 4px;" @endif>
+                                        @foreach($rowSeats as $seatIdx => $seat)
                                             @php
                                                 $isAvail = $seat['occupancy']['status'] === 'available';
                                                 $cls = $isAvail ? 'available' : ($seat['occupancy']['status'] === 'paid' ? 'occupied-paid' : 'occupied-pending');
@@ -519,6 +524,7 @@
                                                 class="pick-seat-btn {{ $cls }}"
                                                 data-seat-id="{{ $seat['seat_id'] }}"
                                                 data-seat-num="{{ $seat['seat_number'] }}"
+                                                title="Kursi {{ $seat['seat_number'] }} ({{ $seatIdx === 0 ? 'Kiri' : 'Kanan Belakang Sopir' }})"
                                                 @if(!$isAvail) disabled title="Kursi sudah terisi" @else onclick="toggleSeat(this)" @endif
                                             >
                                                 {{ $seat['seat_number'] }}
@@ -526,6 +532,13 @@
                                                     {{ $isAvail ? 'Pilih' : 'Terisi' }}
                                                 </span>
                                             </button>
+
+                                            {{-- Sisipkan lorong tengah jika 2 kursi --}}
+                                            @if($seatCount === 2 && $seatIdx === 0)
+                                                <div style="font-size: 9px; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">
+                                                    Lorong
+                                                </div>
+                                            @endif
                                         @endforeach
                                     </div>
                                 @endforeach

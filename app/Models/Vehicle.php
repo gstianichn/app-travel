@@ -297,12 +297,12 @@ class Vehicle extends Model
         $capacity = max(4, $this->capacity ?? 10);
         $this->seats()->delete();
 
-        // Row 1: Kursi 1A di samping driver
+        // Row 1: Kursi 1A di samping kiri driver (Standar Kemudi Kanan Indonesia)
         Seat::create([
             'vehicle_id' => $this->id,
             'seat_number' => '1A',
             'seat_row' => '1',
-            'seat_column' => 3,
+            'seat_column' => 1,
             'status' => 'Available',
         ]);
 
@@ -325,11 +325,14 @@ class Vehicle extends Model
 
             for ($col = 0; $col < $seatsInThisRow && $created < $capacity; $col++) {
                 $seatNumber = $currentRow.$letters[$col];
+                // Kolom realistis: jika 2 kursi per baris, kursi A di kiri (col 1) dan kursi B di kanan belakang supir (col 3)
+                $colIndex = ($seatsInThisRow === 2 && $col === 1) ? 3 : ($col + 1);
+
                 Seat::create([
                     'vehicle_id' => $this->id,
                     'seat_number' => $seatNumber,
                     'seat_row' => (string) $currentRow,
-                    'seat_column' => $col + 1,
+                    'seat_column' => $colIndex,
                     'status' => 'Available',
                 ]);
                 $created++;

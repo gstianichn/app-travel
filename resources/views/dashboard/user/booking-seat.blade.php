@@ -80,22 +80,22 @@
                     </div>
                 </div>
 
-                {{-- Layout Fisik Kabin Minibus HiAce / Van --}}
+                {{-- Layout Fisik Kabin Minibus HiAce / Van (Standar Kemudi Kanan Indonesia) --}}
                 <div class="max-w-xs mx-auto bg-slate-50 rounded-3xl p-6 border-2 border-slate-200 shadow-inner relative">
                     
-                    {{-- Bagian Depan Minibus (Kaca Depan & Kabin Supir) --}}
+                    {{-- Bagian Depan Minibus (Kaca Depan & Kabin Supir Setir Kanan) --}}
                     <div class="border-b-2 border-dashed border-slate-300 pb-4 mb-5 text-center">
-                        <div class="h-2 w-28 mx-auto rounded-full bg-slate-300 mb-3"></div>
+                        <div class="flex items-center justify-between px-2 mb-2.5">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <span>🚪</span> Pintu Kiri
+                            </span>
+                            <div class="h-1.5 w-24 rounded-full bg-slate-300" title="Kaca Depan Minibus"></div>
+                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span>🇮🇩</span> Setir Kanan
+                            </span>
+                        </div>
                         <div class="flex items-center justify-between px-2">
-                            {{-- Kursi Supir --}}
-                            <div class="w-14 h-14 rounded-2xl bg-slate-200 border-2 border-slate-300 flex flex-col items-center justify-center text-slate-500">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m12 2v20m10-10H2"/></svg>
-                                <span class="text-[9px] font-bold uppercase mt-0.5">Supir</span>
-                            </div>
-                            
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pintu / Depan</span>
-
-                            {{-- Kursi 1A (Baris Depan Samping Supir jika ada) --}}
+                            {{-- Kursi 1A (Baris Depan Kiri - Samping Pintu Penumpang) --}}
                             @php
                                 $seat1A = null;
                                 foreach($occupancyMap as $row) {
@@ -107,52 +107,93 @@
                                     }
                                 }
                             @endphp
-                            @if($seat1A)
-                                @include('dashboard.user.partials.seat-button', ['seat' => $seat1A])
-                            @else
-                                <div class="w-14 h-14 rounded-2xl border-2 border-dashed border-slate-200"></div>
-                            @endif
+                            <div class="flex flex-col items-center">
+                                @if($seat1A)
+                                    @include('dashboard.user.partials.seat-button', ['seat' => $seat1A])
+                                @else
+                                    <div class="w-14 h-14 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-xs">
+                                        Kosong
+                                    </div>
+                                @endif
+                                <span class="text-[9px] font-semibold text-slate-400 mt-1">Depan Kiri</span>
+                            </div>
+
+                            {{-- Lorong Tangga / Pintu Masuk Depan --}}
+                            <div class="flex flex-col items-center justify-center px-1">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pintu / Depan</span>
+                            </div>
+
+                            {{-- Kursi Kemudi Sopir (Kanan - Standar Kendaraan Indonesia) --}}
+                            <div class="flex flex-col items-center">
+                                <div class="w-14 h-14 rounded-2xl bg-slate-900 border-2 border-slate-700 flex flex-col items-center justify-center text-amber-400 shadow-sm" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="m12 2v20m10-10H2"/>
+                                    </svg>
+                                    <span class="text-[9px] font-bold uppercase mt-0.5 text-white">Sopir</span>
+                                </div>
+                                <span class="text-[9px] font-bold text-slate-500 mt-1">Setir Kanan</span>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Baris Kursi Penumpang (Row 2 dst) --}}
+                    {{-- Baris Kursi Penumpang (Row 2 dst - Realistis Minibus Indonesia) --}}
                     <div class="space-y-3.5">
                         @foreach($occupancyMap as $rowIndex => $rowSeats)
                             {{-- Lewatkan baris 1 jika sudah ditaruh di depan --}}
-                            @if($rowIndex == '1')
+                            @if((string) $rowIndex === '1')
                                 @continue
                             @endif
 
                             <div class="flex items-center justify-between px-2">
                                 @php
-                                    $colSeats = collect($rowSeats)->keyBy('seat_column');
-                                    // Kolom: 1, 2 (Lorong tengah), 3, 4
+                                    $seatCount = count($rowSeats);
                                 @endphp
 
-                                {{-- Kursi Kiri (Col 1 & 2) --}}
-                                <div class="flex items-center gap-2">
-                                    @if(isset($colSeats[1]))
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $colSeats[1]])
-                                    @endif
-                                    @if(isset($colSeats[2]))
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $colSeats[2]])
-                                    @endif
-                                </div>
+                                @if($seatCount === 2)
+                                    {{-- Kursi Kiri (Sisi Jendela Kiri / Pintu Geser) --}}
+                                    <div class="flex items-center gap-2 w-14 justify-center">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
+                                    </div>
 
-                                {{-- Lorong Tengah --}}
-                                <div class="text-[10px] text-slate-300 font-mono">
-                                    R{{ $rowIndex }}
-                                </div>
+                                    {{-- Lorong Tengah --}}
+                                    <div class="text-[10px] text-slate-300 font-mono">
+                                        R{{ $rowIndex }}
+                                    </div>
 
-                                {{-- Kursi Kanan (Col 3 & 4) --}}
-                                <div class="flex items-center gap-2">
-                                    @if(isset($colSeats[3]))
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $colSeats[3]])
-                                    @endif
-                                    @if(isset($colSeats[4]))
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $colSeats[4]])
-                                    @endif
-                                </div>
+                                    {{-- Kursi Kanan (Belakang Kemudi Sopir) --}}
+                                    <div class="flex items-center gap-2 w-14 justify-center">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
+                                    </div>
+                                @elseif($seatCount === 3)
+                                    <div class="flex items-center gap-2">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[2]])
+                                    </div>
+                                @elseif($seatCount >= 4)
+                                    <div class="flex items-center gap-1.5">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
+                                    </div>
+                                    <div class="text-[10px] text-slate-300 font-mono">
+                                        R{{ $rowIndex }}
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[2]])
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[3]])
+                                    </div>
+                                @else
+                                    <div class="flex items-center gap-2">
+                                        @foreach($rowSeats as $st)
+                                            @include('dashboard.user.partials.seat-button', ['seat' => $st])
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>

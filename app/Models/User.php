@@ -141,17 +141,17 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'admin_utama']);
     }
 
     public function isStaff(): bool
     {
-        return in_array($this->role, ['staff', 'admin_staff', 'staf']);
+        return in_array($this->role, ['staff', 'admin_staff', 'staf', 'admin_biasa']);
     }
 
     public function isAdminStaff(): bool
     {
-        return $this->role === 'admin_staff';
+        return in_array($this->role, ['admin_staff', 'staff', 'admin_biasa']);
     }
 
     public function isDriver(): bool
@@ -161,7 +161,7 @@ class User extends Authenticatable
 
     public function isCustomerService(): bool
     {
-        return $this->role === 'customer_service';
+        return in_array($this->role, ['customer_service', 'cs']);
     }
 
     public function isUser(): bool

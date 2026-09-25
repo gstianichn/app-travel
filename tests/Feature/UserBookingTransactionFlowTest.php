@@ -119,6 +119,8 @@ test('subflow 2: user can view seat map and lock seats with 10-minute temporary 
     $response->assertOk();
     $response->assertSee('Denah Kursi Penumpang');
     $response->assertSee('10 Menit');
+    $response->assertSee('Setir Kanan');
+    $response->assertSee('Pintu Kiri');
 
     // 2. Lock 2 seats
     $seats = $this->vehicle->seats()->take(2)->get();
@@ -452,4 +454,46 @@ test('flow c: completed trips allow submitting multi-metric reviews connected to
     expect((float) $review->overall_rating)->toBe(4.67);
     expect($review->vehicle_id)->toBe($this->vehicle->id);
     expect($review->comment)->toContain('Minibus sangat bersih');
+});
+
+test('user searching connected route sees active available schedules with pricing and booking button', function () {
+    $response = $this->actingAs($this->user)->get(route('dashboard.user.search', [
+        'origin' => $this->origin->id,
+        'destination' => $this->destination->id,
+        'departure_date' => Carbon::today()->addDays(2)->toDateString(),
+        'passengers' => 1,
+    ]));
+
+    $response->assertOk();
+    $response->assertSee('Jadwal & Armada Tersedia');
+    $response->assertSee('Pilih Kursi');
+    $response->assertSee('Rp');
+});
+
+test('user searching unconnected route sees friendly notification and transit hub suggestion', function () {
+    $sukabumi = Location::firstOrCreate(
+        ['code' => 'SMI-TEST'],
+        ['name' => 'Pool Cisaat (Sukabumi)', 'city' => 'Sukabumi', 'is_active' => true]
+    );
+    $cirebon = Location::firstOrCreate(
+        ['code' => 'CBN-TEST'],
+        ['name' => 'Pool Kejaksan (Cirebon)', 'city' => 'Cirebon', 'is_active' => true]
+    );
+
+    // Ensure Sukabumi <-> Bandung and Bandung <-> Cirebon exist for hub detection
+    Route::firstOrCreate(['origin_id' => $sukabumi->id, 'destination_id' => $this->origin->id], ['price' => 70000, 'duration' => '2 Jam 30 Menit', 'is_active' => true]);
+    Route::firstOrCreate(['origin_id' => $this->origin->id, 'destination_id' => $cirebon->id], ['price' => 110000, 'duration' => '3 Jam', 'is_active' => true]);
+
+    $response = $this->actingAs($this->user)->get(route('dashboard.user.search', [
+        'origin' => $sukabumi->id,
+        'destination' => $cirebon->id,
+        'departure_date' => Carbon::today()->addDays(2)->toDateString(),
+        'passengers' => 1,
+    ]));
+
+    $response->assertOk();
+    $response->assertSee('Mohon maaf, rute langsung dari');
+    $response->assertSee('saat ini belum tersedia. Silakan pilih rute transit atau hub terdekat.');
+    $response->assertSee('Rekomendasi Rute Transit Terdekat');
+    $response->assertSee('Pool Dipatiukur (Bandung)');
 });

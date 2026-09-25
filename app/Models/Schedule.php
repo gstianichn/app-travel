@@ -498,4 +498,46 @@ class Schedule extends Model
 
         return $waypoints;
     }
+
+    /**
+     * Memastikan jadwal reguler tersedia untuk rute dan tanggal keberangkatan tertentu.
+     * Jika rute aktif namun belum memiliki jadwal pada tanggal tersebut, otomatis buat jadwal standar harian.
+     */
+    public static function ensureSchedulesExistForDateAndRoute(Route $route, string $departureDate): void
+    {
+        $existingCount = static::where('route_id', $route->id)
+            ->whereDate('departure_date', $departureDate)
+            ->count();
+
+        if ($existingCount > 0) {
+            return;
+        }
+
+        $vehicles = Vehicle::whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active'])->get();
+        if ($vehicles->isEmpty()) {
+            return;
+        }
+
+        $driver = Driver::where('status', 'standby')->first() ?? Driver::first();
+
+        $standardTimes = ['07:00', '10:00', '14:00', '18:30'];
+        foreach ($standardTimes as $idx => $time) {
+            $vehicle = $vehicles[$idx % $vehicles->count()];
+            $seatCap = $vehicle->capacity ?: 10;
+            $vehicle->ensureSeatsExist();
+
+            static::create([
+                'route_id' => $route->id,
+                'departure_date' => $departureDate,
+                'departure_time' => $time,
+                'vehicle_id' => $vehicle->id,
+                'driver_id' => $driver?->id,
+                'available_seats' => max(4, $seatCap - 2),
+                'price' => $route->price ?: 125000,
+                'status' => 'Scheduled',
+                'trip_status' => 'scheduled',
+                'notes' => 'Keberangkatan reguler armada '.$vehicle->name.'.',
+            ]);
+        }
+    }
 }

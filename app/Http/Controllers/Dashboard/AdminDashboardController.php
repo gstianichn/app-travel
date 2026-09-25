@@ -1698,6 +1698,7 @@ class AdminDashboardController extends Controller
             ->whereNotIn('status', ['Completed', 'completed', 'Cancelled', 'cancelled'])
             ->orderBy('departure_date')
             ->orderBy('departure_time')
+            ->take(50)
             ->get();
 
         $selectedSchedule = null;

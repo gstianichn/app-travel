@@ -57,3 +57,21 @@ test('staff can access admin-biasa dashboard index with all modular components l
     $response->assertSee('openScannerModal');
     $response->assertSee('confirmBoarding');
 });
+
+test('staff can access informasi perjalanan page safely without memory issues', function () {
+    $response = $this->actingAs($this->staff)
+        ->get(route('dashboard.admin-biasa.perjalanan'));
+
+    $response->assertOk();
+    $response->assertSee('Informasi Perjalanan Armada');
+    $response->assertSee('Semua Status');
+    $response->assertSee('Waktu Berangkat');
+});
+
+test('staff can access manajemen booking page safely', function () {
+    $response = $this->actingAs($this->staff)
+        ->get(route('dashboard.admin-biasa.booking'));
+
+    $response->assertOk();
+    $response->assertSee('Manajemen Booking');
+});

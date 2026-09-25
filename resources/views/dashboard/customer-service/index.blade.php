@@ -1,53 +1,31 @@
-<!DOCTYPE html>
-<html lang="id">
+@extends('layouts.customer-service')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Customer Service - TravelKu</title>
+@section('title', 'Dashboard Customer Service - TravelKu FastShuttle')
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+@section('content')
 
-    {{-- Styling CSS Khusus Dashboard Customer Service --}}
-    @include('dashboard.customer-service.partials.styles')
-</head>
+    {{-- Banner Selamat Datang & Status Shift CS --}}
+    @include('dashboard.customer-service.partials.welcome-banner')
 
-<body>
+    {{-- 1. Kartu Metrik Kerja Harian (Real-Time Queue Counters: Chat Menunggu Dibalas, Batas SLA, Eskalasi, Keberangkatan Terdekat) --}}
+    @include('dashboard.customer-service.partials.stats-grid')
 
-    {{-- Sidebar Navigasi Customer Service --}}
-    @include('dashboard.customer-service.partials.sidebar')
+    {{-- 3. Pintasan Pencarian Cepat (Omnisearch Bar: PNR, WhatsApp, Nama, Plat Nomor) --}}
+    @include('dashboard.customer-service.partials.omnisearch')
 
-    {{-- Konten Utama Dashboard --}}
-    <main class="main">
+    {{-- 2. Panel Pantauan Keberangkatan Hari Ini (Trip Monitor & Incident Alert) --}}
+    @include('dashboard.customer-service.partials.trip-monitor')
 
-        {{-- Topbar Header CS --}}
-        @include('dashboard.customer-service.partials.topbar')
+    {{-- 4 & 5. Papan Kasus Eskalasi Berjalan (Escalation Tracker) & Papan Pengumuman Operasional (Notice Board) --}}
+    <div class="dashboard-grid" style="margin-bottom: 24px;">
+        @include('dashboard.customer-service.partials.escalation-tracker')
+        @include('dashboard.customer-service.partials.notice-board')
+    </div>
 
-        {{-- Isi Konten Halaman --}}
-        <section class="content">
+    {{-- 6. Menu Akses Cepat & Log Aktivitas Pelayanan Terbaru --}}
+    <div class="dashboard-grid">
+        @include('dashboard.customer-service.partials.quick-menu')
+        @include('dashboard.customer-service.partials.activity-list')
+    </div>
 
-            {{-- 1. Banner Selamat Datang CS --}}
-            @include('dashboard.customer-service.partials.welcome-banner')
-
-            {{-- 2. Grid Statistik & Indikator CS (Chat Aktif, Tiket Batal, dsb) --}}
-            @include('dashboard.customer-service.partials.stats-grid')
-
-            {{-- 3. Grid Menu Akses Cepat & Log Aktivitas CS --}}
-            <div class="dashboard-grid">
-                @include('dashboard.customer-service.partials.quick-menu')
-                @include('dashboard.customer-service.partials.activity-list')
-            </div>
-
-        </section>
-
-    </main>
-
-    {{-- Script Pendukung Interaktivitas CS --}}
-    @include('dashboard.customer-service.partials.scripts')
-
-</body>
-
-</html>
+@endsection

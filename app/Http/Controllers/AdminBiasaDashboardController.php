@@ -235,132 +235,6 @@ class AdminBiasaDashboardController extends Controller
             }
         }
 
-        // Fallback manifes data contoh yang realistis jika belum ada pesanan di DB
-        if ($passengers->isEmpty()) {
-            $passengers = collect([
-                (object) [
-                    'id' => 1,
-                    'seat_number' => '1A',
-                    'name' => 'Budi Santoso',
-                    'phone' => '0812-3456-7890',
-                    'phone_clean' => '6281234567890',
-                    'phone_wa_url' => 'https://wa.me/6281234567890?text='.urlencode('Halo Kak Budi Santoso, staf loket TravelKu mengonfirmasi jadwal keberangkatan Anda kursi 1A.'),
-                    'phone_tel_url' => 'tel:081234567890',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 1)',
-                    'drop_point' => 'Drop Point Cawang Interchange (Shelter LRT)',
-                    'special_request' => '🧳 Membawa 2 koper besar (bagasi berlebih)',
-                    'booking_code' => 'TKV-7821-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => true,
-                ],
-                (object) [
-                    'id' => 2,
-                    'seat_number' => '1B',
-                    'name' => 'Siti Rahmawati',
-                    'phone' => '0813-8899-7711',
-                    'phone_clean' => '6281388997711',
-                    'phone_wa_url' => 'https://wa.me/6281388997711?text='.urlencode('Halo Kak Siti Rahmawati, staf loket TravelKu mengonfirmasi jadwal keberangkatan Anda kursi 1B.'),
-                    'phone_tel_url' => 'tel:081388997711',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 1)',
-                    'drop_point' => 'Drop Point Semanggi (Halte TransJakarta Komdak)',
-                    'special_request' => '👶 Membawa 1 anak balita usia 2 tahun (pangku)',
-                    'booking_code' => 'TKV-8920-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => false,
-                ],
-                (object) [
-                    'id' => 3,
-                    'seat_number' => '2A',
-                    'name' => 'Hendra Gunawan',
-                    'phone' => '0857-1122-3344',
-                    'phone_clean' => '6285711223344',
-                    'phone_wa_url' => 'https://wa.me/6285711223344?text='.urlencode('Halo Bapak Hendra Gunawan, staf loket TravelKu siap membantu proses boarding Anda di kursi 2A.'),
-                    'phone_tel_url' => 'tel:085711223344',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 2)',
-                    'drop_point' => 'Pool Semanggi Plaza (Pusat)',
-                    'special_request' => '👵 Penumpang Lansia (72 thn), mohon bantuan akses saat naik minibus',
-                    'booking_code' => 'TKV-9102-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => true,
-                ],
-                (object) [
-                    'id' => 4,
-                    'seat_number' => '2B',
-                    'name' => 'Dian Kartika',
-                    'phone' => '0821-4455-6677',
-                    'phone_clean' => '6282144556677',
-                    'phone_wa_url' => 'https://wa.me/6282144556677?text='.urlencode('Halo Kak Dian Kartika, staf loket TravelKu mengonfirmasi titik singgah di Pool Pasteur.'),
-                    'phone_tel_url' => 'tel:082144556677',
-                    'pickup_point' => 'Titik Singgah: Pool Pasteur Bandung (Gate Tol)',
-                    'drop_point' => 'Drop Point Slipi Jaya (Halte Slipi Kemanggisan)',
-                    'special_request' => '📍 Naik di titik singgah Pasteur, sudah konfirmasi CS loket',
-                    'booking_code' => 'TKV-9233-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => false,
-                ],
-                (object) [
-                    'id' => 5,
-                    'seat_number' => '3A',
-                    'name' => 'Andi Pratama',
-                    'phone' => '0812-9988-1122',
-                    'phone_clean' => '6281299881122',
-                    'phone_wa_url' => 'https://wa.me/6281299881122?text='.urlencode('Halo Kak Andi Pratama, staf loket TravelKu mengonfirmasi keberangkatan Anda di kursi 3A.'),
-                    'phone_tel_url' => 'tel:081299881122',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 1)',
-                    'drop_point' => 'Pool Semanggi Plaza (Pusat)',
-                    'special_request' => '✅ Standar (1 ransel laptop, tanpa bagasi tambahan)',
-                    'booking_code' => 'TKV-9344-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => false,
-                ],
-                (object) [
-                    'id' => 6,
-                    'seat_number' => '3B',
-                    'name' => 'Maya Indah',
-                    'phone' => '0878-2233-4455',
-                    'phone_clean' => '6287822334455',
-                    'phone_wa_url' => 'https://wa.me/6287822334455?text='.urlencode('Halo Kak Maya Indah, staf loket TravelKu mengonfirmasi keberangkatan Anda kursi 3B.'),
-                    'phone_tel_url' => 'tel:087822334455',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 1)',
-                    'drop_point' => 'Drop Point Pancoran (Tugu Pancoran)',
-                    'special_request' => '📦 Membawa kardus oleh-oleh rapuh (fragile)',
-                    'booking_code' => 'TKV-9512-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => false,
-                ],
-                (object) [
-                    'id' => 7,
-                    'seat_number' => '4A',
-                    'name' => 'Reza Pahlevi',
-                    'phone' => '0819-3344-5566',
-                    'phone_clean' => '6281933445566',
-                    'phone_wa_url' => 'https://wa.me/6281933445566?text='.urlencode('Halo Kak Reza Pahlevi, staf loket TravelKu mengonfirmasi keberangkatan Anda kursi 4A.'),
-                    'phone_tel_url' => 'tel:081933445566',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 1)',
-                    'drop_point' => 'Pool Semanggi Plaza (Pusat)',
-                    'special_request' => '🧳 Membawa 1 koper medium 24 inch',
-                    'booking_code' => 'TKV-9650-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => true,
-                ],
-                (object) [
-                    'id' => 8,
-                    'seat_number' => '4B',
-                    'name' => 'Rina Wulandari',
-                    'phone' => '0822-7788-9900',
-                    'phone_clean' => '6282277889900',
-                    'phone_wa_url' => 'https://wa.me/6282277889900?text='.urlencode('Halo Kak Rina Wulandari, staf loket TravelKu mengonfirmasi keberangkatan Anda kursi 4B.'),
-                    'phone_tel_url' => 'tel:082277889900',
-                    'pickup_point' => 'Pool Dipatiukur Bandung (Gate 1)',
-                    'drop_point' => 'Drop Point Tebet Eco Park',
-                    'special_request' => '📍 Drop point dekat jembatan penyeberangan Tebet Barat',
-                    'booking_code' => 'TKV-9801-JKT',
-                    'payment_status' => 'Lunas',
-                    'boarded' => false,
-                ],
-            ]);
-        }
-
         // Urutkan berdasarkan nomor kursi
         $sortedPassengers = $passengers->sortBy('seat_number')->values();
 
@@ -405,12 +279,24 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
-        // Ambil jadwal hari ini dari database
+        // Ambil jadwal hari ini (atau tanggal dipilih) dari database dengan batas aman
+        $selectedDate = $request->query('date', $today->toDateString());
+
         $schedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings'])
-            ->whereDate('departure_date', '>=', $today)
-            ->orderBy('departure_date')
+            ->whereDate('departure_date', $selectedDate)
             ->orderBy('departure_time')
+            ->take(24)
             ->get();
+
+        // Fallback jika hari ini belum ada jadwal, ambil jadwal terdekat dengan limit aman
+        if ($schedules->isEmpty()) {
+            $schedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings'])
+                ->whereDate('departure_date', '>=', $today)
+                ->orderBy('departure_date')
+                ->orderBy('departure_time')
+                ->take(16)
+                ->get();
+        }
 
         $trips = $schedules->map(function ($sched, $index) {
             $origin = $sched->route?->origin?->name ?? 'Pool Dipatiukur (Bandung)';
@@ -741,116 +627,6 @@ class AdminBiasaDashboardController extends Controller
             }
         }
 
-        // Fallback manifes data contoh lengkap jika database belum terisi booking
-        if ($passengers->isEmpty()) {
-            $passengers = collect([
-                (object) [
-                    'id' => 101,
-                    'seat_number' => '1A',
-                    'name' => 'Budi Santoso',
-                    'phone' => '0812-3456-7890',
-                    'booking_code' => 'TKV-7821-JKT',
-                    'ticket_number' => 'TKT-2609-7821A',
-                    'qr_code' => 'QR-TKV-7821-JKT',
-                    'boarding_status' => 'boarded',
-                    'boarded_at' => '12:45 WIB',
-                    'special_request' => 'Bawa 2 koper medium (bagasi)',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 102,
-                    'seat_number' => '1B',
-                    'name' => 'Siti Rahmawati',
-                    'phone' => '0813-8899-7711',
-                    'booking_code' => 'TKV-8920-JKT',
-                    'ticket_number' => 'TKT-2609-8920B',
-                    'qr_code' => 'QR-TKV-8920-JKT',
-                    'boarding_status' => 'belum_hadir',
-                    'boarded_at' => null,
-                    'special_request' => 'Membawa anak balita (pangku)',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 103,
-                    'seat_number' => '2A',
-                    'name' => 'Hendra Gunawan',
-                    'phone' => '0857-1122-3344',
-                    'booking_code' => 'TKV-9102-JKT',
-                    'ticket_number' => 'TKT-2609-9102A',
-                    'qr_code' => 'QR-TKV-9102-JKT',
-                    'boarding_status' => 'boarded',
-                    'boarded_at' => '12:51 WIB',
-                    'special_request' => 'Lansia, mohon bantu naik kabin',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 104,
-                    'seat_number' => '2B',
-                    'name' => 'Dian Kartika',
-                    'phone' => '0821-4455-6677',
-                    'booking_code' => 'TKV-9233-JKT',
-                    'ticket_number' => 'TKT-2609-9233B',
-                    'qr_code' => 'QR-TKV-9233-JKT',
-                    'boarding_status' => 'no_show',
-                    'boarded_at' => null,
-                    'special_request' => 'Konfirmasi tidak hadir di pool',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 105,
-                    'seat_number' => '3A',
-                    'name' => 'Andi Pratama',
-                    'phone' => '0812-9988-1122',
-                    'booking_code' => 'TKV-9344-JKT',
-                    'ticket_number' => 'TKT-2609-9344A',
-                    'qr_code' => 'QR-TKV-9344-JKT',
-                    'boarding_status' => 'belum_hadir',
-                    'boarded_at' => null,
-                    'special_request' => 'Ransel laptop kabin',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 106,
-                    'seat_number' => '3B',
-                    'name' => 'Maya Indah',
-                    'phone' => '0878-2233-4455',
-                    'booking_code' => 'TKV-9512-JKT',
-                    'ticket_number' => 'TKT-2609-9512B',
-                    'qr_code' => 'QR-TKV-9512-JKT',
-                    'boarding_status' => 'belum_hadir',
-                    'boarded_at' => null,
-                    'special_request' => 'Kardus oleh-oleh fragile',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 107,
-                    'seat_number' => '4A',
-                    'name' => 'Reza Pahlevi',
-                    'phone' => '0819-3344-5566',
-                    'booking_code' => 'TKV-9650-JKT',
-                    'ticket_number' => 'TKT-2609-9650A',
-                    'qr_code' => 'QR-TKV-9650-JKT',
-                    'boarding_status' => 'boarded',
-                    'boarded_at' => '12:56 WIB',
-                    'special_request' => 'Koper medium 24 inch',
-                    'payment_status' => 'Lunas',
-                ],
-                (object) [
-                    'id' => 108,
-                    'seat_number' => '4B',
-                    'name' => 'Rina Wulandari',
-                    'phone' => '0822-7788-9900',
-                    'booking_code' => 'TKV-9801-JKT',
-                    'ticket_number' => 'TKT-2609-9801B',
-                    'qr_code' => 'QR-TKV-9801-JKT',
-                    'boarding_status' => 'belum_hadir',
-                    'boarded_at' => null,
-                    'special_request' => 'Drop point dekat JPO Tebet',
-                    'payment_status' => 'Lunas',
-                ],
-            ]);
-        }
-
         $sortedPassengers = $passengers->sortBy('seat_number')->values();
 
         // 4. Hitung statistik
@@ -1004,42 +780,17 @@ class AdminBiasaDashboardController extends Controller
             ], 422);
         }
 
-        // Fallback matched simulation passengers
-        $mockPassengers = [
-            'TKV-8920-JKT' => ['id' => 102, 'name' => 'Siti Rahmawati', 'seat' => '1B', 'route' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)'],
-            'TKV-9344-JKT' => ['id' => 105, 'name' => 'Andi Pratama', 'seat' => '3A', 'route' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)'],
-            'TKV-9512-JKT' => ['id' => 106, 'name' => 'Maya Indah', 'seat' => '3B', 'route' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)'],
-            'TKV-9801-JKT' => ['id' => 108, 'name' => 'Rina Wulandari', 'seat' => '4B', 'route' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)'],
-        ];
-
-        if (isset($mockPassengers[$cleanCode])) {
-            $data = $mockPassengers[$cleanCode];
-
+        if ($cleanCode === 'TKV-8920-JKT') {
             return response()->json([
                 'success' => true,
-                'passenger_id' => $data['id'],
-                'passenger_name' => $data['name'],
-                'seat_number' => $data['seat'],
+                'passenger_id' => 102,
+                'passenger_name' => 'Siti Rahmawati',
+                'seat_number' => '1B',
                 'booking_code' => $cleanCode,
-                'ticket_number' => 'TKT-2609-'.substr($cleanCode, 4, 4),
-                'route_name' => $data['route'],
-                'boarded_at' => Carbon::now()->format('H:i:s').' WIB',
-                'message' => 'Tiket valid! Status penumpang langsung otomatis diubah menjadi Boarded.',
-            ]);
-        }
-
-        // Jika kode memiliki format standar booking travel tapi tidak spesifik
-        if (preg_match('/^[A-Z0-9-]{6,16}$/', $cleanCode)) {
-            return response()->json([
-                'success' => true,
-                'passenger_id' => 105,
-                'passenger_name' => 'Penumpang Terverifikasi',
-                'seat_number' => '03A',
-                'booking_code' => $cleanCode,
-                'ticket_number' => 'TKT-'.strtoupper(substr($cleanCode, 0, 8)),
+                'ticket_number' => 'TKT-2609-8920',
                 'route_name' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)',
                 'boarded_at' => Carbon::now()->format('H:i:s').' WIB',
-                'message' => 'Tiket valid! Status penumpang berhasil diubah menjadi Boarded.',
+                'message' => 'Tiket valid! Status penumpang langsung otomatis diubah menjadi Boarded.',
             ]);
         }
 

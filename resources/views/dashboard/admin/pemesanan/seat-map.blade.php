@@ -559,18 +559,9 @@
                 Kaca Depan Minibus
             </div>
 
-            {{-- BARIS DEPAN: DRIVER & KURSI 1A --}}
+            {{-- BARIS DEPAN: KURSI 1A (KIRI) & DRIVER (KANAN - STANDAR INDONESIA) --}}
             <div class="van-front-row">
-                <div class="driver-seat" title="Kursi Kemudi Sopir">
-                    <span class="driver-steering-icon">🚘</span>
-                    <span>Sopir</span>
-                </div>
-
-                <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
-                    Lorong Kabin
-                </div>
-
-                {{-- Cari kursi 1A pada baris 1 --}}
+                {{-- Cari kursi 1A pada baris 1 (Depan Kiri samping pintu) --}}
                 @php
                     $seat1A = null;
                     if (isset($occupancyMap['1'])) {
@@ -587,6 +578,7 @@
                     <div
                         class="seat-card {{ $seat1A['occupancy']['status'] }}"
                         onclick='showSeatDetail(@json($seat1A))'
+                        title="Kursi 1A (Depan Kiri Samping Pintu)"
                     >
                         <span class="seat-num">{{ $seat1A['seat_number'] }}</span>
                         <span class="seat-status-mini">
@@ -599,8 +591,20 @@
                         @endif
                     </div>
                 @else
-                    <div style="width: 76px; height: 76px;"></div>
+                    <div style="width: 76px; height: 76px; border: 2px dashed #cbd5e1; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8;">
+                        🚪 Pintu Kiri
+                    </div>
                 @endif
+
+                <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; text-align: center;">
+                    🚪 Pintu / Lorong
+                </div>
+
+                <div class="driver-seat" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
+                    <span class="driver-steering-icon">🚘</span>
+                    <span>Sopir</span>
+                    <span style="font-size: 8px; opacity: 0.85; font-weight: 800;">(KANAN)</span>
+                </div>
             </div>
 
             {{-- BARIS PENUMPANG BELAKANG --}}
@@ -612,12 +616,13 @@
 
                     <div class="cabin-row">
                         <span class="row-number-label">R{{ $rowNum }}</span>
-                        <div class="row-seats-container">
-                            @foreach($rowSeats as $seat)
+                        <div class="row-seats-container" @if(count($rowSeats) === 2) style="justify-content: space-between; padding: 0 4px;" @endif>
+                            @php $seatCount = count($rowSeats); @endphp
+                            @foreach($rowSeats as $seatIdx => $seat)
                                 <div
                                     class="seat-card {{ $seat['occupancy']['status'] }}"
                                     onclick='showSeatDetail(@json($seat))'
-                                    title="Klik untuk detail kursi {{ $seat['seat_number'] }}"
+                                    title="Klik untuk detail kursi {{ $seat['seat_number'] }} ({{ $seatIdx === 0 ? 'Kiri' : 'Kanan Belakang Sopir' }})"
                                 >
                                     <span class="seat-num">{{ $seat['seat_number'] }}</span>
                                     <span class="seat-status-mini">
@@ -629,6 +634,13 @@
                                         </span>
                                     @endif
                                 </div>
+
+                                {{-- Sisipkan lorong tengah jika baris berisi 2 kursi (kiri dan kanan belakang supir) --}}
+                                @if($seatCount === 2 && $seatIdx === 0)
+                                    <div style="font-size: 10px; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">
+                                        Lorong
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
