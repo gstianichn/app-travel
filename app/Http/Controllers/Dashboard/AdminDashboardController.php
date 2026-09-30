@@ -1745,14 +1745,20 @@ class AdminDashboardController extends Controller
             'passengers' => ['nullable', 'array'],
         ]);
 
-        $schedule = Schedule::with(['route', 'vehicle'])->findOrFail($validated['schedule_id']);
+        return DB::transaction(function () use ($validated, $request) {
+            // Pessimistic lock pada jadwal dan baris kursi terpilih
+            $schedule = Schedule::where('id', $validated['schedule_id'])
+                ->with(['route', 'vehicle'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        return DB::transaction(function () use ($validated, $schedule, $request) {
+            Seat::whereIn('id', $validated['selected_seats'])->lockForUpdate()->get();
+
             // Validasi tabrakan kursi: pastikan kursi belum terisi di jadwal ini
             $alreadyBooked = BookingPassenger::whereHas('booking', function ($q) use ($schedule) {
                 $q->where('schedule_id', $schedule->id)
                     ->whereNotIn('status', ['Cancelled', 'cancelled']);
-            })->whereIn('seat_id', $validated['selected_seats'])->exists();
+            })->whereIn('seat_id', $validated['selected_seats'])->lockForUpdate()->exists();
 
             if ($alreadyBooked) {
                 return redirect()->back()

@@ -1241,6 +1241,18 @@
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-UNPAID-123')">
                                         ⚠️ Belum Lunas
                                     </button>
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-CANCELLED')">
+                                        ⚠️ Tiket Batal
+                                    </button>
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-REFUNDED')">
+                                        ⚠️ Di-Refund
+                                    </button>
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-EXPIRED')">
+                                        ⚠️ Kadaluwarsa
+                                    </button>
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-DEPARTED')">
+                                        ⚠️ Sudah Berangkat
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1455,6 +1467,101 @@
 
                 </div>
 
+            </div>
+
+            <!-- =========================================
+                 RIWAYAT VALIDASI E-TICKET TERKINI (LIVE FEED STAF)
+            ========================================== -->
+            <div class="panel-card" style="margin-top: 24px;">
+                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>
+                        <span>⚡</span>
+                        <span>Riwayat Validasi E-Ticket Terkini (Semua Jadwal)</span>
+                    </h3>
+                    <span style="font-size: 12px; color: var(--text-light);">
+                        Sinkronisasi otomatis saat penumpang scan tiket atau check-in mandiri
+                    </span>
+                </div>
+
+                <div class="checklist-table-wrapper">
+                    <table class="checklist-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 130px;">Waktu Boarding</th>
+                                <th>Penumpang & Kursi</th>
+                                <th>Kode Booking / Tiket</th>
+                                <th>Rute & Armada Trip</th>
+                                <th style="width: 140px; text-align: center;">Status</th>
+                                <th style="width: 150px; text-align: right;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentBoardedTickets ?? [] as $rt)
+                                @php
+                                    $pFirst = $rt->booking?->passengers?->first();
+                                    $allSeats = $rt->booking?->passengers?->map(fn($p) => $p->seat?->seat_number)->filter()->join(', ') ?: ($pFirst?->seat?->seat_number ?? '-');
+                                    $pName = $pFirst?->name ?? ($rt->booking?->user?->name ?? 'Penumpang');
+                                    $routeName = ($rt->booking?->schedule?->route?->origin?->name ?? 'Asal') . ' → ' . ($rt->booking?->schedule?->route?->destination?->name ?? 'Tujuan');
+                                    $plate = $rt->booking?->schedule?->vehicle?->plate_number ?? '-';
+                                    $timeStr = $rt->boarded_at ? \Carbon\Carbon::parse($rt->boarded_at)->format('H:i') . ' WIB' : 'Baru saja';
+                                    $schedId = $rt->booking?->schedule_id;
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 700; color: #047857; font-size: 13px;">
+                                            🕒 {{ $timeStr }}
+                                        </div>
+                                        <small style="color: var(--text-light); font-size: 11px;">
+                                            {{ $rt->boarded_at ? \Carbon\Carbon::parse($rt->boarded_at)->diffForHumans() : 'Hari ini' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <strong style="color: var(--text-dark); display: block;">{{ $pName }}</strong>
+                                        <span style="font-size: 12px; color: var(--primary); font-weight: 700;">Kursi: {{ $allSeats }}</span>
+                                    </td>
+                                    <td>
+                                        <span style="font-family: monospace; font-weight: 700; color: var(--text-dark);">
+                                            {{ $rt->booking?->booking_code ?? '-' }}
+                                        </span>
+                                        <small style="display: block; font-size: 11px; color: var(--text-light);">
+                                            {{ $rt->ticket_number }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 12px; font-weight: 600; color: var(--text-dark);">
+                                            {{ $routeName }}
+                                        </div>
+                                        <small style="color: var(--text-light);">
+                                            Unit: {{ $plate }}
+                                        </small>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span class="status-pill status-boarded">
+                                            ✓ Boarded
+                                        </span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        @if($schedId)
+                                            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}?schedule_id={{ $schedId }}"
+                                               class="btn-camera-action"
+                                               style="display: inline-block; padding: 6px 12px; font-size: 11px; text-decoration: none; text-align: center;">
+                                                Lihat Manifes ➔
+                                            </a>
+                                        @else
+                                            <span style="color: var(--text-light); font-size: 12px;">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">
+                                        Belum ada riwayat validasi e-ticket. Tiket yang divalidasi staf atau di-check-in penumpang akan otomatis muncul di sini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>

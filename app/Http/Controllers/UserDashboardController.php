@@ -10,6 +10,7 @@ use App\Models\Refund;
 use App\Models\Route;
 use App\Models\SavedPassenger;
 use App\Models\Schedule;
+use App\Models\Seat;
 use App\Models\Ticket;
 use App\Models\TripReview;
 use App\Models\User;
@@ -237,15 +238,29 @@ class UserDashboardController extends Controller
             'seat_ids.*' => ['required', 'integer', 'exists:seats,id'],
         ]);
 
-        $schedule = Schedule::with('vehicle')->findOrFail($validated['schedule_id']);
-
-        // Bersihkan kunci yang kedaluwarsa dulu
-        $this->releaseExpiredLocks($schedule);
-
         $seatIds = $validated['seat_ids'];
 
-        return DB::transaction(function () use ($schedule, $seatIds) {
-            // Cek apakah ada kursi yang bentrok (sudah dipesan / terkunci oleh pengguna lain)
+        return DB::transaction(function () use ($validated, $seatIds) {
+            // 1. Pessimistic lock pada baris schedule
+            $schedule = Schedule::where('id', $validated['schedule_id'])
+                ->with('vehicle')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // 2. Pessimistic lock pada baris kursi yang dipilih agar request konkuren tertahan
+            $seats = Seat::whereIn('id', $seatIds)
+                ->where('vehicle_id', $schedule->vehicle_id)
+                ->lockForUpdate()
+                ->get();
+
+            if ($seats->count() !== count($seatIds)) {
+                return back()->with('error', 'Kursi yang dipilih tidak valid atau tidak cocok dengan armada jadwal ini.');
+            }
+
+            // 3. Bersihkan kunci yang sudah kedaluwarsa untuk jadwal ini terlebih dahulu
+            $this->releaseExpiredLocks($schedule);
+
+            // 4. Periksa apakah ada kursi yang bentrok (sudah dipesan / terkunci oleh pengguna lain)
             $occupiedSeatIds = BookingPassenger::query()
                 ->whereHas('booking', function ($q) use ($schedule) {
                     $q->where('schedule_id', $schedule->id)
@@ -259,6 +274,7 @@ class UserDashboardController extends Controller
                         });
                 })
                 ->whereIn('seat_id', $seatIds)
+                ->lockForUpdate()
                 ->pluck('seat_id')
                 ->toArray();
 
@@ -266,7 +282,7 @@ class UserDashboardController extends Controller
                 return back()->with('error', 'Sebagian kursi yang Anda pilih baru saja dikunci atau dipesan oleh penumpang lain. Silakan pilih kursi lain.');
             }
 
-            // Hapus atau perbarui booking pending lama milik user ini di jadwal yang sama jika ada
+            // 5. Hapus booking pending lama milik user ini di jadwal yang sama jika ada
             Booking::where('user_id', Auth::id())
                 ->where('schedule_id', $schedule->id)
                 ->where('status', 'pending')
@@ -287,7 +303,7 @@ class UserDashboardController extends Controller
                 'total_price' => $subtotal,
                 'status' => 'pending',
                 'source' => 'online',
-                'expired_at' => Carbon::now()->addMinutes(10), // Seat Lock 10 Menit!
+                'expired_at' => Carbon::now()->addMinutes(15), // Seat Lock 15 Menit sesuai spesifikasi
             ]);
 
             // Daftarkan penumpang sementara untuk masing-masing kursi
@@ -727,6 +743,21 @@ class UserDashboardController extends Controller
             })
             ->values();
 
+        // Pastikan tiket fisik telah terbit untuk seluruh booking aktif
+        foreach ($activeBookings as $b) {
+            if (! $b->ticket) {
+                $createdTicket = Ticket::firstOrCreate(
+                    ['booking_id' => $b->id],
+                    [
+                        'ticket_number' => 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(substr($b->booking_code, -4)),
+                        'qr_code' => 'QR-'.$b->booking_code,
+                        'status' => 'Valid',
+                    ]
+                );
+                $b->setRelation('ticket', $createdTicket);
+            }
+        }
+
         // 3. Riwayat Selesai & Dibatalkan
         $historyBookings = Booking::query()
             ->with([
@@ -779,25 +810,53 @@ class UserDashboardController extends Controller
     }
 
     /**
-     * Sub-Flow A: Check-in di Pool / Scan QR Code Boarding Pass.
+     * Sub-Flow A: Check-in di Pool / Simulasi Scan QR Code Boarding Pass.
      */
-    public function checkInTicket(Ticket $ticket): RedirectResponse
+    public function checkInTicket($ticketId): RedirectResponse
     {
+        $ticket = Ticket::with('booking.passengers')->find($ticketId)
+            ?? Ticket::with('booking.passengers')->where('booking_id', $ticketId)->first();
+
+        if (! $ticket) {
+            $booking = Booking::with('passengers')->where('id', $ticketId)->where('user_id', Auth::id())->firstOrFail();
+            $ticket = Ticket::firstOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'ticket_number' => 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(substr($booking->booking_code, -4)),
+                    'qr_code' => 'QR-'.$booking->booking_code,
+                    'status' => 'Valid',
+                ]
+            );
+        }
+
         $booking = $ticket->booking;
         if ($booking && $booking->user_id !== Auth::id()) {
             abort(403);
         }
 
+        $now = Carbon::now();
+
+        // 1. Update status tiket menjadi Boarded
         $ticket->update([
-            'status' => 'checked_in',
-            'boarded_at' => Carbon::now(),
+            'status' => 'Boarded',
+            'boarded_at' => $now,
         ]);
 
+        // 2. Update status penumpang di manifes menjadi boarded
         if ($booking) {
-            $booking->update(['status' => 'checked_in']);
+            $booking->update([
+                'status' => 'checked_in',
+            ]);
+
+            foreach ($booking->passengers as $passenger) {
+                $passenger->update([
+                    'boarding_status' => 'boarded',
+                    'boarded_at' => $now,
+                ]);
+            }
         }
 
-        return back()->with('success', 'Check-in di Pool berhasil! Status tiket Anda kini Checked-in / On-Board.');
+        return back()->with('success', 'Simulasi scan tiket berhasil disetujui staf! Status tiket dan seluruh penumpang kini tercatat Boarded di akun staf operasional.');
     }
 
     /**
@@ -1485,6 +1544,7 @@ class UserDashboardController extends Controller
         $expiredBookings = Booking::where('schedule_id', $schedule->id)
             ->where('status', 'pending')
             ->where('expired_at', '<=', Carbon::now())
+            ->lockForUpdate()
             ->get();
 
         foreach ($expiredBookings as $booking) {

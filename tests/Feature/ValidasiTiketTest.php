@@ -3,6 +3,7 @@
 use App\Models\Booking;
 use App\Models\BookingPassenger;
 use App\Models\Location;
+use App\Models\Refund;
 use App\Models\Route as TravelRoute;
 use App\Models\Schedule;
 use App\Models\Seat;
@@ -306,6 +307,224 @@ test('staff can update passenger status manually to boarded or no show', functio
     expect($passenger->fresh()->boarding_status)->toBe('no_show');
 });
 
+test('validation rejects ticket if booking is cancelled', function () {
+    $customer = User::factory()->create();
+
+    $booking = Booking::create([
+        'booking_code' => 'TKV-TEST-CANCELLED',
+        'schedule_id' => $this->schedule->id,
+        'user_id' => $customer->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'total_price' => 120000,
+        'status' => 'cancelled',
+    ]);
+
+    $seat = Seat::firstOrCreate(
+        ['vehicle_id' => $this->vehicle->id, 'seat_number' => '4A'],
+        ['seat_row' => '2', 'seat_column' => 1, 'status' => 'Available']
+    );
+
+    BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Fajar Pratama',
+        'phone' => '081234567895',
+        'boarding_status' => 'belum_hadir',
+    ]);
+
+    $response = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-TEST-CANCELLED',
+            'schedule_id' => $this->schedule->id,
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'reason' => 'cancelled',
+            'title' => 'Tiket Telah Dibatalkan',
+        ]);
+});
+
+test('validation rejects ticket if refund is approved', function () {
+    $customer = User::factory()->create();
+
+    $booking = Booking::create([
+        'booking_code' => 'TKV-TEST-REFUNDED',
+        'schedule_id' => $this->schedule->id,
+        'user_id' => $customer->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'total_price' => 120000,
+        'status' => 'confirmed',
+    ]);
+
+    Refund::create([
+        'booking_id' => $booking->id,
+        'user_id' => $customer->id,
+        'original_amount' => 120000,
+        'amount' => 90000,
+        'cancellation_fee' => 30000,
+        'refund_percentage' => 75,
+        'reason' => 'Perubahan rencana mendadak',
+        'status' => 'disetujui',
+    ]);
+
+    $seat = Seat::firstOrCreate(
+        ['vehicle_id' => $this->vehicle->id, 'seat_number' => '4B'],
+        ['seat_row' => '2', 'seat_column' => 2, 'status' => 'Available']
+    );
+
+    BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Ayu Lestari',
+        'phone' => '081234567896',
+        'boarding_status' => 'belum_hadir',
+    ]);
+
+    $response = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-TEST-REFUNDED',
+            'schedule_id' => $this->schedule->id,
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'reason' => 'refunded',
+            'title' => 'Tiket Telah Di-refund',
+        ]);
+});
+
+test('validation rejects ticket if refund is pending', function () {
+    $customer = User::factory()->create();
+
+    $booking = Booking::create([
+        'booking_code' => 'TKV-TEST-REFUND-PENDING',
+        'schedule_id' => $this->schedule->id,
+        'user_id' => $customer->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'total_price' => 120000,
+        'status' => 'confirmed',
+    ]);
+
+    Refund::create([
+        'booking_id' => $booking->id,
+        'user_id' => $customer->id,
+        'original_amount' => 120000,
+        'amount' => 90000,
+        'cancellation_fee' => 30000,
+        'refund_percentage' => 75,
+        'reason' => 'Sakit',
+        'status' => 'menunggu',
+    ]);
+
+    $response = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-TEST-REFUND-PENDING',
+            'schedule_id' => $this->schedule->id,
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'reason' => 'refund_pending',
+            'title' => 'Tiket Dalam Proses Refund',
+        ]);
+});
+
+test('validation rejects ticket if trip has already departed', function () {
+    $departedSchedule = Schedule::create([
+        'route_id' => $this->route->id,
+        'vehicle_id' => $this->vehicle->id,
+        'departure_date' => Carbon::today()->toDateString(),
+        'departure_time' => '08:00:00',
+        'price' => 120000,
+        'status' => 'Departed',
+        'trip_status' => 'departed',
+        'departed_at' => Carbon::now()->subMinutes(45),
+        'available_seats' => 10,
+    ]);
+
+    $customer = User::factory()->create();
+
+    $booking = Booking::create([
+        'booking_code' => 'TKV-TEST-DEPARTED',
+        'schedule_id' => $departedSchedule->id,
+        'user_id' => $customer->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'total_price' => 120000,
+        'status' => 'confirmed',
+    ]);
+
+    $seat = Seat::firstOrCreate(
+        ['vehicle_id' => $this->vehicle->id, 'seat_number' => '5A'],
+        ['seat_row' => '3', 'seat_column' => 1, 'status' => 'Available']
+    );
+
+    BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Hendro',
+        'phone' => '081234567897',
+        'boarding_status' => 'belum_hadir',
+    ]);
+
+    $response = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-TEST-DEPARTED',
+            'schedule_id' => $departedSchedule->id,
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'reason' => 'trip_departed',
+            'title' => 'Armada Sudah Berangkat',
+        ]);
+});
+
+test('validation rejects ticket if departure date is expired in the past', function () {
+    $pastSchedule = Schedule::create([
+        'route_id' => $this->route->id,
+        'vehicle_id' => $this->vehicle->id,
+        'departure_date' => Carbon::yesterday()->toDateString(),
+        'departure_time' => '13:00:00',
+        'price' => 120000,
+        'status' => 'Selesai',
+        'available_seats' => 10,
+    ]);
+
+    $customer = User::factory()->create();
+
+    $booking = Booking::create([
+        'booking_code' => 'TKV-TEST-EXPIRED',
+        'schedule_id' => $pastSchedule->id,
+        'user_id' => $customer->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'total_price' => 120000,
+        'status' => 'confirmed',
+    ]);
+
+    $response = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-TEST-EXPIRED',
+            'schedule_id' => $pastSchedule->id,
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJson([
+            'success' => false,
+            'reason' => 'expired',
+            'title' => 'Tiket Sudah Kadaluwarsa',
+        ]);
+});
+
 test('simulated quick chips return expected responses', function () {
     $resSuccess = $this->actingAs($this->staff)
         ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
@@ -324,4 +543,85 @@ test('simulated quick chips return expected responses', function () {
             'code' => 'TKV-UNPAID',
         ]);
     $resUnpaid->assertStatus(422)->assertJson(['success' => false, 'reason' => 'unpaid']);
+
+    $resCancelled = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-CANCELLED',
+        ]);
+    $resCancelled->assertStatus(422)->assertJson(['success' => false, 'reason' => 'cancelled']);
+
+    $resRefunded = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-REFUNDED',
+        ]);
+    $resRefunded->assertStatus(422)->assertJson(['success' => false, 'reason' => 'refunded']);
+
+    $resExpired = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-EXPIRED',
+        ]);
+    $resExpired->assertStatus(422)->assertJson(['success' => false, 'reason' => 'expired']);
+
+    $resDeparted = $this->actingAs($this->staff)
+        ->postJson(route('dashboard.admin-biasa.validasi-tiket.validate'), [
+            'code' => 'TKV-DEPARTED',
+        ]);
+    $resDeparted->assertStatus(422)->assertJson(['success' => false, 'reason' => 'trip_departed']);
+});
+
+test('user simulated scan check-in synchronizes to staff validasi-tiket and manifes as boarded', function () {
+    $customer = User::factory()->create(['role' => 'user']);
+
+    $booking = Booking::create([
+        'booking_code' => 'TKV-USER-CHECKIN',
+        'schedule_id' => $this->schedule->id,
+        'user_id' => $customer->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'total_price' => 120000,
+        'status' => 'confirmed',
+    ]);
+
+    $seat = Seat::firstOrCreate(
+        ['vehicle_id' => $this->vehicle->id, 'seat_number' => '10A'],
+        ['seat_row' => '5', 'seat_column' => 1, 'status' => 'Available']
+    );
+
+    $passenger = BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Pratama Wicaksana',
+        'phone' => '081234567800',
+        'boarding_status' => 'belum_hadir',
+    ]);
+
+    $ticket = Ticket::create([
+        'booking_id' => $booking->id,
+        'ticket_number' => 'TKT-SYNC-001',
+        'qr_code' => 'QR-TKV-USER-CHECKIN',
+        'status' => 'Valid',
+    ]);
+
+    // 1. User performs simulated check-in scan in user account
+    $resUser = $this->actingAs($customer)
+        ->post(route('dashboard.user.tiket.check-in', $ticket->id));
+
+    $resUser->assertRedirect();
+    $resUser->assertSessionHas('success');
+
+    // Verify DB updated
+    expect($ticket->fresh()->status)->toBe('Boarded');
+    expect($ticket->fresh()->boarded_at)->not->toBeNull();
+    expect($passenger->fresh()->boarding_status)->toBe('boarded');
+    expect($passenger->fresh()->boarded_at)->not->toBeNull();
+
+    // 2. Staff views validasi tiket page for this schedule
+    $resStaff = $this->actingAs($this->staff)
+        ->get(route('dashboard.admin-biasa.validasi-tiket', ['schedule_id' => $this->schedule->id]));
+
+    $resStaff->assertOk();
+    $resStaff->assertSee('Pratama Wicaksana');
+    $resStaff->assertSee('TKV-USER-CHECKIN');
+    $resStaff->assertSee('✓ Boarded');
+    $resStaff->assertSee('Riwayat Validasi E-Ticket Terkini');
 });

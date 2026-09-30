@@ -621,7 +621,7 @@ class AdminBiasaDashboardController extends Controller
                         'boarding_status' => $bStatus,
                         'boarded_at' => $p->boarded_at ? $p->boarded_at->format('H:i').' WIB' : ($booking->ticket?->boarded_at ? $booking->ticket->boarded_at->format('H:i').' WIB' : null),
                         'special_request' => $p->special_request ?: ($booking->notes ?: '-'),
-                        'payment_status' => $booking->statusLabel ? $booking->statusLabel() : ucfirst($booking->status),
+                        'payment_status' => method_exists($booking, 'statusLabel') ? $booking->statusLabel() : ucfirst($booking->status),
                     ]);
                 }
             }
@@ -638,6 +638,22 @@ class AdminBiasaDashboardController extends Controller
 
         $formattedDepartureTime = $selectedSchedule->departure_time ? Carbon::parse($selectedSchedule->departure_time)->format('H:i').' WIB' : '13:00 WIB';
 
+        // 5. Riwayat Tiket yang Baru Saja Divalidasi / Boarded (Semua Jadwal)
+        $recentBoardedTickets = Ticket::with([
+            'booking.user',
+            'booking.passengers.seat',
+            'booking.schedule.route.origin',
+            'booking.schedule.route.destination',
+            'booking.schedule.vehicle',
+        ])
+            ->where(function ($q) {
+                $q->whereNotNull('boarded_at')
+                    ->orWhere('status', 'Boarded');
+            })
+            ->orderBy('boarded_at', 'desc')
+            ->take(6)
+            ->get();
+
         return view('dashboard.admin-biasa.validasi-tiket', compact(
             'user',
             'scheduleList',
@@ -648,7 +664,8 @@ class AdminBiasaDashboardController extends Controller
             'pendingCount',
             'noShowCount',
             'boardedPercent',
-            'formattedDepartureTime'
+            'formattedDepartureTime',
+            'recentBoardedTickets'
         ));
     }
 
@@ -667,20 +684,68 @@ class AdminBiasaDashboardController extends Controller
         $scheduleId = $request->input('schedule_id');
 
         // 1. Cek pada database riil
-        $ticket = Ticket::with(['booking.passengers.seat', 'booking.schedule.route.origin', 'booking.schedule.route.destination', 'booking.user'])
+        $ticket = Ticket::with([
+            'booking.passengers.seat',
+            'booking.schedule.route.origin',
+            'booking.schedule.route.destination',
+            'booking.schedule.vehicle',
+            'booking.schedule.driver',
+            'booking.user',
+            'booking.refund',
+        ])
             ->where('qr_code', $rawCode)
             ->orWhere('qr_code', 'QR-'.$cleanCode)
             ->orWhere('ticket_number', $cleanCode)
             ->orWhereRelation('booking', 'booking_code', $cleanCode)
             ->first();
 
-        $booking = $ticket?->booking ?? Booking::with(['passengers.seat', 'schedule.route.origin', 'schedule.route.destination', 'ticket', 'user'])
+        $booking = $ticket?->booking ?? Booking::with([
+            'passengers.seat',
+            'schedule.route.origin',
+            'schedule.route.destination',
+            'schedule.vehicle',
+            'schedule.driver',
+            'ticket',
+            'user',
+            'refund',
+        ])
             ->where('booking_code', $cleanCode)
             ->first();
 
         if ($booking) {
-            // Evaluasi Aturan 1: Status Pembayaran (PRD 20 & 21)
-            $validStatuses = ['confirmed', 'paid', 'success', 'completed'];
+            // Evaluasi Aturan 1: Cek Pembatalan Booking (PRD 21 & 22)
+            if (in_array(strtolower($booking->status), ['cancelled', 'batal'], true)) {
+                return response()->json([
+                    'success' => false,
+                    'reason' => 'cancelled',
+                    'title' => 'Tiket Telah Dibatalkan',
+                    'message' => 'Tiket tidak dapat divalidasi karena pemesanan telah dibatalkan oleh pengguna atau admin.',
+                ], 422);
+            }
+
+            // Evaluasi Aturan 2: Cek Pengajuan Refund (PRD 22)
+            if ($booking->refund) {
+                $refundStatus = strtolower($booking->refund->status ?? '');
+                if (in_array($refundStatus, ['disetujui', 'approved', 'success', 'selesai'], true)) {
+                    return response()->json([
+                        'success' => false,
+                        'reason' => 'refunded',
+                        'title' => 'Tiket Telah Di-refund',
+                        'message' => 'Tiket tidak dapat digunakan untuk boarding karena pengajuan refund telah disetujui dan dicairkan.',
+                    ], 422);
+                }
+                if (in_array($refundStatus, ['menunggu', 'pending'], true)) {
+                    return response()->json([
+                        'success' => false,
+                        'reason' => 'refund_pending',
+                        'title' => 'Tiket Dalam Proses Refund',
+                        'message' => 'Tiket sedang dalam status pengajuan refund dan dibekukan dari proses boarding.',
+                    ], 422);
+                }
+            }
+
+            // Evaluasi Aturan 3: Status Pembayaran (PRD 20 & 21)
+            $validStatuses = ['confirmed', 'paid', 'success', 'completed', 'lunas'];
             if (! in_array(strtolower($booking->status), $validStatuses, true)) {
                 $statusLabel = method_exists($booking, 'statusLabel') ? $booking->statusLabel() : ucfirst($booking->status);
 
@@ -692,7 +757,7 @@ class AdminBiasaDashboardController extends Controller
                 ], 422);
             }
 
-            // Evaluasi Aturan 2: Kesesuaian Jadwal & Waktu Keberangkatan (PRD 20)
+            // Evaluasi Aturan 4: Kesesuaian Jadwal & Waktu Keberangkatan (PRD 20)
             if ($scheduleId && (int) $booking->schedule_id !== (int) $scheduleId) {
                 $schedOrigin = $booking->schedule?->route?->origin?->name ?? 'Kota Asal';
                 $schedDest = $booking->schedule?->route?->destination?->name ?? 'Kota Tujuan';
@@ -706,7 +771,54 @@ class AdminBiasaDashboardController extends Controller
                 ], 422);
             }
 
-            // Evaluasi Aturan 3: Tiket Sudah Pernah Di-Scan (PRD 19 & 20)
+            // Evaluasi Aturan 5: Status Operasional Jadwal & Tiket Kadaluwarsa (PRD 9 & 20)
+            $schedule = $booking->schedule;
+            if ($schedule) {
+                if (in_array(strtolower($schedule->status ?? ''), ['cancelled', 'dibatalkan'], true)) {
+                    return response()->json([
+                        'success' => false,
+                        'reason' => 'schedule_cancelled',
+                        'title' => 'Jadwal Trip Dibatalkan',
+                        'message' => 'Jadwal perjalanan untuk tiket ini telah dibatalkan oleh pihak manajemen operasional.',
+                    ], 422);
+                }
+
+                if (in_array($schedule->tripStatusKey(), ['completed', 'arrived'], true)) {
+                    return response()->json([
+                        'success' => false,
+                        'reason' => 'trip_completed',
+                        'title' => 'Perjalanan Telah Selesai',
+                        'message' => 'Trip perjalanan armada untuk jadwal ini telah tiba di tujuan / telah selesai.',
+                    ], 422);
+                }
+
+                if ($schedule->tripStatusKey() === 'departed' || $schedule->departed_at !== null) {
+                    $depTimeStr = $schedule->departed_at ? $schedule->departed_at->format('H:i').' WIB' : 'beberapa saat lalu';
+
+                    return response()->json([
+                        'success' => false,
+                        'reason' => 'trip_departed',
+                        'title' => 'Armada Sudah Berangkat',
+                        'message' => "Armada telah berangkat meninggalkan pool pada pukul {$depTimeStr}. Penumpang telah tertinggal armada.",
+                    ], 422);
+                }
+
+                if ($schedule->departure_date) {
+                    $depDate = Carbon::parse($schedule->departure_date)->startOfDay();
+                    if ($depDate->isBefore(Carbon::today())) {
+                        $dateStr = $depDate->translatedFormat('d F Y');
+
+                        return response()->json([
+                            'success' => false,
+                            'reason' => 'expired',
+                            'title' => 'Tiket Sudah Kadaluwarsa',
+                            'message' => "Tiket ini sudah melewati tanggal jadwal keberangkatan ({$dateStr}) dan tidak berlaku lagi.",
+                        ], 422);
+                    }
+                }
+            }
+
+            // Evaluasi Aturan 6: Tiket Sudah Pernah Di-Scan (PRD 19 & 20)
             $isAlreadyBoarded = ($ticket && strtolower($ticket->status) === 'boarded') ||
                 ($ticket && $ticket->boarded_at !== null) ||
                 ($booking->passengers->isNotEmpty() && $booking->passengers->every(fn ($p) => $p->boarding_status === 'boarded'));
@@ -727,6 +839,14 @@ class AdminBiasaDashboardController extends Controller
                 $ticket->status = 'Boarded';
                 $ticket->boarded_at = Carbon::now();
                 $ticket->save();
+            } else {
+                $ticket = Ticket::create([
+                    'booking_id' => $booking->id,
+                    'ticket_number' => 'TKT-'.strtoupper(substr($booking->booking_code, -4)),
+                    'qr_code' => 'QR-'.$booking->booking_code,
+                    'status' => 'Boarded',
+                    'boarded_at' => Carbon::now(),
+                ]);
             }
 
             foreach ($booking->passengers as $p) {
@@ -780,6 +900,42 @@ class AdminBiasaDashboardController extends Controller
             ], 422);
         }
 
+        if ($cleanCode === 'TKV-CANCELLED') {
+            return response()->json([
+                'success' => false,
+                'reason' => 'cancelled',
+                'title' => 'Tiket Telah Dibatalkan',
+                'message' => 'Tiket tidak dapat divalidasi karena pemesanan telah dibatalkan.',
+            ], 422);
+        }
+
+        if ($cleanCode === 'TKV-REFUNDED') {
+            return response()->json([
+                'success' => false,
+                'reason' => 'refunded',
+                'title' => 'Tiket Telah Di-refund',
+                'message' => 'Tiket tidak dapat digunakan karena pengajuan refund telah disetujui / diproses.',
+            ], 422);
+        }
+
+        if ($cleanCode === 'TKV-EXPIRED') {
+            return response()->json([
+                'success' => false,
+                'reason' => 'expired',
+                'title' => 'Tiket Sudah Kadaluwarsa',
+                'message' => 'Tiket ini sudah melewati tanggal jadwal keberangkatan dan tidak dapat digunakan lagi.',
+            ], 422);
+        }
+
+        if ($cleanCode === 'TKV-DEPARTED') {
+            return response()->json([
+                'success' => false,
+                'reason' => 'trip_departed',
+                'title' => 'Armada Sudah Berangkat',
+                'message' => 'Armada telah berangkat meninggalkan pool. Penumpang dinyatakan tertinggal armada.',
+            ], 422);
+        }
+
         if ($cleanCode === 'TKV-8920-JKT') {
             return response()->json([
                 'success' => true,
@@ -788,6 +944,20 @@ class AdminBiasaDashboardController extends Controller
                 'seat_number' => '1B',
                 'booking_code' => $cleanCode,
                 'ticket_number' => 'TKT-2609-8920',
+                'route_name' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)',
+                'boarded_at' => Carbon::now()->format('H:i:s').' WIB',
+                'message' => 'Tiket valid! Status penumpang langsung otomatis diubah menjadi Boarded.',
+            ]);
+        }
+
+        if ($cleanCode === 'TKV-9344-JKT') {
+            return response()->json([
+                'success' => true,
+                'passenger_id' => 103,
+                'passenger_name' => 'Andi Wijaya',
+                'seat_number' => '3A',
+                'booking_code' => $cleanCode,
+                'ticket_number' => 'TKT-2609-9344',
                 'route_name' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)',
                 'boarded_at' => Carbon::now()->format('H:i:s').' WIB',
                 'message' => 'Tiket valid! Status penumpang langsung otomatis diubah menjadi Boarded.',

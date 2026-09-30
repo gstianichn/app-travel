@@ -1,11 +1,13 @@
 <?php
 
 use App\Models\Booking;
+use App\Models\BookingPassenger;
 use App\Models\Location;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\Route;
 use App\Models\Schedule;
+use App\Models\Seat;
 use App\Models\Ticket;
 use App\Models\TripReview;
 use App\Models\User;
@@ -311,6 +313,14 @@ test('flow a: user can view active tickets and simulate pool check-in', function
         'status' => 'confirmed',
     ]);
 
+    $seat = $this->vehicle->seats()->first();
+    BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Budi Penumpang Test',
+        'boarding_status' => 'unboarded',
+    ]);
+
     $ticket = Ticket::create([
         'booking_id' => $booking->id,
         'ticket_number' => 'TKT-2609-CHK',
@@ -329,9 +339,10 @@ test('flow a: user can view active tickets and simulate pool check-in', function
     $checkInResponse->assertRedirect();
 
     $ticket->refresh();
-    expect($ticket->status)->toBe('checked_in');
+    expect(strtolower($ticket->status))->toBeIn(['boarded', 'checked_in']);
     expect($ticket->boarded_at)->not->toBeNull();
     expect($booking->fresh()->status)->toBe('checked_in');
+    expect($booking->passengers()->first()?->boarding_status)->toBe('boarded');
 });
 
 test('flow b: user can cancel booking and submit refund when within cut-off time and seat is freed', function () {
@@ -496,4 +507,78 @@ test('user searching unconnected route sees friendly notification and transit hu
     $response->assertSee('saat ini belum tersedia. Silakan pilih rute transit atau hub terdekat.');
     $response->assertSee('Rekomendasi Rute Transit Terdekat');
     $response->assertSee('Pool Dipatiukur (Bandung)');
+});
+
+test('concurrency control: user cannot lock seat that is already held by another user within 15 minutes', function () {
+    $otherUser = User::factory()->create(['role' => 'user']);
+    $seat = $this->vehicle->seats()->first();
+
+    // 1. Other user holds the seat
+    $this->actingAs($otherUser)->post(route('dashboard.user.booking.lock-seats'), [
+        'schedule_id' => $this->schedule->id,
+        'passengers' => 1,
+        'seat_ids' => [$seat->id],
+    ]);
+
+    $heldBooking = Booking::where('user_id', $otherUser->id)->latest()->first();
+    expect($heldBooking)->not->toBeNull();
+    expect($heldBooking->status)->toBe('pending');
+    expect($heldBooking->expired_at->isFuture())->toBeTrue();
+
+    // 2. Primary user attempts to lock the exact same seat concurrently
+    $response = $this->actingAs($this->user)->from(route('dashboard.user.booking.pilih-kursi', ['schedule' => $this->schedule->id]))
+        ->post(route('dashboard.user.booking.lock-seats'), [
+            'schedule_id' => $this->schedule->id,
+            'passengers' => 1,
+            'seat_ids' => [$seat->id],
+        ]);
+
+    $response->assertRedirect(route('dashboard.user.booking.pilih-kursi', ['schedule' => $this->schedule->id]));
+    $response->assertSessionHas('error');
+
+    // Ensure primary user has no booking created for this seat
+    $primaryUserBooking = Booking::where('user_id', $this->user->id)->where('schedule_id', $this->schedule->id)->first();
+    expect($primaryUserBooking)->toBeNull();
+});
+
+test('concurrency control: user can lock seat after previous seat lock has expired', function () {
+    $otherUser = User::factory()->create(['role' => 'user']);
+    $seat = $this->vehicle->seats()->first();
+
+    // Other user has expired booking
+    $expiredBooking = Booking::create([
+        'booking_code' => 'TRV-EXPIRED-TEST',
+        'user_id' => $otherUser->id,
+        'schedule_id' => $this->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 125000,
+        'discount' => 0,
+        'total_price' => 125000,
+        'status' => 'pending',
+        'source' => 'online',
+        'expired_at' => Carbon::now()->subMinutes(5),
+    ]);
+
+    BookingPassenger::create([
+        'booking_id' => $expiredBooking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Old Expired Passenger',
+    ]);
+
+    // Primary user locks the seat
+    $response = $this->actingAs($this->user)->post(route('dashboard.user.booking.lock-seats'), [
+        'schedule_id' => $this->schedule->id,
+        'passengers' => 1,
+        'seat_ids' => [$seat->id],
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionMissing('error');
+
+    expect($expiredBooking->fresh()->status)->toBe('cancelled');
+
+    $newBooking = Booking::where('user_id', $this->user->id)->latest()->first();
+    expect($newBooking)->not->toBeNull();
+    expect($newBooking->status)->toBe('pending');
+    expect($newBooking->passengers()->first()->seat_id)->toBe($seat->id);
 });

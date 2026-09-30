@@ -107,7 +107,10 @@
             <div class="space-y-5">
                 @foreach ($activeBookings as $booking)
                     @php
-                        $isCheckedIn = strtolower($booking->ticket?->status ?? '') === 'checked_in' || strtolower($booking->status) === 'checked_in';
+                        $isCheckedIn = in_array(strtolower($booking->ticket?->status ?? ''), ['checked_in', 'boarded'])
+                            || in_array(strtolower($booking->status), ['checked_in', 'boarded'])
+                            || $booking->ticket?->boarded_at !== null
+                            || ($booking->passengers->isNotEmpty() && $booking->passengers->every(fn($p) => $p->boarding_status === 'boarded'));
                         $canRefund = $booking->canRefund();
                         $hoursLeft = $booking->hoursUntilDeparture();
                     @endphp
@@ -533,7 +536,7 @@
                 <div class="space-y-2 pt-1">
                     <template x-if="activeModalTicket?.isCheckedIn">
                         <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-xs flex items-center justify-center gap-2">
-                            <span>✓ Penumpang Telah Check-In / On-Board</span>
+                            <span>✓ Penumpang Telah Divalidasi Staf (Status: Boarded)</span>
                         </div>
                     </template>
 
