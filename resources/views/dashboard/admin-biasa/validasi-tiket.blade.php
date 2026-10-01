@@ -1078,9 +1078,15 @@
                         <span>🚌 Armada Trip:</span>
                         <select name="schedule_id" onchange="document.getElementById('scheduleSelectForm').submit()">
                             @foreach($scheduleList as $sched)
+                                @php
+                                    $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
+                                    $starTag = $bCount > 0 ? " • ⭐ {$bCount} Penumpang" : "";
+                                    $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
+                                    $timeText = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') . ' WIB — ' : '';
+                                    $routeName = $sched->route_name ?? ($sched->route?->origin?->name . ' → ' . $sched->route?->destination?->name);
+                                @endphp
                                 <option value="{{ $sched->id }}" {{ (isset($selectedSchedule) && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
-                                    {{ $sched->route_name ?? ($sched->route?->origin?->name . ' → ' . $sched->route?->destination?->name) }}
-                                    ({{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }})
+                                    {{ $dateText }}{{ $timeText }}{{ $routeName }} ({{ $sched->vehicle?->plate_number ?? 'HiAce' }}){{ $starTag }}
                                 </option>
                             @endforeach
                         </select>

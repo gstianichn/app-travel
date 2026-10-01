@@ -38,8 +38,10 @@
     </div>
 
     {{-- Form Data Penumpang & Pembayaran --}}
-    <form action="{{ route('dashboard.user.booking.save-passenger', $booking) }}" method="POST" id="form-booking-data">
+    <form action="{{ route('dashboard.user.booking.save-passenger', $booking) }}" method="POST" id="form-booking-data" @submit="validateBeforeSubmit($event)">
         @csrf
+        <input type="hidden" name="payment_channel" :value="selectedChannel">
+        <input type="hidden" name="payment_category" :value="activeCategory">
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -194,6 +196,265 @@
                     </div>
                 </div>
 
+                {{-- 3. PILIHAN METODE PEMBAYARAN MIDTRANS --}}
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5" id="payment-method-section">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center shadow-xs" style="background:#e3f5ee;">
+                                <svg width="18" height="18" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base">Metode Pembayaran (Midtrans)</h3>
+                                <p class="text-[11px] text-slate-400">Pilih salah satu metode pembayaran sebelum menekan tombol checkout</p>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5 self-start sm:self-auto">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Payment Gateway Aktif
+                        </span>
+                    </div>
+
+                    {{-- Validation Error Alert --}}
+                    <div x-show="channelError" x-transition class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 font-medium">
+                        <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span x-text="channelError"></span>
+                    </div>
+
+                    {{-- CATEGORY SWITCHER TABS --}}
+                    <div class="flex bg-slate-100 p-1.5 rounded-xl gap-1.5 text-xs font-bold">
+                        <button type="button" @click="activeCategory = 'va'"
+                                :class="activeCategory === 'va' ? 'bg-white text-emerald-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
+                                class="flex-1 py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                            <span>Bank Transfer (Virtual Account)</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">6 Bank</span>
+                        </button>
+                        <button type="button" @click="activeCategory = 'qris'"
+                                :class="activeCategory === 'qris' ? 'bg-white text-emerald-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
+                                class="flex-1 py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <span>E-Wallet & QRIS</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800">Universal</span>
+                        </button>
+                    </div>
+
+                    {{-- SECTION 1: VIRTUAL ACCOUNT CHANNELS --}}
+                    <div x-show="activeCategory === 'va'" class="space-y-3">
+                        <p class="text-xs font-semibold text-slate-500">Pilih Bank Virtual Account:</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {{-- BCA --}}
+                            <div @click="selectChannel('bca', 'va')"
+                                 :class="selectedChannel === 'bca' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                                            BCA
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">BCA Virtual Account</h4>
+                                            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'bca' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">m-BCA, KlikBCA, myBCA, atau ATM BCA dengan verifikasi instan.</p>
+                            </div>
+
+                            {{-- Mandiri --}}
+                            <div @click="selectChannel('mandiri', 'va')"
+                                 :class="selectedChannel === 'mandiri' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-600 text-white font-black text-[10px] tracking-tight flex items-center justify-center shadow-xs">
+                                            MANDIRI
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">Bank Mandiri</h4>
+                                            <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Bill Payment</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'mandiri' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">Livin by Mandiri & ATM Mandiri via Biller Code & Bill Key resmi.</p>
+                            </div>
+
+                            {{-- BNI --}}
+                            <div @click="selectChannel('bni', 'va')"
+                                 :class="selectedChannel === 'bni' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-teal-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                                            BNI
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">BNI Virtual Account</h4>
+                                            <span class="text-[10px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'bni' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">BNI Mobile Banking, Internet Banking, atau ATM BNI.</p>
+                            </div>
+
+                            {{-- BRI --}}
+                            <div @click="selectChannel('bri', 'va')"
+                                 :class="selectedChannel === 'bri' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-sky-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                                            BRI
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">BRI Virtual Account (BRIVA)</h4>
+                                            <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded">BRIVA Otomatis</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'bri' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">BRImo, ATM BRI, & Mini ATM EDC dengan verifikasi waktu-nyata.</p>
+                            </div>
+
+                            {{-- BSI --}}
+                            <div @click="selectChannel('bsi', 'va')"
+                                 :class="selectedChannel === 'bsi' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                                            BSI
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">BSI Virtual Account</h4>
+                                            <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Syariah Otomatis</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'bsi' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">BSI Mobile & ATM BSI via Virtual Account Bank Syariah.</p>
+                            </div>
+
+                            {{-- SeaBank --}}
+                            <div @click="selectChannel('seabank', 'va')"
+                                 :class="selectedChannel === 'seabank' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-orange-600 text-white font-black text-[9px] tracking-tight flex items-center justify-center shadow-xs">
+                                            SEABANK
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">SeaBank</h4>
+                                            <span class="text-[10px] font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">Bebas Biaya Transfer</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'seabank' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">Transfer gratis dari SeaBank via BI-FAST / Virtual Account Permata.</p>
+                            </div>
+                        </div>
+
+                        {{-- SEABANK HELPER BANNER --}}
+                        <div x-show="selectedChannel === 'seabank'" x-transition class="p-3.5 rounded-xl bg-orange-50 border border-orange-200 text-xs text-orange-950 space-y-1">
+                            <div class="flex items-center gap-2 font-bold text-orange-900">
+                                <span>💡 Panduan Khusus SeaBank:</span>
+                            </div>
+                            <p class="text-[11px] leading-relaxed text-orange-800">
+                                Midtrans terintegrasi menggunakan Virtual Account Permata (Kode Bank: <strong>013</strong>). Di aplikasi SeaBank, pilih menu <strong>Transfer ➔ Virtual Account / Bank Lain (BI-FAST)</strong>, masukkan nomor VA yang diterbitkan, bebas biaya admin!
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- SECTION 2: QRIS & E-WALLET CHANNELS --}}
+                    <div x-show="activeCategory === 'qris'" class="space-y-3" style="display: none;">
+                        <p class="text-xs font-semibold text-slate-500">Pilih Layanan E-Wallet / QRIS:</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {{-- QRIS --}}
+                            <div @click="selectChannel('qris', 'qris')"
+                                 :class="selectedChannel === 'qris' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-9 h-9 rounded-xl bg-rose-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
+                                            QRIS
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">QRIS Dinamis</h4>
+                                            <span class="text-[9px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1 py-0.5 rounded">Universal</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'qris' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Livin, BRImo, dll.</p>
+                            </div>
+
+                            {{-- GoPay --}}
+                            <div @click="selectChannel('gopay', 'qris')"
+                                 :class="selectedChannel === 'gopay' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-9 h-9 rounded-xl bg-sky-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs">
+                                            GOPAY
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">GoPay</h4>
+                                            <span class="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.5 rounded">Direct App</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'gopay' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">Otomatis membuka aplikasi GoPay / Gojek di smartphone Anda.</p>
+                            </div>
+
+                            {{-- ShopeePay --}}
+                            <div @click="selectChannel('shopeepay', 'qris')"
+                                 :class="selectedChannel === 'shopeepay' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
+                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-9 h-9 rounded-xl bg-orange-500 text-white font-black text-[9px] flex items-center justify-center shadow-xs">
+                                            SHOPEE
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900 text-sm">ShopeePay</h4>
+                                            <span class="text-[9px] font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1 py-0.5 rounded">Deep Link</span>
+                                        </div>
+                                    </div>
+                                    <span :class="selectedChannel === 'shopeepay' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">Direct verifikasi pin via aplikasi Shopee secara instan.</p>
+                            </div>
+                        </div>
+
+                        {{-- QRIS UNIVERSAL HELPER BANNER --}}
+                        <div x-show="selectedChannel === 'qris'" x-transition class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-950 space-y-1">
+                            <div class="flex items-center gap-2 font-bold text-rose-900">
+                                <span>📱 QRIS Bersifat Universal:</span>
+                            </div>
+                            <p class="text-[11px] leading-relaxed text-rose-800">
+                                Satu kode QR dinamis Midtrans dapat di-scan dari aplikasi apapun: <strong>GoPay, OVO, DANA, ShopeePay, LinkAja</strong> serta seluruh aplikasi perbankan (BCA, Mandiri, BRI, BNI, dll).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             {{-- KOLOM KANAN: KODE VOUCHER PROMO & RINGKASAN BIAYA --}}
@@ -275,14 +536,23 @@
                             <span class="text-slate-900">Total Tagihan:</span>
                             <span class="text-lg" style="color:#087f55;" x-text="formatRupiah(totalPrice)"></span>
                         </div>
+
+                        {{-- Ringkasan Metode Bayar Terpilih --}}
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">Metode Pembayaran Dipilih:</span>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-800" x-text="getChannelName(selectedChannel)"></span>
+                                <span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">MIDTRANS</span>
+                            </div>
+                        </div>
                     </div>
 
                     <button type="submit"
-                            class="w-full text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2"
+                            class="w-full text-white font-bold py-3.5 px-4 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2"
                             style="background:#087f55;"
                             onmouseover="this.style.background='#066b47'"
                             onmouseout="this.style.background='#087f55'">
-                        <span>Lanjut ke Pembayaran</span>
+                        <span>Checkout & Bayar Tiket</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
 
@@ -311,6 +581,42 @@ function bookingDataHandler(config) {
         promoMessage: '',
         promoSuccess: false,
         csrfToken: config.csrfToken,
+        activeCategory: 'va',
+        selectedChannel: 'bca',
+        channelError: '',
+        channelNames: {
+            'bca': 'Virtual Account BCA',
+            'mandiri': 'Mandiri Bill Payment',
+            'bni': 'Virtual Account BNI',
+            'bri': 'Virtual Account BRI (BRIVA)',
+            'bsi': 'Virtual Account BSI',
+            'seabank': 'SeaBank (Transfer VA Permata)',
+            'qris': 'QRIS Dinamis Universal',
+            'gopay': 'GoPay Instant',
+            'shopeepay': 'ShopeePay'
+        },
+
+        selectChannel(code, category) {
+            this.selectedChannel = code;
+            if (category) {
+                this.activeCategory = category;
+            }
+            this.channelError = '';
+        },
+
+        getChannelName(code) {
+            return this.channelNames[code] || 'Virtual Account BCA';
+        },
+
+        validateBeforeSubmit(e) {
+            if (!this.selectedChannel) {
+                e.preventDefault();
+                this.channelError = 'Silakan pilih salah satu metode pembayaran terlebih dahulu sebelum checkout.';
+                document.getElementById('payment-method-section')?.scrollIntoView({ behavior: 'smooth' });
+                return false;
+            }
+            return true;
+        },
 
         init() {
             // Ticker countdown

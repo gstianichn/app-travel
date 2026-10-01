@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Manajemen Booking (Manifes Penumpang) - Travel</title>
 
     @vite([
@@ -902,8 +903,13 @@
                         <select id="scheduleSelect" name="schedule_id" class="trip-dropdown" onchange="this.form.submit()">
                             @if($scheduleList->isNotEmpty())
                                 @foreach($scheduleList as $sched)
+                                    @php
+                                        $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
+                                        $starTag = $bCount > 0 ? " • ⭐ {$bCount} Penumpang Terdaftar" : "";
+                                        $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
+                                    @endphp
                                     <option value="{{ $sched->id }}" {{ ($selectedSchedule && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
-                                        {{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '13:00' }} WIB — {{ $sched->route?->origin?->name ?? 'Bandung' }} ➔ {{ $sched->route?->destination?->name ?? 'Jakarta' }} ({{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }})
+                                        {{ $dateText }}{{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '13:00' }} WIB — {{ $sched->route?->origin?->name ?? 'Bandung' }} ➔ {{ $sched->route?->destination?->name ?? 'Jakarta' }} ({{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }}){{ $starTag }}
                                     </option>
                                 @endforeach
                             @else
@@ -1223,30 +1229,60 @@
         filterPassengers();
     }
 
-    // 3. TOGGLE STATUS BOARDING
-    function togglePassengerBoarding(id, name, seat) {
+    // 3. TOGGLE STATUS BOARDING DENGAN SINKRONISASI DATABASE BACKEND
+    async function togglePassengerBoarding(id, name, seat) {
         const row = document.getElementById('row-passenger-' + id);
         const badgeContainer = document.getElementById('badge-status-' + id);
         const toggleBtn = document.getElementById('btn-toggle-' + id);
         const currentStatus = row.getAttribute('data-boarded') === 'true';
+        const newStatus = currentStatus ? 'belum_hadir' : 'boarded';
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-        if (!currentStatus) {
-            // Ubah menjadi Sudah Boarding
-            row.setAttribute('data-boarded', 'true');
-            badgeContainer.innerHTML = '<span class="status-badge-boarded">✓ Sudah Boarding</span>';
-            toggleBtn.className = 'btn-toggle-boarding btn-toggle-boarded';
-            toggleBtn.innerText = 'Batalkan';
-            alert('🎉 Penumpang ' + name + ' (Kursi ' + seat + ') telah terverifikasi MASUK ARMADA.');
-        } else {
-            // Ubah menjadi Belum Naik
-            row.setAttribute('data-boarded', 'false');
-            badgeContainer.innerHTML = '<span class="status-badge-pending">⏳ Belum Naik</span>';
-            toggleBtn.className = 'btn-toggle-boarding btn-toggle-not-yet';
-            toggleBtn.innerText = 'Masuk Armada';
+        toggleBtn.disabled = true;
+        toggleBtn.style.opacity = '0.6';
+
+        try {
+            const response = await fetch("{{ url('/admin/validasi-tiket/passenger') }}/" + id + "/status", {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                if (newStatus === 'boarded') {
+                    // Ubah menjadi Sudah Boarding
+                    row.setAttribute('data-boarded', 'true');
+                    badgeContainer.innerHTML = '<span class="status-badge-boarded">✓ Sudah Boarding</span>';
+                    toggleBtn.className = 'btn-toggle-boarding btn-toggle-boarded';
+                    toggleBtn.innerText = 'Batalkan';
+                } else {
+                    // Ubah menjadi Belum Naik
+                    row.setAttribute('data-boarded', 'false');
+                    badgeContainer.innerHTML = '<span class="status-badge-pending">⏳ Belum Naik</span>';
+                    toggleBtn.className = 'btn-toggle-boarding btn-toggle-not-yet';
+                    toggleBtn.innerText = 'Masuk Armada';
+                }
+
+                updateCounters();
+                filterPassengers();
+            } else {
+                alert('Gagal memperbarui status boarding: ' + (data.message || 'Terjadi kesalahan server'));
+            }
+        } catch (err) {
+            console.error('Error toggle boarding:', err);
+            alert('Gagal menghubungi server. Pastikan koneksi aktif.');
+        } finally {
+            toggleBtn.disabled = false;
+            toggleBtn.style.opacity = '1';
         }
-
-        updateCounters();
-        filterPassengers();
     }
 
     function updateCounters() {

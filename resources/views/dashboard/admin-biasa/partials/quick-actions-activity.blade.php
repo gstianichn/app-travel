@@ -59,39 +59,23 @@
                     </div>
 
                     <div class="activity">
-
-                        <div class="activity-item">
-                            <div class="activity-dot" style="background: #087f55; box-shadow: 0 0 0 4px #eefbf5;"></div>
-                            <div>
-                                <strong>Boarding Pass Divalidasi (Kursi 03A)</strong>
-                                <span>Rute Bandung ➔ Jakarta (Semanggi) • 2 menit yang lalu</span>
+                        @forelse($recentActivities ?? [] as $act)
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background: {{ $act->dot_color }}; box-shadow: 0 0 0 4px {{ $act->dot_bg }};"></div>
+                                <div>
+                                    <strong>{{ $act->title }}</strong>
+                                    <span>{{ $act->desc }} • {{ $act->time_text }}</span>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot"></div>
-                            <div>
-                                <strong>Status Armada D 7812 AB: Boarding Dibuka</strong>
-                                <span>Pemberitahuan gate keberangkatan • 10 menit yang lalu</span>
+                        @empty
+                            <div class="activity-item">
+                                <div class="activity-dot" style="background: #087f55; box-shadow: 0 0 0 4px #eefbf5;"></div>
+                                <div>
+                                    <strong>Sistem Operasional Siap</strong>
+                                    <span>Menunggu pemesanan tiket baru atau validasi boarding hari ini</span>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot" style="background: #b45309; box-shadow: 0 0 0 4px #fff8eb;"></div>
-                            <div>
-                                <strong>Armada B 1945 TKL Memasuki Tahap Persiapan</strong>
-                                <span>Pengecekan unit HiAce dan supir standby • 35 menit yang lalu</span>
-                            </div>
-                        </div>
-
-                        <div class="activity-item">
-                            <div class="activity-dot" style="background: #64748b; box-shadow: 0 0 0 4px #f1f5f9;"></div>
-                            <div>
-                                <strong>Trip D 7551 GH Telah Diberangkatkan Tepat Waktu</strong>
-                                <span>10/10 Penumpang boarding penuh • 55 menit yang lalu</span>
-                            </div>
-                        </div>
-
+                        @endforelse
                     </div>
 
                 </div>

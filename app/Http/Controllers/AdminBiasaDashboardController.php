@@ -17,13 +17,25 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
-        // Ambil jadwal hari ini atau terdekat
-        $schedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings'])
+        // Ambil jadwal hari ini atau terdekat (prioritaskan jadwal yang memiliki pemesanan aktif)
+        $schedulesWithBookings = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings.passengers.seat'])
+            ->whereHas('bookings', function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal']);
+            })
             ->whereDate('departure_date', '>=', $today)
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(6)
             ->get();
+
+        $otherSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings.passengers.seat'])
+            ->whereDate('departure_date', '>=', $today)
+            ->whereNotIn('id', $schedulesWithBookings->pluck('id'))
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->take(max(6, 6 - $schedulesWithBookings->count()))
+            ->get();
+
+        $schedules = $schedulesWithBookings->merge($otherSchedules)->take(6);
 
         // Transform data jadwal untuk dashboard operasional
         $departures = $schedules->map(function ($sched, $index) {
@@ -32,8 +44,16 @@ class AdminBiasaDashboardController extends Controller
             $plateNumber = $sched->vehicle?->plate_number ?? 'D 7'.(100 + $index * 24).' AB';
             $vehicleModel = $sched->vehicle?->name ?? 'Toyota HiAce Premio';
             $capacity = $sched->vehicle?->capacity ?? 10;
-            $available = $sched->available_seats ?? max(0, $capacity - ($index === 0 ? 8 : ($index === 1 ? 9 : 5)));
-            $occupied = max(0, $capacity - $available);
+
+            // Hitung okupansi dari pemesanan riil penumpang pengguna
+            $bookedPassengers = $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(function ($b) {
+                return $b->passengers->count() ?: $b->total_passenger;
+            });
+            $occupied = min($capacity, (int) $bookedPassengers);
+            if ($sched->available_seats !== null && $sched->available_seats < $capacity) {
+                $occupied = max($occupied, max(0, $capacity - (int) $sched->available_seats));
+            }
+            $available = max(0, $capacity - $occupied);
 
             // Status trip: Persiapan, Boarding Dibuka, atau Selesai
             $status = $sched->status;
@@ -145,15 +165,77 @@ class AdminBiasaDashboardController extends Controller
             'status' => 'Aktif / On-Duty',
         ];
 
-        // Statistik ringkasan
+        // Statistik ringkasan dari database riil
+        $todayBookings = Booking::where(function ($q) use ($today) {
+            $q->whereDate('created_at', $today)
+                ->orWhereHas('schedule', function ($sq) use ($today) {
+                    $sq->whereDate('departure_date', $today);
+                });
+        })->whereNotIn('status', ['cancelled', 'batal'])->count();
+
         $stats = [
-            'today_bookings' => Booking::whereDate('created_at', $today)->count() ?: 24,
+            'today_bookings' => $todayBookings ?: Booking::whereNotIn('status', ['cancelled', 'batal'])->count(),
             'active_schedules' => $departures->count(),
             'boarding_now' => $departures->where('status', 'Boarding Dibuka')->count(),
             'ready_preparation' => $departures->where('status', 'Persiapan')->count(),
         ];
 
-        return view('dashboard.admin-biasa.index', compact('departures', 'stats', 'shiftInfo'));
+        // Aktivitas Terkini Riil: Penggabungan Pemesanan Tiket Masuk & Validasi Boarding
+        $activities = collect();
+
+        // 1. Data Pemesanan Tiket Masuk dari User
+        $recentBookings = Booking::with(['user', 'schedule.route.origin', 'schedule.route.destination', 'passengers.seat'])
+            ->whereNotIn('status', ['cancelled', 'batal'])
+            ->latest('created_at')
+            ->take(5)
+            ->get();
+
+        foreach ($recentBookings as $b) {
+            $customer = $b->user?->name ?? ($b->passengers->first()?->name ?? 'Penumpang');
+            $origin = $b->schedule?->route?->origin?->name ?? 'Asal';
+            $dest = $b->schedule?->route?->destination?->name ?? 'Tujuan';
+            $seatCount = $b->passengers->count() ?: $b->total_passenger;
+            $seats = $b->passengers->map(fn ($p) => $p->seat?->seat_number)->filter()->join(', ');
+            $seatInfo = $seats ? " (Kursi {$seats})" : " ({$seatCount} Kursi)";
+
+            $activities->push((object) [
+                'type' => 'booking',
+                'title' => "Pemesanan Tiket Masuk: {$b->booking_code}",
+                'desc' => "{$customer}{$seatInfo} • Rute {$origin} ➔ {$dest} • Status: {$b->statusLabel()}",
+                'timestamp' => $b->created_at,
+                'time_text' => $b->created_at ? $b->created_at->diffForHumans() : 'Hari ini',
+                'dot_color' => '#0b7285',
+                'dot_bg' => '#e3fafc',
+            ]);
+        }
+
+        // 2. Data Tiket yang Telah Divalidasi / Boarding di Pool
+        $recentValidations = Ticket::with(['booking.user', 'booking.passengers.seat', 'booking.schedule.route.origin', 'booking.schedule.route.destination'])
+            ->whereNotNull('boarded_at')
+            ->latest('boarded_at')
+            ->take(5)
+            ->get();
+
+        foreach ($recentValidations as $t) {
+            $passengerName = $t->booking?->passengers?->first()?->name ?? ($t->booking?->user?->name ?? 'Penumpang');
+            $seatList = $t->booking?->passengers?->map(fn ($p) => $p->seat?->seat_number)->filter()->join(', ') ?: 'Kabin';
+            $origin = $t->booking?->schedule?->route?->origin?->name ?? 'Asal';
+            $dest = $t->booking?->schedule?->route?->destination?->name ?? 'Tujuan';
+
+            $activities->push((object) [
+                'type' => 'boarding',
+                'title' => "Boarding Pass Divalidasi (Kursi {$seatList})",
+                'desc' => "{$passengerName} • Tiket {$t->ticket_number} • Rute {$origin} ➔ {$dest}",
+                'timestamp' => $t->boarded_at,
+                'time_text' => $t->boarded_at ? Carbon::parse($t->boarded_at)->diffForHumans() : 'Baru saja',
+                'dot_color' => '#087f55',
+                'dot_bg' => '#eefbf5',
+            ]);
+        }
+
+        $recentActivities = $activities->sortByDesc(fn ($a) => $a->timestamp ? Carbon::parse($a->timestamp)->timestamp : 0)->values()->take(5);
+
+        return view('dashboard.admin-biasa.index', compact('departures', 'stats', 'shiftInfo', 'recentActivities'));
     }
 
     /**
@@ -164,13 +246,26 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
-        // Daftar perjalanan yang tersedia
-        $scheduleList = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver'])
+        // 1. Ambil seluruh jadwal yang memiliki pemesanan aktif penumpang (prioritas utama staf)
+        $schedulesWithBookings = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings.passengers'])
+            ->whereHas('bookings', function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal']);
+            })
             ->whereDate('departure_date', '>=', $today)
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(10)
             ->get();
+
+        // 2. Ambil jadwal lainnya hari ini / mendatang
+        $otherSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings'])
+            ->whereDate('departure_date', '>=', $today)
+            ->whereNotIn('id', $schedulesWithBookings->pluck('id'))
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->take(20)
+            ->get();
+
+        $scheduleList = $schedulesWithBookings->merge($otherSchedules);
 
         $selectedScheduleId = $request->query('schedule_id');
         $selectedSchedule = null;
@@ -182,23 +277,38 @@ class AdminBiasaDashboardController extends Controller
                 'vehicle',
                 'driver',
                 'bookings' => function ($q) {
-                    $q->whereNotIn('status', ['Cancelled', 'cancelled'])
+                    $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal'])
                         ->with(['user', 'passengers.seat', 'ticket']);
                 },
             ])->find($selectedScheduleId);
         }
 
-        if (! $selectedSchedule && $scheduleList->isNotEmpty()) {
-            $selectedSchedule = Schedule::with([
-                'route.origin',
-                'route.destination',
-                'vehicle',
-                'driver',
-                'bookings' => function ($q) {
-                    $q->whereNotIn('status', ['Cancelled', 'cancelled'])
-                        ->with(['user', 'passengers.seat', 'ticket']);
-                },
-            ])->find($scheduleList->first()->id);
+        // Jika tidak ada schedule_id di parameter URL, prioritaskan jadwal yang MEMILIKI pemesanan aktif
+        if (! $selectedSchedule) {
+            $firstWithBooking = $schedulesWithBookings->first();
+            if ($firstWithBooking) {
+                $selectedSchedule = Schedule::with([
+                    'route.origin',
+                    'route.destination',
+                    'vehicle',
+                    'driver',
+                    'bookings' => function ($q) {
+                        $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal'])
+                            ->with(['user', 'passengers.seat', 'ticket']);
+                    },
+                ])->find($firstWithBooking->id);
+            } elseif ($scheduleList->isNotEmpty()) {
+                $selectedSchedule = Schedule::with([
+                    'route.origin',
+                    'route.destination',
+                    'vehicle',
+                    'driver',
+                    'bookings' => function ($q) {
+                        $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal'])
+                            ->with(['user', 'passengers.seat', 'ticket']);
+                    },
+                ])->find($scheduleList->first()->id);
+            }
         }
 
         // Ekstraksi penumpang dari database jika ada
@@ -216,10 +326,15 @@ class AdminBiasaDashboardController extends Controller
                     $originName = $selectedSchedule->route?->origin?->name ?? 'Pool Dipatiukur';
                     $destName = $selectedSchedule->route?->destination?->name ?? 'Pool Semanggi';
 
+                    $isPassengerBoarded = in_array(strtolower($passenger->boarding_status ?? ''), ['boarded', 'hadir'], true)
+                        || ($booking->ticket?->boarded_at !== null)
+                        || strtolower($booking->ticket?->status ?? '') === 'boarded'
+                        || in_array(strtolower($booking->status ?? ''), ['checked_in', 'boarded'], true);
+
                     $passengers->push((object) [
                         'id' => $passenger->id,
                         'seat_number' => $passenger->seat?->seat_number ?? '1A',
-                        'name' => $passenger->name,
+                        'name' => $passenger->name ?: ($booking->user?->name ?? 'Penumpang'),
                         'phone' => $phoneRaw,
                         'phone_clean' => $cleanPhone,
                         'phone_wa_url' => 'https://wa.me/'.$cleanPhone.'?text='.urlencode("Halo Kak {$passenger->name}, kami dari staf loket TravelKu mengonfirmasi keberangkatan rute {$originName} - {$destName}. Armada kami telah siap di pool."),
@@ -229,7 +344,7 @@ class AdminBiasaDashboardController extends Controller
                         'special_request' => $passenger->special_request ?: ($booking->notes ?: 'Standar (Tidak ada catatan khusus)'),
                         'booking_code' => $booking->booking_code,
                         'payment_status' => $booking->statusLabel(),
-                        'boarded' => $booking->ticket?->boarded_at !== null,
+                        'boarded' => $isPassengerBoarded,
                     ]);
                 }
             }
@@ -340,8 +455,14 @@ class AdminBiasaDashboardController extends Controller
             }
 
             $capacity = $sched->vehicle?->capacity ?? 10;
-            $available = $sched->available_seats ?? max(0, $capacity - 7);
-            $occupied = max(0, $capacity - $available);
+            $bookedPassengers = $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(function ($b) {
+                return $b->passengers->count() ?: $b->total_passenger;
+            });
+            $occupied = min($capacity, (int) $bookedPassengers);
+            if ($sched->available_seats !== null && $sched->available_seats < $capacity) {
+                $occupied = max($occupied, max(0, $capacity - (int) $sched->available_seats));
+            }
+            $available = max(0, $capacity - $occupied);
 
             return (object) [
                 'id' => $sched->id,
@@ -508,13 +629,26 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
-        // 1. Ambil daftar jadwal trip aktif hari ini
-        $scheduleList = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver'])
+        // 1. Ambil seluruh jadwal yang memiliki pemesanan aktif penumpang (prioritas utama validasi tiket)
+        $schedulesWithBookings = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings.passengers'])
+            ->whereHas('bookings', function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal']);
+            })
             ->whereDate('departure_date', '>=', $today)
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(8)
             ->get();
+
+        // 2. Ambil jadwal lainnya hari ini / mendatang
+        $otherSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings'])
+            ->whereDate('departure_date', '>=', $today)
+            ->whereNotIn('id', $schedulesWithBookings->pluck('id'))
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->take(15)
+            ->get();
+
+        $scheduleList = $schedulesWithBookings->merge($otherSchedules);
 
         // Fallback jika belum ada jadwal di database
         if ($scheduleList->isEmpty()) {
@@ -558,15 +692,21 @@ class AdminBiasaDashboardController extends Controller
             ]);
         }
 
-        // 2. Tentukan jadwal yang sedang aktif dipilih
-        $selectedScheduleId = $request->query('schedule_id', $scheduleList->first()->id);
+        // 2. Tentukan jadwal yang sedang aktif dipilih (prioritaskan jadwal yang memiliki booking jika parameter tidak ditentukan)
+        $selectedScheduleId = $request->query('schedule_id');
+        if (! $selectedScheduleId && $schedulesWithBookings->isNotEmpty()) {
+            $selectedScheduleId = $schedulesWithBookings->first()->id;
+        } elseif (! $selectedScheduleId) {
+            $selectedScheduleId = $scheduleList->first()->id;
+        }
+
         $selectedSchedule = Schedule::with([
             'route.origin',
             'route.destination',
             'vehicle',
             'driver',
             'bookings' => function ($q) {
-                $q->whereNotIn('status', ['Cancelled', 'cancelled'])
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal'])
                     ->with(['user', 'passengers.seat', 'ticket']);
             },
         ])->find($selectedScheduleId);

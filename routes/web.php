@@ -472,7 +472,7 @@ Route::middleware(['auth', 'role:admin_utama,admin'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:staff,admin_utama'])
+Route::middleware(['auth', 'role:staff'])
     ->group(function () {
 
         Route::get('/admin/dashboard', [
@@ -810,6 +810,16 @@ Route::middleware(['auth', 'role:user'])
             'payment',
         ])->name('dashboard.user.booking.pembayaran');
 
+        Route::post('/user/booking/pembayaran/{booking}/switch', [
+            UserDashboardController::class,
+            'switchPaymentMethod',
+        ])->name('dashboard.user.booking.switch-payment');
+
+        Route::get('/user/booking/pembayaran/{booking}/status', [
+            UserDashboardController::class,
+            'checkPaymentStatus',
+        ])->name('dashboard.user.booking.payment-status');
+
         Route::post('/user/booking/simulate-payment/{booking}', [
             UserDashboardController::class,
             'simulatePayment',
@@ -837,6 +847,11 @@ Route::middleware(['auth', 'role:user'])
         ])->name('dashboard.user.tiket.review');
 
     });
+
+// API Midtrans Payment Initiation & Status
+Route::post('/api/payment/charge', [UserDashboardController::class, 'apiChargePayment'])->name('api.payment.charge');
+Route::post('/api/payment/create-token', [UserDashboardController::class, 'apiCreateSnapToken'])->name('api.payment.create-token');
+Route::get('/api/payment/channels', [UserDashboardController::class, 'apiPaymentChannels'])->name('api.payment.channels');
 
 // Webhook Payment Gateway Otomatis
 Route::post('/api/payment/webhook', [UserDashboardController::class, 'paymentWebhook'])->name('payment.webhook');

@@ -18,6 +18,7 @@ use App\Models\UserVoucher;
 use App\Notifications\BookingStatusNotification;
 use App\Notifications\OperationalInfoNotification;
 use App\Notifications\TripReminderNotification;
+use App\Services\MidtransService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -381,7 +382,9 @@ class UserDashboardController extends Controller
             ];
         }
 
-        return view('dashboard.user.booking-data', compact('booking', 'remainingSeconds', 'quickPassengers'));
+        $paymentChannels = MidtransService::getAvailableChannels();
+
+        return view('dashboard.user.booking-data', compact('booking', 'remainingSeconds', 'quickPassengers', 'paymentChannels'));
     }
 
     /**
@@ -531,6 +534,8 @@ class UserDashboardController extends Controller
             'passengers.*.special_request' => ['nullable', 'string', 'max:255'],
             'promo_code' => ['nullable', 'string'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'payment_channel' => ['nullable', 'string', 'in:bca,mandiri,bni,bri,bsi,seabank,qris,gopay,shopeepay'],
+            'payment_category' => ['nullable', 'string', 'in:va,qris,ewallet'],
         ]);
 
         $subtotal = (float) $booking->subtotal;
@@ -564,23 +569,11 @@ class UserDashboardController extends Controller
                 ]);
         }
 
-        // Siapkan atau perbarui data Payment
-        $randomVaTail = str_pad((string) $booking->id, 4, '0', STR_PAD_LEFT).rand(1000, 9999);
-        Payment::updateOrCreate(
-            ['booking_id' => $booking->id],
-            [
-                'order_id' => 'INV-'.Carbon::now()->format('Ymd').'-'.str_pad((string) $booking->id, 4, '0', STR_PAD_LEFT),
-                'gross_amount' => $totalPrice,
-                'payment_method' => 'Virtual Account BCA',
-                'bank_name' => 'BCA',
-                'account_name' => 'PT FAST TRAVEL INDONESIA',
-                'account_number' => '8271'.$randomVaTail,
-                'gateway_provider' => 'midtrans',
-                'gateway_status' => 'pending',
-                'status' => 'pending',
-                'expired_at' => $booking->expired_at,
-            ]
-        );
+        // Inisiasi charge transaksi ke Midtrans Payment Gateway
+        $channel = $request->input('payment_channel') ?: 'bca';
+        $midtransService = app(MidtransService::class);
+        $chargeResponse = $midtransService->charge($booking, $channel);
+        $this->applyMidtransChargeToPayment($booking, $chargeResponse, $channel);
 
         // Event Trigger: Status Transaksi - Menunggu Bayar (disertai batas waktu & deep link bayar)
         $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
@@ -617,8 +610,143 @@ class UserDashboardController extends Controller
         }
 
         $remainingPaymentSeconds = max(0, Carbon::now()->diffInSeconds($payment->expired_at ?? $booking->expired_at, false));
+        $paymentChannels = MidtransService::getAvailableChannels();
 
-        return view('dashboard.user.booking-payment', compact('booking', 'payment', 'remainingPaymentSeconds'));
+        return view('dashboard.user.booking-payment', compact('booking', 'payment', 'remainingPaymentSeconds', 'paymentChannels'));
+    }
+
+    /**
+     * Ganti Metode Pembayaran di Halaman Pembayaran (Switch Bank / E-Wallet / QRIS).
+     */
+    public function switchPaymentMethod(Request $request, Booking $booking): RedirectResponse
+    {
+        if ($booking->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if (in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])) {
+            return redirect()->route('dashboard.user.booking.sukses', $booking);
+        }
+
+        $channel = $request->input('payment_channel', 'bca');
+        $availableChannels = MidtransService::getAvailableChannels();
+        if (! isset($availableChannels[$channel])) {
+            $channel = 'bca';
+        }
+
+        $midtransService = app(MidtransService::class);
+        $chargeResponse = $midtransService->charge($booking, $channel);
+        $this->applyMidtransChargeToPayment($booking, $chargeResponse, $channel);
+
+        return redirect()->route('dashboard.user.booking.pembayaran', $booking)
+            ->with('success', 'Metode pembayaran dialihkan ke '.($availableChannels[$channel]['name'] ?? 'Virtual Account'));
+    }
+
+    /**
+     * Periksa status pembayaran secara realtime (Polling endpoint untuk frontend).
+     */
+    public function checkPaymentStatus(Booking $booking): JsonResponse
+    {
+        if ($booking->user_id !== Auth::id()) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $payment = $booking->payment;
+        $isPaid = in_array(strtolower($booking->status), ['confirmed', 'paid', 'success', 'lunas']);
+
+        // Jika belum paid dan punya midtrans order_id, sinkronisasi status ke Midtrans API bila ada server key
+        if (! $isPaid && $payment && $payment->order_id) {
+            $midtransService = app(MidtransService::class);
+            $statusData = $midtransService->checkStatus($payment->order_id);
+            if ($statusData && isset($statusData['transaction_status'])) {
+                $txStatus = strtolower($statusData['transaction_status']);
+                if (in_array($txStatus, ['settlement', 'capture', 'paid'])) {
+                    $this->confirmAndIssueTicket($booking, $payment->payment_method ?: 'Virtual Account', $statusData);
+                    $isPaid = true;
+                } elseif (in_array($txStatus, ['expire', 'cancel', 'deny'])) {
+                    $booking->update(['status' => 'cancelled']);
+                    $payment->update(['status' => 'expired']);
+                    $booking->schedule?->recalculateAvailableSeats();
+                }
+            }
+        }
+
+        return response()->json([
+            'booking_id' => $booking->id,
+            'booking_code' => $booking->booking_code,
+            'booking_status' => $booking->fresh()->status,
+            'payment_status' => $payment?->fresh()?->status,
+            'is_paid' => $isPaid,
+            'redirect_url' => route('dashboard.user.booking.sukses', $booking),
+        ]);
+    }
+
+    /**
+     * API: Inisiasi Transaksi Midtrans Core API (/api/payment/charge).
+     */
+    public function apiChargePayment(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'booking_id' => ['required', 'integer', 'exists:bookings,id'],
+            'payment_channel' => ['required', 'string', 'in:bca,mandiri,bni,bri,bsi,seabank,qris,gopay,shopeepay'],
+        ]);
+
+        $booking = Booking::with('user', 'schedule.route.origin', 'schedule.route.destination')->findOrFail($validated['booking_id']);
+        if (Auth::check() && $booking->user_id !== Auth::id()) {
+            return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+        }
+
+        $midtransService = app(MidtransService::class);
+        $chargeResponse = $midtransService->charge($booking, $validated['payment_channel']);
+        $payment = $this->applyMidtransChargeToPayment($booking, $chargeResponse, $validated['payment_channel']);
+
+        return response()->json([
+            'status' => 'success',
+            'order_id' => $payment->order_id,
+            'payment_method' => $payment->payment_method,
+            'bank_name' => $payment->bank_name,
+            'account_number' => $payment->account_number,
+            'gross_amount' => $payment->gross_amount,
+            'expired_at' => $payment->expired_at?->toIso8601String(),
+            'notes' => $payment->notes,
+            'raw_response' => $chargeResponse,
+        ]);
+    }
+
+    /**
+     * API: Inisiasi Token Snap (/api/payment/create-token).
+     */
+    public function apiCreateSnapToken(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'booking_id' => ['required', 'integer', 'exists:bookings,id'],
+        ]);
+
+        $booking = Booking::with('user')->findOrFail($validated['booking_id']);
+        if (Auth::check() && $booking->user_id !== Auth::id()) {
+            return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+        }
+
+        $midtransService = app(MidtransService::class);
+        $tokenData = $midtransService->createSnapToken($booking);
+
+        return response()->json([
+            'status' => 'success',
+            'token' => $tokenData['token'] ?? null,
+            'redirect_url' => $tokenData['redirect_url'] ?? null,
+            'simulated' => $tokenData['simulated'] ?? false,
+        ]);
+    }
+
+    /**
+     * API: Daftar Saluran Pembayaran yang Didukung (/api/payment/channels).
+     */
+    public function apiPaymentChannels(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
+            'channels' => MidtransService::getAvailableChannels(),
+        ]);
     }
 
     /**
@@ -630,10 +758,13 @@ class UserDashboardController extends Controller
             abort(403);
         }
 
-        $this->confirmAndIssueTicket($booking, 'Virtual Account BCA');
+        $payment = $booking->payment;
+        $method = $payment?->payment_method ?: 'Virtual Account BCA';
+
+        $this->confirmAndIssueTicket($booking, $method);
 
         return redirect()->route('dashboard.user.booking.sukses', $booking)
-            ->with('success', 'Pembayaran berhasil diverifikasi secara otomatis oleh Payment Gateway!');
+            ->with('success', 'Pembayaran berhasil diverifikasi secara otomatis oleh Payment Gateway Midtrans!');
     }
 
     /**
@@ -641,8 +772,10 @@ class UserDashboardController extends Controller
      */
     public function paymentWebhook(Request $request): JsonResponse
     {
-        $orderId = $request->input('order_id') ?? $request->input('external_id');
-        $transactionStatus = strtolower($request->input('transaction_status') ?? $request->input('status') ?? 'settlement');
+        $payload = $request->all();
+        $orderId = $payload['order_id'] ?? $payload['external_id'] ?? null;
+        $transactionStatus = strtolower($payload['transaction_status'] ?? $payload['status'] ?? 'settlement');
+        $fraudStatus = strtolower($payload['fraud_status'] ?? 'accept');
 
         if (! $orderId) {
             return response()->json(['status' => 'error', 'message' => 'Missing order_id'], 400);
@@ -654,9 +787,35 @@ class UserDashboardController extends Controller
         }
 
         $booking = $payment->booking;
+        if (! $booking) {
+            return response()->json(['status' => 'error', 'message' => 'Associated booking not found'], 404);
+        }
 
-        if (in_array($transactionStatus, ['settlement', 'capture', 'paid', 'success'])) {
-            $this->confirmAndIssueTicket($booking, $request->input('payment_type', 'Virtual Account BCA'), $request->all());
+        // Verifikasi keaslian signature Midtrans jika server key disetel
+        $midtransService = app(MidtransService::class);
+        if (isset($payload['signature_key']) && ! empty($midtransService->getServerKey())) {
+            if (! $midtransService->verifySignature($payload)) {
+                return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
+            }
+        }
+
+        // Tentukan label metode pembayaran dari webhook
+        $paymentType = $payload['payment_type'] ?? null;
+        $resolvedMethod = $payment->payment_method ?: 'Virtual Account BCA';
+        if ($paymentType === 'bank_transfer' && isset($payload['va_numbers'][0]['bank'])) {
+            $resolvedMethod = 'Virtual Account '.strtoupper($payload['va_numbers'][0]['bank']);
+        } elseif ($paymentType === 'echannel') {
+            $resolvedMethod = 'Mandiri Bill Payment';
+        } elseif ($paymentType === 'qris') {
+            $resolvedMethod = 'QRIS Dinamis Universal';
+        } elseif ($paymentType === 'gopay') {
+            $resolvedMethod = 'GoPay Instant';
+        } elseif ($paymentType === 'shopeepay') {
+            $resolvedMethod = 'ShopeePay';
+        }
+
+        if (in_array($transactionStatus, ['settlement', 'paid', 'success']) || ($transactionStatus === 'capture' && $fraudStatus === 'accept')) {
+            $this->confirmAndIssueTicket($booking, $resolvedMethod, $payload);
 
             return response()->json([
                 'status' => 'success',
@@ -665,9 +824,13 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        if (in_array($transactionStatus, ['expire', 'expired', 'cancel', 'failed'])) {
+        if (in_array($transactionStatus, ['expire', 'expired', 'cancel', 'cancelled', 'deny', 'failed'])) {
             $booking->update(['status' => 'cancelled']);
-            $payment->update(['status' => 'expired']);
+            $payment->update([
+                'status' => 'expired',
+                'gateway_status' => $transactionStatus,
+                'raw_response' => $payload,
+            ]);
             $booking->schedule?->recalculateAvailableSeats();
 
             // Event Trigger: Transaksi Dibatalkan karena waktu habis
@@ -680,7 +843,108 @@ class UserDashboardController extends Controller
             ]);
         }
 
+        if ($transactionStatus === 'pending') {
+            $payment->update([
+                'gateway_status' => 'pending',
+                'raw_response' => $payload,
+            ]);
+
+            return response()->json([
+                'status' => 'pending',
+                'message' => 'Payment status is pending.',
+            ]);
+        }
+
         return response()->json(['status' => 'ignored']);
+    }
+
+    /**
+     * Helper: Menerapkan response Midtrans charge ke model Payment.
+     *
+     * @param  array<string, mixed>  $chargeResponse
+     */
+    protected function applyMidtransChargeToPayment(Booking $booking, array $chargeResponse, string $channel): Payment
+    {
+        $channels = MidtransService::getAvailableChannels();
+        $channelInfo = $channels[$channel] ?? $channels['bca'];
+
+        $orderId = $chargeResponse['order_id'] ?? ('INV-'.Carbon::now()->format('Ymd').'-'.str_pad((string) $booking->id, 4, '0', STR_PAD_LEFT));
+        $transactionId = $chargeResponse['transaction_id'] ?? null;
+        $status = strtolower($chargeResponse['transaction_status'] ?? 'pending');
+
+        $accountNumber = null;
+        $bankName = $channelInfo['bank_name'] ?? 'BCA';
+        $paymentMethod = $channelInfo['name'] ?? 'Virtual Account BCA';
+        $notes = null;
+
+        if (isset($chargeResponse['va_numbers'][0]['va_number'])) {
+            $accountNumber = $chargeResponse['va_numbers'][0]['va_number'];
+            $bankName = strtoupper($chargeResponse['va_numbers'][0]['bank'] ?? $bankName);
+            $paymentMethod = 'Virtual Account '.$bankName;
+        } elseif (isset($chargeResponse['bill_key'])) {
+            $accountNumber = $chargeResponse['bill_key'];
+            $billerCode = $chargeResponse['biller_code'] ?? '70012';
+            $bankName = 'Mandiri';
+            $paymentMethod = 'Mandiri Bill Payment';
+            $notes = "Kode Perusahaan (Biller Code): {$billerCode} | No. Tagihan (Bill Key): {$accountNumber}";
+        } elseif (isset($chargeResponse['permata_va_number'])) {
+            $accountNumber = $chargeResponse['permata_va_number'];
+            if ($channel === 'seabank') {
+                $bankName = 'SeaBank';
+                $paymentMethod = 'SeaBank (Transfer VA Bank Permata)';
+                $notes = 'Gunakan Transfer Antar Bank / BI-FAST dari aplikasi SeaBank ke Bank Permata (Kode: 013).';
+            } elseif ($channel === 'bsi') {
+                $bankName = 'BSI';
+                $paymentMethod = 'BSI Virtual Account';
+                $notes = 'Gunakan menu Transfer Antar Bank / Virtual Account dari BSI Mobile ke Bank Permata Syariah (Kode: 013).';
+            } else {
+                $bankName = 'Permata';
+                $paymentMethod = 'Permata Virtual Account';
+            }
+        } elseif ($channel === 'qris' || ($chargeResponse['payment_type'] ?? '') === 'qris') {
+            $accountNumber = 'NMID: ID102026090421';
+            $bankName = 'QRIS';
+            $paymentMethod = 'QRIS Dinamis Universal';
+            $notes = 'Scan kode QRIS menggunakan GoPay, OVO, DANA, ShopeePay, LinkAja, atau m-Banking apapun.';
+        } elseif ($channel === 'gopay') {
+            $bankName = 'GoPay';
+            $paymentMethod = 'GoPay Instant';
+            $accountNumber = 'GoPay App / QR';
+        } elseif ($channel === 'shopeepay') {
+            $bankName = 'ShopeePay';
+            $paymentMethod = 'ShopeePay Instant';
+            $accountNumber = 'ShopeePay App / QR';
+        }
+
+        $expiry = null;
+        if (! empty($chargeResponse['expiry_time'])) {
+            try {
+                $expiry = Carbon::parse($chargeResponse['expiry_time']);
+            } catch (\Exception $e) {
+                $expiry = $booking->expired_at;
+            }
+        } else {
+            $expiry = $booking->expired_at;
+        }
+
+        return Payment::updateOrCreate(
+            ['booking_id' => $booking->id],
+            [
+                'order_id' => $orderId,
+                'transaction_id' => $transactionId,
+                'gross_amount' => $booking->total_price,
+                'payment_method' => $paymentMethod,
+                'bank_name' => $bankName,
+                'account_name' => 'PT FAST TRAVEL INDONESIA',
+                'account_number' => $accountNumber,
+                'notes' => $notes,
+                'gateway_provider' => 'midtrans',
+                'gateway_status' => $status,
+                'status' => 'pending',
+                'expired_at' => $expiry,
+                'raw_response' => $chargeResponse,
+            ]
+        );
     }
 
     /**
@@ -715,6 +979,10 @@ class UserDashboardController extends Controller
         // 1. Auto-trigger penyelesaian: jika jam keberangkatan telah lewat, ubah ke completed
         $this->autoCompletePastTrips($userId);
 
+        $cutoff2h = Carbon::now()->subHours(2);
+        $cutoffDate2h = $cutoff2h->toDateString();
+        $cutoffTime2h = $cutoff2h->format('H:i:s');
+
         // 2. Tiket Aktif & Mendatang (Confirmed, Paid, Checked-in) diurutkan keberangkatan terdekat
         $activeBookings = Booking::query()
             ->with([
@@ -728,12 +996,12 @@ class UserDashboardController extends Controller
             ])
             ->where('user_id', $userId)
             ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
-            ->whereHas('schedule', function ($q) {
-                $q->where(function ($sub) {
-                    $sub->whereDate('departure_date', '>', Carbon::today()->toDateString())
-                        ->orWhere(function ($todaySub) {
-                            $todaySub->whereDate('departure_date', Carbon::today()->toDateString())
-                                ->where('departure_time', '>=', Carbon::now()->subHours(2)->format('H:i'));
+            ->whereHas('schedule', function ($q) use ($cutoffDate2h, $cutoffTime2h) {
+                $q->where(function ($sub) use ($cutoffDate2h, $cutoffTime2h) {
+                    $sub->whereDate('departure_date', '>', $cutoffDate2h)
+                        ->orWhere(function ($sameDaySub) use ($cutoffDate2h, $cutoffTime2h) {
+                            $sameDaySub->whereDate('departure_date', $cutoffDate2h)
+                                ->where('departure_time', '>=', $cutoffTime2h);
                         });
                 });
             })
@@ -959,14 +1227,18 @@ class UserDashboardController extends Controller
      */
     protected function autoCompletePastTrips(int $userId): void
     {
+        $cutoff1h = Carbon::now()->subHours(1);
+        $cutoffDate1h = $cutoff1h->toDateString();
+        $cutoffTime1h = $cutoff1h->format('H:i:s');
+
         $pastBookings = Booking::where('user_id', $userId)
             ->whereIn('status', ['paid', 'confirmed', 'success', 'checked_in'])
-            ->whereHas('schedule', function ($q) {
-                $q->where(function ($sub) {
-                    $sub->whereDate('departure_date', '<', Carbon::today()->toDateString())
-                        ->orWhere(function ($todaySub) {
-                            $todaySub->whereDate('departure_date', Carbon::today()->toDateString())
-                                ->where('departure_time', '<=', Carbon::now()->subHours(1)->format('H:i'));
+            ->whereHas('schedule', function ($q) use ($cutoffDate1h, $cutoffTime1h) {
+                $q->where(function ($sub) use ($cutoffDate1h, $cutoffTime1h) {
+                    $sub->whereDate('departure_date', '<', $cutoffDate1h)
+                        ->orWhere(function ($sameDaySub) use ($cutoffDate1h, $cutoffTime1h) {
+                            $sameDaySub->whereDate('departure_date', $cutoffDate1h)
+                                ->where('departure_time', '<=', $cutoffTime1h);
                         });
                 });
             })
