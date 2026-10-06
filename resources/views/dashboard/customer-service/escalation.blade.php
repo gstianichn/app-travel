@@ -180,7 +180,7 @@
                             Kode Booking (PNR) <span class="text-danger">*</span>
                         </label>
                         <div class="input-with-icon">
-                            <span class="input-icon">🎫</span>
+                            <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg></span>
                             <input type="text" id="booking-code-input" class="styled-input" placeholder="Misal: TRV-2026-0925" required>
                         </div>
                     </div>
@@ -189,7 +189,7 @@
                             Nama Pelanggan &amp; WhatsApp <span class="text-danger">*</span>
                         </label>
                         <div class="input-with-icon">
-                            <span class="input-icon">👤</span>
+                            <span class="input-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                             <input type="text" id="passenger-name-input" class="styled-input" placeholder="Budi Prasetyo (0812-9988-7766)" required>
                         </div>
                     </div>
@@ -325,7 +325,7 @@
     <div class="cs-modal-card modal-lg">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge" id="modal-sev-badge">⚠️</span>
+                <span class="modal-icon-badge" id="modal-sev-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
                 <div>
                     <h3 class="modal-title" id="modal-detail-title">Detail Kasus Eskalasi #ESK-104</h3>
                     <p class="modal-sub" id="modal-detail-sub">Pengajuan Refund / Keuangan &bull; Pelapor: CS Nadia</p>
@@ -1468,7 +1468,7 @@ function renderTickets() {
     if (filtered.length === 0) {
         container.innerHTML = `
             <div class="empty-tickets">
-                <div class="empty-icon">📭</div>
+                <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
                 <h4>Tidak ada tiket eskalasi ditemukan</h4>
                 <p>Coba ubah kata kunci pencarian atau ganti filter status di atas.</p>
             </div>
@@ -1594,11 +1594,11 @@ function onCategoryChange() {
     const cat = document.getElementById('category-select').value;
     const hint = document.getElementById('category-hint');
     if (cat === 'Pengajuan Refund / Keuangan') {
-        hint.innerHTML = '<span class="text-amber">⚠️ Otorisasi Keuangan: Pastikan nomor rekening &amp; bank tujuan refund ditulis lengkap di kolom data pendukung.</span>';
+        hint.innerHTML = '<span class="text-amber"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Otorisasi Keuangan: Pastikan nomor rekening &amp; bank tujuan refund ditulis lengkap di kolom data pendukung.</span>';
     } else if (cat === 'Armada Rusak / Ganti Mobil (Operasional)') {
-        hint.innerHTML = '<span class="text-blue">⚠️ Otorisasi Operasional: Sertakan plat mobil, titik mogok, dan jumlah penumpang untuk dispatch armada pengganti.</span>';
+        hint.innerHTML = '<span class="text-blue"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Otorisasi Operasional: Sertakan plat mobil, titik mogok, dan jumlah penumpang untuk dispatch armada pengganti.</span>';
     } else if (cat.includes('Komplain Khusus')) {
-        hint.innerHTML = '<span class="text-danger">⚠️ Penanganan Khusus: Masukkan kronologi jelas, nomor polisi, nama sopir, atau saksi kejadian.</span>';
+        hint.innerHTML = '<span class="text-danger"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Penanganan Khusus: Masukkan kronologi jelas, nomor polisi, nama sopir, atau saksi kejadian.</span>';
     } else {
         hint.textContent = 'Pilih salah satu dari 3 ranah kewenangan otorisasi Admin Utama.';
     }

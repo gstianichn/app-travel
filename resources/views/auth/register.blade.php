@@ -33,7 +33,13 @@
             <div class="register-logo">
 
                 <div class="register-logo-icon">
-                    🌿
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h13l4 4v7H3V6z"/>
+                        <circle cx="7.5" cy="17.5" r="2"/>
+                        <circle cx="16.5" cy="17.5" r="2"/>
+                        <path d="M16 6v4h4"/>
+                        <path d="M7 10h4"/>
+                    </svg>
                 </div>
 
                 <div class="register-logo-text">
@@ -47,7 +53,10 @@
             <div class="register-left-content">
 
                 <div class="register-badge">
-                    ✨ Mulai perjalanan Anda
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;">
+                        <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+                    </svg>
+                    <span>Mulai perjalanan Anda</span>
                 </div>
 
                 <h2 class="register-left-title">
@@ -68,7 +77,9 @@
                     <div class="register-feature">
 
                         <div class="register-feature-icon">
-                            ✓
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
                         </div>
 
                         <div>
@@ -87,7 +98,13 @@
                     <div class="register-feature">
 
                         <div class="register-feature-icon">
-                            🚌
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h13l4 4v7H3V6z"/>
+                                <circle cx="7.5" cy="17.5" r="2"/>
+                                <circle cx="16.5" cy="17.5" r="2"/>
+                                <path d="M16 6v4h4"/>
+                                <path d="M7 10h4"/>
+                            </svg>
                         </div>
 
                         <div>
@@ -106,7 +123,10 @@
                     <div class="register-feature">
 
                         <div class="register-feature-icon">
-                            🔒
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
                         </div>
 
                         <div>
@@ -145,7 +165,13 @@
                 <div class="register-mobile-logo">
 
                     <div class="register-mobile-logo-icon">
-                        🌿
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h13l4 4v7H3V6z"/>
+                            <circle cx="7.5" cy="17.5" r="2"/>
+                            <circle cx="16.5" cy="17.5" r="2"/>
+                            <path d="M16 6v4h4"/>
+                            <path d="M7 10h4"/>
+                        </svg>
                     </div>
 
                     <div class="register-mobile-logo-text">
@@ -235,7 +261,10 @@
                             <div class="register-input-wrapper">
 
                                 <span class="register-input-icon">
-                                    👤
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
                                 </span>
 
                                 <input
@@ -268,7 +297,10 @@
                             <div class="register-input-wrapper">
 
                                 <span class="register-input-icon">
-                                    ✉
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                    </svg>
                                 </span>
 
                                 <input
@@ -303,7 +335,9 @@
                             <div class="register-input-wrapper">
 
                                 <span class="register-input-icon">
-                                    ☎
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                    </svg>
                                 </span>
 
                                 <input
@@ -334,7 +368,10 @@
                             <div class="register-input-wrapper">
 
                                 <span class="register-input-icon">
-                                    🔒
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
                                 </span>
 
                                 <input
@@ -365,7 +402,11 @@
                             <div class="register-input-wrapper">
 
                                 <span class="register-input-icon">
-                                    🔐
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                        <path d="m9 16 2 2 4-4"/>
+                                    </svg>
                                 </span>
 
                                 <input

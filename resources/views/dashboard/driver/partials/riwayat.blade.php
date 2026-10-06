@@ -2,8 +2,8 @@
         <section class="card-panel" id="section-riwayat">
             <div class="card-panel-header">
                 <div>
-                    <h3>
-                        <span>🕘</span>
+                    <h3 style="display:flex; align-items:center; gap:8px;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><polyline points="12 6 12 12 16 14" stroke-width="2"/></svg>
                         <span>Riwayat Perjalanan (Ritase Selesai &amp; Rekap Harian)</span>
                     </h3>
                     <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Daftar ritase operasional yang telah selesai untuk rekapitulasi harian.</p>

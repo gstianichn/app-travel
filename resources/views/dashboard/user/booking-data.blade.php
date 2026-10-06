@@ -17,12 +17,12 @@
                 <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
                 Pilih Kursi
             </span>
-            <span class="text-slate-300">➔</span>
+            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
                 <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">2</span>
                 Data Penumpang & Promo
             </span>
-            <span class="text-slate-300">➔</span>
+            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
                 <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px]">3</span>
                 Pembayaran
@@ -115,13 +115,14 @@
                                         <span class="text-[11px] text-slate-400">Isi Cepat:</span>
                                         <div class="relative inline-block text-left" x-data="{ open: false }">
                                             <button type="button" @click="open = !open" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition shadow-2xs">
-                                                <span>⚡ Pilih Penumpang Tersimpan</span>
+                                                <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                                <span>Pilih Penumpang Tersimpan</span>
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
                                             <div x-show="open" @click.outside="open = false" class="origin-top-right absolute right-0 mt-1 w-72 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-30 p-1">
                                                 <div class="p-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
                                                     <span>Data Tersimpan (Tab Akun):</span>
-                                                    <a href="{{ route('dashboard.user.user-akun') }}" target="_blank" class="text-[10px] text-emerald-600 hover:underline">Kelola ➔</a>
+                                                    <a href="{{ route('dashboard.user.user-akun') }}" target="_blank" class="text-[10px] text-emerald-600 hover:underline inline-flex items-center gap-0.5">Kelola &rarr;</a>
                                                 </div>
                                                 <div class="py-1 space-y-1">
                                                     @foreach($quickPassengers as $qp)
@@ -369,10 +370,11 @@
                         {{-- SEABANK HELPER BANNER --}}
                         <div x-show="selectedChannel === 'seabank'" x-transition class="p-3.5 rounded-xl bg-orange-50 border border-orange-200 text-xs text-orange-950 space-y-1">
                             <div class="flex items-center gap-2 font-bold text-orange-900">
-                                <span>💡 Panduan Khusus SeaBank:</span>
+                                <svg class="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                <span>Panduan Khusus SeaBank:</span>
                             </div>
                             <p class="text-[11px] leading-relaxed text-orange-800">
-                                Midtrans terintegrasi menggunakan Virtual Account Permata (Kode Bank: <strong>013</strong>). Di aplikasi SeaBank, pilih menu <strong>Transfer ➔ Virtual Account / Bank Lain (BI-FAST)</strong>, masukkan nomor VA yang diterbitkan, bebas biaya admin!
+                                Midtrans terintegrasi menggunakan Virtual Account Permata (Kode Bank: <strong>013</strong>). Di aplikasi SeaBank, pilih menu <strong>Transfer &rarr; Virtual Account / Bank Lain (BI-FAST)</strong>, masukkan nomor VA yang diterbitkan, bebas biaya admin!
                             </p>
                         </div>
                     </div>
@@ -446,7 +448,8 @@
                         {{-- QRIS UNIVERSAL HELPER BANNER --}}
                         <div x-show="selectedChannel === 'qris'" x-transition class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-950 space-y-1">
                             <div class="flex items-center gap-2 font-bold text-rose-900">
-                                <span>📱 QRIS Bersifat Universal:</span>
+                                <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                                <span>QRIS Bersifat Universal:</span>
                             </div>
                             <p class="text-[11px] leading-relaxed text-rose-800">
                                 Satu kode QR dinamis Midtrans dapat di-scan dari aplikasi apapun: <strong>GoPay, OVO, DANA, ShopeePay, LinkAja</strong> serta seluruh aplikasi perbankan (BCA, Mandiri, BRI, BNI, dll).
@@ -463,7 +466,9 @@
                 {{-- CARD PENERAPAN VOUCHER PROMO --}}
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3.5">
                     <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                        <div class="w-6 h-6 rounded-md bg-amber-100 flex items-center justify-center text-amber-700 text-xs">🎁</div>
+                        <div class="w-6 h-6 rounded-md bg-amber-100 flex items-center justify-center text-amber-700">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                        </div>
                         <h4 class="font-bold text-slate-900 text-sm">Voucer & Promo Diskon</h4>
                     </div>
 
@@ -473,10 +478,10 @@
                             <input type="text" x-model="promoInput" placeholder="HEMATLIBURAN"
                                    class="flex-1 uppercase font-mono font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none transition focus:border-emerald-600">
                             <button type="button" @click="applyPromo()"
-                                    class="px-4 py-2 text-xs font-bold text-white rounded-xl shadow-2xs transition"
-                                    style="background:#087f55;"
-                                    onmouseover="this.style.background='#066b47'"
-                                    onmouseout="this.style.background='#087f55'">
+                                     class="px-4 py-2 text-xs font-bold text-white rounded-xl shadow-2xs transition"
+                                     style="background:#087f55;"
+                                     onmouseover="this.style.background='#066b47'"
+                                     onmouseout="this.style.background='#087f55'">
                                 Pasang
                             </button>
                         </div>
@@ -486,7 +491,12 @@
                     <div x-show="promoMessage" x-transition>
                         <div :class="promoSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'"
                              class="p-2.5 rounded-xl border text-xs leading-relaxed flex items-start gap-2">
-                            <span x-text="promoSuccess ? '✅' : '⚠️'"></span>
+                            <template x-if="promoSuccess">
+                                <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </template>
+                            <template x-if="!promoSuccess">
+                                <svg class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </template>
                             <span x-text="promoMessage"></span>
                         </div>
                     </div>
@@ -556,8 +566,9 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
 
-                    <p class="text-[11px] text-center text-slate-400">
-                        🔒 Transaksi aman & terverifikasi otomatis via Payment Gateway
+                    <p class="text-[11px] text-center text-slate-400 flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Transaksi aman & terverifikasi otomatis via Payment Gateway
                     </p>
                 </div>
 

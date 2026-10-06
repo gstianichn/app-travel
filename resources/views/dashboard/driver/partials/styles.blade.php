@@ -223,7 +223,9 @@
         .nav-icon {
             font-size: 16px;
             width: 22px;
-            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
         }
 

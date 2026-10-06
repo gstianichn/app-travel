@@ -40,7 +40,7 @@
                     <span class="text-xs text-amber-700 font-semibold">{{ $pendingReviewBooking->schedule?->departure_date ? \Carbon\Carbon::parse($pendingReviewBooking->schedule->departure_date)->translatedFormat('d M Y') : '' }}</span>
                 </div>
                 <h3 class="font-extrabold text-slate-900 text-base">
-                    Bagaimana perjalanan Anda: {{ $pendingReviewBooking->schedule?->route?->origin?->name }} ➔ {{ $pendingReviewBooking->schedule?->route?->destination?->name }}?
+                    Bagaimana perjalanan Anda: {{ $pendingReviewBooking->schedule?->route?->origin?->name }} &rarr; {{ $pendingReviewBooking->schedule?->route?->destination?->name }}?
                 </h3>
                 <p class="text-xs text-slate-600">
                     Armada: <strong>{{ $pendingReviewBooking->schedule?->vehicle?->type ?? 'HiAce Premio' }}</strong> • 
@@ -137,7 +137,7 @@
                                     @endif
                                 </div>
                                 <h3 class="font-black text-lg mt-1">
-                                    {{ $booking->schedule?->route?->origin?->name ?? 'Asal' }} ➔ {{ $booking->schedule?->route?->destination?->name ?? 'Tujuan' }}
+                                    {{ $booking->schedule?->route?->origin?->name ?? 'Asal' }} &rarr; {{ $booking->schedule?->route?->destination?->name ?? 'Tujuan' }}
                                 </h3>
                                 <p class="text-xs text-white/85 mt-0.5">
                                     {{ $booking->schedule?->vehicle?->type ?? 'Toyota HiAce Premio' }} ({{ $booking->schedule?->vehicle?->plate_number ?? '-' }}) • 
@@ -232,7 +232,7 @@
                                     $ticketWaMessage = "Halo CS Fast Travel, saya butuh bantuan untuk tiket perjalanan saya:\n"
                                         . "• No. Tiket: {$ticketNumber}\n"
                                         . "• Kode Booking: #{$booking->booking_code}\n"
-                                        . "• Rute: {$originName} ➔ {$destName}\n"
+                                        . "• Rute: {$originName} &rarr; {$destName}\n"
                                         . "• Jadwal: {$depDate}, {$depTime} WIB\n"
                                         . "• Penumpang: {$passengerName}\n\n"
                                         . "Kendala yang saya alami: [Mohon bantuan terkait tiket ini]";
@@ -253,7 +253,7 @@
                                             id: {{ $booking->ticket?->id ?? 0 }},
                                             code: '{{ $booking->booking_code }}',
                                             number: '{{ $booking->ticket?->ticket_number ?? 'TKT-'.$booking->booking_code }}',
-                                            route: '{{ $booking->schedule?->route?->origin?->name }} ➔ {{ $booking->schedule?->route?->destination?->name }}',
+                                            route: '{{ $booking->schedule?->route?->origin?->name }} &rarr; {{ $booking->schedule?->route?->destination?->name }}',
                                             date: '{{ \Carbon\Carbon::parse($booking->schedule?->departure_date)->translatedFormat('d M Y') }}',
                                             time: '{{ \Carbon\Carbon::parse($booking->schedule?->departure_time)->format('H:i') }} WIB',
                                             seats: '{{ $booking->passengerSeatNumbers() }}',
@@ -279,7 +279,8 @@
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-                                        ⚠️ Batas waktu pembatalan telah lewat (Maksimal H-1 jam sebelum keberangkatan).
+                                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        Batas waktu pembatalan telah lewat (Maksimal H-1 jam sebelum keberangkatan).
                                     </span>
                                 @endif
                             </div>
@@ -290,7 +291,7 @@
                                             @click="activeRefundBooking = {
                                                 id: {{ $booking->id }},
                                                 code: '{{ $booking->booking_code }}',
-                                                route: '{{ $booking->schedule?->route?->origin?->name }} ➔ {{ $booking->schedule?->route?->destination?->name }}',
+                                                route: '{{ $booking->schedule?->route?->origin?->name }} &rarr; {{ $booking->schedule?->route?->destination?->name }}',
                                                 totalPrice: {{ (float)$booking->total_price }},
                                                 cancellationFee: {{ round((float)$booking->total_price * 0.25, 2) }},
                                                 refundAmount: {{ round((float)$booking->total_price * 0.75, 2) }}
@@ -326,7 +327,7 @@
                        style="background:#087f55;"
                        onmouseover="this.style.background='#066b47'"
                        onmouseout="this.style.background='#087f55'">
-                        Cari Tiket Sekarang →
+                        Cari Tiket Sekarang &rarr;
                     </a>
                 </div>
             </div>
@@ -356,7 +357,7 @@
                             @endif
                         </div>
                         <h4 class="font-bold text-slate-800 text-sm">
-                            {{ $history->schedule?->route?->origin?->name ?? 'Asal' }} ➔ {{ $history->schedule?->route?->destination?->name ?? 'Tujuan' }}
+                            {{ $history->schedule?->route?->origin?->name ?? 'Asal' }} &rarr; {{ $history->schedule?->route?->destination?->name ?? 'Tujuan' }}
                         </h4>
                         <p class="text-xs text-slate-500">
                             {{ $history->schedule?->departure_date ? \Carbon\Carbon::parse($history->schedule->departure_date)->translatedFormat('d M Y') : '-' }} • 
@@ -373,13 +374,15 @@
                         {{-- Status Review jika completed --}}
                         @if($isCompleted)
                             @if($hasReview)
-                                <span class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
-                                    ⭐ {{ number_format($history->review->overall_rating, 1) }} (Sudah Diulas)
+                                <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
+                                    <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-500" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    <span>{{ number_format($history->review->overall_rating, 1) }} (Sudah Diulas)</span>
                                 </span>
                             @else
                                 <button type="button" @click="showReviewModal = true"
-                                        class="px-3.5 py-1.5 text-xs font-bold rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition flex items-center gap-1">
-                                    ⭐ Beri Rating
+                                        class="px-3.5 py-1.5 text-xs font-bold rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-500" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    <span>Beri Rating</span>
                                 </button>
                             @endif
                         @endif
@@ -413,7 +416,7 @@
                         <div>
                             <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">ID Refund #{{ $ref->id }}</span>
                             <h4 class="font-bold text-slate-900 text-base">
-                                {{ $ref->booking?->schedule?->route?->origin?->name }} ➔ {{ $ref->booking?->schedule?->route?->destination?->name }}
+                                {{ $ref->booking?->schedule?->route?->origin?->name }} &rarr; {{ $ref->booking?->schedule?->route?->destination?->name }}
                             </h4>
                             <p class="text-xs text-slate-500 font-mono">Kode Booking: {{ $ref->booking?->booking_code }}</p>
                         </div>
@@ -426,27 +429,27 @@
                         </div>
                     </div>
 
-                    {{-- PROGRESS TRACKER 3 TAHAP: Diajukan ➔ Diverifikasi ➔ Dana Ditransfer --}}
+                    {{-- PROGRESS TRACKER 3 TAHAP: Diajukan -> Diverifikasi -> Dana Ditransfer --}}
                     <div>
                         <p class="text-xs font-bold text-slate-700 mb-3">Progres Pengembalian Dana:</p>
                         <div class="grid grid-cols-3 gap-2 text-center text-xs">
                             {{-- Tahap 1 --}}
-                            <div class="p-3 rounded-2xl border {{ $step >= 1 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
-                                <span class="block text-lg mb-0.5">📝</span>
+                            <div class="p-3 rounded-2xl border flex flex-col items-center justify-center {{ $step >= 1 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
+                                <svg class="w-5 h-5 mb-1 {{ $step >= 1 ? 'text-emerald-700' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 <span>1. Diajukan</span>
                                 <span class="block text-[10px] font-normal text-slate-500 mt-0.5">{{ $ref->created_at ? $ref->created_at->format('d M, H:i') : '' }}</span>
                             </div>
 
                             {{-- Tahap 2 --}}
-                            <div class="p-3 rounded-2xl border {{ $step >= 2 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
-                                <span class="block text-lg mb-0.5">🔍</span>
+                            <div class="p-3 rounded-2xl border flex flex-col items-center justify-center {{ $step >= 2 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
+                                <svg class="w-5 h-5 mb-1 {{ $step >= 2 ? 'text-emerald-700' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                                 <span>2. Diverifikasi</span>
                                 <span class="block text-[10px] font-normal text-slate-500 mt-0.5">{{ $step >= 2 ? 'Disetujui Admin' : 'Menunggu antrean' }}</span>
                             </div>
 
                             {{-- Tahap 3 --}}
-                            <div class="p-3 rounded-2xl border {{ $step >= 3 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
-                                <span class="block text-lg mb-0.5">💸</span>
+                            <div class="p-3 rounded-2xl border flex flex-col items-center justify-center {{ $step >= 3 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
+                                <svg class="w-5 h-5 mb-1 {{ $step >= 3 ? 'text-emerald-700' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
                                 <span>3. Dana Ditransfer</span>
                                 <span class="block text-[10px] font-normal text-slate-500 mt-0.5">{{ $step >= 3 ? 'Transfer Selesai' : 'Sedang dikirim' }}</span>
                             </div>
@@ -548,8 +551,8 @@
                                     style="background:#087f55;"
                                     onmouseover="this.style.background='#066b47'"
                                     onmouseout="this.style.background='#087f55'">
-                                <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1zm12 0h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1zM5 20h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1z"/></svg>
-                                <span>⚡ Simulasi Petugas Scan QR (Check-in Pool)</span>
+                                <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                <span>Simulasi Petugas Scan QR (Check-in Pool)</span>
                             </button>
                         </form>
                     </template>
@@ -636,8 +639,9 @@
                     <input type="text" name="account_holder" required placeholder="Nama sesuai buku tabungan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-600">
                 </div>
 
-                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] leading-relaxed">
-                    ℹ️ <strong>Pembebasan Kursi Otomatis:</strong> Setelah permohonan dikirim, tiket Anda dibatalkan dan kursi langsung dibuka kembali ke sistem agar bisa dipesan penumpang lain.
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] leading-relaxed flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span><strong>Pembebasan Kursi Otomatis:</strong> Setelah permohonan dikirim, tiket Anda dibatalkan dan kursi langsung dibuka kembali ke sistem agar bisa dipesan penumpang lain.</span>
                 </div>
 
                 <div class="flex gap-2 pt-2">
@@ -675,7 +679,7 @@
 
                     <div class="text-center pb-2 border-b border-slate-100">
                         <p class="font-bold text-slate-800 text-sm">
-                            {{ $pendingReviewBooking->schedule?->route?->origin?->name }} ➔ {{ $pendingReviewBooking->schedule?->route?->destination?->name }}
+                            {{ $pendingReviewBooking->schedule?->route?->origin?->name }} &rarr; {{ $pendingReviewBooking->schedule?->route?->destination?->name }}
                         </p>
                         <p class="text-slate-400 mt-0.5 font-mono">{{ $pendingReviewBooking->booking_code }}</p>
                     </div>
@@ -684,7 +688,10 @@
                     <div class="space-y-1.5">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-slate-700">1. Kebersihan Armada & Kursi</span>
-                            <span class="font-bold text-amber-600" x-text="cleanliness + ' / 5 ⭐'"></span>
+                            <span class="font-bold text-amber-600 flex items-center gap-1">
+                                <span x-text="cleanliness + ' / 5'"></span>
+                                <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-500 inline" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </span>
                         </div>
                         <input type="range" name="cleanliness_rating" min="1" max="5" x-model="cleanliness" class="w-full accent-emerald-600 cursor-pointer">
                         <div class="flex justify-between text-[10px] text-slate-400">
@@ -697,7 +704,10 @@
                     <div class="space-y-1.5">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-slate-700">2. Keramahan & Keamanan Pengemudi</span>
-                            <span class="font-bold text-amber-600" x-text="driver + ' / 5 ⭐'"></span>
+                            <span class="font-bold text-amber-600 flex items-center gap-1">
+                                <span x-text="driver + ' / 5'"></span>
+                                <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-500 inline" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </span>
                         </div>
                         <input type="range" name="driver_rating" min="1" max="5" x-model="driver" class="w-full accent-emerald-600 cursor-pointer">
                         <div class="flex justify-between text-[10px] text-slate-400">
@@ -710,7 +720,10 @@
                     <div class="space-y-1.5">
                         <div class="flex justify-between items-center">
                             <span class="font-semibold text-slate-700">3. Ketepatan Waktu Keberangkatan</span>
-                            <span class="font-bold text-amber-600" x-text="punctuality + ' / 5 ⭐'"></span>
+                            <span class="font-bold text-amber-600 flex items-center gap-1">
+                                <span x-text="punctuality + ' / 5'"></span>
+                                <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-500 inline" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </span>
                         </div>
                         <input type="range" name="punctuality_rating" min="1" max="5" x-model="punctuality" class="w-full accent-emerald-600 cursor-pointer">
                         <div class="flex justify-between text-[10px] text-slate-400">

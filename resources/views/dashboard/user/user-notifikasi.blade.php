@@ -118,7 +118,7 @@
                 <input type="hidden" name="type" value="pending">
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-50/70 border border-slate-200 hover:border-amber-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-amber-600 mb-1">
-                        <span class="text-base">⏳</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         <span class="text-[10px] font-bold uppercase bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">15 Menit</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-amber-900 leading-tight">Menunggu Bayar</p>
@@ -132,7 +132,7 @@
                 <input type="hidden" name="type" value="confirmed">
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-emerald-600 mb-1">
-                        <span class="text-base">✅</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         <span class="text-[10px] font-bold uppercase bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-800">E-Ticket</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-emerald-900 leading-tight">Pembayaran Sukses</p>
@@ -146,7 +146,7 @@
                 <input type="hidden" name="type" value="expired">
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-rose-50/70 border border-slate-200 hover:border-rose-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-rose-600 mb-1">
-                        <span class="text-base">⚠️</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span class="text-[10px] font-bold uppercase bg-rose-100 px-1.5 py-0.5 rounded text-rose-800">Batal</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-rose-900 leading-tight">Waktu Habis</p>
@@ -160,7 +160,7 @@
                 <input type="hidden" name="type" value="reminder_2h">
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-blue-600 mb-1">
-                        <span class="text-base">⏰</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         <span class="text-[10px] font-bold uppercase bg-blue-100 px-1.5 py-0.5 rounded text-blue-800">H-2 Jam</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-blue-900 leading-tight">Pengingat Perjalanan</p>
@@ -174,7 +174,7 @@
                 <input type="hidden" name="type" value="operational_vehicle">
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-indigo-600 mb-1">
-                        <span class="text-base">🚐</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                         <span class="text-[10px] font-bold uppercase bg-indigo-100 px-1.5 py-0.5 rounded text-indigo-800">Hari-H</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-indigo-900 leading-tight">Info Pelat Minibus</p>
@@ -188,7 +188,7 @@
                 <input type="hidden" name="type" value="operational_delay">
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-50/70 border border-slate-200 hover:border-amber-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-amber-600 mb-1">
-                        <span class="text-base">🚧</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                         <span class="text-[10px] font-bold uppercase bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">+20 Mnt</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-amber-900 leading-tight">Kondisi Jalan / Delay</p>
@@ -210,7 +210,8 @@
 
         <a href="{{ route('dashboard.user.user-notifikasi', ['category' => 'transaksi']) }}"
            class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 flex-shrink-0 {{ $selectedCategory === 'transaksi' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-            <span>💳 Status Transaksi</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span>Status Transaksi</span>
             @if($countTransaksi > 0)
                 <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-700">{{ $countTransaksi }}</span>
             @endif
@@ -218,7 +219,8 @@
 
         <a href="{{ route('dashboard.user.user-notifikasi', ['category' => 'pengingat']) }}"
            class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 flex-shrink-0 {{ $selectedCategory === 'pengingat' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-            <span>⏰ Pengingat (H-2 Jam)</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Pengingat (H-2 Jam)</span>
             @if($countPengingat > 0)
                 <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-700">{{ $countPengingat }}</span>
             @endif
@@ -226,7 +228,8 @@
 
         <a href="{{ route('dashboard.user.user-notifikasi', ['category' => 'operasional']) }}"
            class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 flex-shrink-0 {{ $selectedCategory === 'operasional' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
-            <span>🚐 Info Operasional</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <span>Info Operasional</span>
             @if($countOperasional > 0)
                 <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 text-indigo-700">{{ $countOperasional }}</span>
             @endif
@@ -364,38 +367,44 @@
                         @if(!empty($data['meta']))
                             <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
                                 @if(!empty($data['meta']['route']))
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 font-semibold">
-                                        🛣️ {{ $data['meta']['route'] }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 font-semibold">
+                                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19L19 4M4 4l15 15"/></svg>
+                                        {{ $data['meta']['route'] }}
                                     </span>
                                 @endif
 
                                 @if(!empty($data['meta']['pool_arrival_time']))
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-blue-50 text-blue-800 font-bold border border-blue-200">
-                                        📍 Tiba di Pool: {{ $data['meta']['pool_arrival_time'] }} (Wajib)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 text-blue-800 font-bold border border-blue-200">
+                                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        Tiba di Pool: {{ $data['meta']['pool_arrival_time'] }} (Wajib)
                                     </span>
                                 @endif
 
                                 @if(!empty($data['meta']['seats']))
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
-                                        💺 Kursi: {{ $data['meta']['seats'] }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
+                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                        Kursi: {{ $data['meta']['seats'] }}
                                     </span>
                                 @endif
 
                                 @if(!empty($data['meta']['plate_number']))
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-800 text-white font-mono font-bold">
-                                        🚐 {{ $data['meta']['plate_number'] }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-800 text-white font-mono font-bold">
+                                        <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                                        {{ $data['meta']['plate_number'] }}
                                     </span>
                                 @endif
 
                                 @if(!empty($data['meta']['pickup_location']))
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700">
-                                        📌 {{ $data['meta']['pickup_location'] }}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700">
+                                        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                                        {{ $data['meta']['pickup_location'] }}
                                     </span>
                                 @endif
 
                                 @if(!empty($data['meta']['delay_minutes']))
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-100 text-amber-900 font-bold">
-                                        ⚠️ Penyesuaian: +{{ $data['meta']['delay_minutes'] }} Menit
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-100 text-amber-900 font-bold">
+                                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                        Penyesuaian: +{{ $data['meta']['delay_minutes'] }} Menit
                                     </span>
                                 @endif
                             </div>
@@ -470,7 +479,7 @@ function notifikasiApp() {
                 this.pushPermission = permission;
                 if (permission === 'granted') {
                     // Tampilkan notifikasi sambutan
-                    new Notification('Push Notifikasi Aktif! 🔔', {
+                    new Notification('Push Notifikasi Aktif!', {
                         body: 'Pemberitahuan operasional armada & transaksi TravelKu kini otomatis muncul di layar HP Anda.',
                         icon: '/favicon.ico'
                     });

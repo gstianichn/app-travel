@@ -8,7 +8,7 @@
                             <span>DENAH KURSI KABIN</span>
                         </div>
                         <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                            <span>💺</span>
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 4h14a1 1 0 011 1v9H4V5a1 1 0 011-1zM4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4M7 20v2M17 20v2"/></svg>
                             <span>Melihat Seat Map</span>
                         </h3>
                         <p style="margin: 4px 0 0 0; font-size: 12.5px; color: #64748b;">
@@ -23,11 +23,12 @@
                         <div class="cabin-layout">
                             <!-- DEPAN / WINDSHIELD (STANDAR SETIR KANAN INDONESIA) -->
                             <div class="cockpit-front">
-                                <span class="windshield-label" style="display: inline-flex; align-items: center; gap: 4px;">
-                                    <span>🚪</span> Pintu Kiri / Depan
+                                <span class="windshield-label" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                    <span>Pintu Kiri / Depan</span>
                                 </span>
-                                <div class="driver-seat" title="Posisi Kemudi Sopir (Setir Kanan Indonesia)">
-                                    <span>🚘</span>
+                                <div class="driver-seat" title="Posisi Kemudi Sopir (Setir Kanan Indonesia)" style="display: flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke-width="2"/><line x1="12" y1="2" x2="12" y2="9" stroke-width="2"/><line x1="4.93" y1="19.07" x2="9.88" y2="14.12" stroke-width="2"/><line x1="19.07" y1="19.07" x2="14.12" y2="14.12" stroke-width="2"/></svg>
                                     <span>SOPIR (KANAN)</span>
                                 </div>
                             </div>

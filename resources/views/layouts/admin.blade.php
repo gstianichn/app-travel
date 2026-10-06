@@ -7,8 +7,13 @@
         content="width=device-width, initial-scale=1.0"
     >
     <title>
-        @yield('title', 'Dashboard Admin Utama') - Travel
+        @yield('title', 'Dashboard Admin Utama') - TravelKu
     </title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     @vite([
         'resources/css/app.css',
@@ -40,9 +45,10 @@
         }
         body {
             min-height: 100vh;
-            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+            font-family: 'Plus Jakarta Sans', "Segoe UI", system-ui, sans-serif;
             background: var(--page);
             color: var(--text);
+            -webkit-font-smoothing: antialiased;
         }
         
         a,
@@ -59,7 +65,7 @@
         }
 
         /* =========================================
-           SIDEBAR
+           SIDEBAR (ORIGINAL GREEN BRAND)
         ========================================== */
 
         .admin-sidebar {
@@ -70,10 +76,10 @@
             width: 260px;
             display: flex;
             flex-direction: column;
-            background: var(--brand);
+            background: linear-gradient(180deg, #087f55 0%, #066b47 100%);
             color: white;
             z-index: 100;
-            box-shadow: 8px 0 30px rgba(8, 127, 85, 0.08);
+            box-shadow: 6px 0 25px rgba(8, 127, 85, 0.12);
         }
 
         /* =========================================
@@ -84,33 +90,44 @@
             height: 82px;
             display: flex;
             align-items: center;
-            padding: 0 24px;
-            border-bottom: 1px solid rgba(255,255,255,.12);
+            padding: 0 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+            text-decoration: none;
+            color: white;
         }
 
         .admin-logo-icon {
-            width: 43px;
-            height: 43px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 13px;
-            background: rgba(255,255,255,.15);
-            font-size: 21px;
+            background: rgba(255, 255, 255, 0.18);
+            font-size: 22px;
             margin-right: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .admin-logo:hover .admin-logo-icon {
+            transform: scale(1.05);
         }
 
         .admin-logo-text {
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
             line-height: 1.2;
+            letter-spacing: -0.01em;
+            color: #FFFFFF;
         }
 
         .admin-logo-subtitle {
             display: block;
-            margin-top: 3px;
-            color: rgba(255,255,255,.60);
-            font-size: 10px;
+            margin-top: 2px;
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 11px;
+            font-weight: 500;
         }
 
         /* =========================================
@@ -119,14 +136,22 @@
 
         .admin-menu {
             flex: 1;
-            padding: 24px 14px;
+            padding: 22px 14px;
             overflow-y: auto;
+        }
+
+        .admin-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .admin-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
         }
 
         .admin-menu-title {
             padding: 0 12px;
             margin-bottom: 9px;
-            color: rgba(255,255,255,.45);
+            color: rgba(255, 255, 255, 0.55);
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
@@ -134,40 +159,41 @@
         }
 
         .admin-menu-section {
-            margin-top: 25px;
+            margin-top: 24px;
         }
 
         .admin-menu-link {
             display: flex;
             align-items: center;
             gap: 12px;
-            min-height: 45px;
+            min-height: 44px;
             padding: 10px 13px;
             margin-bottom: 4px;
             border-radius: 11px;
-            color: rgba(255,255,255,.72);
+            color: rgba(255, 255, 255, 0.82);
             text-decoration: none;
             font-size: 13px;
             font-weight: 500;
-            transition: .2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .admin-menu-link:hover {
-            background: rgba(255,255,255,.09);
-            color: white;
+            background: rgba(255, 255, 255, 0.12);
+            color: #FFFFFF;
             transform: translateX(2px);
         }
 
         .admin-menu-link.active {
-            background: white;
+            background: #FFFFFF;
             color: var(--brand);
-            box-shadow:
-                0 7px 18px rgba(0,0,0,.10);
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+            transform: none;
         }
 
         .admin-menu-icon {
-            width: 23px;
-            min-width: 23px;
+            width: 22px;
+            min-width: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -225,19 +251,21 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 35px;
-            background: white;
+            background: #FFFFFF;
             border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(17, 32, 25, 0.02);
         }
 
         .admin-page-title h2 {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 19px;
+            font-weight: 800;
             color: var(--text);
+            letter-spacing: -0.3px;
         }
 
         .admin-page-title p {
-            margin-top: 4px;
-            color: var(--text-muted);
+            margin-top: 3px;
+            color: var(--text-secondary);
             font-size: 12px;
         }
 
@@ -248,7 +276,17 @@
         .admin-profile {
             display: flex;
             align-items: center;
-            gap: 11px;
+            gap: 12px;
+            padding: 6px 8px 6px 14px;
+            border-radius: 40px;
+            background: #F7FAF8;
+            border: 1px solid #E1E8E4;
+            transition: all 0.2s ease;
+        }
+
+        .admin-profile:hover {
+            background: #F0F5F2;
+            border-color: #D3DFD8;
         }
 
         .admin-profile-info {
@@ -262,23 +300,24 @@
         }
 
         .admin-profile-role {
-            margin-top: 2px;
-            color: var(--text-muted);
+            margin-top: 1px;
+            color: var(--brand);
             font-size: 11px;
+            font-weight: 600;
         }
 
         .admin-profile-avatar {
-            width: 43px;
-            height: 43px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 13px;
-            background: var(--brand-light);
-            color: var(--brand);
-            font-size: 15px;
-            font-weight: 700;
-            border: 1px solid #cdeadd;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #087f55 0%, #066b47 100%);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 800;
+            box-shadow: 0 2px 8px rgba(8, 127, 85, 0.25);
         }
 
         /* =========================================
@@ -403,19 +442,25 @@
 
         {{-- LOGO --}}
 
-        <div class="admin-logo">
+        <a href="{{ route('dashboard.admin.index') }}" class="admin-logo">
             <div class="admin-logo-icon">
-                🚍
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h13l4 4v7H3V6z"/>
+                    <circle cx="7.5" cy="17.5" r="2"/>
+                    <circle cx="16.5" cy="17.5" r="2"/>
+                    <path d="M16 6v4h4"/>
+                    <path d="M7 10h4"/>
+                </svg>
             </div>
             <div>
                 <div class="admin-logo-text">
-                    Travel
+                    TravelKu
                 </div>
                 <span class="admin-logo-subtitle">
                     Admin Management
                 </span>
             </div>
-        </div>
+        </a>
 
         {{-- MENU --}}
 
@@ -433,7 +478,12 @@
             >
 
                 <span class="admin-menu-icon">
-                    📊
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="9" rx="1"/>
+                        <rect x="14" y="3" width="7" height="5" rx="1"/>
+                        <rect x="14" y="12" width="7" height="9" rx="1"/>
+                        <rect x="3" y="16" width="7" height="5" rx="1"/>
+                    </svg>
                 </span>
 
                 <span>
@@ -453,7 +503,12 @@
                         {{ request()->routeIs('dashboard.admin.kelola-user.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        👥
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
                     </span>
                     <span>
                         Kelola User
@@ -469,7 +524,11 @@
                 >
 
                     <span class="admin-menu-icon">
-                        🧑‍💼
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                            <path d="m14 11-2 4-2-4"/>
+                        </svg>
                     </span>
                     <span>
                         Kelola Staff
@@ -483,7 +542,13 @@
                 >
 
                     <span class="admin-menu-icon">
-                        🪪
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <circle cx="9" cy="10" r="2"/>
+                            <path d="M15 8h2"/>
+                            <path d="M15 12h2"/>
+                            <path d="M7 16h10"/>
+                        </svg>
                     </span>
                     <span>
                         Kelola Driver
@@ -496,7 +561,13 @@
                         {{ request()->routeIs('dashboard.admin.memantau-kendaraan.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        🚐
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h13l4 4v7H3V6z"/>
+                            <circle cx="7.5" cy="17.5" r="2"/>
+                            <circle cx="16.5" cy="17.5" r="2"/>
+                            <path d="M16 6v4h4"/>
+                            <path d="M7 10h4"/>
+                        </svg>
                     </span>
                     <span>
                         Memantau Kendaraan
@@ -509,7 +580,12 @@
                         {{ request()->routeIs('dashboard.admin.pemesanan.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        💺
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                            <path d="M13 5v2"/>
+                            <path d="M13 11v2"/>
+                            <path d="M13 17v2"/>
+                        </svg>
                     </span>
                     <span>
                         Pemesanan
@@ -522,7 +598,10 @@
                         {{ request()->routeIs('dashboard.admin.pembayaran.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        💳
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/>
+                            <line x1="2" y1="10" x2="22" y2="10"/>
+                        </svg>
                     </span>
                     <span>
                         Pembayaran
@@ -535,7 +614,11 @@
                         {{ request()->routeIs('dashboard.admin.rute.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        🕒
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="6" cy="19" r="3"/>
+                            <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H18"/>
+                            <circle cx="18" cy="5" r="3"/>
+                        </svg>
                     </span>
                     <span>
                         Rute Perjalanan
@@ -548,7 +631,10 @@
                         {{ request()->routeIs('dashboard.admin.refund.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        🔄
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
                     </span>
                     <span>
                         Kelola Refund
@@ -561,7 +647,13 @@
                         {{ request()->routeIs('dashboard.admin.laporan.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
-                        📑
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
                     </span>
                     <span>
                         Laporan
@@ -581,7 +673,10 @@
                 >
 
                     <span class="admin-menu-icon">
-                        ⚙
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
                     </span>
                     <span>
                         Pengaturan
@@ -603,7 +698,11 @@
                     class="admin-logout-button"
                 >
                     <span class="admin-menu-icon">
-                        ↪
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
                     </span>
                     <span>
                         Logout

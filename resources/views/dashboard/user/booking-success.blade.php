@@ -29,7 +29,7 @@
                     BOARDING PASS ELEKTRONIK
                 </span>
                 <h3 class="text-xl font-black mt-1">
-                    {{ $booking->schedule->route?->origin?->name }} ➔ {{ $booking->schedule->route?->destination?->name }}
+                    {{ $booking->schedule->route?->origin?->name }} &rarr; {{ $booking->schedule->route?->destination?->name }}
                 </h3>
                 <p class="text-xs mt-0.5" style="color:rgba(255,255,255,.85);">
                     {{ $booking->schedule->vehicle?->type ?? 'Toyota HiAce Premio' }} • {{ $booking->schedule->vehicle?->plate_number ?? '-' }}

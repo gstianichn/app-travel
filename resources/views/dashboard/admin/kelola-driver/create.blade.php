@@ -327,8 +327,8 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            👤
+                        <div class="section-header-icon" style="display:inline-flex; align-items:center; justify-content:center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                         <div class="section-header-text">
                             <h3>1. Profil & Akun Pengemudi</h3>
@@ -456,8 +456,8 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🪪
+                        <div class="section-header-icon" style="display:inline-flex; align-items:center; justify-content:center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" stroke-width="2"/><circle cx="9" cy="10" r="2" stroke-width="2"/><line x1="15" y1="9" x2="18" y2="9" stroke-width="2"/><line x1="15" y1="13" x2="18" y2="13" stroke-width="2"/><line x1="6" y1="16" x2="18" y2="16" stroke-width="2"/></svg>
                         </div>
                         <div class="section-header-text">
                             <h3>2. Legalitas & Lisensi SIM</h3>
@@ -531,8 +531,8 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🚨
+                        <div class="section-header-icon" style="display:inline-flex; align-items:center; justify-content:center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         </div>
                         <div class="section-header-text">
                             <h3>3. Kontak Darurat Keluarga</h3>
@@ -607,8 +607,8 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🚦
+                        <div class="section-header-icon" style="display:inline-flex; align-items:center; justify-content:center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke-width="2"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2"/></svg>
                         </div>
                         <div class="section-header-text">
                             <h3>4. Status Kesiapan Kerja Pengemudi</h3>
@@ -625,7 +625,7 @@
                         <label class="status-select-card {{ $selectedStatus === 'standby' ? 'active-standby' : '' }}" onclick="selectStatus('standby', this)">
                             <input type="radio" name="status" value="standby" class="status-card-radio" {{ $selectedStatus === 'standby' ? 'checked' : '' }}>
                             <div class="status-card-info">
-                                <h4>🟢 Siap Jalan (Standby)</h4>
+                                <h4>Siap Jalan (Standby)</h4>
                                 <p>Pengemudi siap di pool/loket untuk ditugaskan jadwal keberangkatan armada.</p>
                             </div>
                         </label>
@@ -634,7 +634,7 @@
                         <label class="status-select-card {{ $selectedStatus === 'on_duty' ? 'active-onduty' : '' }}" onclick="selectStatus('on_duty', this)">
                             <input type="radio" name="status" value="on_duty" class="status-card-radio" {{ $selectedStatus === 'on_duty' ? 'checked' : '' }}>
                             <div class="status-card-info">
-                                <h4>🔵 Sedang Bertugas</h4>
+                                <h4>Sedang Bertugas</h4>
                                 <p>Pengemudi sedang dalam perjalanan melayani rute travel aktif.</p>
                             </div>
                         </label>
@@ -643,7 +643,7 @@
                         <label class="status-select-card {{ $selectedStatus === 'on_leave' ? 'active-onleave' : '' }}" onclick="selectStatus('on_leave', this)">
                             <input type="radio" name="status" value="on_leave" class="status-card-radio" {{ $selectedStatus === 'on_leave' ? 'checked' : '' }}>
                             <div class="status-card-info">
-                                <h4>🟡 Sedang Libur / Cuti</h4>
+                                <h4>Sedang Libur / Cuti</h4>
                                 <p>Pengemudi sedang mengambil jadwal libur atau cuti istirahat.</p>
                             </div>
                         </label>
@@ -672,8 +672,8 @@
                     <a href="{{ route('dashboard.admin.kelola-driver.index') }}" class="btn-cancel">
                         Batal
                     </a>
-                    <button type="submit" class="btn-save">
-                        <span>💾</span>
+                    <button type="submit" class="btn-save" style="display:inline-flex; align-items:center; gap:6px;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                         <span>Simpan & Daftarkan Driver</span>
                     </button>
                 </div>

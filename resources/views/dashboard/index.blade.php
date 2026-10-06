@@ -105,7 +105,7 @@
             </p>
 
             <h2 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                Halo, {{ $user->name }} 👋
+                Halo, {{ $user->name }}
             </h2>
 
             <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-support sm:text-base">
@@ -144,19 +144,24 @@
                 <div class="mt-6 flex flex-wrap gap-3">
 
                     <a
-                        href="#"
-                        <div class="absolute -right-16 -top-16 h-48 w-48 rounded-full border-24 border-brand-support/25"></div>
+                        href="{{ route('dashboard.user.search') }}"
+                        class="inline-flex items-center gap-2 rounded-xl bg-status px-5 py-3 text-sm font-bold text-brand-dark transition hover:bg-status/90"
                     >
-                        🔎
-                        Cari Perjalanan
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>Cari Perjalanan</span>
                     </a>
 
                     <a
-                        href="#"
+                        href="{{ route('dashboard.user.user-tiket') }}"
                         class="inline-flex items-center gap-2 rounded-xl border border-status/30 bg-transparent px-5 py-3 text-sm font-semibold text-surface transition hover:bg-status/10"
                     >
-                        🎫
-                        Pesanan Saya
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                        </svg>
+                        <span>Pesanan Saya</span>
                     </a>
 
                 </div>
@@ -206,8 +211,14 @@
 
                         </div>
 
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-status text-xl text-brand">
-                            🚐
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-status text-brand">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h13l4 4v7H3V6z"/>
+                                <circle cx="7.5" cy="17.5" r="2"/>
+                                <circle cx="16.5" cy="17.5" r="2"/>
+                                <path d="M16 6v4h4"/>
+                                <path d="M7 10h4"/>
+                            </svg>
                         </div>
 
                     </div>
@@ -236,8 +247,10 @@
 
                         </div>
 
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EAF3FB] text-xl text-info">
-                            ✓
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#EAF3FB] text-info">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
                         </div>
 
                     </div>
@@ -300,12 +313,15 @@
 
                 <!-- Cari Travel -->
                 <a
-                    href="#"
+                    href="{{ route('dashboard.user.search') }}"
                     class="group border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand hover:shadow-md"
                 >
 
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-status text-lg text-brand">
-                        🔎
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-status text-brand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
                     </div>
 
                     <h4 class="mt-4 font-semibold text-ink">
@@ -325,12 +341,14 @@
 
                 <!-- Pesanan -->
                 <a
-                    href="#"
+                    href="{{ route('dashboard.user.user-tiket') }}"
                     class="group border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand hover:shadow-md"
                 >
 
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-status text-lg text-brand">
-                        🎫
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-status text-brand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                        </svg>
                     </div>
 
                     <h4 class="mt-4 font-semibold text-ink">
@@ -350,12 +368,15 @@
 
                 <!-- Pembayaran -->
                 <a
-                    href="#"
+                    href="{{ route('dashboard.user.user-tiket') }}"
                     class="group border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand hover:shadow-md"
                 >
 
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EAF3FB] text-lg text-info">
-                        💳
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EAF3FB] text-info">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/>
+                            <line x1="2" y1="10" x2="22" y2="10"/>
+                        </svg>
                     </div>
 
                     <h4 class="mt-4 font-semibold text-ink">
@@ -375,12 +396,15 @@
 
                 <!-- Profil -->
                 <a
-                    href="#"
+                    href="{{ route('dashboard.user.user-akun') }}"
                     class="group border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand hover:shadow-md"
                 >
 
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-status text-lg text-brand">
-                        👤
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-status text-brand">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
                     </div>
 
                     <h4 class="mt-4 font-semibold text-ink">
@@ -420,7 +444,7 @@
                 </div>
 
                 <a
-                    href="#"
+                    href="{{ route('dashboard.user.user-tiket') }}"
                     class="text-sm font-bold text-brand transition hover:text-brand-dark"
                 >
                     Lihat semua →
@@ -432,8 +456,14 @@
             <!-- Empty State -->
             <div class="border border-dashed border-border bg-surface px-6 py-12 text-center shadow-sm">
 
-                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-status text-3xl text-brand">
-                    🚐
+                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-status text-brand">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h13l4 4v7H3V6z"/>
+                        <circle cx="7.5" cy="17.5" r="2"/>
+                        <circle cx="16.5" cy="17.5" r="2"/>
+                        <path d="M16 6v4h4"/>
+                        <path d="M7 10h4"/>
+                    </svg>
                 </div>
 
                 <h4 class="mt-5 text-lg font-bold text-ink">
@@ -446,10 +476,14 @@
                 </p>
 
                 <a
-                    href="#"
-                    class="mt-6 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-bold text-surface transition hover:bg-brand-dark"
+                    href="{{ route('dashboard.user.search') }}"
+                    class="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-bold text-surface transition hover:bg-brand-dark"
                 >
-                    🔎 Cari Perjalanan
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <span>Cari Perjalanan</span>
                 </a>
 
             </div>

@@ -16,7 +16,7 @@
         'id' => (string)$b->id,
         'code' => $b->booking_code,
         'ticket' => $b->ticket?->ticket_number ?? 'TKT-'.$b->booking_code,
-        'route' => ($b->schedule?->route?->origin?->name ?? 'Asal') . ' ➔ ' . ($b->schedule?->route?->destination?->name ?? 'Tujuan'),
+        'route' => ($b->schedule?->route?->origin?->name ?? 'Asal') . ' &rarr; ' . ($b->schedule?->route?->destination?->name ?? 'Tujuan'),
         'date' => \Carbon\Carbon::parse($b->schedule?->departure_date)->translatedFormat('d M Y'),
         'time' => \Carbon\Carbon::parse($b->schedule?->departure_time)->format('H:i') . ' WIB',
         'passenger' => $b->passengers->first()?->name ?? $user->name,
@@ -191,7 +191,7 @@
             </div>
             <a href="{{ route('dashboard.user.user-promo') }}" class="text-xs font-bold hover:underline flex items-center gap-1" style="color:#087f55;">
                 <span>Lihat Semua</span>
-                <span class="text-sm">➔</span>
+                <span class="text-sm">&rarr;</span>
             </a>
         </div>
 
@@ -218,7 +218,7 @@
                         <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-400">
                             <span>Berlaku s/d: {{ $vc->expires_at ? $vc->expires_at->translatedFormat('d M Y') : 'Selamanya' }}</span>
                             @if($vc->isActive())
-                                <a href="{{ route('dashboard.user.search') }}" class="text-emerald-700 font-bold hover:underline">Gunakan ➔</a>
+                                <a href="{{ route('dashboard.user.search') }}" class="text-emerald-700 font-bold hover:underline inline-flex items-center gap-0.5">Gunakan &rarr;</a>
                             @endif
                         </div>
                     </div>
@@ -277,7 +277,7 @@
                         <option value="">-- Pertanyaan Umum / Tanpa Tiket Spesifik --</option>
                         @foreach($recentBookings as $b)
                             <option value="{{ $b->id }}" {{ (string)$b->id === (string)$defaultBookingId ? 'selected' : '' }}>
-                                #{{ $b->booking_code }} ({{ $b->ticket?->ticket_number ?? 'TKT' }}) • {{ $b->schedule?->route?->origin?->name }} ➔ {{ $b->schedule?->route?->destination?->name }} ({{ \Carbon\Carbon::parse($b->schedule?->departure_date)->format('d M') }})
+                                #{{ $b->booking_code }} ({{ $b->ticket?->ticket_number ?? 'TKT' }}) • {{ $b->schedule?->route?->origin?->name }} &rarr; {{ $b->schedule?->route?->destination?->name }} ({{ \Carbon\Carbon::parse($b->schedule?->departure_date)->format('d M') }})
                             </option>
                         @endforeach
                     </select>
@@ -301,7 +301,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-slate-900">Chat WhatsApp CS</p>
-                        <p class="text-[11px] text-emerald-800 font-medium">Bawa Nomor Tiket & Rute ➔</p>
+                        <p class="text-[11px] text-emerald-800 font-medium inline-flex items-center gap-0.5">Bawa Nomor Tiket & Rute &rarr;</p>
                     </div>
                     <svg class="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                 </a>

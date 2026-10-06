@@ -22,7 +22,7 @@
                     <span>Portal Pelanggan Resmi TravelKu</span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                    Halo, {{ auth()->user()->name ?? 'Penumpang' }}! 👋
+                    Halo, {{ auth()->user()->name ?? 'Penumpang' }}!
                 </h1>
                 <p class="text-sm sm:text-base text-emerald-50/90 leading-relaxed font-normal">
                     Mau bepergian ke mana hari ini? Nikmati perjalanan antar kota minibus Toyota HiAce Premio yang aman, tepat waktu, dan nyaman.
@@ -55,14 +55,17 @@
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Tiket Aktif</span>
                 <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold group-hover:scale-110 transition">
-                    🎫
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                        <path d="M13 5v2"/><path d="M13 11v2"/><path d="M13 17v2"/>
+                    </svg>
                 </div>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
                 <span class="text-2xl font-black text-slate-900">{{ $activeTicketsCount ?? 0 }}</span>
                 <span class="text-xs text-slate-400 font-medium">perjalanan</span>
             </div>
-            <p class="text-[11px] text-emerald-600 font-semibold mt-1">Siap berangkat ➔</p>
+            <p class="text-[11px] text-emerald-600 font-semibold mt-1">Siap berangkat &rarr;</p>
         </a>
 
         <!-- Stat 2: Menunggu Bayar -->
@@ -71,14 +74,17 @@
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Menunggu Bayar</span>
                 <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm font-bold group-hover:scale-110 transition">
-                    ⏳
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
                 </div>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
                 <span class="text-2xl font-black text-slate-900">{{ $pendingPaymentsCount ?? 0 }}</span>
                 <span class="text-xs text-slate-400 font-medium">transaksi</span>
             </div>
-            <p class="text-[11px] text-amber-600 font-semibold mt-1">Selesaikan sebelum batas waktu ➔</p>
+            <p class="text-[11px] text-amber-600 font-semibold mt-1">Selesaikan sebelum batas waktu &rarr;</p>
         </a>
 
         <!-- Stat 3: Riwayat Selesai -->
@@ -87,14 +93,17 @@
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Riwayat Selesai</span>
                 <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold group-hover:scale-110 transition">
-                    🛣️
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
                 </div>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
                 <span class="text-2xl font-black text-slate-900">{{ $completedTripsCount ?? 0 }}</span>
                 <span class="text-xs text-slate-400 font-medium">perjalanan</span>
             </div>
-            <p class="text-[11px] text-blue-600 font-semibold mt-1">Lihat riwayat & invoice ➔</p>
+            <p class="text-[11px] text-blue-600 font-semibold mt-1">Lihat riwayat & invoice &rarr;</p>
         </a>
 
         <!-- Stat 4: Pemberitahuan Sistem -->
@@ -103,14 +112,17 @@
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Notifikasi</span>
                 <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold group-hover:scale-110 transition">
-                    🔔
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
                 </div>
             </div>
             <div class="mt-2 flex items-baseline gap-2">
                 <span class="text-2xl font-black text-slate-900">{{ $unreadNotifCount ?? 0 }}</span>
                 <span class="text-xs text-slate-400 font-medium">pesan baru</span>
             </div>
-            <p class="text-[11px] text-indigo-600 font-semibold mt-1">Cek pengingat & armada ➔</p>
+            <p class="text-[11px] text-indigo-600 font-semibold mt-1">Cek pengingat & armada &rarr;</p>
         </a>
 
     </div>
@@ -131,20 +143,24 @@
                         </span>
                     </div>
                     <h3 class="text-xl sm:text-2xl font-black text-white">
-                        {{ $activeBooking->schedule->route?->origin?->name ?? 'Titik Asal' }} ➔ {{ $activeBooking->schedule->route?->destination?->name ?? 'Titik Tujuan' }}
+                        {{ $activeBooking->schedule->route?->origin?->name ?? 'Titik Asal' }} &rarr; {{ $activeBooking->schedule->route?->destination?->name ?? 'Titik Tujuan' }}
                     </h3>
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300 font-medium pt-1">
                         <span class="flex items-center gap-1.5">
-                            📅 {{ \Carbon\Carbon::parse($activeBooking->schedule->departure_date)->translatedFormat('d F Y') }}
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span>{{ \Carbon\Carbon::parse($activeBooking->schedule->departure_date)->translatedFormat('d F Y') }}</span>
                         </span>
                         <span class="flex items-center gap-1.5 font-bold text-emerald-300">
-                            ⏰ Pukul {{ \Carbon\Carbon::parse($activeBooking->schedule->departure_time)->format('H:i') }} WIB
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span>Pukul {{ \Carbon\Carbon::parse($activeBooking->schedule->departure_time)->format('H:i') }} WIB</span>
                         </span>
                         <span class="flex items-center gap-1.5">
-                            🚐 {{ $activeBooking->schedule->vehicle?->name ?? 'Toyota HiAce Premio' }} ({{ $activeBooking->schedule->vehicle?->plate_number ?? '-' }})
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h13l4 4v7H3V6z"/><circle cx="7.5" cy="17.5" r="2"/><circle cx="16.5" cy="17.5" r="2"/><path d="M16 6v4h4"/></svg>
+                            <span>{{ $activeBooking->schedule->vehicle?->name ?? 'Toyota HiAce Premio' }} ({{ $activeBooking->schedule->vehicle?->plate_number ?? '-' }})</span>
                         </span>
                         <span class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-white/10 text-white font-bold">
-                            💺 Kursi: {{ $activeBooking->passengerSeatNumbers() }}
+                            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 19v2"/><path d="M17 19v2"/><path d="M5 8v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M4 11h16"/><path d="M7 3h10a2 2 0 0 1 2 2v3H5V5a2 2 0 0 1 2-2z"/></svg>
+                            <span>Kursi: {{ $activeBooking->passengerSeatNumbers() }}</span>
                         </span>
                     </div>
                 </div>
@@ -190,7 +206,7 @@
                         <option value="">Pilih Pool Asal</option>
                         @foreach($locations as $location)
                             <option value="{{ $location->id }}" {{ (request('origin') == $location->id || (empty(request('origin')) && str_contains(strtolower($location->name), 'bandung'))) ? 'selected' : '' }}>
-                                📍 {{ $location->name }} ({{ $location->city }})
+                                {{ $location->name }} ({{ $location->city }})
                             </option>
                         @endforeach
                     </select>
@@ -205,7 +221,7 @@
                         <option value="">Pilih Pool Tujuan</option>
                         @foreach($locations as $location)
                             <option value="{{ $location->id }}" {{ (request('destination') == $location->id || (empty(request('destination')) && str_contains(strtolower($location->name), 'jakarta'))) ? 'selected' : '' }}>
-                                🏁 {{ $location->name }} ({{ $location->city }})
+                                {{ $location->name }} ({{ $location->city }})
                             </option>
                         @endforeach
                     </select>
@@ -225,7 +241,7 @@
                 <select name="passengers" required class="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-brand-500 focus:bg-white rounded-2xl px-3.5 py-3 text-sm font-semibold text-slate-800 outline-none transition shadow-2xs">
                     @for($i = 1; $i <= 10; $i++)
                         <option value="{{ $i }}" {{ request('passengers', 1) == $i ? 'selected' : '' }}>
-                            👤 {{ $i }} Kursi Penumpang
+                            {{ $i }} Kursi Penumpang
                         </option>
                     @endfor
                 </select>
@@ -252,11 +268,11 @@
             @if ($bandungLoc && $jakartaLoc)
                 <a href="{{ route('dashboard.user.search', ['origin' => $bandungLoc->id, 'destination' => $jakartaLoc->id, 'departure_date' => date('Y-m-d'), 'passengers' => 1]) }}"
                    class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-semibold transition">
-                    ⚡ Bandung (Dipatiukur) ➔ Jakarta (Semanggi)
+                    Bandung (Dipatiukur) &rarr; Jakarta (Semanggi)
                 </a>
                 <a href="{{ route('dashboard.user.search', ['origin' => $jakartaLoc->id, 'destination' => $bandungLoc->id, 'departure_date' => date('Y-m-d'), 'passengers' => 1]) }}"
                    class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-brand-50 hover:text-brand-700 font-semibold transition">
-                    ⚡ Jakarta (Semanggi) ➔ Bandung (Dipatiukur)
+                    Jakarta (Semanggi) &rarr; Bandung (Dipatiukur)
                 </a>
             @endif
         </div>
@@ -268,8 +284,14 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex items-start gap-3.5">
-            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl flex-shrink-0">
-                🚐
+            <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M3 6h13l4 4v7H3V6z"/>
+                    <circle cx="7.5" cy="17.5" r="2"/>
+                    <circle cx="16.5" cy="17.5" r="2"/>
+                    <path d="M16 6v4h4"/>
+                    <path d="M7 10h4"/>
+                </svg>
             </div>
             <div>
                 <h4 class="text-sm font-bold text-slate-900">Armada Toyota HiAce</h4>
@@ -278,8 +300,11 @@
         </div>
 
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex items-start gap-3.5">
-            <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl flex-shrink-0">
-                ⏱️
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
             </div>
             <div>
                 <h4 class="text-sm font-bold text-slate-900">Jaminan Tepat Waktu</h4>
@@ -288,8 +313,10 @@
         </div>
 
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex items-start gap-3.5">
-            <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl flex-shrink-0">
-                🔌
+            <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
             </div>
             <div>
                 <h4 class="text-sm font-bold text-slate-900">Charging Port & Reclining</h4>
@@ -298,8 +325,10 @@
         </div>
 
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs flex items-start gap-3.5">
-            <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl flex-shrink-0">
-                🛡️
+            <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
             </div>
             <div>
                 <h4 class="text-sm font-bold text-slate-900">Asuransi Jasa Raharja</h4>
@@ -379,7 +408,7 @@
                                         @endif
                                     </div>
                                     <p class="text-slate-800 font-bold text-sm">
-                                        {{ $recent->schedule?->route?->origin?->name ?? '-' }} ➔ {{ $recent->schedule?->route?->destination?->name ?? '-' }}
+                                        {{ $recent->schedule?->route?->origin?->name ?? '-' }} &rarr; {{ $recent->schedule?->route?->destination?->name ?? '-' }}
                                     </p>
                                     <p class="text-slate-400">
                                         {{ $recent->schedule?->departure_date ? \Carbon\Carbon::parse($recent->schedule->departure_date)->translatedFormat('d F Y') : '-' }} • 
@@ -393,7 +422,7 @@
                                         </span>
                                     @elseif ($isPending)
                                         <a href="{{ route('dashboard.user.booking.pembayaran', $recent) }}" class="inline-block px-3 py-1 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition">
-                                            Bayar Sekarang →
+                                            Bayar Sekarang &rarr;
                                         </a>
                                     @elseif ($isCompleted)
                                         <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800">
@@ -413,8 +442,8 @@
                     </div>
                 @else
                     <div class="text-center py-12">
-                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-brand-50 text-brand-600 text-2xl">
-                            🎫
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-brand-50 text-brand-600">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
                         </div>
                         <p class="font-bold text-slate-800 text-base">Belum Ada Transaksi Tiket</p>
                         <p class="text-xs text-slate-400 mt-1">Cari jadwal shuttle di atas untuk memulai pemesanan perjalanan Anda.</p>
@@ -425,7 +454,7 @@
             <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                 <span>Punya pertanyaan seputar jadwal atau tiket?</span>
                 <a href="https://wa.me/62812345678" target="_blank" class="font-bold text-brand-600 hover:underline">
-                    Hubungi Customer Service WhatsApp ➔
+                    Hubungi Customer Service WhatsApp &rarr;
                 </a>
             </div>
         </div>

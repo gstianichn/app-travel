@@ -13,7 +13,7 @@
             <span class="text-slate-800 font-bold">Dompet Voucher (My Vouchers)</span>
         </div>
         <a href="{{ route('dashboard.user.user-akun') }}" class="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1">
-            <span>← Kembali ke Akun</span>
+            <span>&larr; Kembali ke Akun</span>
         </a>
     </div>
 
@@ -36,8 +36,9 @@
     <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div class="space-y-2 max-w-xl">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
-                    🎟️ Dompet Voucher Pribadi
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-xs">
+                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/></svg>
+                    <span>Dompet Voucher Pribadi</span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
                     Voucher & Kupon Perjalanan Anda
@@ -103,8 +104,12 @@
             <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between relative overflow-hidden">
                 
                 {{-- Watermark / Dekorasi --}}
-                <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-slate-50 border border-slate-100/50 flex items-center justify-center text-4xl opacity-40 pointer-events-none">
-                    {{ $isComp ? '🛡️' : '🏷️' }}
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-slate-50 border border-slate-100/50 flex items-center justify-center text-slate-300 opacity-40 pointer-events-none">
+                    @if($isComp)
+                        <svg class="w-16 h-16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    @else
+                        <svg class="w-16 h-16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    @endif
                 </div>
 
                 <div class="space-y-4 relative z-10">
@@ -166,7 +171,7 @@
                            onmouseover="this.style.background='#066b47'"
                            onmouseout="this.style.background='#087f55'">
                             <span>Pakai Sekarang</span>
-                            <span>➔</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                         </a>
                     @elseif($vc->isUsed())
                         <span class="text-xs font-semibold text-slate-400">
@@ -182,8 +187,8 @@
             </div>
         @empty
             <div class="col-span-2 bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-3">
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-50 flex items-center justify-center text-2xl">
-                    🎟️
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-50 flex items-center justify-center text-amber-700">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/></svg>
                 </div>
                 <h3 class="font-bold text-slate-800 text-base">Tidak Ada Voucher Pada Kategori Ini</h3>
                 <p class="text-xs text-slate-400 max-w-sm mx-auto">

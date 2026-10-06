@@ -7,7 +7,7 @@
         <div class="logo-area">
 
             <div class="logo-icon">
-                T
+                🚐
             </div>
 
             <div class="logo-text">

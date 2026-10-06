@@ -138,7 +138,7 @@
                     <span class="tag-pill">JPG</span>
                     <span class="tag-pill">PNG</span>
                     <span class="tag-pill tag-pdf">PDF</span>
-                    <span class="tag-pill tag-opt">⚡ Kompresi Otomatis Aktif</span>
+                    <span class="tag-pill tag-opt"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Kompresi Otomatis Aktif</span>
                 </div>
             </div>
 
@@ -147,13 +147,13 @@
                 <span class="samples-title">Atau gunakan file simulasi cepat:</span>
                 <div class="samples-buttons">
                     <button type="button" class="sample-btn" onclick="loadSampleFile('transfer')">
-                        🖼️ Bukti-Transfer-BCA.jpg (3.4 MB)
+                        <svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Bukti-Transfer-BCA.jpg (3.4 MB)
                     </button>
                     <button type="button" class="sample-btn" onclick="loadSampleFile('bagasi')">
-                        🖼️ Foto-Koper-Lansia.png (2.8 MB)
+                        <svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Foto-Koper-Lansia.png (2.8 MB)
                     </button>
                     <button type="button" class="sample-btn" onclick="loadSampleFile('surat')">
-                        📄 Surat-Jalan-HiAce-Pasteur.pdf (185 KB)
+                        <svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Surat-Jalan-HiAce-Pasteur.pdf (185 KB)
                     </button>
                 </div>
             </div>
@@ -162,7 +162,7 @@
             <div class="compression-result-card" id="compression-result-box">
                 <div class="comp-header">
                     <div class="comp-title-group">
-                        <span class="comp-badge-live">⚡ Hasil Kompresi Otomatis</span>
+                        <span class="comp-badge-live"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Hasil Kompresi Otomatis</span>
                         <strong id="comp-file-name">Bukti-Transfer-BCA.jpg</strong>
                     </div>
                     <span class="comp-ratio-badge" id="comp-ratio-badge">Hemat Kuota 89%</span>
@@ -296,7 +296,7 @@
 
                 <div class="ticket-visual-footer">
                     <span class="footer-note">Ukuran File: <strong>124 KB (Format PDF Resmi Terverifikasi)</strong></span>
-                    <span class="footer-security">🔒 Dilengkapi QR Validasi Pool</span>
+                    <span class="footer-security"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Dilengkapi QR Validasi Pool</span>
                 </div>
             </div>
 
@@ -304,10 +304,10 @@
             <div class="ticket-actions-bar">
                 <div class="format-choice-tabs">
                     <button type="button" class="format-tab active" id="tab-fmt-pdf" onclick="setTicketFormat('pdf')">
-                        📄 Format PDF (Resmi)
+                        <svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Format PDF (Resmi)
                     </button>
                     <button type="button" class="format-tab" id="tab-fmt-img" onclick="setTicketFormat('image')">
-                        🖼️ Format Gambar PNG
+                        <svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Format Gambar PNG
                     </button>
                 </div>
 
@@ -358,7 +358,7 @@
                     <tr>
                         <td>13:16 WIB &bull; <strong>CS Anda</strong></td>
                         <td>Budi Prasetyo (TRV-2026-0925)</td>
-                        <td><span class="file-link-pill">📄 E-Tiket-TRV-2026-0925.pdf</span></td>
+                        <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>E-Tiket-TRV-2026-0925.pdf</span></td>
                         <td><span class="badge-cat-ticket">E-Tiket Resmi</span></td>
                         <td><span class="badge-comp-opt">124 KB (PDF Siap Cetak)</span></td>
                         <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
@@ -369,7 +369,7 @@
                     <tr>
                         <td>12:42 WIB &bull; <strong>CS Sarah</strong></td>
                         <td>Dewi Lestari (TRV-2026-0612)</td>
-                        <td><span class="file-link-pill">🖼️ Foto-Titik-Kumpul-Pasteur.jpg</span></td>
+                        <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Foto-Titik-Kumpul-Pasteur.jpg</span></td>
                         <td><span class="badge-cat-photo">Panduan Pool</span></td>
                         <td><span class="badge-comp-opt">3.8 MB &rarr; 380 KB (-90%)</span></td>
                         <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
@@ -380,7 +380,7 @@
                     <tr>
                         <td>11:05 WIB &bull; <strong>CS Budi</strong></td>
                         <td>Anisa Melani (TRV-2026-0421)</td>
-                        <td><span class="file-link-pill">📄 Bukti-Transfer-Refund-BCA.pdf</span></td>
+                        <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Bukti-Transfer-Refund-BCA.pdf</span></td>
                         <td><span class="badge-cat-transfer">Bukti Rekening</span></td>
                         <td><span class="badge-comp-opt">210 KB (PDF Dokumen)</span></td>
                         <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
@@ -391,7 +391,7 @@
                     <tr>
                         <td>10:40 WIB &bull; <strong>CS Nadia</strong></td>
                         <td>Siti Rahma (TRV-2026-0774)</td>
-                        <td><span class="file-link-pill">🖼️ Foto-Bagasi-Koper-28inch.png</span></td>
+                        <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Foto-Bagasi-Koper-28inch.png</span></td>
                         <td><span class="badge-cat-photo">Validasi Bagasi</span></td>
                         <td><span class="badge-comp-opt">2.4 MB &rarr; 290 KB (-88%)</span></td>
                         <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>

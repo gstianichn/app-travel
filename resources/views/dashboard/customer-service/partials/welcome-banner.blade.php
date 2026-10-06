@@ -15,7 +15,7 @@
 
         <h1 class="welcome-heading">
             Selamat datang,
-            <span class="welcome-user-name">{{ auth()->user()->name ?? 'Customer Service' }}</span> 👋
+            <span class="welcome-user-name">{{ auth()->user()->name ?? 'Customer Service' }}</span>
         </h1>
 
         <p class="welcome-description">
@@ -43,7 +43,9 @@
 
     <div class="welcome-illustration-wrap">
         <div class="welcome-badge-float">
-            <div class="float-icon">💬</div>
+            <div class="float-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
             <div class="float-text">
                 <strong>98.4% Kepuasan</strong>
                 <small>Berdasarkan 342 ulasan</small>

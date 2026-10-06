@@ -47,8 +47,9 @@
                         <span class="badge-status-confirmed" id="res-status">Terkonfirmasi (Lunas)</span>
                     </div>
                     <div class="result-actions">
-                        <a href="{{ route('dashboard.customer-service.live-chat') }}" class="cs-btn cs-btn-light" style="padding: 6px 12px; font-size: 12px;">
-                            💬 Hubungkan ke Live Chat
+                        <a href="{{ route('dashboard.customer-service.live-chat') }}" class="cs-btn cs-btn-light" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span>Hubungkan ke Live Chat</span>
                         </a>
                     </div>
                 </div>

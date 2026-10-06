@@ -50,7 +50,7 @@
     @if(session('success'))
         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between shadow-2xs">
             <div class="flex items-center gap-2">
-                <span class="text-base">✅</span>
+                <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 <span>{{ session('success') }}</span>
             </div>
             <button type="button" @click="$el.parentElement.remove()" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold">Tutup</button>
@@ -64,12 +64,12 @@
                 <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
                 Pilih Kursi
             </span>
-            <span class="text-slate-300">➔</span>
+            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
                 <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
                 Data & Metode Bayar
             </span>
-            <span class="text-slate-300">➔</span>
+            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
                 <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">3</span>
                 Bayar Tiket (Midtrans)
@@ -208,12 +208,12 @@
                 @if($isSeabank)
                     <div class="p-4 rounded-2xl bg-orange-50 border border-orange-200 space-y-2">
                         <div class="flex items-center gap-2 text-orange-950 font-bold text-xs">
-                            <span class="text-base">📱</span>
+                            <svg class="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
                             <span>Instruksi Khusus Transfer dari SeaBank:</span>
                         </div>
                         <ol class="list-decimal list-inside text-xs text-orange-900 space-y-1 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>SeaBank</strong> di smartphone Anda.</li>
-                            <li>Pilih menu <strong>Transfer</strong> ➔ <strong>Virtual Account</strong> atau <strong>Bank Lain</strong>.</li>
+                            <li>Pilih menu <strong>Transfer</strong> &rarr; <strong>Virtual Account</strong> atau <strong>Bank Lain</strong>.</li>
                             <li>Pilih Bank Penerima: <strong>Bank Permata</strong> (Kode Bank: <strong>013</strong>).</li>
                             <li>Masukkan Nomor Virtual Account: <strong class="font-mono text-orange-950">{{ $payment->account_number }}</strong>.</li>
                             <li>Pilih metode transfer <strong>BI-FAST</strong> (bebas biaya admin).</li>
@@ -226,12 +226,12 @@
                 @if($isBsi)
                     <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
                         <div class="flex items-center gap-2 text-emerald-950 font-bold text-xs">
-                            <span class="text-base">🕌</span>
+                            <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                             <span>Instruksi Pembayaran BSI Mobile:</span>
                         </div>
                         <ol class="list-decimal list-inside text-xs text-emerald-900 space-y-1 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>BSI Mobile</strong>.</li>
-                            <li>Pilih menu <strong>Transfer</strong> ➔ <strong>Transfer Antar Bank / Virtual Account</strong>.</li>
+                            <li>Pilih menu <strong>Transfer</strong> &rarr; <strong>Transfer Antar Bank / Virtual Account</strong>.</li>
                             <li>Pilih Bank Penerima: <strong>Bank Permata Syariah</strong> (Kode: 013).</li>
                             <li>Masukkan Nomor VA: <strong class="font-mono text-emerald-950">{{ $payment->account_number }}</strong>.</li>
                             <li>Pastikan nama penerima <strong>PT FAST TRAVEL INDONESIA</strong> dan nominal sesuai, lalu konfirmasi dengan PIN.</li>
@@ -245,7 +245,7 @@
                         <p class="font-bold text-slate-800 text-sm">Cara Bayar via BCA Mobile / myBCA / ATM BCA:</p>
                         <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>m-BCA</strong> atau ATM BCA terdekat.</li>
-                            <li>Pilih menu <strong>m-Transfer</strong> ➔ <strong>BCA Virtual Account</strong>.</li>
+                            <li>Pilih menu <strong>m-Transfer</strong> &rarr; <strong>BCA Virtual Account</strong>.</li>
                             <li>Masukkan nomor Virtual Account: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
                             <li>Pastikan nama penerima <strong>PT FAST TRAVEL INDONESIA</strong> dan nominal tagihan sesuai.</li>
                             <li>Konfirmasi dan masukkan PIN m-BCA Anda. Transaksi selesai & tiket langsung terbit!</li>
@@ -256,7 +256,7 @@
                         <p class="font-bold text-slate-800 text-sm">Cara Bayar via BNI Mobile Banking / ATM BNI:</p>
                         <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>BNI Mobile Banking</strong>.</li>
-                            <li>Pilih menu <strong>Pembayaran</strong> ➔ <strong>Virtual Account Billing</strong>.</li>
+                            <li>Pilih menu <strong>Pembayaran</strong> &rarr; <strong>Virtual Account Billing</strong>.</li>
                             <li>Input nomor Virtual Account: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
                             <li>Periksa nominal dan nama penerima, lalu masukkan password transaksi Anda.</li>
                         </ol>
@@ -266,7 +266,7 @@
                         <p class="font-bold text-slate-800 text-sm">Cara Bayar via BRImo (BRI Virtual Account / BRIVA):</p>
                         <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>BRImo</strong> di HP Anda.</li>
-                            <li>Pilih menu <strong>Tagihan</strong> ➔ <strong>BRIVA</strong>.</li>
+                            <li>Pilih menu <strong>Tagihan</strong> &rarr; <strong>BRIVA</strong>.</li>
                             <li>Pilih <strong>Pembayaran Baru</strong> dan masukkan nomor BRIVA: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
                             <li>Periksa rincian pembayaran, pilih sumber dana, lalu masukkan PIN BRImo Anda.</li>
                         </ol>
@@ -311,7 +311,7 @@
                     <p class="font-bold text-slate-800 text-sm">Cara Bayar via Livin' by Mandiri (Kuning):</p>
                     <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                         <li>Buka aplikasi <strong>Livin' by Mandiri</strong>.</li>
-                        <li>Pilih menu <strong>Bayar</strong> ➔ cari penyedia jasa <strong>Midtrans (70012)</strong>.</li>
+                        <li>Pilih menu <strong>Bayar</strong> &rarr; cari penyedia jasa <strong>Midtrans (70012)</strong>.</li>
                         <li>Masukkan <strong>Nomor Tagihan / Bill Key: <span class="font-mono font-bold text-slate-800">{{ $billKey }}</span></strong>.</li>
                         <li>Pastikan jumlah pembayaran <strong>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</strong> sesuai.</li>
                         <li>Lanjutkan dan masukkan PIN Livin' Anda. Selesai!</li>
@@ -481,7 +481,9 @@
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-200" @click.away="showSwitchModal = false">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm">🔄</div>
+                    <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </div>
                     <h3 class="font-bold text-slate-900 text-base">Ganti Metode Pembayaran</h3>
                 </div>
                 <button type="button" @click="showSwitchModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>

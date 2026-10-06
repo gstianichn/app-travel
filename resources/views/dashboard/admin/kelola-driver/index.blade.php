@@ -773,15 +773,15 @@
          FLASH NOTIFICATIONS
     ========================================== --}}
     @if(session('success'))
-        <div class="alert-banner alert-success">
-            <span>✅</span>
+        <div class="alert-banner alert-success" style="display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="alert-banner alert-error">
-            <span>⚠️</span>
+        <div class="alert-banner alert-error" style="display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -792,7 +792,9 @@
     @if(($expiringLicenseDrivers ?? 0) > 0 || ($expiredLicenseDrivers ?? 0) > 0)
         <div class="license-warning-card">
             <div class="warning-text">
-                <span class="warning-icon">⚠️</span>
+                <span class="warning-icon" style="display:inline-flex; align-items:center;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </span>
                 <div>
                     <strong>Peringatan Legalitas Pengemudi:</strong>
                     Terdapat <strong>{{ $expiredLicenseDrivers ?? 0 }} SIM kedaluwarsa</strong> dan <strong>{{ $expiringLicenseDrivers ?? 0 }} SIM hampir habis masa berlaku</strong> dalam 30 hari ke depan. Pastikan pengemudi memperpanjang lisensi sebelum ditugaskan jalan.
@@ -815,7 +817,7 @@
                 <div class="stat-box-num">{{ number_format($totalDrivers ?? 0) }}</div>
             </div>
             <div class="stat-box-icon total">
-                🪪
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" stroke-width="2"/><circle cx="9" cy="10" r="2" stroke-width="2"/><line x1="15" y1="9" x2="18" y2="9" stroke-width="2"/><line x1="15" y1="13" x2="18" y2="13" stroke-width="2"/><line x1="6" y1="16" x2="18" y2="16" stroke-width="2"/></svg>
             </div>
         </div>
 
@@ -826,7 +828,7 @@
                 <div class="stat-box-num">{{ number_format($standbyDrivers ?? 0) }}</div>
             </div>
             <div class="stat-box-icon standby">
-                🟢
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
 
@@ -837,7 +839,7 @@
                 <div class="stat-box-num">{{ number_format($onDutyDrivers ?? 0) }}</div>
             </div>
             <div class="stat-box-icon onduty">
-                🚐
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3" stroke-width="2"/><circle cx="7" cy="18" r="2" fill="currentColor"/><circle cx="17" cy="18" r="2" fill="currentColor"/><path stroke-linecap="round" stroke-width="2" d="M2 11h20M14 6v5M8 6v5"/></svg>
             </div>
         </div>
 
@@ -848,7 +850,7 @@
                 <div class="stat-box-num">{{ number_format($onLeaveDrivers ?? 0) }}</div>
             </div>
             <div class="stat-box-icon leave">
-                🏖️
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="10" y1="15" x2="10" y2="9" stroke-width="2"/><line x1="14" y1="15" x2="14" y2="9" stroke-width="2"/></svg>
             </div>
         </div>
     </div>
@@ -860,7 +862,9 @@
         <form action="{{ route('dashboard.admin.kelola-driver.index') }}" method="GET" class="filter-form-grid">
 
             <div class="filter-input-wrap">
-                <span class="input-icon">🔍</span>
+                <span class="input-icon" style="display:inline-flex; align-items:center;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-width="2"/></svg>
+                </span>
                 <input
                     type="text"
                     name="search"
@@ -873,18 +877,18 @@
             <div>
                 <select name="status" class="filter-select">
                     <option value="">Semua Status Kerja</option>
-                    <option value="standby" {{ request('status') === 'standby' ? 'selected' : '' }}>🟢 Siap Jalan (Standby)</option>
-                    <option value="on_duty" {{ request('status') === 'on_duty' ? 'selected' : '' }}>🔵 Sedang Bertugas di Jalan</option>
-                    <option value="on_leave" {{ request('status') === 'on_leave' ? 'selected' : '' }}>🟡 Sedang Libur / Cuti</option>
+                    <option value="standby" {{ request('status') === 'standby' ? 'selected' : '' }}>Siap Jalan (Standby)</option>
+                    <option value="on_duty" {{ request('status') === 'on_duty' ? 'selected' : '' }}>Sedang Bertugas di Jalan</option>
+                    <option value="on_leave" {{ request('status') === 'on_leave' ? 'selected' : '' }}>Sedang Libur / Cuti</option>
                 </select>
             </div>
 
             <div>
                 <select name="license_status" class="filter-select">
                     <option value="">Semua Status Legalitas SIM</option>
-                    <option value="valid" {{ request('license_status') === 'valid' ? 'selected' : '' }}>✓ Berlaku Aktif</option>
-                    <option value="expiring" {{ request('license_status') === 'expiring' ? 'selected' : '' }}>⏳ Hampir Kedaluwarsa (&le; 30 Hari)</option>
-                    <option value="expired" {{ request('license_status') === 'expired' ? 'selected' : '' }}>⛔ Sudah Kedaluwarsa</option>
+                    <option value="valid" {{ request('license_status') === 'valid' ? 'selected' : '' }}>Berlaku Aktif</option>
+                    <option value="expiring" {{ request('license_status') === 'expiring' ? 'selected' : '' }}>Hampir Kedaluwarsa (&le; 30 Hari)</option>
+                    <option value="expired" {{ request('license_status') === 'expired' ? 'selected' : '' }}>Sudah Kedaluwarsa</option>
                 </select>
             </div>
 
@@ -975,8 +979,9 @@
                                                     $cleanPhone = '62' . substr($cleanPhone, 1);
                                                 }
                                             @endphp
-                                            <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="contact-wa-link" title="Kirim Pesan WhatsApp">
-                                                <span>💬 Chat WhatsApp</span>
+                                            <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="contact-wa-link" title="Kirim Pesan WhatsApp" style="display:inline-flex; align-items:center; gap:4px;">
+                                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                                <span>Chat WhatsApp</span>
                                             </a>
                                         @else
                                             <span style="color: #9ca3af; font-size: 12px; font-style: italic;">Tidak ada kontak</span>
@@ -1009,7 +1014,7 @@
                                             <span class="emergency-name">{{ $driver->emergency_contact_name }}</span>
                                             <span class="emergency-rel">Hubungan: {{ $driver->emergency_contact_relation ?? 'Keluarga' }}</span>
                                             @if($driver->emergency_contact_phone)
-                                                <span class="emergency-phone">📞 {{ $driver->emergency_contact_phone }}</span>
+                                                <span class="emergency-phone" style="display:inline-flex; align-items:center; gap:4px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg> {{ $driver->emergency_contact_phone }}</span>
                                             @endif
                                         @else
                                             <span style="color: #9ca3af; font-size: 12px; font-style: italic;">Belum diisi</span>
@@ -1037,14 +1042,14 @@
 
                                 {{-- AKSI --}}
                                 <td>
-                                    <div class="action-group">
-                                        {{-- DETAIL & RIWAYAT PENUGASAN --}}
+                                    <div class="action-group"                                        {{-- DETAIL & RIWAYAT PENUGASAN --}}
                                         <a
                                             href="{{ route('dashboard.admin.kelola-driver.show', $driver->id) }}"
                                             class="action-btn view"
                                             title="Lihat Detail & Riwayat Minibus"
+                                            style="display:inline-flex; align-items:center; justify-content:center;"
                                         >
-                                            👁️
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                         </a>
 
                                         {{-- EDIT --}}
@@ -1052,8 +1057,9 @@
                                             href="{{ route('dashboard.admin.kelola-driver.edit', $driver->id) }}"
                                             class="action-btn edit"
                                             title="Edit Profil & Legalitas SIM"
+                                            style="display:inline-flex; align-items:center; justify-content:center;"
                                         >
-                                            ✏️
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                         </a>
 
                                         {{-- GANTI STATUS KERJA CEPAT --}}
@@ -1063,8 +1069,9 @@
                                                 class="action-btn status-toggle"
                                                 title="Ubah Status Kerja Cepat"
                                                 onclick="toggleStatusDropdown({{ $driver->id }})"
+                                                style="display:inline-flex; align-items:center; justify-content:center;"
                                             >
-                                                🔄
+                                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                                             </button>
 
                                             <div id="status-dropdown-{{ $driver->id }}" style="display: none; position: absolute; right: 0; top: 38px; background: white; border: 1px solid #dce5e1; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 50; width: 190px; padding: 6px 0;">
@@ -1073,7 +1080,7 @@
                                                     @method('PATCH')
                                                     <input type="hidden" name="status" value="standby">
                                                     <button type="submit" style="width: 100%; text-align: left; padding: 8px 14px; background: none; border: none; font-size: 12px; font-weight: 600; color: #15803d; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                                        <span>🟢</span> <span>Siap Jalan (Standby)</span>
+                                                        <span style="width:8px; height:8px; border-radius:50%; background:#16a34a; display:inline-block;"></span> <span>Siap Jalan (Standby)</span>
                                                     </button>
                                                 </form>
 
@@ -1082,7 +1089,7 @@
                                                     @method('PATCH')
                                                     <input type="hidden" name="status" value="on_duty">
                                                     <button type="submit" style="width: 100%; text-align: left; padding: 8px 14px; background: none; border: none; font-size: 12px; font-weight: 600; color: #0369a1; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                                        <span>🔵</span> <span>Sedang Bertugas</span>
+                                                        <span style="width:8px; height:8px; border-radius:50%; background:#0284c7; display:inline-block;"></span> <span>Sedang Bertugas</span>
                                                     </button>
                                                 </form>
 
@@ -1091,7 +1098,7 @@
                                                     @method('PATCH')
                                                     <input type="hidden" name="status" value="on_leave">
                                                     <button type="submit" style="width: 100%; text-align: left; padding: 8px 14px; background: none; border: none; font-size: 12px; font-weight: 600; color: #b45309; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                                        <span>🟡</span> <span>Sedang Libur / Cuti</span>
+                                                        <span style="width:8px; height:8px; border-radius:50%; background:#f59e0b; display:inline-block;"></span> <span>Sedang Libur / Cuti</span>
                                                     </button>
                                                 </form>
                                             </div>
@@ -1106,8 +1113,8 @@
                                         >
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="action-btn delete" title="Hapus Driver">
-                                                🗑️
+                                            <button type="submit" class="action-btn delete" title="Hapus Driver" style="display:inline-flex; align-items:center; justify-content:center;">
+                                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </form>
                                     </div>
@@ -1118,7 +1125,9 @@
                 </table>
             @else
                 <div class="empty-state-box">
-                    <div class="empty-state-icon">🪪</div>
+                    <div class="empty-state-icon" style="display:inline-flex; align-items:center; justify-content:center; color:#087f55;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3" stroke-width="2"/><circle cx="9" cy="10" r="2" stroke-width="2"/><line x1="15" y1="9" x2="18" y2="9" stroke-width="2"/><line x1="15" y1="13" x2="18" y2="13" stroke-width="2"/><line x1="6" y1="16" x2="18" y2="16" stroke-width="2"/></svg>
+                    </div>
                     <h3>Belum Ada Data Driver</h3>
                     <p>Tidak ditemukan data pengemudi sesuai kriteria pencarian atau filter yang dipilih.</p>
                     <a href="{{ route('dashboard.admin.kelola-driver.create') }}" class="btn-create-driver" style="display: inline-flex;">

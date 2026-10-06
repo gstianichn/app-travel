@@ -370,7 +370,15 @@
             <div class="circle circle-two"></div>
 
             <div class="brand">
-                <div class="brand-icon">✈</div>
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h13l4 4v7H3V6z"/>
+                        <circle cx="7.5" cy="17.5" r="2"/>
+                        <circle cx="16.5" cy="17.5" r="2"/>
+                        <path d="M16 6v4h4"/>
+                        <path d="M7 10h4"/>
+                    </svg>
+                </div>
                 <div>
                     <p class="brand-name">Travel</p>
                     <p class="brand-sub">Travel Management System</p>
@@ -379,7 +387,12 @@
 
             <div class="reset-left-body">
 
-                <div class="reset-icon">🔐</div>
+                <div class="reset-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
 
                 <h1>
                     Buat Password<br>Baru Anda
@@ -408,8 +421,12 @@
 
             <div class="reset-card">
 
-                <span class="badge">
-                    🔑 Reset Password
+                <span class="badge" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m21 2-2 2m-1.5 1.5L14 9a5 5 0 1 0-5 5l8-8m0 0 2-2"/>
+                        <circle cx="7.5" cy="16.5" r="2.5"/>
+                    </svg>
+                    <span>Reset Password</span>
                 </span>
 
                 <h2>Password Baru</h2>

@@ -8,7 +8,7 @@
                 <span>POIN REWARD &amp; BONUS INSENTIF</span>
             </div>
             <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                <span>🎁</span>
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v14M3 13h18M8 8V5a2 2 0 012-2 2 2 0 012 3v2M16 8V5a2 2 0 00-2-2 2 2 0 00-2 3v2"/></svg>
                 <span>Melihat Reward Pengemudi</span>
             </h3>
             <p style="margin: 4px 0 0 0; font-size: 12.5px; color: #64748b;">
@@ -16,8 +16,9 @@
             </p>
         </div>
 
-        <div class="pill-badge" style="background: #fdf2f8; color: #be185d; font-weight: 800; border-color: #fbcfe8;">
-            💎 Level: Pengemudi Platinum Teladan
+        <div class="pill-badge" style="background: #fdf2f8; color: #be185d; font-weight: 800; border-color: #fbcfe8; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polygon points="6 3 18 3 22 9 12 22 2 9 6 3" stroke-width="2"/></svg>
+            <span>Level: Pengemudi Platinum Teladan</span>
         </div>
     </div>
 
@@ -25,7 +26,9 @@
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px;">
             <div class="rekap-card" style="border-left: 4px solid #ec4899; background: linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%);">
                 <div class="rekap-top">
-                    <span class="rekap-icon">🪙</span>
+                    <span class="rekap-icon" style="display: inline-flex; align-items: center;">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.5 0-2.5.8-2.5 2s1 1.8 2.5 2 2.5.8 2.5 2-1 2-2.5 2M12 6v12"/></svg>
+                    </span>
                     <span class="rekap-label">Total Poin Reward</span>
                 </div>
                 <div class="rekap-val" style="color: #be185d;">
@@ -38,7 +41,9 @@
 
             <div class="rekap-card" style="border-left: 4px solid #10b981; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);">
                 <div class="rekap-top">
-                    <span class="rekap-icon">💵</span>
+                    <span class="rekap-icon" style="display: inline-flex; align-items: center;">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" stroke-width="2"/><circle cx="12" cy="12" r="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M6 12h.01M18 12h.01"/></svg>
+                    </span>
                     <span class="rekap-label">Estimasi Bonus Mingguan</span>
                 </div>
                 <div class="rekap-val" style="color: #059669;">
@@ -51,7 +56,9 @@
 
             <div class="rekap-card" style="border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);">
                 <div class="rekap-top">
-                    <span class="rekap-icon">🎯</span>
+                    <span class="rekap-icon" style="display: inline-flex; align-items: center;">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><circle cx="12" cy="12" r="6" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+                    </span>
                     <span class="rekap-label">Target Bulan Ini</span>
                 </div>
                 <div class="rekap-val" style="color: #1d4ed8;">

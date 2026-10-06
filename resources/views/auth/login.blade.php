@@ -41,7 +41,17 @@
                 <div class="brand-logo">
 
                     <div class="brand-logo-icon">
-                        🌿
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6a2 2 0 0 1 2-2h9.5a2 2 0 0 1 1.6.8l3.4 4.5A2 2 0 0 1 20 10.5V16a2 2 0 0 1-2 2h-1"/>
+                            <path d="M3 6v10a2 2 0 0 0 2 2h1"/>
+                            <circle cx="8" cy="18" r="2"/>
+                            <path d="M10 18h4"/>
+                            <circle cx="16" cy="18" r="2"/>
+                            <path d="M15 6v5h5"/>
+                            <path d="M3 11h12"/>
+                            <path d="M7 6v5"/>
+                            <path d="M11 6v5"/>
+                        </svg>
                     </div>
 
                     <div>
@@ -89,7 +99,9 @@
                         <div class="brand-feature">
 
                             <div class="brand-feature-icon">
-                                🚌
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 0 0-2 2v3a2 2 0 1 1 0 4v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3a2 2 0 1 1 0-4V7a2 2 0 0 0-2-2H5z"/>
+                                </svg>
                             </div>
 
                             <p class="brand-feature-title">
@@ -106,7 +118,10 @@
                         <div class="brand-feature">
 
                             <div class="brand-feature-icon">
-                                🔒
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    <path d="m9 12 2 2 4-4"/>
+                                </svg>
                             </div>
 
                             <p class="brand-feature-title">
@@ -123,7 +138,9 @@
                         <div class="brand-feature">
 
                             <div class="brand-feature-icon">
-                                ✨
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>
+                                </svg>
                             </div>
 
                             <p class="brand-feature-title">
@@ -171,7 +188,17 @@
                 <div class="mobile-logo">
 
                     <div class="mobile-logo-icon">
-                        🌿
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6a2 2 0 0 1 2-2h9.5a2 2 0 0 1 1.6.8l3.4 4.5A2 2 0 0 1 20 10.5V16a2 2 0 0 1-2 2h-1"/>
+                            <path d="M3 6v10a2 2 0 0 0 2 2h1"/>
+                            <circle cx="8" cy="18" r="2"/>
+                            <path d="M10 18h4"/>
+                            <circle cx="16" cy="18" r="2"/>
+                            <path d="M15 6v5h5"/>
+                            <path d="M3 11h12"/>
+                            <path d="M7 6v5"/>
+                            <path d="M11 6v5"/>
+                        </svg>
                     </div>
 
                     <div class="mobile-logo-title">
@@ -189,7 +216,7 @@
                     </span>
 
                     <h1 class="login-title">
-                        Selamat Datang 👋
+                        Selamat Datang
                     </h1>
 
                     <p class="login-description">
@@ -241,7 +268,10 @@
                             <div class="input-wrapper">
 
                                 <span class="input-icon">
-                                    ✉
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                    </svg>
                                 </span>
 
                                 <input
@@ -282,7 +312,10 @@
                             <div class="input-wrapper">
 
                                 <span class="input-icon">
-                                    🔒
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
                                 </span>
 
                                 <input
@@ -355,7 +388,10 @@
                             <div class="input-wrapper">
 
                                 <span class="input-icon">
-                                    👤
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
                                 </span>
 
                                 <select
@@ -425,7 +461,11 @@
                             <div class="input-wrapper">
 
                                 <span class="input-icon">
-                                    🔑
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="7.5" cy="15.5" r="5.5"/>
+                                        <path d="m21 2-9.6 9.6"/>
+                                        <path d="m15.5 7.5 3 3L22 7l-2-2"/>
+                                    </svg>
                                 </span>
 
                                 <input

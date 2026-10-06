@@ -335,7 +335,13 @@
                     <div class="empty-result" style="padding: 40px 20px; text-align: center;">
 
                         @if(!($routeConnected ?? false))
-                            <div style="font-size: 2.2rem; margin-bottom: 10px;">⚠️</div>
+                            <div style="display: flex; justify-content: center; margin-bottom: 12px; color: #d97706;">
+                                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
                             <h3 style="margin-bottom: 8px; font-weight: 800;">
                                 Jadwal Shuttle Belum Tersedia
                             </h3>
@@ -345,8 +351,13 @@
 
                             @if($transitHub)
                                 <div style="background: #e6fcf5; border: 1px solid #b2f2bb; border-radius: 12px; padding: 14px 18px; max-width: 520px; margin: 0 auto 16px auto; text-align: left;">
-                                    <strong style="color: #087f55; display: block; margin-bottom: 4px; font-size: 0.85rem;">
-                                        💡 Rekomendasi Transit via {{ $transitHub->name }}:
+                                    <strong style="color: #087f55; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 0.85rem;">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                                            <path d="M9 18h6"/>
+                                            <path d="M10 22h4"/>
+                                        </svg>
+                                        <span>Rekomendasi Transit via {{ $transitHub->name }}:</span>
                                     </strong>
                                     <p style="font-size: 0.8rem; color: #2b8a3e; margin: 0 0 10px 0;">
                                         Anda dapat bepergian melalui 2 ritase terhubung via hub transit <strong>{{ $transitHub->city }}</strong>:
@@ -371,7 +382,15 @@
                                 </span>
                             </div>
                         @else
-                            <div style="font-size: 2.2rem; margin-bottom: 10px;">🚐</div>
+                            <div style="display: flex; justify-content: center; margin-bottom: 12px; color: #087f55;">
+                                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h13l4 4v7H3V6z"/>
+                                    <circle cx="7.5" cy="17.5" r="2"/>
+                                    <circle cx="16.5" cy="17.5" r="2"/>
+                                    <path d="M16 6v4h4"/>
+                                    <path d="M7 10h4"/>
+                                </svg>
+                            </div>
                             <h3 style="margin-bottom: 8px; font-weight: 800;">
                                 Seluruh Kursi Telah Terisi
                             </h3>

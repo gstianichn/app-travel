@@ -63,8 +63,14 @@
                 <!-- Left: Logo & Brand -->
                 <div class="flex items-center gap-3">
                     <a href="{{ route('dashboard.user.index') }}" class="flex items-center gap-2.5 group">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition-transform duration-200">
-                            🚐
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-200">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h13l4 4v7H3V6z"/>
+                                <circle cx="7.5" cy="17.5" r="2"/>
+                                <circle cx="16.5" cy="17.5" r="2"/>
+                                <path d="M16 6v4h4"/>
+                                <path d="M7 10h4"/>
+                            </svg>
                         </div>
                         <div>
                             <div class="flex items-center gap-1.5">
@@ -235,32 +241,65 @@
 
         <!-- Mobile Drawer Navigation -->
         <div x-show="mobileMenuOpen" x-cloak class="md:hidden border-t border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1 shadow-lg">
-            <a href="{{ route('dashboard.user.index') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.index') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                🏠 Beranda Client Area
+            <a href="{{ route('dashboard.user.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.index') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>Beranda Client Area</span>
             </a>
-            <a href="{{ route('dashboard.user.search') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.search*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                🔍 Cari Jadwal Shuttle
+            <a href="{{ route('dashboard.user.search') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.search*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <span>Cari Jadwal Shuttle</span>
             </a>
-            <a href="{{ route('dashboard.user.user-tiket') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-tiket*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                🎫 Tiket Saya & Boarding Pass
+            <a href="{{ route('dashboard.user.user-tiket') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-tiket*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+                    <path d="M13 5v2"/>
+                    <path d="M13 11v2"/>
+                    <path d="M13 17v2"/>
+                </svg>
+                <span>Tiket Saya & Boarding Pass</span>
             </a>
-            <a href="{{ route('dashboard.user.user-promo') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-promo*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                🏷️ Voucher Promo & Diskon
+            <a href="{{ route('dashboard.user.user-promo') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-promo*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m20.59 13.41-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+                <span>Voucher Promo & Diskon</span>
             </a>
             <a href="{{ route('dashboard.user.user-notifikasi') }}" class="flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-notifikasi*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                <span>🔔 Notifikasi Sistem</span>
+                <div class="flex items-center gap-2.5">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span>Notifikasi Sistem</span>
+                </div>
                 @if($layoutUnreadNotif > 0)
                     <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-rose-500 text-white">{{ $layoutUnreadNotif }}</span>
                 @endif
             </a>
-            <a href="{{ route('dashboard.user.user-akun') }}" class="block px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-akun*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
-                👤 Profil & Pengaturan Akun
+            <a href="{{ route('dashboard.user.user-akun') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold text-sm {{ request()->routeIs('dashboard.user.user-akun*') ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:bg-slate-50' }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Profil & Pengaturan Akun</span>
             </a>
             <div class="pt-2 border-t border-slate-100">
                 <form action="{{ route('user.logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full text-left px-3 py-2.5 rounded-xl font-bold text-sm text-rose-600 hover:bg-rose-50">
-                        🚪 Keluar (Logout)
+                    <button type="submit" class="w-full flex items-center gap-2.5 text-left px-3 py-2.5 rounded-xl font-bold text-sm text-rose-600 hover:bg-rose-50">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        <span>Keluar (Logout)</span>
                     </button>
                 </form>
             </div>
@@ -284,15 +323,26 @@
                 <!-- Col 1: Brand & Desc -->
                 <div class="space-y-3">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-base font-bold">🚐</div>
+                        <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h13l4 4v7H3V6z"/>
+                                <circle cx="7.5" cy="17.5" r="2"/>
+                                <circle cx="16.5" cy="17.5" r="2"/>
+                                <path d="M16 6v4h4"/>
+                                <path d="M7 10h4"/>
+                            </svg>
+                        </div>
                         <span class="font-extrabold text-slate-900 text-base">TravelKu FastShuttle</span>
                     </div>
                     <p class="text-xs text-slate-500 leading-relaxed">
                         Layanan pemesanan tiket travel minibus eksekutif antar kota dengan armada Toyota HiAce Premio pilihan, jadwal tepat waktu, dan kenyamanan terjamin.
                     </p>
                     <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <span class="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                            🛡️ Berasuransi Resmi Jasa Raharja
+                        <span class="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            <span>Berasuransi Resmi Jasa Raharja</span>
                         </span>
                     </div>
                 </div>
@@ -301,10 +351,10 @@
                 <div class="space-y-2">
                     <h5 class="text-xs font-bold uppercase tracking-wider text-slate-900">Rute Shuttle Favorit</h5>
                     <ul class="text-xs text-slate-500 space-y-1.5 font-medium">
-                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bandung (Dipatiukur) ➔ Jakarta (Semanggi)</a></li>
-                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Jakarta (Semanggi) ➔ Bandung (Dipatiukur)</a></li>
-                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bandung (Pasteur) ➔ Bandara Soekarno-Hatta</a></li>
-                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bekasi / Tangerang ➔ Bandung Kota</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bandung (Dipatiukur) &rarr; Jakarta (Semanggi)</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Jakarta (Semanggi) &rarr; Bandung (Dipatiukur)</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bandung (Pasteur) &rarr; Bandara Soekarno-Hatta</a></li>
+                        <li><a href="{{ route('dashboard.user.search') }}" class="hover:text-brand-600 transition">Bekasi / Tangerang &rarr; Bandung Kota</a></li>
                     </ul>
                 </div>
 
@@ -326,7 +376,10 @@
                         Layanan Pelanggan 24 Jam via WhatsApp Official:
                     </p>
                     <a href="https://wa.me/62812345678" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 hover:bg-emerald-100 transition">
-                        💬 +62 812-3456-7890 (CS FastShuttle)
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                        <span>+62 812-3456-7890 (CS FastShuttle)</span>
                     </a>
                     <div class="pt-2 text-[11px] text-slate-400">
                         Metode Bayar: Virtual Account BCA, Mandiri, BRI, BNI, QRIS & E-Wallet

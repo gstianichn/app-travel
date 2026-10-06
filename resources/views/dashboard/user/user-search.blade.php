@@ -152,7 +152,7 @@
                                 </div>
                                 <h4 class="font-bold text-slate-900 text-base">
                                     {{ $schedule->route?->origin?->name ?? 'Asal' }} 
-                                    <span class="text-emerald-700 mx-1">➔</span> 
+                                    <span class="text-emerald-700 mx-1">&rarr;</span> 
                                     {{ $schedule->route?->destination?->name ?? 'Tujuan' }}
                                 </h4>
                                 <p class="text-xs text-slate-500">
@@ -238,7 +238,8 @@
                         </svg>
                     </div>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 mb-3">
-                        ⚠️ Rute Belum Terhubung Langsung
+                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        Rute Belum Terhubung Langsung
                     </span>
                     <h4 class="font-extrabold text-slate-900 text-lg mb-2">Jadwal Shuttle Belum Tersedia</h4>
                     <p class="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed mb-6">
@@ -258,13 +259,13 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                 <a href="{{ route('dashboard.user.search', ['origin' => $originLoc->id, 'destination' => $transitHub->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
                                    class="p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-xs transition flex items-center justify-between text-slate-800 font-semibold group">
-                                    <span>1. {{ $originLoc->city }} ➔ {{ $transitHub->city }}</span>
-                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition">Cari Tiket ➔</span>
+                                    <span>1. {{ $originLoc->city }} &rarr; {{ $transitHub->city }}</span>
+                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition inline-flex items-center gap-0.5">Cari Tiket &rarr;</span>
                                 </a>
                                 <a href="{{ route('dashboard.user.search', ['origin' => $transitHub->id, 'destination' => $destLoc->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
                                    class="p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-xs transition flex items-center justify-between text-slate-800 font-semibold group">
-                                    <span>2. {{ $transitHub->city }} ➔ {{ $destLoc->city }}</span>
-                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition">Cari Tiket ➔</span>
+                                    <span>2. {{ $transitHub->city }} &rarr; {{ $destLoc->city }}</span>
+                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition inline-flex items-center gap-0.5">Cari Tiket &rarr;</span>
                                 </a>
                             </div>
                         </div>
@@ -272,7 +273,8 @@
 
                     <div class="max-w-xl mx-auto p-4 rounded-xl bg-slate-50 border border-slate-200 text-left">
                         <p class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                            <span>ℹ️</span> Standar Koridor Shuttle Aktif (Jadwal Selalu Tersedia):
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            Standar Koridor Shuttle Aktif (Jadwal Selalu Tersedia):
                         </p>
                         <div class="flex flex-wrap gap-2 text-xs">
                             <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 font-medium">Bandung ⇄ Jakarta (Semanggi, Tebet, Cikini)</span>
