@@ -60,7 +60,7 @@
     function confirmBoarding() {
         const name = document.getElementById('resultPassengerName').innerText;
         const seat = document.getElementById('resultSeatNumber').innerText;
-        alert('🎉 Sukses! Penumpang ' + name + ' (' + seat + ') telah berhasil divalidasi dan tercatat Masuk Armada.');
+        alert('Sukses! Penumpang ' + name + ' (' + seat + ') telah berhasil divalidasi dan tercatat Masuk Armada.');
         closeScannerModal();
     }
 </script>

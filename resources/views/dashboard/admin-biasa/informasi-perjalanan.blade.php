@@ -885,7 +885,17 @@
     <aside class="sidebar">
 
         <div class="logo-area">
-            <div class="logo-icon">T</div>
+            <div class="logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="5" width="20" height="13" rx="2" />
+                    <circle cx="7" cy="18" r="2" />
+                    <circle cx="17" cy="18" r="2" />
+                    <path d="M2 10h20" />
+                    <path d="M7 5v5" />
+                    <path d="M12 5v5" />
+                    <path d="M17 5v5" />
+                </svg>
+            </div>
             <div class="logo-text">
                 <h2>Travel</h2>
                 <span>Management System</span>
@@ -899,25 +909,55 @@
 
             <!-- DASHBOARD -->
             <a href="{{ route('dashboard.admin-biasa.index') }}">
-                <div class="menu-icon">⌂</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                </div>
                 <span>Dashboard</span>
             </a>
 
             <!-- MANAJEMEN BOOKING -->
             <a href="{{ route('dashboard.admin-biasa.booking') }}">
-                <div class="menu-icon">🎫</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                        <path d="M13 5v2" />
+                        <path d="M13 17v2" />
+                        <path d="M13 11v2" />
+                    </svg>
+                </div>
                 <span>Manajemen Booking</span>
             </a>
 
             <!-- MELIHAT INFORMASI PERJALANAN (ACTIVE) -->
             <a href="{{ route('dashboard.admin-biasa.perjalanan') }}" class="active">
-                <div class="menu-icon">🗺️</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                        <line x1="9" x2="9" y1="3" y2="18" />
+                        <line x1="15" x2="15" y1="6" y2="21" />
+                    </svg>
+                </div>
                 <span>Melihat Informasi Perjalanan</span>
             </a>
 
             <!-- VALIDASI E-TICKET -->
             <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}">
-                <div class="menu-icon">🎟️</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="5" height="5" x="3" y="3" rx="1" />
+                        <rect width="5" height="5" x="16" y="3" rx="1" />
+                        <rect width="5" height="5" x="3" y="16" rx="1" />
+                        <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                        <path d="M21 21v.01" />
+                        <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+                        <path d="M12 12v4" />
+                        <path d="M12 20v1" />
+                        <path d="M17 12h4" />
+                    </svg>
+                </div>
                 <span>Validasi E-Ticket</span>
             </a>
         </nav>
@@ -926,7 +966,13 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="logout-btn">
-                    <div class="menu-icon">↪</div>
+                    <div class="menu-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" x2="9" y1="12" y2="12" />
+                        </svg>
+                    </div>
                     <span>Logout</span>
                 </button>
             </form>
@@ -970,7 +1016,12 @@
                         <h3>{{ $stats['total_trips'] }} Trip</h3>
                     </div>
                     <div class="stat-icon" style="background: #eefbf5; color: #087f55;">
-                        🚐
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="13" rx="2" />
+                            <circle cx="7" cy="18" r="2" />
+                            <circle cx="17" cy="18" r="2" />
+                            <path d="M2 10h20" />
+                        </svg>
                     </div>
                 </div>
 
@@ -980,7 +1031,10 @@
                         <h3 style="color: #087f55;">{{ $stats['in_bay'] }} Unit</h3>
                     </div>
                     <div class="stat-icon" style="background: #eaf8f2; color: #087f55;">
-                        🅿️
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="3" />
+                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
+                        </svg>
                     </div>
                 </div>
 
@@ -990,7 +1044,10 @@
                         <h3 style="color: #b45309;">{{ $stats['in_garage'] }} Unit</h3>
                     </div>
                     <div class="stat-icon" style="background: #fff8eb; color: #b45309;">
-                        🏠
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                            <path d="M9 22V12h6v10" />
+                        </svg>
                     </div>
                 </div>
 
@@ -1000,7 +1057,10 @@
                         <h3 style="color: #2563eb;">{{ $stats['departed'] }} Trip</h3>
                     </div>
                     <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">
-                        🛣️
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m22 2-7 20-4-9-9-4Z" />
+                            <path d="M22 2 11 13" />
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -1012,20 +1072,36 @@
                     <button type="button" class="filter-tab-btn active" onclick="filterTrips('all', this)">
                         Semua Status ({{ $stats['total_trips'] }})
                     </button>
-                    <button type="button" class="filter-tab-btn" onclick="filterTrips('bay', this)">
-                        🅿️ Sandar di Bay ({{ $stats['in_bay'] }})
+                    <button type="button" class="filter-tab-btn" onclick="filterTrips('bay', this)" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="2" />
+                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
+                        </svg>
+                        <span>Sandar di Bay ({{ $stats['in_bay'] }})</span>
                     </button>
-                    <button type="button" class="filter-tab-btn" onclick="filterTrips('garasi', this)">
-                        🏠 Masih di Garasi ({{ $stats['in_garage'] }})
+                    <button type="button" class="filter-tab-btn" onclick="filterTrips('garasi', this)" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        </svg>
+                        <span>Masih di Garasi ({{ $stats['in_garage'] }})</span>
                     </button>
-                    <button type="button" class="filter-tab-btn" onclick="filterTrips('berangkat', this)">
-                        🛣️ Sudah Berangkat ({{ $stats['departed'] }})
+                    <button type="button" class="filter-tab-btn" onclick="filterTrips('berangkat', this)" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m22 2-7 20-4-9-9-4Z" />
+                        </svg>
+                        <span>Sudah Berangkat ({{ $stats['departed'] }})</span>
                     </button>
                 </div>
 
                 <div>
-                    <button type="button" class="btn-trip-action btn-view-manifest" onclick="window.location.reload()">
-                        🔄 Segarkan Informasi Real-Time
+                    <button type="button" class="btn-trip-action btn-view-manifest" onclick="window.location.reload()" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                            <path d="M8 16H3v5" />
+                        </svg>
+                        <span>Segarkan Informasi Real-Time</span>
                     </button>
                 </div>
             </div>
@@ -1046,8 +1122,12 @@
                                 </div>
 
                                 <div class="trip-route-title">
-                                    <h3>
-                                        <span>🛣️</span>
+                                    <h3 style="display: flex; align-items: center; gap: 6px;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                                            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                                            <line x1="9" x2="9" y1="3" y2="18" />
+                                            <line x1="15" x2="15" y1="6" y2="21" />
+                                        </svg>
                                         <span>{{ $trip->origin_pool }} ➔ {{ $trip->destination_pool }}</span>
                                     </h3>
                                     <span>Kode Trip: <strong>{{ $trip->trip_code }}</strong> • Keterisian: <strong>{{ $trip->occupancy_ratio }} ({{ $trip->occupancy_percentage }}%)</strong></span>
@@ -1057,17 +1137,27 @@
                             <!-- 4. INDIKATOR STATUS PERJALANAN -->
                             <div>
                                 @if($trip->status_key === 'bay')
-                                    <span class="trip-status-indicator status-bay" id="status-badge-{{ $trip->id }}">
+                                    <span class="trip-status-indicator status-bay" id="status-badge-{{ $trip->id }}" style="display: inline-flex; align-items: center; gap: 5px;">
                                         <span class="pulse-dot"></span>
-                                        🅿️ {{ $trip->status_label }}
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="4" y="4" width="16" height="16" rx="2" />
+                                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
+                                        </svg>
+                                        <span>{{ $trip->status_label }}</span>
                                     </span>
                                 @elseif($trip->status_key === 'garasi')
-                                    <span class="trip-status-indicator status-garasi" id="status-badge-{{ $trip->id }}">
-                                        🏠 {{ $trip->status_label }}
+                                    <span class="trip-status-indicator status-garasi" id="status-badge-{{ $trip->id }}" style="display: inline-flex; align-items: center; gap: 5px;">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                        </svg>
+                                        <span>{{ $trip->status_label }}</span>
                                     </span>
                                 @else
-                                    <span class="trip-status-indicator status-berangkat" id="status-badge-{{ $trip->id }}">
-                                        🛣️ {{ $trip->status_label }}
+                                    <span class="trip-status-indicator status-berangkat" id="status-badge-{{ $trip->id }}" style="display: inline-flex; align-items: center; gap: 5px;">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m22 2-7 20-4-9-9-4Z" />
+                                        </svg>
+                                        <span>{{ $trip->status_label }}</span>
                                     </span>
                                 @endif
                             </div>
@@ -1079,8 +1169,13 @@
 
                             <!-- KOLOM 1: DETAIL ARMADA & KRU -->
                             <div class="body-section">
-                                <div class="section-sub-title">
-                                    <span>🚐</span>
+                                <div class="section-sub-title" style="display: flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                                        <rect x="2" y="5" width="20" height="13" rx="2" />
+                                        <circle cx="7" cy="18" r="2" />
+                                        <circle cx="17" cy="18" r="2" />
+                                        <path d="M2 10h20" />
+                                    </svg>
                                     <span>Detail Armada & Kru</span>
                                 </div>
 
@@ -1106,11 +1201,17 @@
                                     </div>
 
                                     <div class="driver-contact-actions">
-                                        <a href="{{ $trip->driver_wa_url }}" target="_blank" class="btn-driver-contact btn-driver-wa" title="WhatsApp Sopir">
-                                            💬 WhatsApp
+                                        <a href="{{ $trip->driver_wa_url }}" target="_blank" class="btn-driver-contact btn-driver-wa" title="WhatsApp Sopir" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                            </svg>
+                                            <span>WhatsApp</span>
                                         </a>
-                                        <a href="{{ $trip->driver_tel_url }}" class="btn-driver-contact btn-driver-tel" title="Telepon Sopir">
-                                            📞 {{ $trip->driver_phone }}
+                                        <a href="{{ $trip->driver_tel_url }}" class="btn-driver-contact btn-driver-tel" title="Telepon Sopir" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                            </svg>
+                                            <span>{{ $trip->driver_phone }}</span>
                                         </a>
                                     </div>
                                 </div>
@@ -1119,8 +1220,11 @@
 
                             <!-- KOLOM 2: RUTE PERJALANAN & TITIK SINGGAH -->
                             <div class="body-section">
-                                <div class="section-sub-title">
-                                    <span>📍</span>
+                                <div class="section-sub-title" style="display: flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
                                     <span>Rute, Titik Singgah & Transfer</span>
                                 </div>
 
@@ -1132,7 +1236,10 @@
                                             <strong>{{ $trip->origin_pool }}</strong>
                                             <span>Titik Keberangkatan Utama Penumpang</span>
                                             <div>
-                                                <span class="timeline-tag tag-origin">🟢 Pool Asal</span>
+                                                <span class="timeline-tag tag-origin" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                    <span style="width: 6px; height: 6px; background: #087f55; border-radius: 50%; display: inline-block;"></span>
+                                                    <span>Pool Asal</span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -1145,7 +1252,13 @@
                                                 <strong>{{ $transit->name }}</strong>
                                                 <span>{{ $transit->type }} ({{ $transit->time }})</span>
                                                 <div>
-                                                    <span class="timeline-tag tag-transit">📍 Titik Singgah / Transfer</span>
+                                                    <span class="timeline-tag tag-transit" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                                            <circle cx="12" cy="10" r="3" />
+                                                        </svg>
+                                                        <span>Titik Singgah / Transfer</span>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1158,7 +1271,13 @@
                                             <strong>{{ $trip->destination_pool }}</strong>
                                             <span>Titik Akhir Penurunan Seluruh Penumpang</span>
                                             <div>
-                                                <span class="timeline-tag tag-destination">🏁 Pool Tujuan Akhir</span>
+                                                <span class="timeline-tag tag-destination" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                                                        <line x1="4" x2="4" y1="22" y2="15" />
+                                                    </svg>
+                                                    <span>Pool Tujuan Akhir</span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -1168,8 +1287,11 @@
 
                             <!-- KOLOM 3: JADWAL WAKTU OPERASIONAL -->
                             <div class="body-section">
-                                <div class="section-sub-title">
-                                    <span>⏰</span>
+                                <div class="section-sub-title" style="display: flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <polyline points="12 6 12 12 16 14" />
+                                    </svg>
                                     <span>Jadwal Waktu & Boarding</span>
                                 </div>
 
@@ -1177,7 +1299,12 @@
                                     <!-- 1. Jam Kumpul -->
                                     <div class="time-row">
                                         <div class="time-row-icon icon-gathering">
-                                            👥
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                                <circle cx="9" cy="7" r="4" />
+                                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                            </svg>
                                         </div>
                                         <div class="time-row-content">
                                             <span>Jam Kumpul Penumpang:</span>
@@ -1189,7 +1316,11 @@
                                     <!-- 2. Jam Buka Gerbang Boarding -->
                                     <div class="time-row">
                                         <div class="time-row-icon icon-boarding">
-                                            🚪
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14" />
+                                                <path d="M2 20h20" />
+                                                <path d="M14 12v.01" />
+                                            </svg>
                                         </div>
                                         <div class="time-row-content">
                                             <span>Buka Gerbang Boarding:</span>
@@ -1201,7 +1332,10 @@
                                     <!-- 3. Estimasi Jam Tiba di Tujuan -->
                                     <div class="time-row">
                                         <div class="time-row-icon icon-arrival">
-                                            🏁
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                                                <line x1="4" x2="4" y1="22" y2="15" />
+                                            </svg>
                                         </div>
                                         <div class="time-row-content">
                                             <span>Estimasi Tiba di Tujuan:</span>
@@ -1230,24 +1364,40 @@
                                         type="button"
                                         class="btn-trip-action btn-to-bay"
                                         onclick="updateTripStatus({{ $trip->id }}, 'bay', 'Bay 01 (Gate Utama)')"
+                                        style="display: inline-flex; align-items: center; gap: 5px;"
                                     >
-                                        🅿️ Arahkan Sandar ke Bay
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="4" y="4" width="16" height="16" rx="2" />
+                                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
+                                        </svg>
+                                        <span>Arahkan Sandar ke Bay</span>
                                     </button>
                                 @elseif($trip->status_key === 'bay')
                                     <button
                                         type="button"
                                         class="btn-trip-action btn-mark-departed"
                                         onclick="updateTripStatus({{ $trip->id }}, 'berangkat', 'Sudah Berangkat (Tol)')"
+                                        style="display: inline-flex; align-items: center; gap: 5px;"
                                     >
-                                        🛣️ Berangkatkan Armada
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m22 2-7 20-4-9-9-4Z" />
+                                        </svg>
+                                        <span>Berangkatkan Armada</span>
                                     </button>
                                 @endif
 
                                 <a
                                     href="{{ route('dashboard.admin-biasa.booking') }}?schedule_id={{ $trip->id }}"
                                     class="btn-trip-action btn-view-manifest"
+                                    style="display: inline-flex; align-items: center; gap: 5px;"
                                 >
-                                    📋 Buka Manifes Kursi
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                                        <path d="M9 12h6" />
+                                        <path d="M9 16h6" />
+                                    </svg>
+                                    <span>Buka Manifes Kursi</span>
                                 </a>
                             </div>
                         </div>
@@ -1296,14 +1446,14 @@
 
         if (newStatus === 'bay') {
             badge.className = 'trip-status-indicator status-bay';
-            badge.innerHTML = '<span class="pulse-dot"></span> 🅿️ Sudah Sandar di Area Muat (Bay)';
+            badge.innerHTML = '<span class="pulse-dot"></span> Sudah Sandar di Area Muat (Bay)';
             bayText.innerText = newBayText;
-            alert('✅ Sukses! Armada trip #' + tripId + ' berhasil dicatat SANDAR DI AREA MUAT (BAY). Penumpang dapat mulai boarding.');
+            alert('Sukses! Armada trip #' + tripId + ' berhasil dicatat SANDAR DI AREA MUAT (BAY). Penumpang dapat mulai boarding.');
         } else if (newStatus === 'berangkat') {
             badge.className = 'trip-status-indicator status-berangkat';
-            badge.innerHTML = '🛣️ Sudah Berangkat';
+            badge.innerHTML = 'Sudah Berangkat';
             bayText.innerText = newBayText;
-            alert('🚀 Armada trip #' + tripId + ' telah resmi DIBERANGKATKAN menuju pool tujuan.');
+            alert('Armada trip #' + tripId + ' telah resmi DIBERANGKATKAN menuju pool tujuan.');
         }
 
         setTimeout(() => {

@@ -291,6 +291,9 @@
         font-weight: 700;
         padding: 2px 7px;
         border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
     }
 
     .perm-badge.standard {
@@ -389,7 +392,8 @@
                 <p>Isi data profil staf loket, pilih penempatan cabang, dan tentukan batasan hak akses sistem.</p>
             </div>
             <a href="{{ route('dashboard.admin.kelola-staff.index') }}" class="btn-cancel">
-                ← Kembali
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>Kembali</span>
             </a>
         </div>
 
@@ -404,7 +408,7 @@
                 <div>
                     <div class="section-header">
                         <div class="section-header-icon">
-                            👤
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                         <div class="section-header-text">
                             <h3>1. Profil & Penempatan Staf</h3>
@@ -575,7 +579,7 @@
                 <div>
                     <div class="section-header">
                         <div class="section-header-icon">
-                            🔐
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2"/></svg>
                         </div>
                         <div class="section-header-text">
                             <h3>2. Pengaturan Hak Akses (Role & Permission)</h3>
@@ -586,17 +590,21 @@
                     {{-- PRESET TOOLBAR --}}
                     <div class="preset-toolbar" style="margin-bottom: 16px;">
                         <span class="preset-toolbar-label">Pilihan Cepat Wewenang:</span>
-                        <button type="button" class="btn-preset active-preset" onclick="applyPreset('loket')">
-                            🎫 Staf Loket Standar (Direkomendasikan)
+                        <button type="button" class="btn-preset active-preset" onclick="applyPreset('loket', this)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                            <span>Staf Loket Standar (Direkomendasikan)</span>
                         </button>
-                        <button type="button" class="btn-preset" onclick="applyPreset('supervisor')">
-                            📊 Supervisor Cabang / Pool
+                        <button type="button" class="btn-preset" onclick="applyPreset('supervisor', this)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            <span>Supervisor Cabang / Pool</span>
                         </button>
-                        <button type="button" class="btn-preset" onclick="applyPreset('all')">
-                            ✨ Pilih Semua
+                        <button type="button" class="btn-preset" onclick="applyPreset('all', this)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>Pilih Semua</span>
                         </button>
-                        <button type="button" class="btn-preset" onclick="applyPreset('none')">
-                            ✕ Kosongkan
+                        <button type="button" class="btn-preset" onclick="applyPreset('none', this)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="15" y1="9" x2="9" y2="15" stroke-width="2"/><line x1="9" y1="9" x2="15" y2="15" stroke-width="2"/></svg>
+                            <span>Kosongkan</span>
                         </button>
                     </div>
 
@@ -622,9 +630,15 @@
                                     <div class="perm-top">
                                         <span class="perm-title">{{ $perm['label'] }}</span>
                                         @if($isRestricted)
-                                            <span class="perm-badge restricted">⛔ Khusus Admin</span>
+                                            <span class="perm-badge restricted">
+                                                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
+                                                <span>Khusus Admin</span>
+                                            </span>
                                         @else
-                                            <span class="perm-badge standard">✓ Standar Loket</span>
+                                            <span class="perm-badge standard">
+                                                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                                <span>Standar Loket</span>
+                                            </span>
                                         @endif
                                     </div>
                                     <p class="perm-desc">{{ $perm['description'] }}</p>
@@ -644,7 +658,7 @@
                         Batal
                     </a>
                     <button type="submit" class="btn-save">
-                        <span>💾</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
                         <span>Simpan & Daftarkan Staf</span>
                     </button>
                 </div>
@@ -657,13 +671,16 @@
 </div>
 
 <script>
-    function applyPreset(type) {
+    function applyPreset(type, btnElement) {
         const checkboxes = document.querySelectorAll('.perm-check-item');
         
         // Reset all buttons visual state
         document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('active-preset'));
-        if (event && event.target) {
-            event.target.classList.add('active-preset');
+        if (btnElement) {
+            btnElement.classList.add('active-preset');
+        } else if (window.event && window.event.target) {
+            const clickedBtn = window.event.target.closest('.btn-preset');
+            if (clickedBtn) clickedBtn.classList.add('active-preset');
         }
 
         checkboxes.forEach(cb => {

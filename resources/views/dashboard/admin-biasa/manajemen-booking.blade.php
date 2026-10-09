@@ -813,7 +813,17 @@
     <aside class="sidebar">
 
         <div class="logo-area">
-            <div class="logo-icon">T</div>
+            <div class="logo-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="5" width="20" height="13" rx="2" />
+                    <circle cx="7" cy="18" r="2" />
+                    <circle cx="17" cy="18" r="2" />
+                    <path d="M2 10h20" />
+                    <path d="M7 5v5" />
+                    <path d="M12 5v5" />
+                    <path d="M17 5v5" />
+                </svg>
+            </div>
             <div class="logo-text">
                 <h2>Travel</h2>
                 <span>Management System</span>
@@ -827,25 +837,55 @@
 
             <!-- DASHBOARD -->
             <a href="{{ route('dashboard.admin-biasa.index') }}">
-                <div class="menu-icon">⌂</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                </div>
                 <span>Dashboard</span>
             </a>
 
             <!-- MANAJEMEN BOOKING (ACTIVE) -->
             <a href="{{ route('dashboard.admin-biasa.booking') }}" class="active">
-                <div class="menu-icon">🎫</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                        <path d="M13 5v2" />
+                        <path d="M13 17v2" />
+                        <path d="M13 11v2" />
+                    </svg>
+                </div>
                 <span>Manajemen Booking</span>
             </a>
 
             <!-- MELIHAT INFORMASI PERJALANAN -->
             <a href="{{ route('dashboard.admin-biasa.perjalanan') }}">
-                <div class="menu-icon">🗺️</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                        <line x1="9" x2="9" y1="3" y2="18" />
+                        <line x1="15" x2="15" y1="6" y2="21" />
+                    </svg>
+                </div>
                 <span>Melihat Informasi Perjalanan</span>
             </a>
 
             <!-- VALIDASI E-TICKET -->
             <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}">
-                <div class="menu-icon">🎟️</div>
+                <div class="menu-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="5" height="5" x="3" y="3" rx="1" />
+                        <rect width="5" height="5" x="16" y="3" rx="1" />
+                        <rect width="5" height="5" x="3" y="16" rx="1" />
+                        <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                        <path d="M21 21v.01" />
+                        <path d="M12 7v3a2 2 0 0 1-2 2H7" />
+                        <path d="M12 12v4" />
+                        <path d="M12 20v1" />
+                        <path d="M17 12h4" />
+                    </svg>
+                </div>
                 <span>Validasi E-Ticket</span>
             </a>
         </nav>
@@ -854,7 +894,13 @@
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="logout-btn">
-                    <div class="menu-icon">↪</div>
+                    <div class="menu-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" x2="9" y1="12" y2="12" />
+                        </svg>
+                    </div>
                     <span>Logout</span>
                 </button>
             </form>
@@ -905,7 +951,7 @@
                                 @foreach($scheduleList as $sched)
                                     @php
                                         $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
-                                        $starTag = $bCount > 0 ? " • ⭐ {$bCount} Penumpang Terdaftar" : "";
+                                        $starTag = $bCount > 0 ? " • ({$bCount} Terdaftar)" : "";
                                         $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
                                     @endphp
                                     <option value="{{ $sched->id }}" {{ ($selectedSchedule && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
@@ -928,8 +974,13 @@
 
                     <!-- Tombol Aksi: Cetak & WhatsApp Driver -->
                     <div class="trip-header-actions">
-                        <button type="button" class="btn-action btn-print" onclick="window.print()">
-                            🖨️ Cetak Manifes
+                        <button type="button" class="btn-action btn-print" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 6 2 18 2 18 9" />
+                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                <rect width="12" height="8" x="6" y="14" />
+                            </svg>
+                            <span>Cetak Manifes</span>
                         </button>
 
                         @php
@@ -939,8 +990,13 @@
                             href="https://wa.me/6281288889999?text={{ $waDriverText }}"
                             target="_blank"
                             class="btn-action btn-driver-wa"
+                            style="display: inline-flex; align-items: center; gap: 6px;"
                         >
-                            📲 Kirim Manifes ke Driver
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m22 2-7 20-4-9-9-4Z" />
+                                <path d="M22 2 11 13" />
+                            </svg>
+                            <span>Kirim Manifes ke Driver</span>
                         </a>
                     </div>
                 </div>
@@ -950,19 +1006,44 @@
                     <div class="trip-summary-box">
                         <span>Rute & Waktu</span>
                         <strong>{{ $activeTripInfo->route_name }}</strong>
-                        <small>🕒 {{ $activeTripInfo->time }} • {{ $activeTripInfo->date }}</small>
+                        <small style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            {{ $activeTripInfo->time }} • {{ $activeTripInfo->date }}
+                        </small>
                     </div>
 
                     <div class="trip-summary-box">
                         <span>Armada & Pelat</span>
-                        <strong>🚐 {{ $activeTripInfo->plate_number }}</strong>
+                        <strong style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="5" width="20" height="13" rx="2" />
+                                <circle cx="7" cy="18" r="2" />
+                                <circle cx="17" cy="18" r="2" />
+                                <path d="M2 10h20" />
+                            </svg>
+                            {{ $activeTripInfo->plate_number }}
+                        </strong>
                         <small>{{ $activeTripInfo->vehicle_name }}</small>
                     </div>
 
                     <div class="trip-summary-box">
                         <span>Driver Bertugas</span>
-                        <strong>👤 {{ $activeTripInfo->driver_name }}</strong>
-                        <small>📞 {{ $activeTripInfo->driver_phone }} (Standby)</small>
+                        <strong style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            {{ $activeTripInfo->driver_name }}
+                        </strong>
+                        <small style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                            </svg>
+                            {{ $activeTripInfo->driver_phone }} (Standby)
+                        </small>
                     </div>
 
                     <div class="trip-summary-box">
@@ -982,7 +1063,12 @@
 
                 <!-- KOLOM PENCARIAN (Berdasarkan Nama atau Nomor Kursi) -->
                 <div class="search-container">
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </span>
                     <input
                         type="text"
                         id="passengerSearch"
@@ -1060,15 +1146,24 @@
                                     <td>
                                         <div class="passenger-info">
                                             <strong class="passenger-name-text">{{ $p->name }}</strong>
-                                            <span class="passenger-code">🎫 {{ $p->booking_code }}</span>
+                                            <span class="passenger-code" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                                                </svg>
+                                                {{ $p->booking_code }}
+                                            </span>
                                         </div>
                                     </td>
 
                                     <!-- 3. NOMOR TELEPON AKTIF + TOMBOL PANGGIL / WHATSAPP LANGSUNG -->
                                     <td>
                                         <div class="contact-group">
-                                            <div class="contact-number">
-                                                📱 {{ $p->phone }}
+                                            <div class="contact-number" style="display: flex; align-items: center; gap: 5px;">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-light);">
+                                                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+                                                    <path d="M12 18h.01" />
+                                                </svg>
+                                                <span>{{ $p->phone }}</span>
                                             </div>
 
                                             <div class="contact-actions">
@@ -1078,8 +1173,12 @@
                                                     target="_blank"
                                                     class="btn-wa-direct"
                                                     title="Kirim Pesan WhatsApp Langsung"
+                                                    style="display: inline-flex; align-items: center; gap: 4px;"
                                                 >
-                                                    💬 WhatsApp
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                    </svg>
+                                                    <span>WhatsApp</span>
                                                 </a>
 
                                                 <!-- Tombol Panggil Langsung -->
@@ -1087,8 +1186,12 @@
                                                     href="{{ $p->phone_tel_url }}"
                                                     class="btn-call-direct"
                                                     title="Hubungi Nomor Telepon"
+                                                    style="display: inline-flex; align-items: center; gap: 4px;"
                                                 >
-                                                    📞 Panggil
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                                    </svg>
+                                                    <span>Panggil</span>
                                                 </a>
                                             </div>
                                         </div>
@@ -1098,14 +1201,23 @@
                                     <td>
                                         <div class="route-stops">
                                             <div class="stop-item pickup">
-                                                <span class="stop-icon">🟢</span>
+                                                <span class="stop-icon" style="color: #087f55;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                                        <circle cx="12" cy="12" r="8" />
+                                                    </svg>
+                                                </span>
                                                 <div>
                                                     <strong>Naik:</strong> {{ $p->pickup_point }}
                                                 </div>
                                             </div>
 
                                             <div class="stop-item dropoff">
-                                                <span class="stop-icon">📍</span>
+                                                <span class="stop-icon" style="color: #d97706;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                                        <circle cx="12" cy="10" r="3" />
+                                                    </svg>
+                                                </span>
                                                 <div>
                                                     <strong>Turun:</strong> {{ $p->drop_point }}
                                                 </div>
@@ -1124,12 +1236,19 @@
                                     <td style="text-align: center;">
                                         <div id="badge-status-{{ $p->id }}">
                                             @if($isBoarded)
-                                                <span class="status-badge-boarded">
-                                                    ✓ Sudah Boarding
+                                                <span class="status-badge-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="20 6 9 17 4 12" />
+                                                    </svg>
+                                                    <span>Sudah Boarding</span>
                                                 </span>
                                             @else
-                                                <span class="status-badge-pending">
-                                                    ⏳ Belum Naik
+                                                <span class="status-badge-pending" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <polyline points="12 6 12 12 16 14" />
+                                                    </svg>
+                                                    <span>Belum Naik</span>
                                                 </span>
                                             @endif
                                         </div>
@@ -1157,8 +1276,12 @@
 
                 <!-- Pesan jika hasil pencarian nihil -->
                 <div id="noResultsMessage" style="display: none; padding: 40px; text-align: center;">
-                    <p style="font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">
-                        🔍 Penumpang Tidak Ditemukan
+                    <p style="font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <span>Penumpang Tidak Ditemukan</span>
                     </p>
                     <p style="font-size: 13px; color: var(--text-light);">
                         Tidak ada penumpang atau nomor kursi yang cocok dengan kata kunci tersebut.
@@ -1260,13 +1383,13 @@
                 if (newStatus === 'boarded') {
                     // Ubah menjadi Sudah Boarding
                     row.setAttribute('data-boarded', 'true');
-                    badgeContainer.innerHTML = '<span class="status-badge-boarded">✓ Sudah Boarding</span>';
+                    badgeContainer.innerHTML = '<span class="status-badge-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sudah Boarding</span></span>';
                     toggleBtn.className = 'btn-toggle-boarding btn-toggle-boarded';
                     toggleBtn.innerText = 'Batalkan';
                 } else {
                     // Ubah menjadi Belum Naik
                     row.setAttribute('data-boarded', 'false');
-                    badgeContainer.innerHTML = '<span class="status-badge-pending">⏳ Belum Naik</span>';
+                    badgeContainer.innerHTML = '<span class="status-badge-pending" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Belum Naik</span></span>';
                     toggleBtn.className = 'btn-toggle-boarding btn-toggle-not-yet';
                     toggleBtn.innerText = 'Masuk Armada';
                 }
