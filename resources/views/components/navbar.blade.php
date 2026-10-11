@@ -21,7 +21,7 @@
 
         <div class="navbar-actions">
             @guest
-                <a href="{{ route('login') }}" class="btn btn-outline">
+                <a href="{{ route('user.login') }}" class="btn btn-outline">
                     Masuk
                 </a>
 
