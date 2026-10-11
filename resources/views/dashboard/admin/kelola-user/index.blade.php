@@ -601,14 +601,14 @@
     ========================================== --}}
     @if(session('success'))
         <div class="alert-banner alert-success">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert-banner alert-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -625,9 +625,6 @@
                 <div class="stat-box-label">Total User</div>
                 <div class="stat-box-num">{{ number_format($totalUsers ?? 0) }}</div>
             </div>
-            <div class="stat-box-icon total">
-                👥
-            </div>
         </div>
 
         {{-- USER AKTIF --}}
@@ -635,9 +632,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">User Aktif</div>
                 <div class="stat-box-num">{{ number_format($activeUsers ?? 0) }}</div>
-            </div>
-            <div class="stat-box-icon active">
-                ✓
             </div>
         </div>
 
@@ -658,9 +652,6 @@
                 <div class="stat-box-label">User Nonaktif</div>
                 <div class="stat-box-num">{{ number_format($inactiveUsers ?? 0) }}</div>
             </div>
-            <div class="stat-box-icon inactive">
-                ⚠️
-            </div>
         </div>
 
     </div>
@@ -673,7 +664,7 @@
         <form action="{{ route('dashboard.admin.kelola-user.index') }}" method="GET" class="filter-form-grid">
 
             <div class="filter-input-wrap">
-                <span class="input-icon">🔍</span>
+                <span class="input-icon"></span>
                 <input
                     type="text"
                     name="search"
@@ -777,7 +768,7 @@
                                                 {{ $u->phone }}
                                             </span>
                                             <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" title="Chat WhatsApp Pelanggan" style="display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 6px; background: #e8f9ee; color: #16a34a; text-decoration: none; font-size: 10px; font-weight: 700;">
-                                                💬 WA
+                                                WA
                                             </a>
                                         </div>
                                     @else
@@ -796,7 +787,7 @@
                                 <td>
                                     @if($u->email_verified_at)
                                         <span class="verify-badge verified">
-                                            <span>✓</span>
+                                            <span></span>
                                             <span>Terverifikasi</span>
                                         </span>
                                     @else
@@ -821,18 +812,16 @@
                                             href="{{ route('dashboard.admin.kelola-user.show', $u->id) }}"
                                             class="action-btn view"
                                             title="Lihat Profil & Riwayat Pesanan"
-                                        >
-                                            👁
-                                        </a>
+                                        >Detail
+                                                                                    </a>
 
                                         {{-- EDIT --}}
                                         <a
                                             href="{{ route('dashboard.admin.kelola-user.edit', $u->id) }}"
                                             class="action-btn edit"
                                             title="Edit Data User"
-                                        >
-                                            ✏
-                                        </a>
+                                        >Ubah
+                                                                                    </a>
 
                                         {{-- BLOKIR / BUKA BLOKIR --}}
                                         <form
@@ -848,7 +837,7 @@
                                                 class="action-btn toggle"
                                                 title="{{ ($u->status ?? 'active') === 'active' ? 'Blokir Akun Pengguna' : 'Buka Blokir Akun' }}"
                                             >
-                                                {{ ($u->status ?? 'active') === 'active' ? '🚫' : '✓' }}
+                                                {{ ($u->status ?? 'active') === 'active' ? '' : '' }}
                                             </button>
                                         </form>
 
@@ -865,9 +854,8 @@
                                                 type="submit"
                                                 class="action-btn delete"
                                                 title="Hapus User"
-                                            >
-                                                🗑
-                                            </button>
+                                            >Hapus
+                                                                                            </button>
                                         </form>
 
                                     </div>
@@ -896,7 +884,6 @@
 
             @else
                 <div class="empty-state-box">
-                    <div class="empty-state-icon">👥</div>
                     <h3>Data Pengguna Tidak Ditemukan</h3>
                     <p>
                         @if(request()->filled('search') || request()->filled('status') || request()->filled('verification'))

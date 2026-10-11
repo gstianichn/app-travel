@@ -606,21 +606,20 @@
                 + Tambah Rute Baru
             </button>
             <a href="{{ route('dashboard.admin.rute.jadwal') }}" class="btn-schedule-nav">
-                📅 Kelola Jadwal Harian &rarr;
-            </a>
+                Kelola Jadwal Harian</a>
         </div>
     </div>
 
     {{-- ALERTS --}}
     @if(session('success'))
         <div class="alert-banner success">
-            <span>✓ {{ session('success') }}</span>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert-banner error">
-            <span>⚠️ {{ session('error') }}</span>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
@@ -632,9 +631,6 @@
                 <div class="stat-box-label">Total Rute Jalur</div>
                 <div class="stat-box-num">{{ number_format($totalRoutes) }}</div>
             </div>
-            <div class="stat-box-icon routes">
-                🛣️
-            </div>
         </div>
 
         {{-- Titik Pool / Drop Point --}}
@@ -642,9 +638,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Titik Pool & Shuttle</div>
                 <div class="stat-box-num" style="color: #0284c7;">{{ number_format($totalLocations) }}</div>
-            </div>
-            <div class="stat-box-icon pools">
-                📍
             </div>
         </div>
 
@@ -654,9 +647,6 @@
                 <div class="stat-box-label">Jadwal Aktif</div>
                 <div class="stat-box-num" style="color: #d97706;">{{ number_format($activeSchedulesCount) }}</div>
             </div>
-            <div class="stat-box-icon schedules">
-                📅
-            </div>
         </div>
 
         {{-- Rute Aktif Beroperasi --}}
@@ -664,9 +654,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Rute Status Aktif</div>
                 <div class="stat-box-num" style="color: #15803d;">{{ number_format($activeRoutesCount) }}</div>
-            </div>
-            <div class="stat-box-icon pricing">
-                ✓
             </div>
         </div>
     </div>
@@ -707,7 +694,7 @@
             <table class="route-table">
                 <thead>
                     <tr>
-                        <th>Titik Keberangkatan & Tujuan (Pool &rarr; Drop Point)</th>
+                        <th>Titik Keberangkatan & Tujuan (Pool ke Drop Point)</th>
                         <th>Estimasi Perjalanan</th>
                         <th>Tarif Weekday & Weekend</th>
                         <th>Jadwal Aktif Terdaftar</th>
@@ -729,7 +716,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="route-arrow">&rarr;</div>
+                                    <div class="route-arrow"></div>
 
                                     <div class="point-cell">
                                         <div class="point-title">{{ $route->destination?->name ?? 'Tujuan' }}</div>
@@ -744,10 +731,10 @@
                             {{-- DURATION & DISTANCE --}}
                             <td>
                                 <div style="font-weight: 600; color: #17221d;">
-                                    ⏱️ {{ $route->duration }}
+                                    ⏱{{ $route->duration }}
                                 </div>
                                 <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-                                    📏 {{ $route->distance_km ? $route->distance_km . ' km' : 'Jalur Reguler' }}
+                                    {{ $route->distance_km ? $route->distance_km . ' km' : 'Jalur Reguler' }}
                                 </div>
                             </td>
 
@@ -760,7 +747,7 @@
                                     </div>
                                     @if($route->weekend_price)
                                         <div class="price-weekend">
-                                            ⭐ {{ $route->formattedWeekendPrice() }} (Weekend)
+                                            {{ $route->formattedWeekendPrice() }} (Weekend)
                                         </div>
                                     @endif
                                 </div>
@@ -769,8 +756,7 @@
                             {{-- JADWAL TERDAFTAR --}}
                             <td>
                                 <a href="{{ route('dashboard.admin.rute.jadwal', ['route_id' => $route->id]) }}" class="badge-schedules">
-                                    📅 {{ $route->schedules->count() }} Jadwal Tersedia &rarr;
-                                </a>
+                                    {{ $route->schedules->count() }} Jadwal Tersedia</a>
                             </td>
 
                             {{-- STATUS --}}
@@ -784,7 +770,7 @@
                                         style="border: none; cursor: pointer;"
                                         title="Klik untuk mengubah status aktif/nonaktif"
                                     >
-                                        {{ $route->is_active ? '✓ Aktif' : '✕ Nonaktif' }}
+                                        {{ $route->is_active ? 'Aktif' : 'Nonaktif' }}
                                     </button>
                                 </form>
                             </td>
@@ -798,18 +784,16 @@
                                         class="btn-action-icon"
                                         onclick='openEditRouteModal({{ json_encode($route) }})'
                                         title="Ubah Rute & Tarif"
-                                    >
-                                        ✏️
-                                    </button>
+                                    >Ubah
+                                                                            </button>
 
                                     {{-- Create Schedule for this Route --}}
                                     <a
                                         href="{{ route('dashboard.admin.rute.jadwal', ['route_id' => $route->id]) }}"
                                         class="btn-action-icon"
                                         title="Buka Jadwal Rute"
-                                    >
-                                        📅
-                                    </a>
+                                    >Jadwal
+                                                                            </a>
 
                                     {{-- Delete Route Form --}}
                                     <form
@@ -820,9 +804,8 @@
                                     >
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-action-icon delete" title="Hapus Rute">
-                                            🗑️
-                                        </button>
+                                        <button type="submit" class="btn-action-icon delete" title="Hapus Rute">Hapus
+                                                                                    </button>
                                     </form>
                                 </div>
                             </td>
@@ -830,7 +813,7 @@
                     @empty
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 40px 20px; color: #64748b;">
-                                <div style="font-size: 36px; margin-bottom: 8px;">🛣️</div>
+                                <div style="font-size: 36px; margin-bottom: 8px;"></div>
                                 <div style="font-weight: 700; font-size: 15px; color: #17221d;">Belum Ada Rute Perjalanan</div>
                                 <p style="margin: 4px 0 12px; font-size: 13px;">Tambahkan titik pool asal dan tujuan untuk mulai membuka rute baru.</p>
                                 <button type="button" class="btn-create-route" onclick="openCreateRouteModal()">

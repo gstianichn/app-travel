@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\Booking;
 use App\Models\BookingPassenger;
 use App\Models\Driver;
@@ -31,14 +32,16 @@ class DriverDashboardController extends Controller
             $driver = Driver::firstOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'phone' => $user->phone ?? '0812-8899-7711',
+                    // Only what is known. The SIM number and expiry are required columns, so they get an
+                    // obvious placeholder that shows up in the admin's "expiring documents" reminder.
+                    'phone' => $user->phone,
                     'status' => 'standby',
-                    'license_number' => 'SIM-B1-'.rand(100000, 999999),
-                    'license_type' => 'B1 Umum',
-                    'license_expired_at' => Carbon::now()->addMonths(10),
-                    'emergency_contact_name' => 'Koordinator Operasional Pool',
-                    'emergency_contact_phone' => '0811-2233-4455',
-                    'emergency_contact_relation' => 'Pusat Kendali',
+                    'license_number' => 'BELUM-DIISI-'.$user->id,
+                    'license_type' => null,
+                    'license_expired_at' => Carbon::today(),
+                    'emergency_contact_name' => null,
+                    'emergency_contact_phone' => null,
+                    'emergency_contact_relation' => null,
                 ]
             );
         }
@@ -720,7 +723,9 @@ class DriverDashboardController extends Controller
                 'message' => $message,
                 'incident_id' => $incident->id,
                 'emergency_contacts' => [
-                    ['name' => 'Pusat Kendali Travel (HQ)', 'phone' => '081122334455', 'tel' => 'tel:081122334455'],
+                    ...(AppSetting::companyPhone()
+                        ? [['name' => 'Kantor '.AppSetting::companyName(), 'phone' => AppSetting::companyPhone()['display'], 'tel' => AppSetting::companyPhone()['tel']]]
+                        : []),
                     ['name' => 'Ambulans Darurat', 'phone' => '118', 'tel' => 'tel:118'],
                     ['name' => 'Kepolisian Lalu Lintas', 'phone' => '110', 'tel' => 'tel:110'],
                 ],

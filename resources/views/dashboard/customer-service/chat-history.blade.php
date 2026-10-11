@@ -109,8 +109,8 @@
 
         <div class="hist-filter-chips">
             <button type="button" class="filter-chip active" onclick="setHistoryFilter('all', this)">Semua Riwayat</button>
-            <button type="button" class="filter-chip chip-amber" onclick="setHistoryFilter('notes', this)">🔒 Ada Catatan Internal</button>
-            <button type="button" class="filter-chip chip-blue" onclick="setHistoryFilter('handover', this)">🔄 Ada Pergantian Agen</button>
+            <button type="button" class="filter-chip chip-amber" onclick="setHistoryFilter('notes', this)">Ada Catatan Internal</button>
+            <button type="button" class="filter-chip chip-blue" onclick="setHistoryFilter('handover', this)">Ada Pergantian Agen</button>
             <button type="button" class="filter-chip" onclick="setHistoryFilter('resolved', this)">Selesai (Closed)</button>
         </div>
     </div>
@@ -147,10 +147,10 @@
                             <span class="status-pill status-closed" id="viewer-status-pill">Selesai Ditangani</span>
                         </div>
                         <div class="customer-meta-row">
-                            <span>📞 <strong id="viewer-phone">0812-9988-7766</strong></span>
-                            <span>✉️ <span id="viewer-email">budi.p@mail.com</span></span>
-                            <span>🎫 PNR: <strong id="viewer-pnr">TRV-2026-0925</strong></span>
-                            <span>🚌 <span id="viewer-route">Bandung &rarr; Jakarta</span></span>
+                            <span><strong id="viewer-phone">0812-9988-7766</strong></span>
+                            <span><span id="viewer-email">budi.p@mail.com</span></span>
+                            <span>PNR: <strong id="viewer-pnr">TRV-2026-0925</strong></span>
+                            <span><span id="viewer-route">Bandung ke Jakarta</span></span>
                         </div>
                     </div>
                 </div>
@@ -202,12 +202,12 @@
 
                 <div class="quick-keyword-chips">
                     <span class="chips-title">Kata Kunci Cepat:</span>
-                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('nomor rekening')">🔍 nomor rekening</button>
-                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('lansia')">🔍 lansia</button>
-                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('BCA')">🔍 BCA</button>
-                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('reschedule')">🔍 reschedule</button>
-                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('jemput')">🔍 jemput</button>
-                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('bagasi')">🔍 bagasi</button>
+                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('nomor rekening')">nomor rekening</button>
+                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('lansia')">lansia</button>
+                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('BCA')">BCA</button>
+                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('reschedule')">reschedule</button>
+                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('jemput')">jemput</button>
+                    <button type="button" class="keyword-chip" onclick="applyKeywordSearch('bagasi')">bagasi</button>
                 </div>
             </div>
 
@@ -226,7 +226,7 @@
                         </svg>
                         <strong>Tambah Catatan Internal (Warna Kuning Khusus Antar-CS)</strong>
                     </div>
-                    <span class="note-confidential-pill">🔒 Tidak Dapat Dilihat oleh Pelanggan</span>
+                    <span class="note-confidential-pill">Tidak Dapat Dilihat oleh Pelanggan</span>
                 </div>
                 <p class="note-form-desc">
                     Kolom komentar kuning khusus antar-CS agar agen berikutnya langsung mengetahui konteks spesifik penumpang tanpa perlu menanyakan ulang.
@@ -1287,7 +1287,7 @@
             },
             booking: {
                 pnr: 'TRV-2026-0612',
-                route: 'Bekasi (Cyber Park) &rarr; Bandung (Dipatiukur)',
+                route: 'Bekasi (Cyber Park) ke Bandung (Dipatiukur)',
                 departure: '25 Sep 2026, 13:00 WIB',
                 vehicle: 'HiAce Commuter (B 1092 PQR)',
                 seat: '01B (Depan samping driver)'
@@ -1332,7 +1332,7 @@
             },
             booking: {
                 pnr: 'TRV-2026-0925',
-                route: 'Bandung (Pasteur) &rarr; Jakarta (Semanggi)',
+                route: 'Bandung (Pasteur) ke Jakarta (Semanggi)',
                 departure: '25 Sep 2026, 14:00 WIB',
                 vehicle: 'HiAce Premio (D 7182 AB)',
                 seat: '03A (Single Window)'
@@ -1367,7 +1367,7 @@
             },
             booking: {
                 pnr: 'TRV-2026-0421',
-                route: 'Jakarta (Semanggi) &rarr; Bandung (Pasteur)',
+                route: 'Jakarta (Semanggi) ke Bandung (Pasteur)',
                 departure: '25 Sep 2026, 11:00 WIB',
                 vehicle: 'HiAce Premio (B 2011 SH)',
                 seat: '01A'
@@ -1409,7 +1409,7 @@
             },
             booking: {
                 pnr: 'TRV-2026-0811',
-                route: 'Jakarta (Semanggi) &rarr; Bandung (Dipatiukur)',
+                route: 'Jakarta (Semanggi) ke Bandung (Dipatiukur)',
                 departure: '25 Sep 2026, 13:45 WIB',
                 vehicle: 'HiAce Luxury (B 8911 JKT)',
                 seat: '01B'
@@ -1442,7 +1442,7 @@
             },
             booking: {
                 pnr: 'TRV-2026-0774',
-                route: 'Bandung (Pasteur) &rarr; Bandara Soetta (T3)',
+                route: 'Bandung (Pasteur) ke Bandara Soetta (T3)',
                 departure: '25 Sep 2026, 15:30 WIB',
                 vehicle: 'HiAce Premio (D 9021 CG)',
                 seat: '02B'
@@ -1474,7 +1474,7 @@
             },
             booking: {
                 pnr: 'TRV-2026-0599',
-                route: 'Bandung (Dipatiukur) &rarr; Jakarta (Semanggi)',
+                route: 'Bandung (Dipatiukur) ke Jakarta (Semanggi)',
                 departure: '26 Sep 2026, 07:00 WIB',
                 vehicle: 'HiAce Premio (D 7721 Z)',
                 seat: '02A'
@@ -1562,7 +1562,7 @@
                     </div>
 
                     <div class="session-route-row">
-                        <span>🚌</span>
+                        <span></span>
                         <span>${s.booking.route}</span>
                     </div>
 
@@ -1571,8 +1571,8 @@
                     </div>
 
                     <div class="session-badges-wrap">
-                        ${s.hasNotes ? '<span class="tag-note">🔒 Catatan Internal</span>' : ''}
-                        ${s.hasHandover ? '<span class="tag-handover">🔄 Log Pergantian</span>' : ''}
+                        ${s.hasNotes ? '<span class="tag-note">Catatan Internal</span>' : ''}
+                        ${s.hasHandover ? '<span class="tag-handover">Log Pergantian</span>' : ''}
                         <span class="tag-closed">Selesai</span>
                     </div>
                 </div>
@@ -1653,7 +1653,7 @@
                             </svg>
                         </div>
                         <div class="handover-log-body">
-                            <span class="handover-tag-label">🔄 Log Pergantian Agen</span>
+                            <span class="handover-tag-label">Log Pergantian Agen</span>
                             <div>${highlightSearchText(m.text, searchQuery)}</div>
                         </div>
                         <span class="handover-log-stamp">${m.time}</span>
@@ -1668,7 +1668,7 @@
                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                 </svg>
-                                🔒 Catatan Internal Khusus Antar-CS (Tidak Bisa Dilihat Pelanggan)
+                                Catatan Internal Khusus Antar-CS (Tidak Bisa Dilihat Pelanggan)
                             </span>
                             <span class="note-author-stamp">${m.author} &bull; ${m.time}</span>
                         </div>

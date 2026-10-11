@@ -1000,61 +1000,19 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    @fonts('overpass')
+    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
+    @vite(['resources/css/dashboard-staff.css'])
 </head>
 
-<body>
+<body data-staff="staff">
 
 <div class="dashboard-wrapper">
 
     <!-- =========================================
          SIDEBAR NAVIGATION
     ========================================== -->
-    <aside class="sidebar">
-
-        <div class="logo-area">
-            <div class="logo-icon">🚐</div>
-            <div class="logo-text">
-                <h2>TravelKu</h2>
-                <span>TERMINAL & LOKET SISTEM</span>
-            </div>
-        </div>
-
-        <nav class="menu">
-            <div class="menu-title">Menu Utama</div>
-
-            <a href="{{ route('dashboard.admin-biasa.index') }}">
-                <div class="menu-icon">⌂</div>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="{{ route('dashboard.admin-biasa.booking') }}">
-                <div class="menu-icon">🎫</div>
-                <span>Manajemen Booking</span>
-            </a>
-
-            <a href="{{ route('dashboard.admin-biasa.perjalanan') }}">
-                <div class="menu-icon">🗺️</div>
-                <span>Informasi Perjalanan</span>
-            </a>
-
-            <!-- MENU VALIDASI TIKET AKTIF -->
-            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}" class="active">
-                <div class="menu-icon">🎟️</div>
-                <span>Validasi E-Ticket</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="logout-btn">
-                    <div class="menu-icon">↪</div>
-                    <span>Logout Petugas</span>
-                </button>
-            </form>
-        </div>
-
-    </aside>
+    @include('dashboard.admin-biasa.partials.sidebar')
 
     <!-- =========================================
          MAIN CONTENT AREA
@@ -1065,7 +1023,7 @@
         <header class="topbar">
             <div class="page-title">
                 <h1>
-                    <span>🎟️</span>
+                    <span></span>
                     <span>Validasi Tiket & Boarding Pass</span>
                 </h1>
                 <p>Verifikasi instan QR code, input fallback kode booking, dan status boarding penumpang kabin.</p>
@@ -1075,15 +1033,15 @@
                 <!-- SCHEDULE SELECTOR -->
                 <form method="GET" action="{{ route('dashboard.admin-biasa.validasi-tiket') }}" id="scheduleSelectForm">
                     <div class="trip-select-box">
-                        <span>🚌 Armada Trip:</span>
+                        <span>Armada Trip:</span>
                         <select name="schedule_id" onchange="document.getElementById('scheduleSelectForm').submit()">
                             @foreach($scheduleList as $sched)
                                 @php
                                     $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
-                                    $starTag = $bCount > 0 ? " • ⭐ {$bCount} Penumpang" : "";
+                                    $starTag = $bCount > 0 ? " • {$bCount} Penumpang" : "";
                                     $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
                                     $timeText = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') . ' WIB — ' : '';
-                                    $routeName = $sched->route_name ?? ($sched->route?->origin?->name . ' → ' . $sched->route?->destination?->name);
+                                    $routeName = $sched->route_name ?? ($sched->route?->origin?->name . ' ke ' . $sched->route?->destination?->name);
                                 @endphp
                                 <option value="{{ $sched->id }}" {{ (isset($selectedSchedule) && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
                                     {{ $dateText }}{{ $timeText }}{{ $routeName }} ({{ $sched->vehicle?->plate_number ?? 'HiAce' }}){{ $starTag }}
@@ -1118,8 +1076,8 @@
                         {{ $selectedSchedule->route_name }}
                     </h2>
                     <div class="trip-meta" style="margin-top: 6px; font-size: 13px; opacity: 0.9;">
-                        <span>🚐 Unit: <strong>{{ $selectedSchedule->plate_number }}</strong> ({{ $selectedSchedule->vehicle_name }})</span>
-                        <span>👤 Sopir: <strong>{{ $selectedSchedule->driver_name }}</strong></span>
+                        <span>Unit: <strong>{{ $selectedSchedule->plate_number }}</strong> ({{ $selectedSchedule->vehicle_name }})</span>
+                        <span>Sopir: <strong>{{ $selectedSchedule->driver_name }}</strong></span>
                         <span>⏰ Berangkat: <strong>{{ $formattedDepartureTime }}</strong></span>
                     </div>
                 </div>
@@ -1158,7 +1116,7 @@
 
                     <div class="panel-header">
                         <h3>
-                            <span>📷</span>
+                            <span></span>
                             <span>Pemindai QR & Validasi Manual</span>
                         </h3>
                         <span style="font-size: 11px; font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 6px;">
@@ -1190,17 +1148,17 @@
                         <!-- 2. KONTROL KAMERA: TOGGLE KAMERA & TOMBOL FLASHLIGHT / LAMPU KILAT -->
                         <div class="camera-controls-bar">
                             <button type="button" class="btn-camera-action" id="btnToggleCamera" onclick="toggleCamera()">
-                                <span id="cameraBtnIcon">📹</span>
+                                <span id="cameraBtnIcon"></span>
                                 <span id="cameraBtnText">Mulai Kamera</span>
                             </button>
 
                             <button type="button" class="btn-camera-action" id="btnToggleTorch" onclick="toggleFlashlight()">
-                                <span>⚡</span>
+                                <span></span>
                                 <span id="torchBtnText">Lampu Kilat (Off)</span>
                             </button>
 
                             <button type="button" class="btn-camera-action" onclick="switchCamera()">
-                                <span>🔄</span>
+                                <span></span>
                                 <span>Balik Kamera</span>
                             </button>
                         </div>
@@ -1224,7 +1182,7 @@
                                 >
                                 <button type="button" class="btn-validate-manual" onclick="handleManualSubmit()">
                                     <span>Periksa</span>
-                                    <span>➔</span>
+                                    <span></span>
                                 </button>
                             </div>
 
@@ -1233,31 +1191,31 @@
                                 <span class="chips-title">Simulasi Kasus Cepat (1-Klik):</span>
                                 <div class="chips-list">
                                     <button type="button" class="chip-btn" onclick="runSimulatedCode('TKV-8920-JKT')">
-                                        ⚡ Siti (1B - Sukses)
+                                        Siti (1B - Sukses)
                                     </button>
                                     <button type="button" class="chip-btn" onclick="runSimulatedCode('TKV-9344-JKT')">
-                                        ⚡ Andi (3A - Sukses)
+                                        Andi (3A - Sukses)
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-ALREADY-SCAN')">
-                                        ⚠️ Sudah Di-Scan
+                                        Sudah Di-Scan
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-WRONG-TIME')">
-                                        ⚠️ Salah Jam
+                                        Salah Jam
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-UNPAID-123')">
-                                        ⚠️ Belum Lunas
+                                        Belum Lunas
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-CANCELLED')">
-                                        ⚠️ Tiket Batal
+                                        Tiket Batal
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-REFUNDED')">
-                                        ⚠️ Di-Refund
+                                        Di-Refund
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-EXPIRED')">
-                                        ⚠️ Kadaluwarsa
+                                        Kadaluwarsa
                                     </button>
                                     <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-DEPARTED')">
-                                        ⚠️ Sudah Berangkat
+                                        Sudah Berangkat
                                     </button>
                                 </div>
                             </div>
@@ -1270,7 +1228,7 @@
                             <div id="feedbackSuccessBox" style="display: none;">
                                 <div class="fb-header">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="font-size: 20px;">✅</span>
+                                        <span style="font-size: 20px;"></span>
                                         <span>TIKET VALID & TERVERIFIKASI</span>
                                     </div>
                                     <span class="fb-badge fb-badge-success">BOARDED</span>
@@ -1296,7 +1254,7 @@
                                 </div>
 
                                 <button type="button" class="fb-btn-dismiss btn-success-action" onclick="dismissFeedback()">
-                                    ✓ Penumpang Siap Masuk Kabin (Lanjut Scan Berikutnya)
+                                    Penumpang Siap Masuk Kabin (Lanjut Scan Berikutnya)
                                 </button>
                             </div>
 
@@ -1304,7 +1262,7 @@
                             <div id="feedbackFailedBox" style="display: none;">
                                 <div class="fb-header">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="font-size: 20px;">⛔</span>
+                                        <span style="font-size: 20px;"></span>
                                         <span id="fbErrorTitle">TIKET DITOLAK</span>
                                     </div>
                                     <span class="fb-badge fb-badge-danger">GAGAL</span>
@@ -1315,7 +1273,7 @@
                                 </div>
 
                                 <button type="button" class="fb-btn-dismiss btn-danger-action" onclick="dismissFeedback()">
-                                    ✕ Tutup Peringatan & Cek Kembali
+                                    Tutup Peringatan & Cek Kembali
                                 </button>
                             </div>
 
@@ -1332,7 +1290,7 @@
 
                     <div class="panel-header">
                         <h3>
-                            <span>📋</span>
+                            <span></span>
                             <span>Daftar Centang Penumpang (Checklist)</span>
                         </h3>
                         <div style="font-size: 12px; color: var(--text-light);">
@@ -1343,7 +1301,7 @@
                     <!-- TOOLBAR: SEARCH & TABS FILTER -->
                     <div class="checklist-toolbar">
                         <div class="search-box">
-                            <span class="search-icon">🔍</span>
+                            <span class="search-icon"></span>
                             <input
                                 type="text"
                                 id="checklistSearchInput"
@@ -1406,9 +1364,9 @@
                                             <div class="passenger-info">
                                                 <strong id="passengerName-{{ $p->id }}">{{ $p->name }}</strong>
                                                 <span>
-                                                    <span>📞 {{ $p->phone }}</span>
+                                                    <span>{{ $p->phone }}</span>
                                                     @if($p->special_request && $p->special_request !== '-')
-                                                        <span>• 📝 {{ $p->special_request }}</span>
+                                                        <span>• {{ $p->special_request }}</span>
                                                     @endif
                                                 </span>
                                             </div>
@@ -1426,18 +1384,18 @@
                                         <td style="text-align: center;" id="statusCell-{{ $p->id }}">
                                             @if($p->boarding_status === 'boarded')
                                                 <span class="status-pill status-boarded">
-                                                    ✓ Boarded
+                                                    Boarded
                                                 </span>
                                                 <small style="display: block; font-size: 10px; color: #047857; margin-top: 2px;" id="timeCell-{{ $p->id }}">
                                                     {{ $p->boarded_at ?: 'Terkonfirmasi' }}
                                                 </small>
                                             @elseif($p->boarding_status === 'no_show')
                                                 <span class="status-pill status-no-show">
-                                                    ✕ No-Show
+                                                    No-Show
                                                 </span>
                                             @else
                                                 <span class="status-pill status-belum-hadir">
-                                                    ⚪ Belum Hadir
+                                                    Belum Hadir
                                                 </span>
                                             @endif
                                         </td>
@@ -1449,13 +1407,13 @@
                                                 onchange="updatePassengerStatusManual('{{ $p->id }}', this.value)"
                                             >
                                                 <option value="belum_hadir" {{ $p->boarding_status === 'belum_hadir' ? 'selected' : '' }}>
-                                                    ⚪ Belum Hadir
+                                                    Belum Hadir
                                                 </option>
                                                 <option value="boarded" {{ $p->boarding_status === 'boarded' ? 'selected' : '' }}>
-                                                    🟢 Boarded
+                                                    Boarded
                                                 </option>
                                                 <option value="no_show" {{ $p->boarding_status === 'no_show' ? 'selected' : '' }}>
-                                                    🔴 No-Show
+                                                    No-Show
                                                 </option>
                                             </select>
                                         </td>
@@ -1481,7 +1439,7 @@
             <div class="panel-card" style="margin-top: 24px;">
                 <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h3>
-                        <span>⚡</span>
+                        <span></span>
                         <span>Riwayat Validasi E-Ticket Terkini (Semua Jadwal)</span>
                     </h3>
                     <span style="font-size: 12px; color: var(--text-light);">
@@ -1507,7 +1465,7 @@
                                     $pFirst = $rt->booking?->passengers?->first();
                                     $allSeats = $rt->booking?->passengers?->map(fn($p) => $p->seat?->seat_number)->filter()->join(', ') ?: ($pFirst?->seat?->seat_number ?? '-');
                                     $pName = $pFirst?->name ?? ($rt->booking?->user?->name ?? 'Penumpang');
-                                    $routeName = ($rt->booking?->schedule?->route?->origin?->name ?? 'Asal') . ' → ' . ($rt->booking?->schedule?->route?->destination?->name ?? 'Tujuan');
+                                    $routeName = ($rt->booking?->schedule?->route?->origin?->name ?? 'Asal') . ' ke ' . ($rt->booking?->schedule?->route?->destination?->name ?? 'Tujuan');
                                     $plate = $rt->booking?->schedule?->vehicle?->plate_number ?? '-';
                                     $timeStr = $rt->boarded_at ? \Carbon\Carbon::parse($rt->boarded_at)->format('H:i') . ' WIB' : 'Baru saja';
                                     $schedId = $rt->booking?->schedule_id;
@@ -1515,7 +1473,7 @@
                                 <tr>
                                     <td>
                                         <div style="font-weight: 700; color: #047857; font-size: 13px;">
-                                            🕒 {{ $timeStr }}
+                                            {{ $timeStr }}
                                         </div>
                                         <small style="color: var(--text-light); font-size: 11px;">
                                             {{ $rt->boarded_at ? \Carbon\Carbon::parse($rt->boarded_at)->diffForHumans() : 'Hari ini' }}
@@ -1543,7 +1501,7 @@
                                     </td>
                                     <td style="text-align: center;">
                                         <span class="status-pill status-boarded">
-                                            ✓ Boarded
+                                            Boarded
                                         </span>
                                     </td>
                                     <td style="text-align: right;">
@@ -1551,8 +1509,7 @@
                                             <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}?schedule_id={{ $schedId }}"
                                                class="btn-camera-action"
                                                style="display: inline-block; padding: 6px 12px; font-size: 11px; text-decoration: none; text-align: center;">
-                                                Lihat Manifes ➔
-                                            </a>
+                                                Lihat Manifes</a>
                                         @else
                                             <span style="color: var(--text-light); font-size: 12px;">-</span>
                                         @endif
@@ -1578,7 +1535,7 @@
 
 <!-- TOAST NOTIFICATION -->
 <div id="toastNotification" class="toast-notify">
-    <span id="toastIcon">🔔</span>
+    <span id="toastIcon"></span>
     <span id="toastMessage">Pesan pemberitahuan</span>
 </div>
 
@@ -1682,7 +1639,7 @@
             // Stop Camera
             stopCameraStream();
             btnText.innerText = 'Mulai Kamera';
-            btnIcon.innerText = '📹';
+            btnIcon.innerText = '';
             statusText.innerText = 'Kamera Dihentikan (Mode Manual Aktif)';
         } else {
             // Start Camera
@@ -1701,9 +1658,9 @@
                 videoTrack = cameraStream.getVideoTracks()[0];
 
                 btnText.innerText = 'Hentikan Kamera';
-                btnIcon.innerText = '⏹️';
+                btnIcon.innerText = '⏹';
                 statusText.innerText = 'Kamera Aktif • Arahkan QR E-Ticket Penumpang';
-                showToast('📷 Kamera pemindai QR aktif.', 'info');
+                showToast('Kamera pemindai QR aktif.', 'info');
 
                 startBarcodeDetector(videoElem);
             } catch (err) {
@@ -1742,7 +1699,7 @@
                 // Torch not supported on this device/browser track
                 isTorchOn = !isTorchOn;
                 updateTorchButtonUI();
-                showToast(isTorchOn ? '⚡ Lampu kilat disimulasikan (Perangkat tidak mendukung kontrol hardware)' : 'Lampu kilat dimatikan', 'info');
+                showToast(isTorchOn ? 'Lampu kilat disimulasikan (Perangkat tidak mendukung kontrol hardware)' : 'Lampu kilat dimatikan', 'info');
                 return;
             }
 
@@ -1752,7 +1709,7 @@
             });
 
             updateTorchButtonUI();
-            showToast(isTorchOn ? '⚡ Lampu kilat (Torch) Menyala!' : 'Lampu kilat dimatikan', 'info');
+            showToast(isTorchOn ? 'Lampu kilat (Torch) Menyala!' : 'Lampu kilat dimatikan', 'info');
         } catch (e) {
             console.warn('Torch control error:', e);
             isTorchOn = !isTorchOn;
@@ -1860,8 +1817,7 @@
             feedbackCard.classList.add('active');
 
             if (response.ok && data.success) {
-                // HASIL VALIDASI: SUKSES 🟢
-                playSuccessSound();
+                // HASIL VALIDASI: SUKSES                 playSuccessSound();
 
                 feedbackCard.classList.add('feedback-success');
                 successBox.style.display = 'block';
@@ -1872,7 +1828,7 @@
                 document.getElementById('fbBookingCode').innerText = data.booking_code;
                 document.getElementById('fbBoardedAt').innerText = data.boarded_at;
 
-                showToast('✅ ' + data.message, 'success');
+                showToast('' + data.message, 'success');
 
                 // Otomatis ubah status penumpang di daftar checklist tabel
                 if (data.passenger_id) {
@@ -1886,8 +1842,7 @@
                 document.getElementById('manualCodeInput').value = '';
 
             } else {
-                // HASIL VALIDASI: GAGAL 🔴
-                playErrorSound();
+                // HASIL VALIDASI: GAGAL                 playErrorSound();
 
                 feedbackCard.classList.add('feedback-danger');
                 successBox.style.display = 'none';
@@ -1896,7 +1851,7 @@
                 document.getElementById('fbErrorTitle').innerText = data.title || 'TIKET DITOLAK';
                 document.getElementById('fbErrorMessage').innerText = data.message || 'Tiket tidak memenuhi syarat boarding.';
 
-                showToast('⚠️ ' + (data.title || 'Validasi Gagal'), 'danger');
+                showToast('' + (data.title || 'Validasi Gagal'), 'danger');
             }
 
         } catch (err) {
@@ -1933,7 +1888,7 @@
         const statusCell = document.getElementById(`statusCell-${passengerId}`);
         if (statusCell) {
             statusCell.innerHTML = `
-                <span class="status-pill status-boarded">✓ Boarded</span>
+                <span class="status-pill status-boarded">Boarded</span>
                 <small style="display: block; font-size: 10px; color: #047857; margin-top: 2px;">${timeStr || 'Baru Saja'}</small>
             `;
         }
@@ -1985,15 +1940,15 @@
                 if (newStatus === 'boarded') {
                     playSuccessSound();
                     statusCell.innerHTML = `
-                        <span class="status-pill status-boarded">✓ Boarded</span>
+                        <span class="status-pill status-boarded">Boarded</span>
                         <small style="display: block; font-size: 10px; color: #047857; margin-top: 2px;">${data.boarded_at || 'Baru Saja'}</small>
                     `;
                     showToast('Penumpang ' + document.getElementById(`passengerName-${passengerId}`).innerText + ' diubah menjadi Boarded', 'success');
                 } else if (newStatus === 'no_show') {
-                    statusCell.innerHTML = `<span class="status-pill status-no-show">✕ No-Show</span>`;
+                    statusCell.innerHTML = `<span class="status-pill status-no-show">No-Show</span>`;
                     showToast('Status penumpang diubah menjadi No-Show', 'info');
                 } else {
-                    statusCell.innerHTML = `<span class="status-pill status-belum-hadir">⚪ Belum Hadir</span>`;
+                    statusCell.innerHTML = `<span class="status-pill status-belum-hadir">Belum Hadir</span>`;
                     showToast('Status penumpang dikembalikan ke Belum Hadir', 'info');
                 }
 
@@ -2078,13 +2033,13 @@
 
         if (type === 'success') {
             toast.style.background = '#087f55';
-            icon.innerText = '✅';
+            icon.innerText = '';
         } else if (type === 'danger') {
             toast.style.background = '#dc2626';
-            icon.innerText = '⚠️';
+            icon.innerText = '';
         } else {
             toast.style.background = '#1e293b';
-            icon.innerText = 'ℹ️';
+            icon.innerText = 'ℹ';
         }
 
         text.innerText = msg;

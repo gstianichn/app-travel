@@ -8,7 +8,7 @@
                 <span>INFORMASI &amp; KONTAK PENUMPANG LENGKAP</span>
             </div>
             <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                <span>👤</span>
+                <span></span>
                 <span>Melihat Informasi Penumpang</span>
             </h3>
             <p style="margin: 4px 0 0 0; font-size: 12.5px; color: #64748b;">
@@ -18,7 +18,7 @@
 
         <div style="display: flex; gap: 8px;">
             <a href="#section-manifest" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                <span>📋</span>
+                <span></span>
                 <span>Kembali ke Manifes</span>
             </a>
         </div>
@@ -41,9 +41,9 @@
 
                         <div>
                             @if ($p->is_paid)
-                                <span class="badge-paid" style="font-size: 10.5px; padding: 3px 8px; border-radius: 6px;">✓ Lunas Online</span>
+                                <span class="badge-paid" style="font-size: 10.5px; padding: 3px 8px; border-radius: 6px;">Lunas Online</span>
                             @else
-                                <span class="badge-cod" style="font-size: 10.5px; padding: 3px 8px; border-radius: 6px;">💵 COD Rp {{ number_format($p->amount_due, 0, ',', '.') }}</span>
+                                <span class="badge-cod" style="font-size: 10.5px; padding: 3px 8px; border-radius: 6px;">COD Rp {{ number_format($p->amount_due, 0, ',', '.') }}</span>
                             @endif
                         </div>
                     </div>
@@ -51,19 +51,19 @@
                     <div style="background: #f8fafc; border-radius: 8px; padding: 10px 12px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
                         <div>
                             <span style="color: #64748b;">Titik Jemput:</span>
-                            <strong style="color: #0f172a; display: block;">📍 {{ $p->pickup_point }}</strong>
+                            <strong style="color: #0f172a; display: block;">{{ $p->pickup_point }}</strong>
                         </div>
                         <div>
                             <span style="color: #64748b;">Titik Turun / Tujuan:</span>
-                            <strong style="color: #0f172a; display: block;">🏁 {{ $p->dropoff_point }}</strong>
+                            <strong style="color: #0f172a; display: block;">{{ $p->dropoff_point }}</strong>
                         </div>
                         <div>
                             <span style="color: #64748b;">Catatan Bawaan / Bagasi:</span>
-                            <span style="color: #334155; font-weight: 600; display: block;">🧳 {{ $p->baggage_notes }}</span>
+                            <span style="color: #334155; font-weight: 600; display: block;">{{ $p->baggage_notes }}</span>
                         </div>
                         @if (!empty($p->special_request) && $p->special_request !== '-')
                             <div style="color: #b45309; background: #fffbeb; border: 1px solid #fef3c7; padding: 6px 8px; border-radius: 6px;">
-                                💬 <strong>Patokan / Permintaan Khusus:</strong> {{ $p->special_request }}
+                                <strong>Patokan / Permintaan Khusus:</strong> {{ $p->special_request }}
                             </div>
                         @endif
                     </div>
@@ -71,17 +71,17 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                         <div class="contact-group">
                             <a href="https://wa.me/{{ $p->wa_phone }}?text={{ urlencode('Halo Kak ' . $p->name . ', saya sopir travel Anda untuk rute hari ini.') }}" target="_blank" class="btn-contact btn-contact-wa" style="font-size: 11.5px; padding: 6px 12px;">
-                                <span>💬</span> WhatsApp
+                                <span></span> WhatsApp
                             </a>
                             <a href="tel:{{ $p->phone }}" class="btn-contact btn-contact-tel" style="font-size: 11.5px; padding: 6px 12px;">
-                                <span>📞</span> Telepon
+                                <span></span> Telepon
                             </a>
                         </div>
 
                         <div>
                             @if ($p->is_boarded)
                                 <span style="font-size: 11px; font-weight: 800; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 10px; border-radius: 6px;">
-                                    ✓ Sudah Naik
+                                    Sudah Naik
                                 </span>
                             @else
                                 <span style="font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 5px 10px; border-radius: 6px;">

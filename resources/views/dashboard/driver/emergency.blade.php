@@ -57,7 +57,7 @@
             </div>
 
             <!-- Kontak Darurat 24 Jam -->
-            <h4 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0 0 16px 0;">Kontak Cepat Panggilan Bantuan Lapangan (24 Jam)</h4>
+            <h4 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0 0 16px 0;">Kontak bantuan di jalan</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 28px;">
                 <div style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px;">
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
@@ -66,29 +66,17 @@
                         </span>
                         <div>
                             <strong style="font-size: 14px; color: #0f172a;">Pusat Kendali Operasional (OCC)</strong>
-                            <div style="font-size: 11.5px; color: #64748b;">Dispatcher 24/7</div>
+                            <div style="font-size: 12px; color: #4B5D55;">Nomor kantor dari Pengaturan</div>
                         </div>
                     </div>
-                    <a href="tel:081122334455" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 10px; border-radius: 8px; font-weight: 800; text-decoration: none; font-size: 13.5px;">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                        <span>Hubungi: 0811-2233-4455</span>
-                    </a>
-                </div>
-
-                <div style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                        <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; background: #fffbeb; color: #b45309;">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
-                        </span>
-                        <div>
-                            <strong style="font-size: 14px; color: #0f172a;">Mekanik Siaga & Derek Tol</strong>
-                            <div style="font-size: 11.5px; color: #64748b;">Bantuan Teknis Lapangan</div>
-                        </div>
-                    </div>
-                    <a href="tel:081288990011" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 10px; border-radius: 8px; font-weight: 800; text-decoration: none; font-size: 13.5px;">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                        <span>Hubungi: 0812-8899-0011</span>
-                    </a>
+                    @php $officePhone = \App\Models\AppSetting::companyPhone(); @endphp
+                    @if ($officePhone)
+                        <a href="{{ $officePhone['tel'] }}" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #DFF0E8; color: #0C4535; border: 1px solid #0C7950; padding: 10px; border-radius: 8px; font-weight: 800; text-decoration: none; font-size: 14px; min-height: 44px;">
+                            <span>Hubungi: {{ $officePhone['display'] }}</span>
+                        </a>
+                    @else
+                        <p style="font-size: 14px; color: #4B5D55; margin: 0;">Nomor kantor belum diisi. Admin utama bisa mengisinya di menu Pengaturan.</p>
+                    @endif
                 </div>
 
                 <div style="background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px;">
@@ -97,8 +85,8 @@
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         </span>
                         <div>
-                            <strong style="font-size: 14px; color: #0f172a;">Call Center Tol Cipularang & Polisi</strong>
-                            <div style="font-size: 11.5px; color: #64748b;">PJR & Jasamarga Traffic</div>
+                            <strong style="font-size: 14px; color: #0f172a;">Call center Jasa Marga</strong>
+                            <div style="font-size: 11.5px; color: #64748b;">Gangguan dan kecelakaan di jalan tol</div>
                         </div>
                     </div>
                     <a href="tel:14080" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 10px; border-radius: 8px; font-weight: 800; text-decoration: none; font-size: 13.5px;">

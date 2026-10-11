@@ -644,7 +644,7 @@
                 &larr; Kembali
             </a>
             <a href="{{ route('dashboard.admin.kelola-user.edit', $user->id) }}" class="btn-action-edit">
-                ✎ Edit Data
+                Edit Data
             </a>
         </div>
     </div>
@@ -655,21 +655,21 @@
     ========================================== --}}
     @if(session('success'))
         <div class="flash-alert flash-success">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="flash-alert flash-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
 
     @if($errors->any())
         <div class="flash-alert flash-error">
-            <span>⚠️</span>
+            <span></span>
             <span>
                 @foreach($errors->all() as $err)
                     <div>{{ $err }}</div>
@@ -730,7 +730,7 @@
                         }
                     @endphp
                     <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="whatsapp-chip">
-                        <span>💬</span>
+                        <span></span>
                         <span>Chat WhatsApp</span>
                     </a>
                 @endif
@@ -742,7 +742,7 @@
                 <span class="info-tile-value">{{ $user->email }}</span>
                 <div style="margin-top: 4px;">
                     @if($user->email_verified_at)
-                        <span style="font-size: 11px; font-weight: 700; color: #16a34a;">✓ Terverifikasi</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #16a34a;">Terverifikasi</span>
                     @else
                         <span style="font-size: 11px; font-weight: 700; color: #d97706;">⏳ Belum Verifikasi</span>
                     @endif
@@ -775,13 +775,11 @@
             <div>
                 <div class="control-card-header">
                     @if(($user->status ?? 'active') === 'active')
-                        <div class="control-icon block">🚫</div>
                         <div>
                             <h3>Blokir Akun Pengguna</h3>
                             <p>Nonaktifkan akun pengguna bermasalah atau nomor fiktif</p>
                         </div>
                     @else
-                        <div class="control-icon unblock">✓</div>
                         <div>
                             <h3>Buka Blokir Akun</h3>
                             <p>Pulihkan akses akun agar dapat kembali memesan tiket travel</p>
@@ -808,12 +806,12 @@
 
                 @if(($user->status ?? 'active') === 'active')
                     <button type="submit" class="btn-toggle-block danger">
-                        <span>🚫</span>
+                        <span></span>
                         <span>Blokir Akun Ini</span>
                     </button>
                 @else
                     <button type="submit" class="btn-toggle-block success">
-                        <span>✓</span>
+                        <span></span>
                         <span>Buka Blokir & Aktifkan Kembali</span>
                     </button>
                 @endif
@@ -825,7 +823,6 @@
         <div class="control-card">
             <div>
                 <div class="control-card-header">
-                    <div class="control-icon password">🔑</div>
                     <div>
                         <h3>Reset Kata Sandi Manual</h3>
                         <p>Tetapkan kata sandi baru jika pelanggan kesulitan login</p>
@@ -868,7 +865,7 @@
 
                     <div class="reset-action-row">
                         <button type="button" class="btn-generate-rand" onclick="generateRandomPassword()">
-                            🎲 Sandi Acak
+                            Sandi Acak
                         </button>
 
                         <button type="submit" class="btn-submit-reset">
@@ -939,10 +936,10 @@
                                 // Status Tiket / Perjalanan
                                 $rawStatus = strtolower($b->ticket?->status ?? $b->status ?? '');
                                 if (in_array($rawStatus, ['completed', 'selesai', 'used', 'boarded'])) {
-                                    $statusLabel = '✓ Selesai';
+                                    $statusLabel = 'Selesai';
                                     $statusClass = 'completed';
                                 } elseif (in_array($rawStatus, ['cancelled', 'batal', 'rejected'])) {
-                                    $statusLabel = '✕ Batal';
+                                    $statusLabel = 'Batal';
                                     $statusClass = 'cancelled';
                                 } elseif (in_array($rawStatus, ['expired', 'kedaluwarsa'])) {
                                     $statusLabel = '⏳ Kedaluwarsa';
@@ -968,7 +965,7 @@
                                 <td>
                                     <div class="route-display">
                                         <span>{{ $origin }}</span>
-                                        <span class="arrow-green">&rarr;</span>
+                                        <span class="arrow-green"></span>
                                         <span>{{ $destination }}</span>
                                     </div>
                                 </td>
@@ -1011,7 +1008,6 @@
                 </table>
             @else
                 <div class="empty-orders">
-                    <div class="empty-orders-icon">🎫</div>
                     <div style="font-weight: 700; color: #17221d; margin-bottom: 4px;">Belum Ada Riwayat Perjalanan</div>
                     <p style="font-size: 12px; margin: 0;">Pengguna ini belum pernah melakukan pemesanan tiket pada sistem TravelKu.</p>
                 </div>

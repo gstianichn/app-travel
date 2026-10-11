@@ -64,16 +64,11 @@ class AdminDashboardController extends Controller
             ->whereIn('status', ['Paid', 'Confirmed', 'paid', 'confirmed', 'success'])
             ->sum('total_price');
 
-        // Jumlah armada yang sedang jalan hari ini
+        // Jumlah armada yang dijadwalkan jalan hari ini
         $activeFleetCount = Schedule::whereDate('departure_date', $today)
-            ->whereIn('status', ['Departed', 'departed', 'operating', 'in_trip', 'beroperasi'])
+            ->whereNotNull('vehicle_id')
             ->distinct('vehicle_id')
             ->count('vehicle_id');
-        if ($activeFleetCount === 0) {
-            $activeFleetCount = Schedule::whereDate('departure_date', $today)
-                ->distinct('vehicle_id')
-                ->count('vehicle_id');
-        }
 
         // Total kursi kosong hari ini
         $emptySeatsToday = Schedule::whereDate('departure_date', $today)
@@ -84,8 +79,12 @@ class AdminDashboardController extends Controller
             ->whereDate('departure_date', '>=', $today)
             ->orderBy('departure_date')
             ->orderBy('departure_time')
+            ->take(60)
+            ->get()
+            // Departures still ahead, or that left less than 30 minutes ago.
+            ->filter(fn (Schedule $schedule) => $schedule->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(30)))
             ->take(6)
-            ->get();
+            ->values();
 
         // 3. Notifikasi & Pengingat Penting
         $pendingRefunds = Refund::with(['booking', 'user'])

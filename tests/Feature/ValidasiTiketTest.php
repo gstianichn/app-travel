@@ -622,6 +622,6 @@ test('user simulated scan check-in synchronizes to staff validasi-tiket and mani
     $resStaff->assertOk();
     $resStaff->assertSee('Pratama Wicaksana');
     $resStaff->assertSee('TKV-USER-CHECKIN');
-    $resStaff->assertSee('✓ Boarded');
+    $resStaff->assertSee('Boarded');
     $resStaff->assertSee('Riwayat Validasi E-Ticket Terkini');
 });

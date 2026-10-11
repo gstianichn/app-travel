@@ -873,66 +873,19 @@
             }
         }
     </style>
+    @fonts('overpass')
+    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
+    @vite(['resources/css/dashboard-staff.css'])
 </head>
 
-<body>
+<body data-staff="staff">
 
 <div class="dashboard-wrapper">
 
     <!-- =========================================
          SIDEBAR STAF
     ========================================== -->
-    <aside class="sidebar">
-
-        <div class="logo-area">
-            <div class="logo-icon">T</div>
-            <div class="logo-text">
-                <h2>Travel</h2>
-                <span>Management System</span>
-            </div>
-        </div>
-
-        <nav class="menu">
-            <div class="menu-title">
-                Menu Utama
-            </div>
-
-            <!-- DASHBOARD -->
-            <a href="{{ route('dashboard.admin-biasa.index') }}">
-                <div class="menu-icon">⌂</div>
-                <span>Dashboard</span>
-            </a>
-
-            <!-- MANAJEMEN BOOKING -->
-            <a href="{{ route('dashboard.admin-biasa.booking') }}">
-                <div class="menu-icon">🎫</div>
-                <span>Manajemen Booking</span>
-            </a>
-
-            <!-- MELIHAT INFORMASI PERJALANAN (ACTIVE) -->
-            <a href="{{ route('dashboard.admin-biasa.perjalanan') }}" class="active">
-                <div class="menu-icon">🗺️</div>
-                <span>Melihat Informasi Perjalanan</span>
-            </a>
-
-            <!-- VALIDASI E-TICKET -->
-            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}">
-                <div class="menu-icon">🎟️</div>
-                <span>Validasi E-Ticket</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="logout-btn">
-                    <div class="menu-icon">↪</div>
-                    <span>Logout</span>
-                </button>
-            </form>
-        </div>
-
-    </aside>
+    @include('dashboard.admin-biasa.partials.sidebar')
 
 
     <!-- =========================================
@@ -969,18 +922,12 @@
                         <span>Total Jadwal Hari Ini</span>
                         <h3>{{ $stats['total_trips'] }} Trip</h3>
                     </div>
-                    <div class="stat-icon" style="background: #eefbf5; color: #087f55;">
-                        🚐
-                    </div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-info">
                         <span>Sandar di Area Muat (Bay)</span>
                         <h3 style="color: #087f55;">{{ $stats['in_bay'] }} Unit</h3>
-                    </div>
-                    <div class="stat-icon" style="background: #eaf8f2; color: #087f55;">
-                        🅿️
                     </div>
                 </div>
 
@@ -989,18 +936,12 @@
                         <span>Masih di Garasi (Prep)</span>
                         <h3 style="color: #b45309;">{{ $stats['in_garage'] }} Unit</h3>
                     </div>
-                    <div class="stat-icon" style="background: #fff8eb; color: #b45309;">
-                        🏠
-                    </div>
                 </div>
 
                 <div class="stat-card">
                     <div class="stat-info">
                         <span>Sudah Berangkat</span>
                         <h3 style="color: #2563eb;">{{ $stats['departed'] }} Trip</h3>
-                    </div>
-                    <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">
-                        🛣️
                     </div>
                 </div>
             </div>
@@ -1013,19 +954,19 @@
                         Semua Status ({{ $stats['total_trips'] }})
                     </button>
                     <button type="button" class="filter-tab-btn" onclick="filterTrips('bay', this)">
-                        🅿️ Sandar di Bay ({{ $stats['in_bay'] }})
+                        Sandar di Bay ({{ $stats['in_bay'] }})
                     </button>
                     <button type="button" class="filter-tab-btn" onclick="filterTrips('garasi', this)">
-                        🏠 Masih di Garasi ({{ $stats['in_garage'] }})
+                        Masih di Garasi ({{ $stats['in_garage'] }})
                     </button>
                     <button type="button" class="filter-tab-btn" onclick="filterTrips('berangkat', this)">
-                        🛣️ Sudah Berangkat ({{ $stats['departed'] }})
+                        Sudah Berangkat ({{ $stats['departed'] }})
                     </button>
                 </div>
 
                 <div>
                     <button type="button" class="btn-trip-action btn-view-manifest" onclick="window.location.reload()">
-                        🔄 Segarkan Informasi Real-Time
+                        Segarkan Informasi Real-Time
                     </button>
                 </div>
             </div>
@@ -1047,8 +988,8 @@
 
                                 <div class="trip-route-title">
                                     <h3>
-                                        <span>🛣️</span>
-                                        <span>{{ $trip->origin_pool }} ➔ {{ $trip->destination_pool }}</span>
+                                        <span></span>
+                                        <span>{{ $trip->origin_pool }} ke {{ $trip->destination_pool }}</span>
                                     </h3>
                                     <span>Kode Trip: <strong>{{ $trip->trip_code }}</strong> • Keterisian: <strong>{{ $trip->occupancy_ratio }} ({{ $trip->occupancy_percentage }}%)</strong></span>
                                 </div>
@@ -1059,15 +1000,15 @@
                                 @if($trip->status_key === 'bay')
                                     <span class="trip-status-indicator status-bay" id="status-badge-{{ $trip->id }}">
                                         <span class="pulse-dot"></span>
-                                        🅿️ {{ $trip->status_label }}
+                                        {{ $trip->status_label }}
                                     </span>
                                 @elseif($trip->status_key === 'garasi')
                                     <span class="trip-status-indicator status-garasi" id="status-badge-{{ $trip->id }}">
-                                        🏠 {{ $trip->status_label }}
+                                        {{ $trip->status_label }}
                                     </span>
                                 @else
                                     <span class="trip-status-indicator status-berangkat" id="status-badge-{{ $trip->id }}">
-                                        🛣️ {{ $trip->status_label }}
+                                        {{ $trip->status_label }}
                                     </span>
                                 @endif
                             </div>
@@ -1080,7 +1021,7 @@
                             <!-- KOLOM 1: DETAIL ARMADA & KRU -->
                             <div class="body-section">
                                 <div class="section-sub-title">
-                                    <span>🚐</span>
+                                    <span></span>
                                     <span>Detail Armada & Kru</span>
                                 </div>
 
@@ -1107,10 +1048,10 @@
 
                                     <div class="driver-contact-actions">
                                         <a href="{{ $trip->driver_wa_url }}" target="_blank" class="btn-driver-contact btn-driver-wa" title="WhatsApp Sopir">
-                                            💬 WhatsApp
+                                            WhatsApp
                                         </a>
                                         <a href="{{ $trip->driver_tel_url }}" class="btn-driver-contact btn-driver-tel" title="Telepon Sopir">
-                                            📞 {{ $trip->driver_phone }}
+                                            {{ $trip->driver_phone }}
                                         </a>
                                     </div>
                                 </div>
@@ -1120,7 +1061,7 @@
                             <!-- KOLOM 2: RUTE PERJALANAN & TITIK SINGGAH -->
                             <div class="body-section">
                                 <div class="section-sub-title">
-                                    <span>📍</span>
+                                    <span></span>
                                     <span>Rute, Titik Singgah & Transfer</span>
                                 </div>
 
@@ -1132,7 +1073,7 @@
                                             <strong>{{ $trip->origin_pool }}</strong>
                                             <span>Titik Keberangkatan Utama Penumpang</span>
                                             <div>
-                                                <span class="timeline-tag tag-origin">🟢 Pool Asal</span>
+                                                <span class="timeline-tag tag-origin">Pool Asal</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1145,7 +1086,7 @@
                                                 <strong>{{ $transit->name }}</strong>
                                                 <span>{{ $transit->type }} ({{ $transit->time }})</span>
                                                 <div>
-                                                    <span class="timeline-tag tag-transit">📍 Titik Singgah / Transfer</span>
+                                                    <span class="timeline-tag tag-transit">Titik Singgah / Transfer</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1158,7 +1099,7 @@
                                             <strong>{{ $trip->destination_pool }}</strong>
                                             <span>Titik Akhir Penurunan Seluruh Penumpang</span>
                                             <div>
-                                                <span class="timeline-tag tag-destination">🏁 Pool Tujuan Akhir</span>
+                                                <span class="timeline-tag tag-destination">Pool Tujuan Akhir</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1176,9 +1117,6 @@
                                 <div class="schedule-time-box">
                                     <!-- 1. Jam Kumpul -->
                                     <div class="time-row">
-                                        <div class="time-row-icon icon-gathering">
-                                            👥
-                                        </div>
                                         <div class="time-row-content">
                                             <span>Jam Kumpul Penumpang:</span>
                                             <strong>{{ $trip->gathering_time }}</strong>
@@ -1188,9 +1126,6 @@
 
                                     <!-- 2. Jam Buka Gerbang Boarding -->
                                     <div class="time-row">
-                                        <div class="time-row-icon icon-boarding">
-                                            🚪
-                                        </div>
                                         <div class="time-row-content">
                                             <span>Buka Gerbang Boarding:</span>
                                             <strong style="color: #087f55;">{{ $trip->boarding_gate_time }}</strong>
@@ -1200,9 +1135,6 @@
 
                                     <!-- 3. Estimasi Jam Tiba di Tujuan -->
                                     <div class="time-row">
-                                        <div class="time-row-icon icon-arrival">
-                                            🏁
-                                        </div>
                                         <div class="time-row-content">
                                             <span>Estimasi Tiba di Tujuan:</span>
                                             <strong style="color: #1d4ed8;">{{ $trip->estimated_arrival_time }}</strong>
@@ -1231,7 +1163,7 @@
                                         class="btn-trip-action btn-to-bay"
                                         onclick="updateTripStatus({{ $trip->id }}, 'bay', 'Bay 01 (Gate Utama)')"
                                     >
-                                        🅿️ Arahkan Sandar ke Bay
+                                        Arahkan Sandar ke Bay
                                     </button>
                                 @elseif($trip->status_key === 'bay')
                                     <button
@@ -1239,7 +1171,7 @@
                                         class="btn-trip-action btn-mark-departed"
                                         onclick="updateTripStatus({{ $trip->id }}, 'berangkat', 'Sudah Berangkat (Tol)')"
                                     >
-                                        🛣️ Berangkatkan Armada
+                                        Berangkatkan Armada
                                     </button>
                                 @endif
 
@@ -1247,7 +1179,7 @@
                                     href="{{ route('dashboard.admin-biasa.booking') }}?schedule_id={{ $trip->id }}"
                                     class="btn-trip-action btn-view-manifest"
                                 >
-                                    📋 Buka Manifes Kursi
+                                    Buka Manifes Kursi
                                 </a>
                             </div>
                         </div>
@@ -1296,14 +1228,14 @@
 
         if (newStatus === 'bay') {
             badge.className = 'trip-status-indicator status-bay';
-            badge.innerHTML = '<span class="pulse-dot"></span> 🅿️ Sudah Sandar di Area Muat (Bay)';
+            badge.innerHTML = '<span class="pulse-dot"></span> Sudah Sandar di Area Muat (Bay)';
             bayText.innerText = newBayText;
-            alert('✅ Sukses! Armada trip #' + tripId + ' berhasil dicatat SANDAR DI AREA MUAT (BAY). Penumpang dapat mulai boarding.');
+            alert('Sukses! Armada trip #' + tripId + ' berhasil dicatat SANDAR DI AREA MUAT (BAY). Penumpang dapat mulai boarding.');
         } else if (newStatus === 'berangkat') {
             badge.className = 'trip-status-indicator status-berangkat';
-            badge.innerHTML = '🛣️ Sudah Berangkat';
+            badge.innerHTML = 'Sudah Berangkat';
             bayText.innerText = newBayText;
-            alert('🚀 Armada trip #' + tripId + ' telah resmi DIBERANGKATKAN menuju pool tujuan.');
+            alert('Armada trip #' + tripId + ' telah resmi DIBERANGKATKAN menuju pool tujuan.');
         }
 
         setTimeout(() => {

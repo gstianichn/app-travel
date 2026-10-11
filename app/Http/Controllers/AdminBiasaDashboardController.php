@@ -32,20 +32,22 @@ class AdminBiasaDashboardController extends Controller
             ->whereNotIn('id', $schedulesWithBookings->pluck('id'))
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(max(6, 6 - $schedulesWithBookings->count()))
+            ->take(60)
             ->get();
 
-        $schedules = $schedulesWithBookings->merge($otherSchedules)->take(6);
+        // Only departures still ahead, or that left less than 30 minutes ago.
+        $schedules = $schedulesWithBookings->merge($otherSchedules)
+            ->filter(fn ($sched) => $sched->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(30)))
+            ->sortBy(fn ($sched) => $sched->departureCarbon()->timestamp)
+            ->take(6)
+            ->values();
 
         // Transform data jadwal untuk dashboard operasional
-        $departures = $schedules->map(function ($sched, $index) {
-            $origin = $sched->route?->origin?->name ?? 'Pool Dipatiukur (Bandung)';
-            $destination = $sched->route?->destination?->name ?? 'Pool Semanggi (Jakarta)';
-            $plateNumber = $sched->vehicle?->plate_number ?? 'D 7'.(100 + $index * 24).' AB';
-            $vehicleModel = $sched->vehicle?->name ?? 'Toyota HiAce Premio';
+        $departures = $schedules->map(function ($sched) {
+            $origin = $sched->route?->origin?->name ?? '-';
+            $destination = $sched->route?->destination?->name ?? '-';
             $capacity = $sched->vehicle?->capacity ?? 10;
 
-            // Hitung okupansi dari pemesanan riil penumpang pengguna
             $bookedPassengers = $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(function ($b) {
                 return $b->passengers->count() ?: $b->total_passenger;
             });
@@ -53,119 +55,44 @@ class AdminBiasaDashboardController extends Controller
             if ($sched->available_seats !== null && $sched->available_seats < $capacity) {
                 $occupied = max($occupied, max(0, $capacity - (int) $sched->available_seats));
             }
-            $available = max(0, $capacity - $occupied);
 
-            // Status trip: Persiapan, Boarding Dibuka, atau Selesai
-            $status = $sched->status;
-            if (! in_array($status, ['Persiapan', 'Boarding Dibuka', 'Selesai'])) {
-                if ($index === 0) {
-                    $status = 'Boarding Dibuka';
-                } elseif ($index === 1) {
-                    $status = 'Persiapan';
-                } else {
-                    $status = 'Persiapan';
-                }
-            }
+            // Status follows the clock: boarding opens 15 minutes before departure (Schedule::boardingTime).
+            $departureAt = $sched->departureCarbon();
+            $status = match (true) {
+                in_array(strtolower((string) $sched->status), ['completed', 'selesai']) => 'Selesai',
+                now()->greaterThanOrEqualTo($departureAt) => 'Sudah berangkat',
+                now()->greaterThanOrEqualTo($departureAt->copy()->subMinutes(15)) => 'Boarding Dibuka',
+                default => 'Persiapan',
+            };
 
             return (object) [
                 'id' => $sched->id,
-                'time' => $sched->departure_time ? Carbon::parse($sched->departure_time)->format('H:i').' WIB' : Carbon::now()->addMinutes(30)->format('H:i').' WIB',
-                'route_name' => "{$origin} → {$destination}",
+                'time' => $departureAt->format('H:i').' WIB',
+                'route_name' => "{$origin} ke {$destination}",
                 'origin' => $origin,
                 'destination' => $destination,
-                'plate_number' => $plateNumber,
-                'vehicle_name' => $vehicleModel,
-                'driver_name' => $sched->driver?->name ?? 'Ahmad Subarjo',
+                'plate_number' => $sched->vehicle?->plate_number ?? '-',
+                'vehicle_name' => $sched->vehicle?->name ?? 'Kendaraan belum ditugaskan',
+                'driver_name' => $sched->driver?->user?->name ?? 'Belum ditugaskan',
                 'occupied_seats' => $occupied,
                 'total_seats' => $capacity,
                 'ratio' => "{$occupied}/{$capacity} kursi",
                 'percentage' => (int) min(100, round(($occupied / max(1, $capacity)) * 100)),
                 'status' => $status,
-                'departure_note' => $index === 0 ? 'Berangkat dalam 30 menit' : ($index === 1 ? 'Berangkat dalam 1 jam 15 menit' : 'Jadwal operasional hari ini'),
+                'departure_note' => $departureAt->isToday()
+                    ? 'Berangkat '.$departureAt->diffForHumans()
+                    : $departureAt->translatedFormat('l, d F'),
             ];
         });
 
-        // Fallback data operasional jika jadwal di database belum terisi
-        if ($departures->isEmpty()) {
-            $departures = collect([
-                (object) [
-                    'id' => 1,
-                    'time' => Carbon::now()->addMinutes(35)->format('H:i').' WIB',
-                    'route_name' => 'Bandung (Dipatiukur) → Jakarta (Semanggi)',
-                    'origin' => 'Pool Dipatiukur (Bandung)',
-                    'destination' => 'Pool Semanggi (Jakarta)',
-                    'plate_number' => 'D 7812 AB',
-                    'vehicle_name' => 'Toyota HiAce Premio Eksekutif',
-                    'driver_name' => 'Ahmad Subarjo',
-                    'occupied_seats' => 8,
-                    'total_seats' => 10,
-                    'ratio' => '8/10 kursi',
-                    'percentage' => 80,
-                    'status' => 'Boarding Dibuka',
-                    'departure_note' => 'Berangkat dalam 35 menit (Gate 1)',
-                ],
-                (object) [
-                    'id' => 2,
-                    'time' => Carbon::now()->addHours(1)->addMinutes(15)->format('H:i').' WIB',
-                    'route_name' => 'Bandung (Pasteur) → Bandara Soekarno-Hatta (CGK)',
-                    'origin' => 'Pool Pasteur (Bandung)',
-                    'destination' => 'Bandara Soetta T3',
-                    'plate_number' => 'B 1945 TKL',
-                    'vehicle_name' => 'Toyota HiAce Commuter VIP',
-                    'driver_name' => 'Deddy Prasetyo',
-                    'occupied_seats' => 9,
-                    'total_seats' => 10,
-                    'ratio' => '9/10 kursi',
-                    'percentage' => 90,
-                    'status' => 'Persiapan',
-                    'departure_note' => 'Berangkat dalam 1 jam 15 menit (Gate 2)',
-                ],
-                (object) [
-                    'id' => 3,
-                    'time' => Carbon::now()->addHours(1)->addMinutes(50)->format('H:i').' WIB',
-                    'route_name' => 'Bandung (Dipatiukur) → Bekasi Timur (Mega Mall)',
-                    'origin' => 'Pool Dipatiukur (Bandung)',
-                    'destination' => 'Bekasi Timur Point',
-                    'plate_number' => 'D 7023 XY',
-                    'vehicle_name' => 'Toyota HiAce Premio',
-                    'driver_name' => 'Irfan Maulana',
-                    'occupied_seats' => 6,
-                    'total_seats' => 10,
-                    'ratio' => '6/10 kursi',
-                    'percentage' => 60,
-                    'status' => 'Persiapan',
-                    'departure_note' => 'Berangkat dalam 1 jam 50 menit (Gate 3)',
-                ],
-                (object) [
-                    'id' => 4,
-                    'time' => Carbon::now()->subMinutes(25)->format('H:i').' WIB',
-                    'route_name' => 'Bandung (Dipatiukur) → Jakarta (Pancoran)',
-                    'origin' => 'Pool Dipatiukur (Bandung)',
-                    'destination' => 'Pool Pancoran (Jakarta)',
-                    'plate_number' => 'D 7551 GH',
-                    'vehicle_name' => 'Toyota HiAce Premio',
-                    'driver_name' => 'Syarif Hidayat',
-                    'occupied_seats' => 10,
-                    'total_seats' => 10,
-                    'ratio' => '10/10 kursi',
-                    'percentage' => 100,
-                    'status' => 'Selesai',
-                    'departure_note' => 'Telah diberangkatkan tepat waktu',
-                ],
-            ]);
-        }
-
-        // Info shift & lokasi operasional
-        Carbon::setLocale('id');
+        // Info petugas & lokasi operasional (shift belum dicatat di sistem, jadi tidak ditampilkan)
         $shiftInfo = [
             'staff_name' => $user->name ?? 'Staf Operasional',
-            'pool_name' => $user->branch ?: 'Pool Dipatiukur (Bandung Pusat)',
+            'pool_name' => $user->branch ?: null,
             'active_date' => Carbon::now()->translatedFormat('l, d F Y'),
-            'shift_name' => 'Shift Pagi (06:00 – 14:00 WIB)',
-            'status' => 'Aktif / On-Duty',
         ];
 
-        // Statistik ringkasan dari database riil
+        // Statistik ringkasan dari database
         $todayBookings = Booking::where(function ($q) use ($today) {
             $q->whereDate('created_at', $today)
                 ->orWhereHas('schedule', function ($sq) use ($today) {
@@ -174,8 +101,10 @@ class AdminBiasaDashboardController extends Controller
         })->whereNotIn('status', ['cancelled', 'batal'])->count();
 
         $stats = [
-            'today_bookings' => $todayBookings ?: Booking::whereNotIn('status', ['cancelled', 'batal'])->count(),
-            'active_schedules' => $departures->count(),
+            'today_bookings' => $todayBookings,
+            'active_schedules' => Schedule::whereDate('departure_date', $today)
+                ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
+                ->count(),
             'boarding_now' => $departures->where('status', 'Boarding Dibuka')->count(),
             'ready_preparation' => $departures->where('status', 'Persiapan')->count(),
         ];
@@ -200,8 +129,8 @@ class AdminBiasaDashboardController extends Controller
 
             $activities->push((object) [
                 'type' => 'booking',
-                'title' => "Pemesanan Tiket Masuk: {$b->booking_code}",
-                'desc' => "{$customer}{$seatInfo} • Rute {$origin} ➔ {$dest} • Status: {$b->statusLabel()}",
+                'title' => "Pesanan masuk {$b->booking_code}",
+                'desc' => "{$customer}{$seatInfo}, {$origin} ke {$dest}, status {$b->statusLabel()}",
                 'timestamp' => $b->created_at,
                 'time_text' => $b->created_at ? $b->created_at->diffForHumans() : 'Hari ini',
                 'dot_color' => '#0b7285',
@@ -224,8 +153,8 @@ class AdminBiasaDashboardController extends Controller
 
             $activities->push((object) [
                 'type' => 'boarding',
-                'title' => "Boarding Pass Divalidasi (Kursi {$seatList})",
-                'desc' => "{$passengerName} • Tiket {$t->ticket_number} • Rute {$origin} ➔ {$dest}",
+                'title' => "Tiket divalidasi, kursi {$seatList}",
+                'desc' => "{$passengerName}, tiket {$t->ticket_number}, {$origin} ke {$dest}",
                 'timestamp' => $t->boarded_at,
                 'time_text' => $t->boarded_at ? Carbon::parse($t->boarded_at)->diffForHumans() : 'Baru saja',
                 'dot_color' => '#087f55',

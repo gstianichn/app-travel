@@ -14,10 +14,10 @@
     @if(session('success'))
         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between gap-3 shadow-2xs">
             <div class="flex items-center gap-2.5">
-                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">✓</span>
+                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 font-bold">✕</button>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 font-bold" aria-label="Tutup">&times;</button>
         </div>
     @endif
 
@@ -27,7 +27,7 @@
                 <span class="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs">!</span>
                 <span>{{ session('error') }}</span>
             </div>
-            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 font-bold">✕</button>
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 font-bold" aria-label="Tutup">&times;</button>
         </div>
     @endif
 
@@ -36,15 +36,15 @@
         <div class="bg-white rounded-3xl border-2 border-amber-300 p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);">
             <div class="space-y-1">
                 <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-200 text-amber-900">Perjalanan Selesai</span>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-200 text-amber-900">Perjalanan Selesai</span>
                     <span class="text-xs text-amber-700 font-semibold">{{ $pendingReviewBooking->schedule?->departure_date ? \Carbon\Carbon::parse($pendingReviewBooking->schedule->departure_date)->translatedFormat('d M Y') : '' }}</span>
                 </div>
                 <h3 class="font-extrabold text-slate-900 text-base">
-                    Bagaimana perjalanan Anda: {{ $pendingReviewBooking->schedule?->route?->origin?->name }} &rarr; {{ $pendingReviewBooking->schedule?->route?->destination?->name }}?
+                    Bagaimana perjalanan Anda: {{ $pendingReviewBooking->schedule?->route?->origin?->name }} ke {{ $pendingReviewBooking->schedule?->route?->destination?->name }}?
                 </h3>
                 <p class="text-xs text-slate-600">
                     Armada: <strong>{{ $pendingReviewBooking->schedule?->vehicle?->type ?? 'HiAce Premio' }}</strong> • 
-                    Pengemudi: <strong>{{ $pendingReviewBooking->schedule?->driver?->user?->name ?? 'Pengemudi Fast Travel' }}</strong>
+                    Pengemudi: <strong>{{ $pendingReviewBooking->schedule?->driver?->user?->name ?? 'belum ditentukan' }}</strong>
                 </p>
             </div>
             <button type="button" @click="showReviewModal = true"
@@ -123,29 +123,29 @@
                         <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">
+                                    <span class="text-xs font-extrabold bg-white/20 px-2.5 py-0.5 rounded-full">
                                         Perjalanan Terjadwal
                                     </span>
                                     @if ($isCheckedIn)
-                                        <span class="bg-emerald-400 text-emerald-950 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-2xs">
-                                            ✓ Checked-In / On-Board
+                                        <span class="bg-emerald-400 text-emerald-950 text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs">
+                                            Checked-In / On-Board
                                         </span>
                                     @else
-                                        <span class="bg-white text-emerald-900 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-2xs">
+                                        <span class="bg-white text-emerald-900 text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs">
                                             Terkonfirmasi (Lunas)
                                         </span>
                                     @endif
                                 </div>
                                 <h3 class="font-black text-lg mt-1">
-                                    {{ $booking->schedule?->route?->origin?->name ?? 'Asal' }} &rarr; {{ $booking->schedule?->route?->destination?->name ?? 'Tujuan' }}
+                                    {{ $booking->schedule?->route?->origin?->name ?? 'Asal' }} ke {{ $booking->schedule?->route?->destination?->name ?? 'Tujuan' }}
                                 </h3>
                                 <p class="text-xs text-white/85 mt-0.5">
                                     {{ $booking->schedule?->vehicle?->type ?? 'Toyota HiAce Premio' }} ({{ $booking->schedule?->vehicle?->plate_number ?? '-' }}) • 
-                                    Supir: {{ $booking->schedule?->driver?->user?->name ?? 'Pengemudi Fast Travel' }}
+                                    Supir: {{ $booking->schedule?->driver?->user?->name ?? 'belum ditentukan' }}
                                 </p>
                             </div>
                             <div class="text-left sm:text-right">
-                                <span class="text-[10px] text-emerald-200 block uppercase tracking-wider">No. Tiket Resmi</span>
+                                <span class="text-xs text-emerald-200 block">No. Tiket Resmi</span>
                                 <span class="font-mono font-bold text-base text-white">
                                     {{ $booking->ticket?->ticket_number ?? 'TKT-'.$booking->booking_code }}
                                 </span>
@@ -155,37 +155,37 @@
                         <!-- Detail Perjalanan -->
                         <div class="px-6 py-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-xs border-b border-dashed border-slate-200">
                             <div>
-                                <p class="text-slate-400 font-medium uppercase tracking-wide">Tanggal</p>
+                                <p class="text-slate-400 font-medium">Tanggal</p>
                                 <p class="font-bold text-slate-800 mt-0.5">
                                     {{ $booking->schedule?->departure_date ? \Carbon\Carbon::parse($booking->schedule->departure_date)->translatedFormat('d M Y') : '-' }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-slate-400 font-medium uppercase tracking-wide">Jam Berangkat</p>
+                                <p class="text-slate-400 font-medium">Jam Berangkat</p>
                                 <p class="font-bold text-slate-800 mt-0.5">
                                     {{ $booking->schedule?->departure_time ? \Carbon\Carbon::parse($booking->schedule->departure_time)->format('H:i') : '-' }} WIB
                                 </p>
                             </div>
                             <div>
-                                <p class="text-slate-400 font-medium uppercase tracking-wide">Nomor Kursi</p>
+                                <p class="text-slate-400 font-medium">Nomor Kursi</p>
                                 <p class="font-black text-sm mt-0.5" style="color:#087f55;">
                                     {{ $booking->passengerSeatNumbers() }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-slate-400 font-medium uppercase tracking-wide">Penumpang</p>
+                                <p class="text-slate-400 font-medium">Penumpang</p>
                                 <p class="font-semibold text-slate-800 mt-0.5">
                                     {{ $booking->total_passenger }} Orang
                                 </p>
                             </div>
                             <div>
-                                <p class="text-slate-400 font-medium uppercase tracking-wide">Pool Naik</p>
+                                <p class="text-slate-400 font-medium">Pool Naik</p>
                                 <p class="font-semibold text-slate-800 mt-0.5 truncate">
                                     {{ $booking->schedule?->route?->origin?->name ?? 'Pool Asal' }}
                                 </p>
                             </div>
                             <div>
-                                <p class="text-slate-400 font-medium uppercase tracking-wide">Total Bayar</p>
+                                <p class="text-slate-400 font-medium">Total Bayar</p>
                                 <p class="font-extrabold text-slate-900 mt-0.5">
                                     Rp {{ number_format($booking->total_price, 0, ',', '.') }}
                                 </p>
@@ -207,8 +207,8 @@
                                     </svg>
                                 </div>
                                 <div class="space-y-0.5">
-                                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Kode Booking & Boarding Token</span>
-                                    <p class="font-mono font-black text-lg text-slate-900 tracking-wider">{{ $booking->booking_code }}</p>
+                                    <span class="text-xs text-slate-400 font-bold">Kode Booking & Boarding Token</span>
+                                    <p class="font-mono font-black text-lg text-slate-900">{{ $booking->booking_code }}</p>
                                     <p class="text-xs text-slate-500">
                                         @if ($isCheckedIn)
                                             <span class="text-emerald-700 font-semibold">Telah Check-in pada: {{ $booking->ticket?->boarded_at ? \Carbon\Carbon::parse($booking->ticket->boarded_at)->format('H:i') . ' WIB' : 'Hari Ini' }}</span>
@@ -229,23 +229,25 @@
                                     $depTime = $booking->schedule?->departure_time ? \Carbon\Carbon::parse($booking->schedule->departure_time)->format('H:i') : '-';
                                     $passengerName = $booking->passengers->first()?->name ?? auth()->user()->name;
 
-                                    $ticketWaMessage = "Halo CS Fast Travel, saya butuh bantuan untuk tiket perjalanan saya:\n"
+                                    $ticketWaMessage = "Halo CS ".\App\Models\AppSetting::companyName().", saya butuh bantuan untuk tiket perjalanan saya:\n"
                                         . "• No. Tiket: {$ticketNumber}\n"
                                         . "• Kode Booking: #{$booking->booking_code}\n"
-                                        . "• Rute: {$originName} &rarr; {$destName}\n"
+                                        . "• Rute: {$originName} ke {$destName}\n"
                                         . "• Jadwal: {$depDate}, {$depTime} WIB\n"
                                         . "• Penumpang: {$passengerName}\n\n"
                                         . "Kendala yang saya alami: [Mohon bantuan terkait tiket ini]";
-                                    $ticketWaUrl = "https://wa.me/62812345678?text=" . urlencode($ticketWaMessage);
+                                    $ticketWaUrl = \App\Models\AppSetting::whatsappUrl($ticketWaMessage);
                                 @endphp
 
-                                {{-- Tombol WhatsApp CS Kontekstual --}}
-                                <a href="{{ $ticketWaUrl }}" target="_blank"
+                                {{-- Tombol WhatsApp CS Kontekstual (hanya jika admin sudah mengisi nomor WhatsApp) --}}
+                                @if ($ticketWaUrl)
+                                <a href="{{ $ticketWaUrl }}" target="_blank" rel="noopener"
                                    class="px-3.5 py-2.5 rounded-xl border border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
                                    title="Hubungi Customer Support terkait tiket ini (Pesan otomatis terisi)">
                                     <svg class="w-3.5 h-3.5 text-emerald-700" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
                                     <span>Bantuan CS</span>
                                 </a>
+                                @endif
 
                                 {{-- Tombol Lihat E-Ticket QR Modal --}}
                                 <button type="button"
@@ -253,7 +255,7 @@
                                             id: {{ $booking->ticket?->id ?? 0 }},
                                             code: '{{ $booking->booking_code }}',
                                             number: '{{ $booking->ticket?->ticket_number ?? 'TKT-'.$booking->booking_code }}',
-                                            route: '{{ $booking->schedule?->route?->origin?->name }} &rarr; {{ $booking->schedule?->route?->destination?->name }}',
+                                            route: '{{ $booking->schedule?->route?->origin?->name }} ke {{ $booking->schedule?->route?->destination?->name }}',
                                             date: '{{ \Carbon\Carbon::parse($booking->schedule?->departure_date)->translatedFormat('d M Y') }}',
                                             time: '{{ \Carbon\Carbon::parse($booking->schedule?->departure_time)->format('H:i') }} WIB',
                                             seats: '{{ $booking->passengerSeatNumbers() }}',
@@ -291,7 +293,7 @@
                                             @click="activeRefundBooking = {
                                                 id: {{ $booking->id }},
                                                 code: '{{ $booking->booking_code }}',
-                                                route: '{{ $booking->schedule?->route?->origin?->name }} &rarr; {{ $booking->schedule?->route?->destination?->name }}',
+                                                route: '{{ $booking->schedule?->route?->origin?->name }} ke {{ $booking->schedule?->route?->destination?->name }}',
                                                 totalPrice: {{ (float)$booking->total_price }},
                                                 cancellationFee: {{ round((float)$booking->total_price * 0.25, 2) }},
                                                 refundAmount: {{ round((float)$booking->total_price * 0.75, 2) }}
@@ -327,8 +329,7 @@
                        style="background:#087f55;"
                        onmouseover="this.style.background='#066b47'"
                        onmouseout="this.style.background='#087f55'">
-                        Cari Tiket Sekarang &rarr;
-                    </a>
+                        Cari Tiket Sekarang</a>
                 </div>
             </div>
         @endif
@@ -347,17 +348,17 @@
                         <div class="flex items-center gap-2">
                             <span class="font-mono font-bold text-slate-900 text-sm">{{ $history->booking_code }}</span>
                             @if($isCompleted)
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                     Perjalanan Selesai
                                 </span>
                             @else
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
                                     Dibatalkan
                                 </span>
                             @endif
                         </div>
                         <h4 class="font-bold text-slate-800 text-sm">
-                            {{ $history->schedule?->route?->origin?->name ?? 'Asal' }} &rarr; {{ $history->schedule?->route?->destination?->name ?? 'Tujuan' }}
+                            {{ $history->schedule?->route?->origin?->name ?? 'Asal' }} ke {{ $history->schedule?->route?->destination?->name ?? 'Tujuan' }}
                         </h4>
                         <p class="text-xs text-slate-500">
                             {{ $history->schedule?->departure_date ? \Carbon\Carbon::parse($history->schedule->departure_date)->translatedFormat('d M Y') : '-' }} • 
@@ -414,9 +415,9 @@
                 <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                         <div>
-                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">ID Refund #{{ $ref->id }}</span>
+                            <span class="text-xs font-bold text-slate-400">ID Refund #{{ $ref->id }}</span>
                             <h4 class="font-bold text-slate-900 text-base">
-                                {{ $ref->booking?->schedule?->route?->origin?->name }} &rarr; {{ $ref->booking?->schedule?->route?->destination?->name }}
+                                {{ $ref->booking?->schedule?->route?->origin?->name }} ke {{ $ref->booking?->schedule?->route?->destination?->name }}
                             </h4>
                             <p class="text-xs text-slate-500 font-mono">Kode Booking: {{ $ref->booking?->booking_code }}</p>
                         </div>
@@ -425,7 +426,7 @@
                             <p class="text-lg font-black" style="color:#087f55;">
                                 Rp {{ number_format($ref->amount, 0, ',', '.') }}
                             </p>
-                            <span class="text-[11px] text-slate-400">(Potongan admin 25%: Rp {{ number_format($ref->cancellation_fee, 0, ',', '.') }})</span>
+                            <span class="text-xs text-slate-400">(Potongan admin 25%: Rp {{ number_format($ref->cancellation_fee, 0, ',', '.') }})</span>
                         </div>
                     </div>
 
@@ -437,21 +438,21 @@
                             <div class="p-3 rounded-2xl border flex flex-col items-center justify-center {{ $step >= 1 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
                                 <svg class="w-5 h-5 mb-1 {{ $step >= 1 ? 'text-emerald-700' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 <span>1. Diajukan</span>
-                                <span class="block text-[10px] font-normal text-slate-500 mt-0.5">{{ $ref->created_at ? $ref->created_at->format('d M, H:i') : '' }}</span>
+                                <span class="block text-xs font-normal text-slate-500 mt-0.5">{{ $ref->created_at ? $ref->created_at->format('d M, H:i') : '' }}</span>
                             </div>
 
                             {{-- Tahap 2 --}}
                             <div class="p-3 rounded-2xl border flex flex-col items-center justify-center {{ $step >= 2 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
                                 <svg class="w-5 h-5 mb-1 {{ $step >= 2 ? 'text-emerald-700' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                                 <span>2. Diverifikasi</span>
-                                <span class="block text-[10px] font-normal text-slate-500 mt-0.5">{{ $step >= 2 ? 'Disetujui Admin' : 'Menunggu antrean' }}</span>
+                                <span class="block text-xs font-normal text-slate-500 mt-0.5">{{ $step >= 2 ? 'Disetujui Admin' : 'Menunggu antrean' }}</span>
                             </div>
 
                             {{-- Tahap 3 --}}
                             <div class="p-3 rounded-2xl border flex flex-col items-center justify-center {{ $step >= 3 ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold' : 'bg-slate-50 text-slate-400' }}">
                                 <svg class="w-5 h-5 mb-1 {{ $step >= 3 ? 'text-emerald-700' : 'text-slate-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
                                 <span>3. Dana Ditransfer</span>
-                                <span class="block text-[10px] font-normal text-slate-500 mt-0.5">{{ $step >= 3 ? 'Transfer Selesai' : 'Sedang dikirim' }}</span>
+                                <span class="block text-xs font-normal text-slate-500 mt-0.5">{{ $step >= 3 ? 'Transfer Selesai' : 'Sedang dikirim' }}</span>
                             </div>
                         </div>
                     </div>
@@ -489,12 +490,11 @@
             {{-- Header Modal --}}
             <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="p-5 text-white flex items-center justify-between">
                 <div>
-                    <span class="text-[10px] uppercase font-bold tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">E-Ticket Boarding Pass</span>
+                    <span class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">E-Ticket Boarding Pass</span>
                     <h3 class="text-base font-bold mt-1" x-text="activeModalTicket?.route"></h3>
                 </div>
-                <button type="button" @click="activeModalTicket = null" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 text-white font-bold">
-                    ✕
-                </button>
+                <button type="button" @click="activeModalTicket = null" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 text-white font-bold" aria-label="Tutup">&times;
+                                    </button>
             </div>
 
             <div class="p-6 space-y-5 text-center">
@@ -514,7 +514,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="font-mono text-xl font-black text-slate-900 tracking-widest" x-text="activeModalTicket?.code"></p>
+                        <p class="font-mono text-xl font-black text-slate-900" x-text="activeModalTicket?.code"></p>
                         <p class="text-xs text-slate-400 mt-0.5">No. Tiket: <span class="font-mono font-bold text-slate-700" x-text="activeModalTicket?.number"></span></p>
                     </div>
                 </div>
@@ -522,15 +522,15 @@
                 {{-- Info Ringkas --}}
                 <div class="grid grid-cols-3 gap-2 text-xs py-2 border-y border-slate-100 text-left">
                     <div>
-                        <span class="text-slate-400 block text-[10px]">Tanggal</span>
+                        <span class="text-slate-400 block text-xs">Tanggal</span>
                         <strong class="text-slate-800" x-text="activeModalTicket?.date"></strong>
                     </div>
                     <div>
-                        <span class="text-slate-400 block text-[10px]">Jam Berangkat</span>
+                        <span class="text-slate-400 block text-xs">Jam Berangkat</span>
                         <strong class="text-slate-800" x-text="activeModalTicket?.time"></strong>
                     </div>
                     <div>
-                        <span class="text-slate-400 block text-[10px]">Nomor Kursi</span>
+                        <span class="text-slate-400 block text-xs">Nomor Kursi</span>
                         <strong style="color:#087f55;" x-text="activeModalTicket?.seats"></strong>
                     </div>
                 </div>
@@ -539,7 +539,7 @@
                 <div class="space-y-2 pt-1">
                     <template x-if="activeModalTicket?.isCheckedIn">
                         <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold text-xs flex items-center justify-center gap-2">
-                            <span>✓ Penumpang Telah Divalidasi Staf (Status: Boarded)</span>
+                            <span>Penumpang Telah Divalidasi Staf (Status: Boarded)</span>
                         </div>
                     </template>
 
@@ -571,16 +571,14 @@
             <div class="bg-rose-50 border-b border-rose-100 p-5 flex items-center justify-between text-rose-900">
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 rounded-xl bg-rose-200 flex items-center justify-center text-rose-700 font-bold">
-                        ✕
-                    </div>
+                                            </div>
                     <div>
                         <h3 class="font-bold text-base">Batalkan & Ajukan Refund</h3>
                         <p class="text-xs text-rose-600 font-mono" x-text="activeRefundBooking?.code"></p>
                     </div>
                 </div>
-                <button type="button" @click="activeRefundBooking = null" class="text-slate-400 hover:text-slate-600 font-bold text-lg">
-                    ✕
-                </button>
+                <button type="button" @click="activeRefundBooking = null" class="text-slate-400 hover:text-slate-600 font-bold text-lg" aria-label="Tutup">&times;
+                                    </button>
             </div>
 
             <form :action="'{{ url('/user/tiket') }}/' + activeRefundBooking?.id + '/refund'" method="POST" class="p-6 space-y-4 text-xs">
@@ -639,7 +637,7 @@
                     <input type="text" name="account_holder" required placeholder="Nama sesuai buku tabungan" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-emerald-600">
                 </div>
 
-                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] leading-relaxed flex items-start gap-2">
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs leading-relaxed flex items-start gap-2">
                     <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                     <span><strong>Pembebasan Kursi Otomatis:</strong> Setelah permohonan dikirim, tiket Anda dibatalkan dan kursi langsung dibuka kembali ke sistem agar bisa dipesan penumpang lain.</span>
                 </div>
@@ -666,10 +664,10 @@
                 
                 <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="p-5 text-white flex items-center justify-between">
                     <div>
-                        <span class="text-[10px] uppercase font-bold tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">Evaluasi Pascaperjalanan</span>
+                        <span class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">Evaluasi Pascaperjalanan</span>
                         <h3 class="text-base font-bold mt-1">Ulasan & Rating Perjalanan</h3>
                     </div>
-                    <button type="button" @click="showReviewModal = false" class="text-white/80 hover:text-white font-bold text-lg">✕</button>
+                    <button type="button" @click="showReviewModal = false" class="text-white/80 hover:text-white font-bold text-lg" aria-label="Tutup">&times;</button>
                 </div>
 
                 <form action="{{ route('dashboard.user.tiket.review', $pendingReviewBooking) }}" method="POST"
@@ -679,7 +677,7 @@
 
                     <div class="text-center pb-2 border-b border-slate-100">
                         <p class="font-bold text-slate-800 text-sm">
-                            {{ $pendingReviewBooking->schedule?->route?->origin?->name }} &rarr; {{ $pendingReviewBooking->schedule?->route?->destination?->name }}
+                            {{ $pendingReviewBooking->schedule?->route?->origin?->name }} ke {{ $pendingReviewBooking->schedule?->route?->destination?->name }}
                         </p>
                         <p class="text-slate-400 mt-0.5 font-mono">{{ $pendingReviewBooking->booking_code }}</p>
                     </div>
@@ -694,7 +692,7 @@
                             </span>
                         </div>
                         <input type="range" name="cleanliness_rating" min="1" max="5" x-model="cleanliness" class="w-full accent-emerald-600 cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400">
+                        <div class="flex justify-between text-xs text-slate-400">
                             <span>Kurang Bersih</span>
                             <span>Sangat Bersih & Wangi</span>
                         </div>
@@ -710,7 +708,7 @@
                             </span>
                         </div>
                         <input type="range" name="driver_rating" min="1" max="5" x-model="driver" class="w-full accent-emerald-600 cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400">
+                        <div class="flex justify-between text-xs text-slate-400">
                             <span>Perlu Ditingkatkan</span>
                             <span>Ramah & Sopan</span>
                         </div>
@@ -726,7 +724,7 @@
                             </span>
                         </div>
                         <input type="range" name="punctuality_rating" min="1" max="5" x-model="punctuality" class="w-full accent-emerald-600 cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400">
+                        <div class="flex justify-between text-xs text-slate-400">
                             <span>Terlambat</span>
                             <span>Tepat Waktu (On-Time)</span>
                         </div>

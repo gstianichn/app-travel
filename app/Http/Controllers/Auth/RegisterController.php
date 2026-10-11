@@ -57,6 +57,6 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         return redirect()
-            ->route('dashboard');
+            ->route('dashboard.user.index');
     }
 }

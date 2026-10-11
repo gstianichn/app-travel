@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Route extends Model
 {
@@ -91,5 +92,24 @@ class Route extends Model
         }
 
         return (float) ($this->price ?? 100000);
+    }
+
+    /**
+     * Active routes with both endpoints, cheapest first, keeping one route per city pair
+     * (several pools can serve the same two cities).
+     *
+     * @return Collection<int, Route>
+     */
+    public static function cheapestPerCityPair(?int $originId = null): Collection
+    {
+        return static::query()
+            ->with(['origin', 'destination'])
+            ->where(fn ($query) => $query->where('is_active', true)->orWhereNull('is_active'))
+            ->when($originId, fn ($query) => $query->where('origin_id', $originId))
+            ->orderBy('price')
+            ->get()
+            ->filter(fn (Route $route) => $route->origin && $route->destination)
+            ->unique(fn (Route $route) => ($route->origin->city ?: $route->origin->name).'|'.($route->destination->city ?: $route->destination->name))
+            ->values();
     }
 }

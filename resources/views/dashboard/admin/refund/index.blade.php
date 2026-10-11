@@ -725,7 +725,7 @@
 
         <div class="header-actions">
             <button type="button" class="btn-create-refund" onclick="openCreateRefundModal()">
-                <span>➕</span>
+                <span></span>
                 <span>Ajukan Refund Baru</span>
             </button>
         </div>
@@ -734,14 +734,14 @@
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
         <div style="padding: 12px 16px; border-radius: 10px; background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div style="padding: 12px 16px; border-radius: 10px; background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-            <span>✕</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -761,7 +761,6 @@
         <div class="metric-card info">
             <div class="metric-header">
                 <span class="metric-title">Total Pengajuan</span>
-                <div class="metric-icon-wrap">🔄</div>
             </div>
             <div class="metric-val">{{ number_format($totalRefundRequests ?? 0) }}</div>
             <span class="metric-sub">Seluruh permohonan pembatalan</span>
@@ -779,7 +778,6 @@
         <div class="metric-card">
             <div class="metric-header">
                 <span class="metric-title">Dana Ditransfer Balik</span>
-                <div class="metric-icon-wrap">💸</div>
             </div>
             <div class="metric-val">Rp {{ number_format($totalRefundedAmount ?? 0, 0, ',', '.') }}</div>
             <span class="metric-sub">Akumulasi refund yang disetujui</span>
@@ -788,7 +786,6 @@
         <div class="metric-card danger">
             <div class="metric-header">
                 <span class="metric-title">Biaya Admin Ditahan</span>
-                <div class="metric-icon-wrap">🏢</div>
             </div>
             <div class="metric-val">Rp {{ number_format($totalFeesRetained ?? 0, 0, ',', '.') }}</div>
             <span class="metric-sub">Total cancellation fee retained</span>
@@ -825,7 +822,7 @@
 
             <div style="display: flex; gap: 8px;">
                 <button type="submit" class="btn-filter-submit">
-                    <span>🔍</span> Filter
+                    <span></span> Filter
                 </button>
                 @if(request()->anyFilled(['search', 'status', 'date_from', 'date_to']))
                     <a href="{{ route('dashboard.admin.refund.index') }}" class="btn-filter-reset">
@@ -881,7 +878,7 @@
                                 <div class="customer-info">
                                     <span class="customer-name">{{ $rf->booking?->user?->name ?? $rf->user?->name ?? 'Pelanggan' }}</span>
                                     <span class="customer-phone">
-                                        📱 {{ $rf->booking?->user?->phone ?? $rf->user?->phone ?? '-' }}
+                                        {{ $rf->booking?->user?->phone ?? $rf->user?->phone ?? '-' }}
                                     </span>
                                 </div>
                             </td>
@@ -891,11 +888,11 @@
                                 <div class="route-info">
                                     <div class="route-badge">
                                         <span>{{ $rf->booking?->schedule?->route?->origin?->city ?? 'Origin' }}</span>
-                                        <span>→</span>
+                                        <span></span>
                                         <span>{{ $rf->booking?->schedule?->route?->destination?->city ?? 'Destination' }}</span>
                                     </div>
                                     <div class="route-schedule-time">
-                                        📅 {{ $rf->booking?->schedule?->departure_date ? $rf->booking->schedule->departure_date->format('d/m/Y') : '-' }}
+                                        {{ $rf->booking?->schedule?->departure_date ? $rf->booking->schedule->departure_date->format('d/m/Y') : '-' }}
                                         &bull; {{ $rf->booking?->schedule?->departure_time ?? '-' }}
                                     </div>
                                 </div>
@@ -945,14 +942,14 @@
                                     </span>
                                 @elseif($isApproved)
                                     <span class="badge-refund-approved">
-                                        <span>✓</span> Disetujui
+                                        <span></span> Disetujui
                                     </span>
                                     <div style="font-size: 10px; color: #166534; margin-top: 4px;">
                                         Oleh: {{ $rf->processor?->name ?? 'Admin' }}
                                     </div>
                                 @else
                                     <span class="badge-refund-rejected">
-                                        <span>✕</span> Ditolak
+                                        <span></span> Ditolak
                                     </span>
                                     <div style="font-size: 10px; color: #991b1b; margin-top: 4px;">
                                         Oleh: {{ $rf->processor?->name ?? 'Admin' }}
@@ -970,7 +967,7 @@
                                             onclick="openApproveModal({{ json_encode($rf) }}, {{ json_encode($rf->booking) }})"
                                             title="Setujui permohonan refund dan kosongkan kembali kursi"
                                         >
-                                            <span>✓</span> Setujui
+                                            <span></span> Setujui
                                         </button>
 
                                         <button
@@ -979,7 +976,7 @@
                                             onclick="openRejectModal({{ $rf->id }}, '{{ $rf->booking?->booking_code }}')"
                                             title="Tolak permohonan refund"
                                         >
-                                            <span>✕</span> Tolak
+                                            <span></span> Tolak
                                         </button>
                                     @else
                                         @if($rf->transfer_proof)
@@ -988,7 +985,7 @@
                                                 class="btn-action-proof"
                                                 onclick="openProofModal('{{ $rf->transferProofUrl() }}')"
                                             >
-                                                <span>👁️</span> Bukti Transfer
+                                                <span></span> Bukti Transfer
                                             </button>
                                         @else
                                             <span style="font-size: 11px; color: #94a3b8; font-style: italic;">
@@ -1003,7 +1000,6 @@
                         <tr>
                             <td colspan="8">
                                 <div class="empty-state-wrap">
-                                    <div class="empty-state-icon">🔄</div>
                                     <h4 class="empty-state-title">Belum Ada Permohonan Refund</h4>
                                     <p class="empty-state-desc">Saat ini tidak ada permohonan pembatalan tiket yang terdaftar atau sesuai dengan filter yang Anda tentukan.</p>
                                 </div>
@@ -1110,7 +1106,7 @@
             <div class="modal-dialog-footer">
                 <button type="button" class="btn-filter-reset" onclick="closeApproveModal()">Batal</button>
                 <button type="submit" class="btn-create-refund">
-                    <span>✓</span> Konfirmasi & Setujui Refund
+                    <span></span> Konfirmasi & Setujui Refund
                 </button>
             </div>
         </form>
@@ -1164,7 +1160,7 @@
             <div class="modal-dialog-footer">
                 <button type="button" class="btn-filter-reset" onclick="closeRejectModal()">Batal</button>
                 <button type="submit" class="btn-action-reject" style="padding: 10px 18px; font-size: 13px;">
-                    <span>✕</span> Tolak Permohonan
+                    <span></span> Tolak Permohonan
                 </button>
             </div>
         </form>
@@ -1193,7 +1189,7 @@
                         @foreach($activeBookings as $b)
                             @php
                                 $price = (float) $b->total_price;
-                                $routeText = ($b->schedule?->route?->origin?->city ?? 'Origin') . ' → ' . ($b->schedule?->route?->destination?->city ?? 'Destination');
+                                $routeText = ($b->schedule?->route?->origin?->city ?? 'Origin') . ' ke ' . ($b->schedule?->route?->destination?->city ?? 'Destination');
                                 $custText = $b->user?->name ?? 'Pelanggan';
                             @endphp
                             <option
@@ -1291,7 +1287,7 @@
             <div class="modal-dialog-footer">
                 <button type="button" class="btn-filter-reset" onclick="closeCreateRefundModal()">Batal</button>
                 <button type="submit" class="btn-create-refund">
-                    <span>➕</span> Buat Permohonan Refund
+                    <span></span> Buat Permohonan Refund
                 </button>
             </div>
         </form>

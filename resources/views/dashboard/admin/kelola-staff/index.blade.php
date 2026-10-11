@@ -742,14 +742,14 @@
     ========================================== --}}
     @if(session('success'))
         <div class="alert-banner alert-success">
-            <span>✅</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert-banner alert-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -764,9 +764,6 @@
                 <div class="stat-box-label">Total Staf Operasional</div>
                 <div class="stat-box-num">{{ number_format($totalStaff ?? 0) }}</div>
             </div>
-            <div class="stat-box-icon total">
-                👥
-            </div>
         </div>
 
         {{-- STAF AKTIF BEKERJA --}}
@@ -774,9 +771,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Aktif Bekerja</div>
                 <div class="stat-box-num">{{ number_format($activeStaff ?? 0) }}</div>
-            </div>
-            <div class="stat-box-icon active">
-                💼
             </div>
         </div>
 
@@ -786,9 +780,6 @@
                 <div class="stat-box-label">Berhenti / Nonaktif</div>
                 <div class="stat-box-num">{{ number_format($inactiveStaff ?? 0) }}</div>
             </div>
-            <div class="stat-box-icon inactive">
-                ⛔
-            </div>
         </div>
 
         {{-- CABANG / LOKET --}}
@@ -797,9 +788,6 @@
                 <div class="stat-box-label">Cabang & Pool Tercover</div>
                 <div class="stat-box-num">{{ number_format($uniqueBranchesCount ?? count($availableBranches ?? [])) }}</div>
             </div>
-            <div class="stat-box-icon branch">
-                🏢
-            </div>
         </div>
     </div>
 
@@ -807,9 +795,6 @@
          INFO WEWENANG & PEMISAHAN ROLE
     ========================================== --}}
     <div class="authority-info-card">
-        <div class="authority-icon">
-            🛡️
-        </div>
         <div class="authority-content">
             <h4>Kebijakan Pemisahan Hak Akses (Role & Permission)</h4>
             <p>
@@ -825,7 +810,7 @@
         <form action="{{ route('dashboard.admin.kelola-staff.index') }}" method="GET" class="filter-form-grid">
 
             <div class="filter-input-wrap">
-                <span class="input-icon">🔍</span>
+                <span class="input-icon"></span>
                 <input
                     type="text"
                     name="search"
@@ -928,7 +913,7 @@
                                 <td>
                                     @if($staff->branch)
                                         <span class="branch-badge">
-                                            <span>🏢</span>
+                                            <span></span>
                                             <span>{{ $staff->branch }}</span>
                                         </span>
                                     @else
@@ -948,7 +933,7 @@
                                                 }
                                             @endphp
                                             <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="contact-wa-link" title="Kirim Pesan WhatsApp">
-                                                <span>💬 Hubungi WA</span>
+                                                <span>Hubungi WA</span>
                                             </a>
                                         @else
                                             <span style="color: #9ca3af; font-size: 12px; font-style: italic;">Tidak ada nomor</span>
@@ -967,8 +952,8 @@
                                                 'view_passengers' => 'Data Penumpang',
                                                 'checkin_ticket' => 'Check-in Tiket',
                                                 'view_reports' => 'Laporan Kasir',
-                                                'approve_refund' => 'Setujui Refund ⚠️',
-                                                'delete_data' => 'Hapus Data ⚠️',
+                                                'approve_refund' => 'Setujui Refund ',
+                                                'delete_data' => 'Hapus Data ',
                                             ];
                                             $showCount = 0;
                                         @endphp
@@ -1017,18 +1002,16 @@
                                             href="{{ route('dashboard.admin.kelola-staff.show', $staff->id) }}"
                                             class="action-btn view"
                                             title="Lihat Detail Profil & Wewenang"
-                                        >
-                                            👁️
-                                        </a>
+                                        >Detail
+                                                                                    </a>
 
                                         {{-- EDIT --}}
                                         <a
                                             href="{{ route('dashboard.admin.kelola-staff.edit', $staff->id) }}"
                                             class="action-btn edit"
                                             title="Edit Profil & Hak Akses"
-                                        >
-                                            ✏️
-                                        </a>
+                                        >Ubah
+                                                                                    </a>
 
                                         {{-- TOGGLE STATUS (AKTIF / NONAKTIFKAN STAF BERHENTI) --}}
                                         <form
@@ -1040,13 +1023,11 @@
                                             @csrf
                                             @method('PATCH')
                                             @if($staff->status === 'active')
-                                                <button type="submit" class="action-btn toggle-off" title="Nonaktifkan Akun (Staf Berhenti)">
-                                                    ⛔
-                                                </button>
+                                                <button type="submit" class="action-btn toggle-off" title="Nonaktifkan Akun (Staf Berhenti)">Nonaktifkan
+                                                                                                    </button>
                                             @else
-                                                <button type="submit" class="action-btn toggle-on" title="Aktifkan Kembali Akun Staf">
-                                                    🔄
-                                                </button>
+                                                <button type="submit" class="action-btn toggle-on" title="Aktifkan Kembali Akun Staf">Aktifkan
+                                                                                                    </button>
                                             @endif
                                         </form>
 
@@ -1059,9 +1040,8 @@
                                         >
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="action-btn delete" title="Hapus Akun Staf">
-                                                🗑️
-                                            </button>
+                                            <button type="submit" class="action-btn delete" title="Hapus Akun Staf">Hapus
+                                                                                            </button>
                                         </form>
                                     </div>
                                 </td>
@@ -1071,7 +1051,6 @@
                 </table>
             @else
                 <div class="empty-state-box">
-                    <div class="empty-state-icon">👥</div>
                     <h3>Belum Ada Data Staf</h3>
                     <p>Tidak ditemukan staf operasional sesuai kriteria pencarian atau filter yang dipilih.</p>
                     <a href="{{ route('dashboard.admin.kelola-staff.create') }}" class="btn-create-staff" style="display: inline-flex;">

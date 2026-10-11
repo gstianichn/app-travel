@@ -474,7 +474,7 @@
                 &larr; Kembali ke Daftar
             </a>
             <a href="{{ route('dashboard.admin.pemesanan.manifes', $schedule->id) }}" class="btn-action-manifest">
-                📋 Manifes Perjalanan
+                Manifes Perjalanan
             </a>
             <a href="{{ route('dashboard.admin.pemesanan.create-manual', ['schedule_id' => $schedule->id]) }}" class="btn-action-manifest" style="background: #0284c7;">
                 + Input Tiket Loket
@@ -485,7 +485,7 @@
     {{-- SCHEDULE OVERVIEW CARD --}}
     @php
         $routeLabel = $schedule->route 
-            ? ($schedule->route->origin?->name . ' → ' . $schedule->route->destination?->name) 
+            ? ($schedule->route->origin?->name . ' ke ' . $schedule->route->destination?->name) 
             : ($schedule->travelRoute?->name ?? 'Rute Travel');
     @endphp
     <div class="schedule-hero-card">
@@ -496,7 +496,7 @@
             <h1>{{ $routeLabel }}</h1>
             <div class="hero-details">
                 <span class="badge-hero-item">
-                    📅 {{ $schedule->departure_date ? $schedule->departure_date->format('d M Y') : '-' }}
+                    {{ $schedule->departure_date ? $schedule->departure_date->format('d M Y') : '-' }}
                 </span>
                 <span>&bull;</span>
                 <span class="badge-hero-item">
@@ -504,11 +504,11 @@
                 </span>
                 <span>&bull;</span>
                 <span class="badge-hero-item">
-                    🚐 {{ $schedule->vehicle?->name ?? 'Minibus' }} ({{ $schedule->vehicle?->plate_number ?? '-' }})
+                    {{ $schedule->vehicle?->name ?? 'Minibus' }} ({{ $schedule->vehicle?->plate_number ?? '-' }})
                 </span>
                 <span>&bull;</span>
                 <span class="badge-hero-item">
-                    👨‍✈️ Sopir: {{ $schedule->driver?->user?->name ?? 'Belum ditentukan' }}
+                    Sopir: {{ $schedule->driver?->user?->name ?? 'Belum ditentukan' }}
                 </span>
             </div>
         </div>
@@ -526,15 +526,15 @@
         <div class="legend-items-list">
             <div class="legend-item">
                 <span class="legend-swatch available"></span>
-                <span>🟢 Kosong / Tersedia</span>
+                <span>Kosong / Tersedia</span>
             </div>
             <div class="legend-item">
                 <span class="legend-swatch pending"></span>
-                <span>🟡 Dipesan Sementara (Pending)</span>
+                <span>Dipesan Sementara (Pending)</span>
             </div>
             <div class="legend-item">
                 <span class="legend-swatch paid"></span>
-                <span>🔵 Sudah Lunas (Terisi)</span>
+                <span>Sudah Lunas (Terisi)</span>
             </div>
         </div>
 
@@ -592,16 +592,16 @@
                     </div>
                 @else
                     <div style="width: 76px; height: 76px; border: 2px dashed #cbd5e1; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8;">
-                        🚪 Pintu Kiri
+                        Pintu Kiri
                     </div>
                 @endif
 
                 <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; text-align: center;">
-                    🚪 Pintu / Lorong
+                    Pintu / Lorong
                 </div>
 
                 <div class="driver-seat" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
-                    <span class="driver-steering-icon">🚘</span>
+                    <span class="driver-steering-icon"></span>
                     <span>Sopir</span>
                     <span style="font-size: 8px; opacity: 0.85; font-weight: 800;">(KANAN)</span>
                 </div>
@@ -699,8 +699,7 @@
         <div id="modalActionContainer" style="margin-top: 10px; display: flex; gap: 10px; justify-content: flex-end;">
             <button type="button" class="btn-action-back" onclick="closeSeatModal()">Tutup</button>
             <a id="modalBookingLink" href="#" class="btn-action-manifest" style="display: none;">
-                Lihat E-Ticket &rarr;
-            </a>
+                Lihat E-Ticket</a>
         </div>
     </div>
 </div>
@@ -720,7 +719,7 @@
         title.innerText = `Detail Kursi ${seat.seat_number}`;
 
         if (seat.occupancy.status === 'available') {
-            status.innerHTML = `<span style="color: #15803d; font-weight: 700;">🟢 Kosong / Tersedia</span>`;
+            status.innerHTML = `<span style="color: #15803d; font-weight: 700;">Kosong / Tersedia</span>`;
             name.innerText = 'Belum Dipesan';
             phone.innerText = '-';
             code.innerText = '-';
@@ -730,8 +729,8 @@
         } else {
             const isPaid = seat.occupancy.status === 'paid';
             status.innerHTML = isPaid 
-                ? `<span style="color: #1d4ed8; font-weight: 700;">🔵 Sudah Lunas</span>`
-                : `<span style="color: #b45309; font-weight: 700;">🟡 Dipesan Sementara (Pending)</span>`;
+                ? `<span style="color: #1d4ed8; font-weight: 700;">Sudah Lunas</span>`
+                : `<span style="color: #b45309; font-weight: 700;">Dipesan Sementara (Pending)</span>`;
 
             name.innerText = seat.occupancy.passenger_name || 'Tamu';
             phone.innerText = seat.occupancy.passenger_phone || '-';

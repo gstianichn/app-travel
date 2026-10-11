@@ -329,13 +329,13 @@
                 &larr; Daftar Pemesanan
             </a>
             <a href="{{ route('dashboard.admin.pemesanan.seat-map', $schedule->id) }}" class="btn-back-link">
-                💺 Denah Kursi
+                Denah Kursi
             </a>
         </div>
 
         @php
             $routeLabel = $schedule->route 
-                ? ($schedule->route->origin?->name . ' → ' . $schedule->route->destination?->name) 
+                ? ($schedule->route->origin?->name . ' ke ' . $schedule->route->destination?->name) 
                 : ($schedule->travelRoute?->name ?? 'Rute Travel');
             $depDate = $schedule->departure_date ? $schedule->departure_date->format('d M Y') : '-';
             $depTime = $schedule->departure_time ? \Carbon\Carbon::parse($schedule->departure_time)->format('H:i') : '-';
@@ -372,17 +372,17 @@
 
         <div class="toolbar-actions">
             <button type="button" class="btn-copy-text" onclick="copyManifestText()">
-                📋 Salin Teks
+                Salin Teks
             </button>
 
             @if($driverPhone)
                 <a href="{{ $waUrl }}" target="_blank" class="btn-send-wa">
-                    📲 Kirim WhatsApp ke Sopir
+                    Kirim WhatsApp ke Sopir
                 </a>
             @endif
 
             <button type="button" class="btn-print" onclick="window.print()">
-                🖨️ Cetak Manifes (Print / PDF)
+                Cetak Manifes (Print / PDF)
             </button>
         </div>
     </div>

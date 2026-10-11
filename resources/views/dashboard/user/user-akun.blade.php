@@ -16,7 +16,7 @@
         'id' => (string)$b->id,
         'code' => $b->booking_code,
         'ticket' => $b->ticket?->ticket_number ?? 'TKT-'.$b->booking_code,
-        'route' => ($b->schedule?->route?->origin?->name ?? 'Asal') . ' &rarr; ' . ($b->schedule?->route?->destination?->name ?? 'Tujuan'),
+        'route' => ($b->schedule?->route?->origin?->name ?? 'Asal') . ' ke ' . ($b->schedule?->route?->destination?->name ?? 'Tujuan'),
         'date' => \Carbon\Carbon::parse($b->schedule?->departure_date)->translatedFormat('d M Y'),
         'time' => \Carbon\Carbon::parse($b->schedule?->departure_time)->format('H:i') . ' WIB',
         'passenger' => $b->passengers->first()?->name ?? $user->name,
@@ -28,14 +28,14 @@
     {{-- Alert Messages --}}
     @if(session('success'))
         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
-            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">✓</span>
+            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
-            <span class="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs">✕</span>
+            <span class="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs"></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -64,7 +64,7 @@
             <div class="min-w-0">
                 <div class="flex items-center gap-2">
                     <h2 class="font-black text-xl sm:text-2xl leading-tight truncate">{{ $user->name ?? 'Nama Pengguna' }}</h2>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/20 text-emerald-100 border border-white/20">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-white/20 text-emerald-100 border border-white/20">
                         Member
                     </span>
                 </div>
@@ -107,7 +107,7 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-slate-900 text-sm sm:text-base">Daftar Penumpang Tersimpan (Saved Passengers)</h3>
-                    <p class="text-xs text-slate-400">Input sekali pakai ulang: NIK/ID Asuransi & No HP otomatis terintegrasi di Checkout</p>
+                    <p class="text-xs text-slate-400">Isi sekali, lalu pilih saat checkout tanpa mengetik ulang.</p>
                 </div>
             </div>
             <button id="btn-tambah-penumpang" @click="openAddPassengerModal()" 
@@ -132,8 +132,8 @@
                             <div class="flex items-center gap-2">
                                 <p class="text-sm font-bold text-slate-800">{{ $sp->name }}</p>
                                 @if($sp->is_primary)
-                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full" style="background:#e3f5ee; color:#087f55;">
-                                        ★ Utama
+                                    <span class="text-xs font-extrabold px-2 py-0.5 rounded-full" style="background:#e3f5ee; color:#087f55;">
+                                        Utama
                                     </span>
                                 @endif
                             </div>
@@ -191,7 +191,7 @@
             </div>
             <a href="{{ route('dashboard.user.user-promo') }}" class="text-xs font-bold hover:underline flex items-center gap-1" style="color:#087f55;">
                 <span>Lihat Semua</span>
-                <span class="text-sm">&rarr;</span>
+                <span class="text-sm"></span>
             </a>
         </div>
 
@@ -204,21 +204,21 @@
                     @endphp
                     <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:border-emerald-300 transition space-y-2.5">
                         <div class="flex items-center justify-between">
-                            <span class="font-mono font-black text-sm text-slate-900 tracking-wider">
+                            <span class="font-mono font-black text-sm text-slate-900">
                                 {{ $vc->code }}
                             </span>
-                            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full border {{ $st['badge_class'] }}">
+                            <span class="text-xs font-extrabold px-2 py-0.5 rounded-full border {{ $st['badge_class'] }}">
                                 {{ $st['label'] }}
                             </span>
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-800">{{ $vc->title }}</p>
-                            <p class="text-[11px] text-slate-500 mt-0.5">{{ $vc->discountText() }} • {{ $vc->minOrderText() }}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $vc->discountText() }} • {{ $vc->minOrderText() }}</p>
                         </div>
-                        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-400">
+                        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-400">
                             <span>Berlaku s/d: {{ $vc->expires_at ? $vc->expires_at->translatedFormat('d M Y') : 'Selamanya' }}</span>
                             @if($vc->isActive())
-                                <a href="{{ route('dashboard.user.search') }}" class="text-emerald-700 font-bold hover:underline inline-flex items-center gap-0.5">Gunakan &rarr;</a>
+                                <a href="{{ route('dashboard.user.search') }}" class="text-emerald-700 font-bold hover:underline inline-flex items-center gap-0.5">Gunakan</a>
                             @endif
                         </div>
                     </div>
@@ -234,7 +234,7 @@
                 @csrf
                 <div class="relative flex-1">
                     <input type="text" name="code" required placeholder="Punya kode promo / kompensasi? Masukkan di sini (misal: KOMPENSASI50)"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs uppercase font-mono font-bold tracking-wider outline-none transition focus:border-emerald-600">
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono font-bold outline-none transition focus:border-emerald-600">
                 </div>
                 <button type="submit" 
                         class="px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5"
@@ -248,7 +248,7 @@
     </div>
 
     <!-- ============================================================
-         C. ALUR PUSAT BANTUAN (LIVE CHAT & WHATSAPP DENGAN KONTEKS TIKET)
+         C. BANTUAN (WHATSAPP CS DENGAN KONTEKS TIKET)
     ============================================================ -->
     <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm" id="section-helpdesk">
         <div class="px-6 py-4 border-b border-slate-100">
@@ -259,7 +259,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base">Pusat Bantuan CS (Live Chat & WhatsApp)</h3>
+                    <h3 class="font-bold text-slate-900 text-sm sm:text-base">Bantuan</h3>
                     <p class="text-xs text-slate-400">Pilih tiket bermasalah untuk menyertakan nomor tiket & rute secara otomatis</p>
                 </div>
             </div>
@@ -268,7 +268,7 @@
         <div class="p-6 space-y-5">
             {{-- SELECTOR KONTEKS TIKET OTOMATIS --}}
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                <label class="block text-xs font-bold text-slate-700">
                     Pilih Tiket Perjalanan yang Membutuhkan Bantuan:
                 </label>
                 <div class="relative">
@@ -277,52 +277,42 @@
                         <option value="">-- Pertanyaan Umum / Tanpa Tiket Spesifik --</option>
                         @foreach($recentBookings as $b)
                             <option value="{{ $b->id }}" {{ (string)$b->id === (string)$defaultBookingId ? 'selected' : '' }}>
-                                #{{ $b->booking_code }} ({{ $b->ticket?->ticket_number ?? 'TKT' }}) • {{ $b->schedule?->route?->origin?->name }} &rarr; {{ $b->schedule?->route?->destination?->name }} ({{ \Carbon\Carbon::parse($b->schedule?->departure_date)->format('d M') }})
+                                #{{ $b->booking_code }} ({{ $b->ticket?->ticket_number ?? 'TKT' }}) • {{ $b->schedule?->route?->origin?->name }} ke {{ $b->schedule?->route?->destination?->name }} ({{ \Carbon\Carbon::parse($b->schedule?->departure_date)->format('d M') }})
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 {{-- Preview Pesan Pre-filled WhatsApp --}}
-                <div class="pt-2 text-[11px] text-slate-500">
+                <div class="pt-2 text-xs text-slate-500">
                     <span class="font-semibold text-slate-700">Pratinjau Pesan CS Otomatis:</span>
-                    <div class="mt-1 p-2.5 rounded-xl bg-white border border-slate-200/80 font-mono text-[11px] text-slate-600 whitespace-pre-line" x-text="previewMessage"></div>
+                    <div class="mt-1 p-2.5 rounded-xl bg-white border border-slate-200/80 font-mono text-xs text-slate-600 whitespace-pre-line" x-text="previewMessage"></div>
                 </div>
             </div>
 
-            {{-- TOMBOL WHATSAPP CS & LIVE CHAT --}}
+            {{-- TOMBOL WHATSAPP CS --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 
-                {{-- Tombol WhatsApp CS dengan Pre-filled Message --}}
-                <a :href="waUrl" target="_blank" id="btn-whatsapp-cs"
+                {{-- Tombol WhatsApp CS dengan pesan terisi (nomor dari Pengaturan admin) --}}
+                @if (\App\Models\AppSetting::whatsappUrl())
+                <a :href="waUrl" target="_blank" rel="noopener" id="btn-whatsapp-cs"
                    class="px-5 py-4 rounded-2xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/70 transition flex items-center gap-3.5 group shadow-2xs">
                     <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-slate-900">Chat WhatsApp CS</p>
-                        <p class="text-[11px] text-emerald-800 font-medium inline-flex items-center gap-0.5">Bawa Nomor Tiket & Rute &rarr;</p>
+                        <p class="text-sm text-emerald-800">Pesan otomatis berisi nomor tiket dan rute</p>
                     </div>
                     <svg class="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                 </a>
+                @else
+                <div class="px-5 py-4 rounded-2xl border border-slate-200 bg-white">
+                    <p class="font-bold text-slate-900">Nomor WhatsApp CS belum diisi</p>
+                    <p class="text-sm text-slate-600 mt-1">Sementara itu, jawaban soal pembatalan, refund, dan boarding ada di <a href="{{ route('home') }}#faq" class="font-semibold text-brand-700 underline">halaman bantuan</a>.</p>
+                </div>
+                @endif
 
-                {{-- Tombol Live Chat App --}}
-                <button type="button" @click="showLiveChat = true" id="btn-live-chat"
-                   class="px-5 py-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-3.5 group text-left shadow-2xs">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition" style="background:#e3f5ee;">
-                        <svg width="20" height="20" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1.5">
-                            <p class="text-xs font-bold text-slate-900">Live Chat Bantuan</p>
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        </div>
-                        <p class="text-[11px] text-slate-400">Obrolan langsung dalam aplikasi</p>
-                    </div>
-                    <svg class="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
 
             </div>
         </div>
@@ -382,8 +372,7 @@
         </form>
     </div>
 
-    <!-- Versi App -->
-    <p class="text-center text-[11px] text-slate-400 pb-4">Fast Travel v2.5.0 • Portal Penumpang & Client Area</p>
+
 
 </div>
 
@@ -412,9 +401,9 @@
             </div>
             <div>
                 <label class="block font-semibold text-slate-600 mb-1">NIK / No. Identitas Kependudukan (16 Digit)</label>
-                <input type="text" name="nik" maxlength="16" placeholder="3273xxxxxxxxxxxx (wajib untuk asuransi perjalanan)"
+                <input type="text" name="nik" maxlength="16" placeholder="16 digit NIK"
                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono outline-none transition focus:border-emerald-600">
-                <p class="text-[10px] text-slate-400 mt-1">Data NIK digunakan untuk keperluan manifes dan klaim asuransi Jasa Raharja.</p>
+                <p class="text-xs text-slate-400 mt-1">NIK dicatat di manifes penumpang.</p>
             </div>
             <div>
                 <label class="block font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP</label>
@@ -585,87 +574,11 @@
     </div>
 </div>
 
-{{-- ============================================================
-     MODAL 5: LIVE CHAT INTERAKTIF DENGAN KONTEKS TIKET
-============================================================ --}}
-<div x-show="showLiveChat" x-cloak
-     class="fixed inset-0 z-50 flex items-center justify-center px-4"
-     style="background: rgba(0,0,0,.5); backdrop-filter: blur(4px);"
-     @click.self="showLiveChat = false">
-
-    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden h-[540px]">
-        {{-- Header Live Chat --}}
-        <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="px-5 py-4 text-white flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center font-bold">
-                    CS
-                </div>
-                <div>
-                    <h4 class="font-bold text-sm">Customer Support Fast Travel</h4>
-                    <p class="text-[11px] text-emerald-100 flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>Online • Respon Rata-rata < 2 Menit</span>
-                    </p>
-                </div>
-            </div>
-            <button @click="showLiveChat = false" class="text-white/80 hover:text-white p-1 rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-        </div>
-
-        {{-- Badge Konteks Tiket di Header Chat --}}
-        <div class="px-5 py-2.5 bg-emerald-50 border-b border-emerald-100 text-xs text-emerald-900 flex items-center justify-between">
-            <div class="flex items-center gap-1.5 truncate">
-                <span class="font-bold">Konteks:</span>
-                <span class="truncate" x-text="selectedBooking ? selectedBooking.ticket + ' (' + selectedBooking.route + ')' : 'Pertanyaan Umum Akun'"></span>
-            </div>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-emerald-200">ID Terverifikasi</span>
-        </div>
-
-        {{-- Area Pesan Chat --}}
-        <div class="flex-1 p-5 overflow-y-auto space-y-4 bg-slate-50 text-xs">
-            {{-- Pesan Otomatis Sistem --}}
-            <div class="flex gap-2.5 max-w-[85%]">
-                <div class="w-7 h-7 rounded-lg bg-emerald-700 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                    CS
-                </div>
-                <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-200 shadow-2xs space-y-1">
-                    <p class="font-bold text-slate-800">Halo, Kak <span x-text="userName"></span>!</p>
-                    <p class="text-slate-600 leading-relaxed">
-                        Terima kasih telah menghubungi Customer Support Fast Travel. Sistem kami telah menerima identitas Anda beserta konteks tiket perjalanan terkait. Ada yang bisa kami bantu hari ini?
-                    </p>
-                    <span class="text-[9px] text-slate-400 block pt-1">Baru saja</span>
-                </div>
-            </div>
-
-            {{-- Pesan Pengguna Berisi Konteks Tiket Otomatis --}}
-            <template x-if="chatSentMessage">
-                <div class="flex justify-end">
-                    <div class="bg-emerald-600 text-white p-3 rounded-2xl rounded-tr-none shadow-2xs max-w-[85%] space-y-1">
-                        <p class="whitespace-pre-line text-xs font-mono" x-text="chatSentMessage"></p>
-                        <span class="text-[9px] text-emerald-200 block text-right">Terkirim</span>
-                    </div>
-                </div>
-            </template>
-        </div>
-
-        {{-- Input Pesan --}}
-        <div class="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
-            <input type="text" x-model="chatInput" @keyup.enter="sendChatMessage()"
-                   placeholder="Ketik pesan atau kendala Anda di sini..."
-                   class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-emerald-600 transition">
-            <button type="button" @click="sendChatMessage()"
-                    class="p-2.5 rounded-xl text-white shadow-sm transition"
-                    style="background:#087f55;">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            </button>
-        </div>
-    </div>
-</div>
-
 </div>{{-- end x-data --}}
 
 <script>
+const companyName = @js(\App\Models\AppSetting::companyName());
+
 function accountPageHandler(config) {
     return {
         selectedBookingId: config.selectedBookingId || '',
@@ -675,9 +588,6 @@ function accountPageHandler(config) {
         showEditPassenger: false,
         showEditProfile: false,
         showChangePassword: false,
-        showLiveChat: false,
-        chatInput: '',
-        chatSentMessage: '',
         editData: {
             id: null,
             name: '',
@@ -685,7 +595,7 @@ function accountPageHandler(config) {
             phone: '',
             is_primary: false
         },
-        waUrl: 'https://wa.me/62812345678',
+        waUrl: @js(\App\Models\AppSetting::whatsappUrl() ?? ''),
         previewMessage: '',
 
         init() {
@@ -701,13 +611,13 @@ function accountPageHandler(config) {
             const b = this.selectedBooking;
             let msg = '';
             if (b) {
-                msg = `Halo CS Fast Travel, saya butuh bantuan untuk tiket perjalanan saya:\n• No. Tiket: ${b.ticket}\n• Kode Booking: #${b.code}\n• Rute: ${b.route}\n• Jadwal: ${b.date}, ${b.time}\n• Penumpang: ${b.passenger}\n\nKendala yang saya alami: [Mohon dibantu terkait kendala tiket ini]`;
+                msg = `Halo CS ${companyName}, saya butuh bantuan untuk tiket perjalanan saya:\n• No. Tiket: ${b.ticket}\n• Kode Booking: #${b.code}\n• Rute: ${b.route}\n• Jadwal: ${b.date}, ${b.time}\n• Penumpang: ${b.passenger}\n\nKendala yang saya alami: [Mohon dibantu terkait kendala tiket ini]`;
             } else {
-                msg = `Halo CS Fast Travel, saya atas nama ${this.userName} membutuhkan bantuan customer support terkait layanan dan akun Fast Travel.`;
+                msg = `Halo CS ${companyName}, saya ${this.userName} butuh bantuan soal akun saya.`;
             }
 
             this.previewMessage = msg;
-            this.waUrl = 'https://wa.me/62812345678?text=' + encodeURIComponent(msg);
+            this.waUrl = this.waUrl ? this.waUrl.split('?')[0] + '?text=' + encodeURIComponent(msg) : '';
         },
 
         openAddPassengerModal() {
@@ -723,17 +633,6 @@ function accountPageHandler(config) {
                 is_primary: isPrimary
             };
             this.showEditPassenger = true;
-        },
-
-        sendChatMessage() {
-            if (!this.chatInput.trim()) return;
-            const b = this.selectedBooking;
-            let fullMsg = this.chatInput.trim();
-            if (b && !this.chatSentMessage) {
-                fullMsg = `[Konteks Tiket #${b.code} - ${b.route} (${b.date})]\n` + fullMsg;
-            }
-            this.chatSentMessage = fullMsg;
-            this.chatInput = '';
         }
     };
 }

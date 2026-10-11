@@ -15,56 +15,32 @@
         </button>
 
         <div class="topbar-heading">
-            <h1 class="topbar-title">Dashboard Customer Service</h1>
-            <p class="topbar-subtitle">Kelola pelayanan dan kebutuhan pelanggan TravelKu</p>
+            <p class="topbar-title">Customer service</p>
         </div>
     </div>
 
     <!-- Quick Search Lookup Bar -->
     <div class="topbar-center">
-        <div class="topbar-search">
-            <span class="search-icon">
+        <form class="topbar-search" method="GET" action="{{ route('dashboard.customer-service.index') }}" role="search">
+            <span class="search-icon" aria-hidden="true">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </span>
-            <input type="text"
+            <label for="global-booking-search" class="ds-visually-hidden">Cari pesanan</label>
+            <input type="search"
                    id="global-booking-search"
-                   placeholder="Cari No. Tiket, Kode Booking, Penumpang..."
-                   autocomplete="off"
-                   onkeyup="handleQuickSearch(event)">
+                   name="q"
+                   value="{{ request()->routeIs('dashboard.customer-service.index') ? request('q') : '' }}"
+                   placeholder="Kode booking, tiket, nama, atau HP"
+                   autocomplete="off">
             <kbd class="search-shortcut">Ctrl + K</kbd>
-        </div>
+        </form>
     </div>
 
     <!-- Right Controls: Status, Notifications, Agent Profile -->
     <div class="topbar-right">
-
-        <!-- Agent Status Selector -->
-        <div class="agent-status-dropdown-wrapper">
-            <button type="button" class="status-pill status-pill-online" id="status-pill-btn" onclick="toggleStatusDropdown()">
-                <span class="status-indicator-dot" id="status-dot"></span>
-                <span class="status-text" id="status-text-label">Online</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </button>
-            <div class="status-menu" id="status-menu">
-                <button type="button" class="status-menu-item active" onclick="setAgentStatus('online', 'Online', 'status-pill-online')">
-                    <span class="status-indicator-dot dot-online"></span>
-                    <span>Online (Siap Terima Chat)</span>
-                </button>
-                <button type="button" class="status-menu-item" onclick="setAgentStatus('busy', 'Sibuk', 'status-pill-busy')">
-                    <span class="status-indicator-dot dot-busy"></span>
-                    <span>Sibuk (Sedang Tangani Kasus)</span>
-                </button>
-                <button type="button" class="status-menu-item" onclick="setAgentStatus('away', 'Istirahat', 'status-pill-away')">
-                    <span class="status-indicator-dot dot-away"></span>
-                    <span>Istirahat / Away</span>
-                </button>
-            </div>
-        </div>
 
         <!-- Notification / Live Chat Incoming Indicator -->
         <a href="{{ route('dashboard.customer-service.live-chat') }}" class="topbar-icon-btn" title="Live Chat Masuk" aria-label="Notifikasi Chat Masuk">
@@ -72,7 +48,6 @@
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-            <span class="topbar-badge-pulse"></span>
         </a>
 
         <!-- Profile Card -->

@@ -570,7 +570,7 @@
                 ← Daftar Staf
             </a>
             <a href="{{ route('dashboard.admin.kelola-staff.edit', $staff->id) }}" class="btn-action-edit">
-                ✏️ Edit Profil & Wewenang
+                Edit Profil & Wewenang
             </a>
         </div>
     </div>
@@ -578,14 +578,14 @@
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
         <div class="flash-alert flash-success">
-            <span>✅</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="flash-alert flash-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -603,18 +603,18 @@
                     <h2>{{ $staff->name }}</h2>
                     <div class="hero-meta-tags">
                         <span class="hero-tag">
-                            👤 {{ $staff->position ?? 'Staf Loket' }}
+                            {{ $staff->position ?? 'Staf Loket' }}
                         </span>
                         <span class="hero-tag">
-                            🏢 {{ $staff->branch ?? 'Cabang Belum Ditentukan' }}
+                            {{ $staff->branch ?? 'Cabang Belum Ditentukan' }}
                         </span>
                         @if($staff->status === 'active')
                             <span class="hero-tag tag-status-active">
-                                🟢 Aktif Bekerja
+                                Aktif Bekerja
                             </span>
                         @else
                             <span class="hero-tag tag-status-inactive">
-                                ⛔ Berhenti Bekerja / Nonaktif
+                                Berhenti Bekerja / Nonaktif
                             </span>
                         @endif
                     </div>
@@ -639,7 +639,7 @@
                         }
                     @endphp
                     <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="detail-wa-btn">
-                        💬 Hubungi WhatsApp
+                        Hubungi WhatsApp
                     </a>
                 @endif
             </div>
@@ -666,7 +666,7 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span>🔐</span>
+                        <span></span>
                         <span>Matriks Hak Akses (Role & Permission)</span>
                     </div>
                     @php
@@ -702,15 +702,15 @@
                                 <div>
                                     @if($isGranted)
                                         <span class="perm-state-badge granted">
-                                            ✓ Diberikan
+                                            Diberikan
                                         </span>
                                     @elseif($isRestricted)
                                         <span class="perm-state-badge restricted-locked">
-                                            🔒 Dibatasi
+                                            Dibatasi
                                         </span>
                                     @else
                                         <span class="perm-state-badge denied">
-                                            ✕ Tidak Aktif
+                                            Tidak Aktif
                                         </span>
                                     @endif
                                 </div>
@@ -720,7 +720,7 @@
 
                     <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #e2eae6; display: flex; justify-content: flex-end;">
                         <a href="{{ route('dashboard.admin.kelola-staff.edit', $staff->id) }}" class="btn-action-edit" style="font-size: 11px; padding: 7px 14px;">
-                            ⚙️ Sesuaikan Hak Akses Staf
+                            Sesuaikan Hak Akses Staf
                         </a>
                     </div>
                 </div>
@@ -734,15 +734,12 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span>🏢</span>
+                        <span></span>
                         <span>Lokasi Operasional & Penempatan</span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="branch-highlight-box">
-                        <div class="branch-icon-large">
-                            📍
-                        </div>
                         <div class="branch-info">
                             <h4>{{ $staff->branch ?? 'Belum Ditentukan' }}</h4>
                             <p>Penugasan aktif staf untuk operasional layanan loket, verifikasi penumpang, dan keberangkatan travel.</p>
@@ -755,7 +752,7 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span>🚦</span>
+                        <span></span>
                         <span>Kontrol Status Kepegawaian</span>
                     </div>
                 </div>
@@ -764,7 +761,7 @@
                     @if($staff->status === 'active')
                         <div class="status-action-banner active-banner">
                             <div class="banner-text">
-                                <h4>🟢 Staf Aktif Bekerja</h4>
+                                <h4>Staf Aktif Bekerja</h4>
                                 <p>Akun aktif dan memiliki akses operasional loket di {{ $staff->branch }}.</p>
                             </div>
                             <form
@@ -775,14 +772,14 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn-toggle-status btn-toggle-deactivate">
-                                    ⛔ Nonaktifkan (Berhenti)
+                                    Nonaktifkan (Berhenti)
                                 </button>
                             </form>
                         </div>
                     @else
                         <div class="status-action-banner inactive-banner">
                             <div class="banner-text">
-                                <h4>⛔ Berhenti Bekerja / Nonaktif</h4>
+                                <h4>Berhenti Bekerja / Nonaktif</h4>
                                 <p>Akses akun diblokir karena staf sudah berhenti. Klik tombol berikut untuk mengaktifkan kembali.</p>
                             </div>
                             <form
@@ -793,7 +790,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn-toggle-status btn-toggle-activate">
-                                    🔄 Aktifkan Kembali
+                                    Aktifkan Kembali
                                 </button>
                             </form>
                         </div>
@@ -802,7 +799,7 @@
                     {{-- RESET PASSWORD MANUAL FORM --}}
                     <div class="reset-pwd-form">
                         <div style="font-size: 12px; font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 6px;">
-                            <span>🔑</span>
+                            <span></span>
                             <span>Reset Kata Sandi Manual Staf</span>
                         </div>
                         <p style="margin: 0; font-size: 11px; color: #6b7280;">
@@ -843,7 +840,7 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit" style="background: none; border: none; color: #dc2626; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 8px;">
-                                🗑️ Hapus Akun Staf
+                                Hapus Akun Staf
                             </button>
                         </form>
                     </div>

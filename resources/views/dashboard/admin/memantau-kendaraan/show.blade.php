@@ -594,7 +594,7 @@
                 &larr; Kembali ke Daftar
             </a>
             <a href="{{ route('dashboard.admin.memantau-kendaraan.edit', $vehicle->id) }}" class="btn-action-edit">
-                ✏️ Edit Data Unit
+                Edit Data Unit
             </a>
         </div>
     </div>
@@ -602,14 +602,14 @@
     {{-- FLASH ALERTS --}}
     @if(session('success'))
         <div class="flash-alert flash-success">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="flash-alert flash-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -620,9 +620,7 @@
             @if($vehicle->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($vehicle->photo))
                 <img src="{{ asset('storage/' . $vehicle->photo) }}" alt="{{ $vehicle->name }}" class="hero-thumb-img">
             @else
-                <div class="hero-thumb-fallback">
-                    🚐
-                </div>
+                <div class="hero-thumb-fallback">Belum ada foto</div>
             @endif
 
             <div class="hero-text">
@@ -633,11 +631,11 @@
                 <div class="hero-meta">
                     <span class="hero-badge-type">{{ $vehicle->type }}</span>
                     <span>&bull;</span>
-                    <span>💺 <strong>{{ $vehicle->capacity }} Kursi Penumpang</strong></span>
+                    <span><strong>{{ $vehicle->capacity }} Kursi Penumpang</strong></span>
                     <span>&bull;</span>
                     <span>Tahun: {{ $vehicle->manufacture_year ?? '-' }}</span>
                     <span>&bull;</span>
-                    <span>🛣️ {{ $vehicle->schedules->count() }} Penugasan Jadwal</span>
+                    <span>{{ $vehicle->schedules->count() }} Penugasan Jadwal</span>
                 </div>
             </div>
         </div>
@@ -661,7 +659,7 @@
             {{-- SPESIFIKASI & IDENTITAS UNIT --}}
             <div class="info-card">
                 <div class="info-card-header">
-                    <h3>🚐 Spesifikasi & Identitas Unit</h3>
+                    <h3>Spesifikasi & Identitas Unit</h3>
                 </div>
                 <div class="info-card-body">
                     <div class="spec-list">
@@ -704,7 +702,7 @@
                             <div class="facilities-wrap">
                                 @foreach($vehicle->facilities as $fac)
                                     <span class="facility-pill">
-                                        ✓ {{ $fac }}
+                                        {{ $fac }}
                                     </span>
                                 @endforeach
                             </div>
@@ -729,7 +727,7 @@
 
             {{-- WIDGET GANTI STATUS CEPAT --}}
             <div class="quick-status-card">
-                <h4>⚙️ Perbarui Status Unit Operasional</h4>
+                <h4>Perbarui Status Unit Operasional</h4>
                 <p style="margin: 0; font-size: 12px; color: #6a7972;">
                     Ubah status kesiapan armada langsung saat mobil selesai servis atau hendak ditugaskan ke perjalanan.
                 </p>
@@ -747,9 +745,9 @@
                         }
                     @endphp
                     <select name="status" class="quick-select">
-                        <option value="siap_jalan" {{ $norm === 'siap_jalan' ? 'selected' : '' }}>🟢 Siap Jalan (Standby)</option>
-                        <option value="beroperasi" {{ $norm === 'beroperasi' ? 'selected' : '' }}>🔵 Sedang Beroperasi (Jalan)</option>
-                        <option value="maintenance" {{ $norm === 'maintenance' ? 'selected' : '' }}>🔴 Masuk Bengkel (Servis)</option>
+                        <option value="siap_jalan" {{ $norm === 'siap_jalan' ? 'selected' : '' }}>Siap Jalan (Standby)</option>
+                        <option value="beroperasi" {{ $norm === 'beroperasi' ? 'selected' : '' }}>Sedang Beroperasi (Jalan)</option>
+                        <option value="maintenance" {{ $norm === 'maintenance' ? 'selected' : '' }}>Masuk Bengkel (Servis)</option>
                     </select>
                     <button type="submit" class="btn-quick-save">
                         Simpan
@@ -765,7 +763,7 @@
             {{-- CARD LEGALITAS & KELAIKAN JALAN (KIR & PAJAK STNK) --}}
             <div class="info-card">
                 <div class="info-card-header">
-                    <h3>📑 Legalitas & Kelaikan Dokumen Armada</h3>
+                    <h3>Legalitas & Kelaikan Dokumen Armada</h3>
                     <span style="font-size: 11px; color: #72817a;">Wajib diperpanjang berkala</span>
                 </div>
                 <div class="info-card-body">
@@ -784,7 +782,7 @@
                         <div class="legality-box {{ $kirBoxClass }}">
                             <div class="legality-box-header">
                                 <span class="legality-title">
-                                    🚌 Masa Berlaku KIR
+                                    Masa Berlaku KIR
                                 </span>
                                 <span class="badge-legal {{ $kir['badge_class'] }}">
                                     {{ $kir['label'] }}
@@ -797,11 +795,11 @@
 
                             <div class="legality-subtext">
                                 @if($kir['status'] === 'expired')
-                                    <span style="color: #b91c1c; font-weight: 600;">⚠️ Uji KIR telah kedaluwarsa. Armada dilarang beroperasi sebelum lulus uji berkala Dishub.</span>
+                                    <span style="color: #b91c1c; font-weight: 600;">Uji KIR telah kedaluwarsa. Armada dilarang beroperasi sebelum lulus uji berkala Dishub.</span>
                                 @elseif($kir['status'] === 'expiring_soon')
                                     <span style="color: #d97706; font-weight: 600;">⏳ Segera jadwalkan uji berkala Dishub dalam {{ $kir['days_left'] }} hari ke depan.</span>
                                 @elseif($kir['status'] === 'valid')
-                                    <span style="color: #15803d; font-weight: 600;">✓ Kondisi kelaikan teknis diakui resmi Dishub (sisa {{ $kir['days_left'] }} hari).</span>
+                                    <span style="color: #15803d; font-weight: 600;">Kondisi kelaikan teknis diakui resmi Dishub (sisa {{ $kir['days_left'] }} hari).</span>
                                 @else
                                     <span>Mohon masukkan tanggal masa berlaku uji KIR pada formulir edit armada.</span>
                                 @endif
@@ -821,7 +819,7 @@
                         <div class="legality-box {{ $stnkBoxClass }}">
                             <div class="legality-box-header">
                                 <span class="legality-title">
-                                    📄 Pajak STNK
+                                    Pajak STNK
                                 </span>
                                 <span class="badge-legal {{ $stnk['badge_class'] }}">
                                     {{ $stnk['label'] }}
@@ -834,11 +832,11 @@
 
                             <div class="legality-subtext">
                                 @if($stnk['status'] === 'expired')
-                                    <span style="color: #b91c1c; font-weight: 600;">⚠️ Pajak STNK telah jatuh tempo. Segera lakukan perpanjangan di Samsat terdekat.</span>
+                                    <span style="color: #b91c1c; font-weight: 600;">Pajak STNK telah jatuh tempo. Segera lakukan perpanjangan di Samsat terdekat.</span>
                                 @elseif($stnk['status'] === 'expiring_soon')
                                     <span style="color: #d97706; font-weight: 600;">⏳ Batas pembayaran pajak tersisa {{ $stnk['days_left'] }} hari lagi.</span>
                                 @elseif($stnk['status'] === 'valid')
-                                    <span style="color: #15803d; font-weight: 600;">✓ Pajak kendaraan aktif dan legalitas jalan berlaku aman (sisa {{ $stnk['days_left'] }} hari).</span>
+                                    <span style="color: #15803d; font-weight: 600;">Pajak kendaraan aktif dan legalitas jalan berlaku aman (sisa {{ $stnk['days_left'] }} hari).</span>
                                 @else
                                     <span>Mohon masukkan tanggal jatuh tempo pajak pada formulir edit armada.</span>
                                 @endif
@@ -852,7 +850,7 @@
             {{-- RIWAYAT PENUGASAN JADWAL PERJALANAN --}}
             <div class="info-card">
                 <div class="info-card-header">
-                    <h3>🛣️ Penugasan Jadwal Perjalanan Terakhir</h3>
+                    <h3>Penugasan Jadwal Perjalanan Terakhir</h3>
                     <span style="font-size: 11px; color: #72817a;">Maksimal 10 jadwal terakhir</span>
                 </div>
                 <div class="info-card-body" style="padding: 0;">
@@ -870,7 +868,7 @@
                                 @foreach($vehicle->schedules as $sch)
                                     @php
                                         $routeLabel = $sch->route 
-                                            ? ($sch->route->origin?->name . ' → ' . $sch->route->destination?->name) 
+                                            ? ($sch->route->origin?->name . ' ke ' . $sch->route->destination?->name) 
                                             : ($sch->travelRoute?->name ?? 'Rute Travel');
                                         
                                         $schStatus = strtolower($sch->status ?? 'scheduled');
@@ -907,7 +905,7 @@
                         </table>
                     @else
                         <div style="padding: 32px 20px; text-align: center; color: #72817a; font-size: 13px;">
-                            <div style="font-size: 28px; margin-bottom: 6px;">🛣️</div>
+                            <div style="font-size: 28px; margin-bottom: 6px;"></div>
                             Belum ada jadwal perjalanan yang ditugaskan untuk unit armada ini.
                         </div>
                     @endif

@@ -23,8 +23,7 @@
                 </div>
                 <div style="margin-top: 10px;">
                     <a href="{{ route('dashboard.driver.kendaraan') }}" style="font-size: 12px; font-weight: 700; color: #087f55; text-decoration: none;">
-                        Lihat Detail Spesifikasi & Dokumen Kendaraan &rarr;
-                    </a>
+                        Lihat Detail Spesifikasi & Dokumen Kendaraan</a>
                 </div>
             </div>
 
@@ -34,16 +33,15 @@
                     Panduan Ritme Waktu & Jam Keberangkatan
                 </div>
                 <h4 style="margin: 0 0 6px 0; font-size: 16px; font-weight: 800; color: #0f172a;">
-                    Jam Keberangkatan: {{ $activeSchedule->formattedDepartureTime() }} WIB
+                    Jam Keberangkatan: {{ $activeSchedule->formattedDepartureTime() }}
                 </h4>
                 <div style="display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: #334155;">
-                    <div>Estimasi Waktu Tiba: <strong>{{ $activeSchedule->estimatedArrivalTime() }} WIB</strong> (Durasi: ± {{ $activeSchedule->route?->duration ?? '2 Jam 45 Menit' }})</div>
+                    <div>Estimasi Waktu Tiba: <strong>{{ $activeSchedule->estimatedArrivalTime() }}</strong> (Durasi: ± {{ $activeSchedule->route?->duration ?? '2 Jam 45 Menit' }})</div>
                     <div>Tahapan Operasional: <span class="badge-pill" style="background:#ecfdf5; color:#065f46; font-weight:800; padding:2px 8px;">Persiapan Armada</span></div>
                 </div>
                 <div style="margin-top: 10px;">
                     <a href="{{ route('dashboard.driver.jadwal') }}" style="font-size: 12px; font-weight: 700; color: #0284c7; text-decoration: none;">
-                        Lihat Seluruh Kalender & Agenda Penugasan &rarr;
-                    </a>
+                        Lihat Seluruh Kalender & Agenda Penugasan</a>
                 </div>
             </div>
         </div>
@@ -70,7 +68,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Jadwal Perjalanan</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Kalender penugasan hari ini, besok, & jadwal mendatang.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Halaman Jadwal &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Halaman Jadwal ke </div>
             </a>
 
             <!-- 3. Melihat Kendaraan yang Ditugaskan -->
@@ -80,7 +78,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Kendaraan Ditugaskan</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Spesifikasi unit HiAce, pelat, STNK, KIR, & lokasi parkir.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Info Kendaraan &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Info Kendaraan ke </div>
             </a>
 
             <!-- 4. Melihat Daftar Penumpang -->
@@ -90,7 +88,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Daftar Penumpang</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Manifes absensi, status naik/belum, dan tagihan COD.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Manifes Penumpang &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Manifes Penumpang ke </div>
             </a>
 
             <!-- 5. Melihat Seat Map -->
@@ -100,7 +98,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Seat Map Kabin</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Denah tata letak kursi & status keterisian per nomor bangku.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Denah Kursi &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Denah Kursi ke </div>
             </a>
 
             <!-- 6. Melihat Rute Perjalanan -->
@@ -110,7 +108,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Rute Perjalanan</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Jalur rute asal-tujuan, waypoints, dan navigasi GPS.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Rute & Waypoints &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Rute & Waypoints ke </div>
             </a>
 
             <!-- 7. Melihat Status Perjalanan -->
@@ -120,7 +118,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Status Perjalanan</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Stepper alur tahapan perjalanan aktif dari awal s/d akhir.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Stepper Status &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Stepper Status ke </div>
             </a>
 
             <!-- 8. Mengubah Status Perjalanan -->
@@ -130,7 +128,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Ubah Status Perjalanan</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Tombol eksekusi aksi berikutnya & slider konfirmasi status.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Kontrol Status &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Kontrol Status ke </div>
             </a>
 
             <!-- 9. Melihat Informasi Penumpang -->
@@ -140,7 +138,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Informasi Penumpang</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Kontak WhatsApp, telepon, titik jemput, & catatan khusus.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Info Penumpang &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Info Penumpang ke </div>
             </a>
 
             <!-- 10. Melaporkan Masalah Perjalanan -->
@@ -150,7 +148,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #b45309;">Melaporkan Masalah</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Form pelaporan insiden, kendala teknis, ban, atau macet.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #b45309;">Buka Form Kendala &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #b45309;">Buka Form Kendala ke </div>
             </a>
 
             <!-- 11. Emergency Center -->
@@ -160,7 +158,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #dc2626;">Emergency Center</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Tombol SOS 1-klik & panggilan bantuan darurat lapangan.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #dc2626;">Buka Pusat Darurat &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #dc2626;">Buka Pusat Darurat ke </div>
             </a>
 
             <!-- 12. GPS Tracking Saat Perjalanan Aktif -->
@@ -170,7 +168,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">GPS Live Tracking</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Pantau sinyal GPS, koordinat terkini, & kirim lokasi.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Pelacakan GPS &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Pelacakan GPS ke </div>
             </a>
 
             <!-- 13. Melihat Performa -->
@@ -180,7 +178,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Melihat Performa</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Rating bintang, persentase tepat waktu, & ulasan penumpang.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Data Performa &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Data Performa ke </div>
             </a>
 
             <!-- 14. Melihat Reward -->
@@ -190,7 +188,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Melihat Reward</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Poin ritase, bonus bulanan, dan level pengemudi.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Halaman Reward &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Halaman Reward ke </div>
             </a>
 
             <!-- 15. Melihat Riwayat Perjalanan -->
@@ -200,7 +198,7 @@
                 </div>
                 <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 800; color: #0f172a;">Riwayat Perjalanan</h4>
                 <p style="margin: 0; font-size: 12px; color: #64748b;">Rekapitulasi ritase dan daftar perjalanan yang selesai.</p>
-                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Arsip Riwayat &rarr;</div>
+                <div style="margin-top: 10px; font-size: 12px; font-weight: 700; color: #087f55;">Buka Arsip Riwayat ke </div>
             </a>
         </div>
     </section>

@@ -10,10 +10,6 @@
         @yield('title', 'Dashboard Admin Utama') - TravelKu
     </title>
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     @vite([
         'resources/css/app.css',
@@ -45,7 +41,7 @@
         }
         body {
             min-height: 100vh;
-            font-family: 'Plus Jakarta Sans', "Segoe UI", system-ui, sans-serif;
+            font-family: 'Overpass', "Segoe UI", system-ui, sans-serif;
             background: var(--page);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
@@ -425,10 +421,13 @@
     </style>
 
     @stack('styles')
+    @fonts('overpass')
+    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
+    @vite(['resources/css/dashboard-staff.css'])
 </head>
 
 
-<body>
+<body data-staff="admin">
 
 <div class="admin-dashboard">
 
@@ -473,8 +472,7 @@
 
             <a
                 href="{{ route('dashboard.admin.index') }}"
-                class="admin-menu-link
-                    {{ request()->routeIs('dashboard.admin.index') ? 'active' : '' }}"
+                class="admin-menu-link {{ request()->routeIs('dashboard.admin.index') ? 'active' : '' }}"
             >
 
                 <span class="admin-menu-icon">
@@ -499,8 +497,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.kelola-user.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.kelola-user.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.kelola-user.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -519,8 +516,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.kelola-staff.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.kelola-staff.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.kelola-staff.*') ? 'active' : '' }}"
                 >
 
                     <span class="admin-menu-icon">
@@ -537,8 +533,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.kelola-driver.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.kelola-driver.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.kelola-driver.*') ? 'active' : '' }}"
                 >
 
                     <span class="admin-menu-icon">
@@ -557,8 +552,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.memantau-kendaraan.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.memantau-kendaraan.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.memantau-kendaraan.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -576,8 +570,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.pemesanan.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.pemesanan.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.pemesanan.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -594,8 +587,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.pembayaran.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.pembayaran.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.pembayaran.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -610,8 +602,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.rute.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.rute.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.rute.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -627,8 +618,7 @@
                 
                 <a
                     href="{{ route('dashboard.admin.refund.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.refund.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.refund.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -643,8 +633,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.laporan.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.laporan.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.laporan.*') ? 'active' : '' }}"
                 >
                     <span class="admin-menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -668,8 +657,7 @@
 
                 <a
                     href="{{ route('dashboard.admin.pengaturan.index') }}"
-                    class="admin-menu-link
-                        {{ request()->routeIs('dashboard.admin.pengaturan.*') ? 'active' : '' }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.pengaturan.*') ? 'active' : '' }}"
                 >
 
                     <span class="admin-menu-icon">

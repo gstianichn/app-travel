@@ -636,13 +636,13 @@
     {{-- ALERTS --}}
     @if(session('success'))
         <div class="alert-banner success">
-            <span>✓ {{ session('success') }}</span>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert-banner error">
-            <span>⚠️ {{ session('error') }}</span>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
@@ -654,9 +654,6 @@
                 <div class="stat-box-label">Total Transaksi</div>
                 <div class="stat-box-num">{{ number_format($totalTransactions) }}</div>
             </div>
-            <div class="stat-box-icon total">
-                💳
-            </div>
         </div>
 
         {{-- Total Omzet Lunas --}}
@@ -666,9 +663,6 @@
                 <div class="stat-box-num" style="color: #0284c7; font-size: 19px;">
                     Rp {{ number_format($totalRevenue, 0, ',', '.') }}
                 </div>
-            </div>
-            <div class="stat-box-icon revenue">
-                💰
             </div>
         </div>
 
@@ -688,9 +682,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Gagal & Kedaluwarsa</div>
                 <div class="stat-box-num" style="color: #b91c1c;">{{ number_format($failedOrExpiredCount) }}</div>
-            </div>
-            <div class="stat-box-icon failed">
-                ❌
             </div>
         </div>
     </div>
@@ -752,9 +743,8 @@
                     Terapkan
                 </button>
                 @if(request()->hasAny(['search', 'status', 'method', 'date_from', 'date_to']))
-                    <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter">
-                        ✕
-                    </a>
+                    <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter">Reset
+                                            </a>
                 @endif
             </div>
         </form>
@@ -799,11 +789,11 @@
                                         @php
                                             $sch = $payment->booking->schedule;
                                             $rText = $sch && $sch->route 
-                                                ? ($sch->route->origin?->city . ' → ' . $sch->route->destination?->city)
+                                                ? ($sch->route->origin?->city . ' ke ' . $sch->route->destination?->city)
                                                 : 'Rute Travel';
                                         @endphp
                                         <span class="route-sub">
-                                            📍 {{ $rText }}
+                                            {{ $rText }}
                                         </span>
                                     @else
                                         <span style="color: #94a3b8;">-</span>
@@ -816,7 +806,7 @@
                                 <div class="customer-cell">
                                     <h4>{{ $payment->booking?->customerName() ?? 'Pelanggan' }}</h4>
                                     <span class="customer-phone">
-                                        📱 {{ $payment->booking?->customerPhone() ?? '-' }}
+                                        {{ $payment->booking?->customerPhone() ?? '-' }}
                                     </span>
                                 </div>
                             </td>
@@ -825,14 +815,10 @@
                             <td>
                                 <span class="badge-method {{ $payment->methodBadgeClass() }}">
                                     @if(stripos($payment->payment_method, 'qris') !== false)
-                                        📱
-                                    @elseif(stripos($payment->payment_method, 'cash') !== false || stripos($payment->payment_method, 'tunai') !== false)
-                                        💵
-                                    @elseif(stripos($payment->payment_method, 'transfer') !== false || stripos($payment->payment_method, 'bank') !== false)
-                                        🏦
-                                    @else
-                                        🌐
-                                    @endif
+                                                                            @elseif(stripos($payment->payment_method, 'cash') !== false || stripos($payment->payment_method, 'tunai') !== false)
+                                                                            @elseif(stripos($payment->payment_method, 'transfer') !== false || stripos($payment->payment_method, 'bank') !== false)
+                                                                            @else
+                                                                            @endif
                                     {{ $payment->methodLabel() }}
                                 </span>
                                 @if($payment->gateway_provider && $payment->gateway_provider !== 'manual')
@@ -853,11 +839,11 @@
                             <td>
                                 <span class="badge-status {{ $payment->statusBadgeClass() }}">
                                     @if($payment->statusBadgeClass() === 'badge-status-paid')
-                                        ✓ {{ $payment->statusLabel() }}
+                                        {{ $payment->statusLabel() }}
                                     @elseif($payment->statusBadgeClass() === 'badge-status-pending')
                                         ⏳ {{ $payment->statusLabel() }}
                                     @else
-                                        ✕ {{ $payment->statusLabel() }}
+                                        {{ $payment->statusLabel() }}
                                     @endif
                                 </span>
                             </td>
@@ -870,7 +856,7 @@
                                         class="proof-btn"
                                         onclick="openProofModal('{{ asset('storage/' . $payment->proof_image) }}', '{{ $payment->order_id }}', '{{ $payment->bank_name }}', '{{ $payment->account_name }}')"
                                     >
-                                        📷 Ada Bukti
+                                        Ada Bukti
                                     </button>
                                 @elseif($payment->isManualTransfer())
                                     <span style="font-size: 11px; color: #94a3b8; font-style: italic;">
@@ -894,7 +880,7 @@
                                             onclick="openVerifyModal({{ $payment->id }}, '{{ $payment->order_id }}', '{{ $payment->formattedAmount() }}', '{{ $payment->hasProof() ? asset('storage/' . $payment->proof_image) : '' }}', '{{ $payment->bank_name ?? 'Transfer Bank' }}', '{{ $payment->account_name ?? '-' }}')"
                                             title="Verifikasi Manual Bukti Transfer"
                                         >
-                                            ✓ Verifikasi
+                                            Verifikasi
                                         </button>
                                     @endif
 
@@ -904,8 +890,7 @@
                                         class="btn-action-view"
                                         title="Buka Faktur & Log Gateway"
                                     >
-                                        Faktur &rarr;
-                                    </a>
+                                        Faktur</a>
 
                                     {{-- Gateway Log Quick Icon --}}
                                     @if($payment->hasGatewayLog())
@@ -914,9 +899,8 @@
                                             class="btn-action-log"
                                             onclick='openGatewayLogModal({{ json_encode($payment->raw_response) }}, "{{ $payment->gateway_provider ?? "gateway" }}", "{{ $payment->transaction_id ?? "-" }}")'
                                             title="Lihat Raw JSON Log Gateway"
-                                        >
-                                            ⚡
-                                        </button>
+                                        >Log
+                                                                                    </button>
                                     @endif
                                 </div>
                             </td>
@@ -925,7 +909,6 @@
                         <tr>
                             <td colspan="8">
                                 <div class="empty-state-box">
-                                    <div class="empty-state-icon">💳</div>
                                     <h4 class="empty-state-title">Tidak Ada Data Transaksi</h4>
                                     <p class="empty-state-desc">
                                         Tidak ditemukan transaksi pembayaran yang sesuai dengan kriteria filter Anda.
@@ -1008,11 +991,11 @@
                     <div style="display: flex; gap: 12px;">
                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #15803d; background: #f0fdf4; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #86efac; flex: 1;">
                             <input type="radio" name="action" value="approve" checked onchange="toggleRejectionInput(false)">
-                            <span>✓ Setujui (Lunas & Terbitkan Tiket)</span>
+                            <span>Setujui (Lunas & Terbitkan Tiket)</span>
                         </label>
                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: #b91c1c; background: #fef2f2; padding: 10px 14px; border-radius: 8px; border: 1.5px solid #fca5a5; flex: 1;">
                             <input type="radio" name="action" value="reject" onchange="toggleRejectionInput(true)">
-                            <span>✕ Tolak Pembayaran</span>
+                            <span>Tolak Pembayaran</span>
                         </label>
                     </div>
                 </div>
@@ -1064,7 +1047,7 @@
         <div class="modal-dialog-body">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span style="font-size: 12px; color: #64748b;">Raw Webhook Payload (JSON format)</span>
-                <button type="button" class="proof-btn" onclick="copyGatewayJson()">📋 Salin JSON</button>
+                <button type="button" class="proof-btn" onclick="copyGatewayJson()">Salin JSON</button>
             </div>
             <pre id="gatewayJsonViewer" style="background: #0f172a; color: #38bdf8; padding: 16px; border-radius: 10px; font-family: monospace; font-size: 12px; max-height: 380px; overflow: auto; white-space: pre-wrap; margin: 0;"></pre>
         </div>
@@ -1123,12 +1106,12 @@
             box.style.display = 'flex';
             input.required = true;
             submitBtn.style.background = '#dc2626';
-            submitBtn.innerText = '✕ Tolak Pembayaran Ini';
+            submitBtn.innerText = 'Tolak Pembayaran Ini';
         } else {
             box.style.display = 'none';
             input.required = false;
             submitBtn.style.background = '#087f55';
-            submitBtn.innerText = '✓ Setujui & Terbitkan Tiket';
+            submitBtn.innerText = 'Setujui & Terbitkan Tiket';
         }
     }
 

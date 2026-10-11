@@ -8,9 +8,8 @@
     {{-- Alert Success --}}
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center space-y-3">
         <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto text-white text-2xl shadow-sm" style="background:#087f55;">
-            ✓
-        </div>
-        <span class="inline-block px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                    </div>
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800">
             Pembayaran Terverifikasi Otomatis
         </span>
         <h2 class="text-2xl font-black text-slate-900">E-Ticket Perjalanan Anda Terbit!</h2>
@@ -25,18 +24,18 @@
         {{-- Header Tiket Hijau Brand --}}
         <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="p-6 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <span class="text-[10px] uppercase font-bold tracking-widest bg-white/20 px-2.5 py-0.5 rounded-full">
+                <span class="text-xs font-bold bg-white/20 px-2.5 py-0.5 rounded-full">
                     BOARDING PASS ELEKTRONIK
                 </span>
                 <h3 class="text-xl font-black mt-1">
-                    {{ $booking->schedule->route?->origin?->name }} &rarr; {{ $booking->schedule->route?->destination?->name }}
+                    {{ $booking->schedule->route?->origin?->name }} ke {{ $booking->schedule->route?->destination?->name }}
                 </h3>
                 <p class="text-xs mt-0.5" style="color:rgba(255,255,255,.85);">
                     {{ $booking->schedule->vehicle?->type ?? 'Toyota HiAce Premio' }} • {{ $booking->schedule->vehicle?->plate_number ?? '-' }}
                 </p>
             </div>
             <div class="text-left sm:text-right">
-                <span class="text-[10px] text-emerald-200 block uppercase tracking-wider">No. Tiket Resmi</span>
+                <span class="text-xs text-emerald-200 block">No. Tiket Resmi</span>
                 <span class="font-mono font-bold text-base text-white">{{ $booking->ticket?->ticket_number ?? 'TKT-2609-AUTO' }}</span>
             </div>
         </div>
@@ -87,21 +86,21 @@
                         <rect x="14" y="19" width="8" height="3" fill="currentColor"/>
                     </svg>
                 </div>
-                <p class="font-mono font-extrabold text-slate-900 text-sm tracking-wider mt-3">
+                <p class="font-mono font-extrabold text-slate-900 text-sm mt-3">
                     {{ $booking->booking_code }}
                 </p>
-                <span class="text-[10px] text-slate-400 mt-0.5">Tunjukkan saat naik kendaraan</span>
+                <span class="text-xs text-slate-400 mt-0.5">Tunjukkan saat naik kendaraan</span>
             </div>
 
             {{-- Manifest Penumpang & Rincian Lunas --}}
             <div class="md:col-span-7 space-y-4">
                 <div>
-                    <h5 class="font-bold text-slate-900 text-xs uppercase tracking-wider mb-2">Daftar Penumpang:</h5>
+                    <h5 class="font-bold text-slate-900 text-xs mb-2">Daftar Penumpang:</h5>
                     <div class="space-y-1.5">
                         @foreach($booking->passengers as $p)
                             <div class="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100 text-xs">
                                 <div class="flex items-center gap-2">
-                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style="background:#087f55;">
+                                    <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#087f55;">
                                         {{ $loop->iteration }}
                                     </span>
                                     <span class="font-semibold text-slate-800">{{ $p->name }}</span>

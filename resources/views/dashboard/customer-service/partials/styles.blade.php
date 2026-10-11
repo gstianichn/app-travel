@@ -53,7 +53,7 @@
     }
 
     body, .cs-body {
-        font-family: 'Plus Jakarta Sans', "Segoe UI", Arial, Helvetica, sans-serif;
+        font-family: 'Overpass', "Segoe UI", Arial, Helvetica, sans-serif;
         background: var(--page);
         color: var(--text);
         min-height: 100vh;

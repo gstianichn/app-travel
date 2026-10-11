@@ -12,24 +12,24 @@
     <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto text-xs font-semibold">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
-                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">1</span>
+                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">1</span>
                 Pilih Kursi
             </span>
             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
-                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px]">2</span>
+                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs">2</span>
                 Data Penumpang & Promo
             </span>
             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
-                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px]">3</span>
+                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs">3</span>
                 Pembayaran
             </span>
         </div>
 
         {{-- Lock timer badge --}}
         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-            <svg class="w-4 h-4 text-amber-600 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
             <span>Reservasi Kursi: <strong>10 Menit</strong> Seat Lock</span>
         </div>
     </div>
@@ -67,17 +67,17 @@
                         <span class="text-slate-600">Tersedia</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md text-white flex items-center justify-center text-[10px]" style="background:#087f55;">✓</div>
+                        <div class="w-4 h-4 rounded-md text-white flex items-center justify-center text-xs" style="background:#087f55;"></div>
                         <span class="text-slate-600 font-semibold">Dipilih</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md bg-amber-200 border border-amber-400 flex items-center justify-center text-[10px] text-amber-800">
+                        <div class="w-4 h-4 rounded-md bg-amber-200 border border-amber-400 flex items-center justify-center text-xs text-amber-800">
                             <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         </div>
                         <span class="text-slate-600">Terkunci</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md bg-slate-300 border border-slate-400 flex items-center justify-center text-[10px]">✕</div>
+                        <div class="w-4 h-4 rounded-md bg-slate-300 border border-slate-400 flex items-center justify-center text-xs"></div>
                         <span class="text-slate-600">Terisi</span>
                     </div>
                 </div>
@@ -88,12 +88,12 @@
                     {{-- Bagian Depan Minibus (Kaca Depan & Kabin Supir Setir Kanan) --}}
                     <div class="border-b-2 border-dashed border-slate-300 pb-4 mb-5 text-center">
                         <div class="flex items-center justify-between px-2 mb-2.5">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                            <span class="text-xs font-bold text-slate-400 flex items-center gap-1">
                                 <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"/><path d="M17 12h.01"/></svg>
                                 Pintu Kiri
                             </span>
                             <div class="h-1.5 w-24 rounded-full bg-slate-300" title="Kaca Depan Minibus"></div>
-                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m12 2v20m10-10H2"/></svg>
                                 Setir Kanan
                             </span>
@@ -119,12 +119,12 @@
                                         Kosong
                                     </div>
                                 @endif
-                                <span class="text-[9px] font-semibold text-slate-400 mt-1">Depan Kiri</span>
+                                <span class="text-xs font-semibold text-slate-400 mt-1">Depan Kiri</span>
                             </div>
 
                             {{-- Lorong Tangga / Pintu Masuk Depan --}}
                             <div class="flex flex-col items-center justify-center px-1">
-                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pintu / Depan</span>
+                                <span class="text-xs font-bold text-slate-400">Pintu / Depan</span>
                             </div>
 
                             {{-- Kursi Kemudi Sopir (Kanan - Standar Kendaraan Indonesia) --}}
@@ -134,9 +134,9 @@
                                         <circle cx="12" cy="12" r="10"/>
                                         <path d="m12 2v20m10-10H2"/>
                                     </svg>
-                                    <span class="text-[9px] font-bold uppercase mt-0.5 text-white">Sopir</span>
+                                    <span class="text-xs font-bold mt-0.5 text-white">Sopir</span>
                                 </div>
-                                <span class="text-[9px] font-bold text-slate-500 mt-1">Setir Kanan</span>
+                                <span class="text-xs font-bold text-slate-500 mt-1">Setir Kanan</span>
                             </div>
                         </div>
                     </div>
@@ -161,7 +161,7 @@
                                     </div>
 
                                     {{-- Lorong Tengah --}}
-                                    <div class="text-[10px] text-slate-300 font-mono">
+                                    <div class="text-xs text-slate-300 font-mono">
                                         R{{ $rowIndex }}
                                     </div>
 
@@ -184,7 +184,7 @@
                                         @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
                                         @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
                                     </div>
-                                    <div class="text-[10px] text-slate-300 font-mono">
+                                    <div class="text-xs text-slate-300 font-mono">
                                         R{{ $rowIndex }}
                                     </div>
                                     <div class="flex items-center gap-1.5">
@@ -204,7 +204,7 @@
 
                     {{-- Bagian Belakang Kabin / Bagasi --}}
                     <div class="mt-6 pt-3 border-t-2 border-dashed border-slate-300 text-center">
-                        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Bagasi Luas Belakang</span>
+                        <span class="text-xs font-bold text-slate-400">Bagasi Luas Belakang</span>
                     </div>
 
                 </div>
@@ -233,7 +233,7 @@
                         <div>
                             <p class="text-slate-400 font-medium">Titik Keberangkatan</p>
                             <p class="font-bold text-slate-800 text-sm">{{ $schedule->route?->origin?->name }}</p>
-                            <p class="text-slate-500 text-[11px]">{{ $schedule->route?->origin?->address ?? 'Pool Utama' }}</p>
+                            <p class="text-slate-500 text-xs">{{ $schedule->route?->origin?->address ?? 'Pool Utama' }}</p>
                         </div>
                     </div>
 
@@ -244,7 +244,7 @@
                         <div>
                             <p class="text-slate-400 font-medium">Titik Tujuan</p>
                             <p class="font-bold text-slate-800 text-sm">{{ $schedule->route?->destination?->name }}</p>
-                            <p class="text-slate-500 text-[11px]">{{ $schedule->route?->destination?->address ?? 'Pool Tujuan' }}</p>
+                            <p class="text-slate-500 text-xs">{{ $schedule->route?->destination?->address ?? 'Pool Tujuan' }}</p>
                         </div>
                     </div>
 
@@ -280,7 +280,7 @@
                             <template x-for="seat in selectedSeats" :key="seat.id">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-white font-bold text-xs" style="background:#087f55;">
                                     Kursi <span x-text="seat.number"></span>
-                                    <button type="button" @click="toggleSeat(seat.id, seat.number)" class="hover:text-rose-200">✕</button>
+                                    <button type="button" @click="toggleSeat(seat.id, seat.number)" class="hover:text-rose-200" aria-label="Hapus kursi ini">&times;</button>
                                 </span>
                             </template>
                         </div>
@@ -309,7 +309,7 @@
                 </div>
 
                 {{-- Mekanisme Seat Lock Alert --}}
-                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-[11px] space-y-1">
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs space-y-1">
                     <p class="font-bold text-slate-800 flex items-center gap-1.5">
                         <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         Mekanisme Reservasi Sementara (Seat Lock)

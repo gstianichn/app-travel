@@ -11,9 +11,6 @@
     </title>
 
     {{-- Google Fonts --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     {{-- Vite Asset Bundler --}}
     @vite([
@@ -26,9 +23,12 @@
 
     {{-- Custom Page Styles --}}
     @stack('styles')
+    @fonts('overpass')
+    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
+    @vite(['resources/css/dashboard-staff.css'])
 </head>
 
-<body>
+<body data-staff="driver">
 
 <div class="driver-shell">
 

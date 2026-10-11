@@ -109,6 +109,11 @@ class SearchController extends Controller
                     $validated['passengers']
                 )
                 ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
+                // Departures that already left today cannot be booked any more.
+                ->when(
+                    $validated['departure_date'] === now()->toDateString(),
+                    fn ($query) => $query->where('departure_time', '>', now()->format('H:i')),
+                )
                 ->whereHas('route', function ($query) use ($validated) {
                     $query
                         ->where('origin_id', $validated['origin'])
@@ -128,6 +133,9 @@ class SearchController extends Controller
             'originLoc' => $originLoc,
             'destLoc' => $destLoc,
             'transitHub' => $transitHub,
+            'routeSuggestions' => Route::cheapestPerCityPair(
+                $originLoc && ! $routeConnected ? $originLoc->id : null
+            )->take(8),
         ]);
     }
 }

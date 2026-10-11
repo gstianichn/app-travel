@@ -8,7 +8,7 @@
                         <span>MANIFES ABSENSI &amp; KEHADIRAN PENUMPANG</span>
                     </div>
                     <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                        <span>👥</span>
+                        <span></span>
                         <span>Melihat Daftar Penumpang</span>
                     </h3>
                     <p style="margin: 4px 0 0 0; font-size: 12.5px; color: #64748b;">
@@ -18,7 +18,7 @@
 
                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                     <a href="#section-seatmap" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                        <span>💺</span>
+                        <span></span>
                         <span>Denah Kursi Kabin</span>
                     </a>
                 </div>
@@ -33,7 +33,7 @@
                     <!-- 1. Total Penumpang -->
                     <div class="rekap-card rekap-total">
                         <div class="rekap-top">
-                            <span class="rekap-icon">👥</span>
+                            <span class="rekap-icon"></span>
                             <span class="rekap-label">Total Penumpang</span>
                         </div>
                         <div class="rekap-val">
@@ -47,7 +47,7 @@
                     <!-- 2. Sudah Naik -->
                     <div class="rekap-card rekap-boarded">
                         <div class="rekap-top">
-                            <span class="rekap-icon">✅</span>
+                            <span class="rekap-icon"></span>
                             <span class="rekap-label">Sudah Naik</span>
                         </div>
                         <div class="rekap-val" style="color: #059669;">
@@ -86,7 +86,7 @@
 
                 <!-- PENCARIAN & FILTER PENUMPANG -->
                 <div class="manifest-search-box">
-                    <span class="manifest-search-icon">🔍</span>
+                    <span class="manifest-search-icon"></span>
                     <input type="text" id="manifestSearchInput" placeholder="Ketik nama penumpang atau nomor kursi (misal: Seat 1A) untuk menyaring..." onkeyup="filterManifest()">
                     <span style="font-size: 11.5px; color: #64748b; white-space: nowrap; padding-right: 14px;">Urut per nomor kursi</span>
                 </div>
@@ -113,18 +113,18 @@
                                     <!-- Status Pembayaran Tiket: Lunas Online vs Tagih Tunai/COD -->
                                     @if ($p->is_paid)
                                         <span class="badge-paid" style="font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 6px; background: #dcfce7; color: #15803d; border: 1px solid #86efac; display: inline-flex; align-items: center; gap: 4px;">
-                                            ✓ Lunas Online
+                                            Lunas Online
                                         </span>
                                     @else
                                         <span class="badge-cod" style="font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 6px; background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; display: inline-flex; align-items: center; gap: 4px;">
-                                            💵 Tagih Tunai / COD: Rp {{ number_format($p->amount_due, 0, ',', '.') }}
+                                            Tagih Tunai / COD: Rp {{ number_format($p->amount_due, 0, ',', '.') }}
                                         </span>
                                     @endif
 
                                     <!-- Status Kehadiran Absensi -->
                                     @if ($p->is_boarded)
                                         <span class="badge-boarded" style="font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 6px; background: #059669; color: white; display: inline-flex; align-items: center; gap: 4px;">
-                                            ✓ Sudah Naik (Boarded) {{ $p->boarded_at ? '• ' . $p->boarded_at : '' }}
+                                            Sudah Naik (Boarded) {{ $p->boarded_at ? '• ' . $p->boarded_at : '' }}
                                         </span>
                                     @else
                                         <span class="badge-waiting" style="font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 6px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 4px;">
@@ -136,14 +136,14 @@
 
                             <!-- DETAIL RUTE JEMPUT & CATATAN BAWAAN -->
                             <div class="passenger-details-strip">
-                                <div>📍 Titik Jemput: <strong>{{ $p->pickup_point }}</strong> &nbsp;➔&nbsp; Turun: <strong>{{ $p->dropoff_point }}</strong></div>
-                                <div>🧳 Catatan Bawaan: <strong>{{ $p->baggage_notes }}</strong></div>
+                                <div>Titik Jemput: <strong>{{ $p->pickup_point }}</strong> &nbsp; ke &nbsp; Turun: <strong>{{ $p->dropoff_point }}</strong></div>
+                                <div>Catatan Bawaan: <strong>{{ $p->baggage_notes }}</strong></div>
                                 @if (!empty($p->special_request) && $p->special_request !== '-')
-                                    <div style="color: #b45309;">💬 Catatan Tambahan: {{ $p->special_request }}</div>
+                                    <div style="color: #b45309;">Catatan Tambahan: {{ $p->special_request }}</div>
                                 @endif
                                 @if (!$p->is_paid && $p->amount_due > 0)
                                     <div style="color: #b91c1c; font-weight: 700; background: #fef2f2; border: 1px dashed #fca5a5; padding: 6px 10px; border-radius: 6px; margin-top: 4px;">
-                                        ⚠️ Perhatian Sopir: Tagih uang tunai Rp {{ number_format($p->amount_due, 0, ',', '.') }} sebelum penumpang duduk di kursi armada.
+                                        Perhatian Sopir: Tagih uang tunai Rp {{ number_format($p->amount_due, 0, ',', '.') }} sebelum penumpang duduk di kursi armada.
                                     </div>
                                 @endif
                             </div>
@@ -156,7 +156,7 @@
                                        target="_blank"
                                        class="btn-contact btn-contact-wa"
                                        title="Kirim Pesan WhatsApp Langsung Tanpa Simpan Nomor">
-                                        <span>💬</span>
+                                        <span></span>
                                         <span>WhatsApp</span>
                                     </a>
 
@@ -164,7 +164,7 @@
                                     <a href="tel:{{ $p->phone }}"
                                        class="btn-contact btn-contact-tel"
                                        title="Panggil Telepon Langsung">
-                                        <span>📞</span>
+                                        <span></span>
                                         <span>Telepon</span>
                                     </a>
                                 </div>
@@ -180,12 +180,12 @@
                                                 @if (!$p->is_paid)
                                                     <input type="hidden" name="mark_paid" value="1">
                                                     <button type="submit" class="btn-checkin-action btn-board" title="Terima uang tunai dan konfirmasi absensi naik">
-                                                        <span>✓</span>
+                                                        <span></span>
                                                         <span>Terima COD &amp; Check-in</span>
                                                     </button>
                                                 @else
                                                     <button type="submit" class="btn-checkin-action btn-board" title="Centang cepat absensi penumpang naik">
-                                                        <span>✓</span>
+                                                        <span></span>
                                                         <span>Check-in / Boarded</span>
                                                     </button>
                                                 @endif
@@ -199,7 +199,7 @@
                                     @else
                                         <!-- Demo fallback action -->
                                         <button type="button" class="btn-checkin-action {{ $p->is_boarded ? 'btn-unboard' : 'btn-board' }}" onclick="alert('Simulasi: Status absensi untuk {{ $p->name }} (Kursi {{ $p->seat_number }}) berhasil diperbarui!')">
-                                            <span>✓</span>
+                                            <span></span>
                                             <span>{{ $p->is_boarded ? 'Batalkan Absensi' : ($p->is_paid ? 'Check-in / Boarded' : 'Terima COD & Check-in') }}</span>
                                         </button>
                                     @endif

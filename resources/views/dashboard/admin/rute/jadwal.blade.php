@@ -569,7 +569,7 @@
                 + Buat Jadwal Tunggal
             </button>
             <button type="button" class="btn-batch-generator" onclick="openBatchModal()">
-                ⚡ Batch Generator Jam Jalan
+                Batch Generator Jam Jalan
             </button>
         </div>
     </div>
@@ -577,13 +577,13 @@
     {{-- ALERTS --}}
     @if(session('success'))
         <div style="padding: 12px 18px; border-radius: 10px; font-size: 13px; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
-            <span>✓ {{ session('success') }}</span>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div style="padding: 12px 18px; border-radius: 10px; font-size: 13px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">
-            <span>⚠️ {{ session('error') }}</span>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
@@ -594,18 +594,12 @@
                 <div class="stat-box-label">Total Jadwal Mendatang</div>
                 <div class="stat-box-num">{{ number_format($totalSchedulesCount) }}</div>
             </div>
-            <div class="stat-box-icon" style="background: #e0f2fe; color: #0369a1;">
-                📅
-            </div>
         </div>
 
         <div class="stat-box">
             <div class="stat-box-info">
                 <div class="stat-box-label">Sedang di Jalan (Active)</div>
                 <div class="stat-box-num" style="color: #15803d;">{{ number_format($activeTripsCount) }}</div>
-            </div>
-            <div class="stat-box-icon" style="background: #dcfce7; color: #15803d;">
-                🚐
             </div>
         </div>
 
@@ -696,7 +690,7 @@
                         <tr>
                             {{-- JAM JALAN --}}
                             <td>
-                                <div class="time-badge">🕒 {{ $dTime }} WIB</div>
+                                <div class="time-badge">{{ $dTime }} WIB</div>
                                 <div class="date-sub">{{ $dDate }}</div>
                             </td>
 
@@ -714,7 +708,7 @@
                             <td>
                                 <div class="assigned-box">
                                     <span class="assigned-title">
-                                        🚐 {{ $sch->vehicle?->name ?? 'Belum ada armada' }}
+                                        {{ $sch->vehicle?->name ?? 'Belum ada armada' }}
                                     </span>
                                     <span class="assigned-sub">
                                         {{ $sch->vehicle ? '[' . $sch->vehicle->plate_number . '] • ' . $sch->vehicle->capacity . ' Kursi' : 'Silakan pasangkan unit' }}
@@ -726,10 +720,10 @@
                             <td>
                                 <div class="assigned-box">
                                     <span class="driver-name">
-                                        🧑‍✈️ {{ $sch->driver?->user?->name ?? 'Belum ada sopir' }}
+                                        {{ $sch->driver?->user?->name ?? 'Belum ada sopir' }}
                                     </span>
                                     <span class="assigned-sub">
-                                        {{ $sch->driver?->user?->phone ? '📱 ' . $sch->driver->user->phone : 'Standby' }}
+                                        {{ $sch->driver?->user?->phone ? '' . $sch->driver->user->phone : 'Standby' }}
                                     </span>
                                 </div>
                             </td>
@@ -776,7 +770,7 @@
                                         onclick="openAssignModal({{ $sch->id }}, '{{ $sch->vehicle_id }}', '{{ $sch->driver_id }}', '{{ $dDate }} {{ $dTime }}', '{{ $sch->route?->routeTitle() }}')"
                                         title="Tetapkan atau Ganti Armada & Sopir"
                                     >
-                                        🚐 Pasang Sopir/Armada
+                                        Pasang Sopir/Armada
                                     </button>
 
                                     {{-- Seat Map Link --}}
@@ -784,18 +778,16 @@
                                         href="{{ route('dashboard.admin.pemesanan.seat-map', $sch->id) }}"
                                         class="btn-action-icon"
                                         title="Denah Kursi Visual"
-                                    >
-                                        💺
-                                    </a>
+                                    >Kursi
+                                                                            </a>
 
                                     {{-- Manifest Link --}}
                                     <a
                                         href="{{ route('dashboard.admin.pemesanan.manifes', $sch->id) }}"
                                         class="btn-action-icon"
                                         title="Manifes Perjalanan"
-                                    >
-                                        📋
-                                    </a>
+                                    >Manifes
+                                                                            </a>
 
                                     {{-- Delete Schedule --}}
                                     <form
@@ -806,9 +798,8 @@
                                     >
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-action-icon" style="color: #b91c1c;" title="Hapus Jadwal">
-                                            🗑️
-                                        </button>
+                                        <button type="submit" class="btn-action-icon" style="color: #b91c1c;" title="Hapus Jadwal">Hapus
+                                                                                    </button>
                                     </form>
                                 </div>
                             </td>
@@ -816,11 +807,11 @@
                     @empty
                         <tr>
                             <td colspan="8" style="text-align: center; padding: 40px 20px; color: #64748b;">
-                                <div style="font-size: 36px; margin-bottom: 8px;">📅</div>
+                                <div style="font-size: 36px; margin-bottom: 8px;"></div>
                                 <div style="font-weight: 700; font-size: 15px; color: #17221d;">Tidak Ada Jadwal Keberangkatan</div>
                                 <p style="margin: 4px 0 12px; font-size: 13px;">Gunakan Batch Generator untuk membuat jadwal harian secara otomatis.</p>
                                 <button type="button" class="btn-batch-generator" onclick="openBatchModal()">
-                                    ⚡ Buka Batch Generator Jam Jalan
+                                    Buka Batch Generator Jam Jalan
                                 </button>
                             </td>
                         </tr>
@@ -845,7 +836,7 @@
     <div class="modal-dialog" style="max-width: 680px;">
         <div class="modal-dialog-header">
             <div>
-                <h3>⚡ Batch Generator Jam Jalan Harian</h3>
+                <h3>Batch Generator Jam Jalan Harian</h3>
                 <span style="font-size: 12px; color: #64748b;">Buat banyak slot jadwal sekaligus dalam rentang tanggal</span>
             </div>
             <button type="button" class="btn-close-modal" onclick="closeBatchModal()">&times;</button>
@@ -952,7 +943,7 @@
                     Batal
                 </button>
                 <button type="submit" class="btn-batch-generator">
-                    ⚡ Generate Semua Jadwal Sekarang
+                    Generate Semua Jadwal Sekarang
                 </button>
             </div>
         </form>

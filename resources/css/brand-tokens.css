@@ -1,0 +1,25 @@
+/*
+ * TravelKu brand tokens, shared by the public pages, auth pages and dashboards.
+ * Green and forest come from Indonesian highway direction signs; amber is the one accent
+ * and is kept for primary actions and the sun.
+ */
+
+:root {
+    --lp-paper: #F6F4EC;
+    --lp-card: #FFFDF8;
+    --lp-ink: #13201B;
+    --lp-muted: #4B5D55;
+    --lp-forest: #0C392F;
+    --lp-green: #0C7950;
+    --lp-mint: #DFF0E8;
+    --lp-sun: #F2B25C;
+    --lp-sun-soft: #F5C27A;
+    --lp-line: #D9D4C3;
+    --lp-field-border: #7D7969;
+    --lp-asphalt: #36423C;
+    --lp-danger: #A3341F;
+    --lp-danger-soft: #F8E3DC;
+    --lp-warn-soft: #FBEBD0;
+    --lp-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --lp-nav-h: 72px;
+}

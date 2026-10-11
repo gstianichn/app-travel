@@ -3,10 +3,10 @@
     <div class="modal-box" style="border: 2px solid #ef4444;">
         <div class="modal-header" style="background:#fee2e2;">
             <h3 style="color:#b91c1c;">
-                <span>🚨</span>
+                <span></span>
                 <span>KONFIRMASI AKTIVASI EMERGENCY SOS</span>
             </h3>
-            <button type="button" class="modal-close-btn" onclick="closeSosModal()">✕</button>
+            <button type="button" class="modal-close-btn" onclick="closeSosModal()" aria-label="Tutup">&times;</button>
         </div>
 
         <form method="POST" action="{{ route('dashboard.driver.schedule.sos', $activeSchedule->id ?? 1) }}" id="formSos">
@@ -27,14 +27,17 @@
                 <div style="background:#fef2f2; border:1px solid #fecaca; padding:12px; border-radius:10px; margin-bottom:14px;">
                     <div style="font-weight:700; font-size:12px; color:#991b1b; margin-bottom:6px;">Nomor Panggilan Darurat Cepat:</div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <a href="tel:081122334455" class="btn-contact btn-contact-tel">HQ: 0811-2233-4455</a>
+                        @php $officePhone = \App\Models\AppSetting::companyPhone(); @endphp
+                        @if ($officePhone)
+                            <a href="{{ $officePhone['tel'] }}" class="btn-contact btn-contact-tel">Kantor: {{ $officePhone['display'] }}</a>
+                        @endif
                         <a href="tel:118" class="btn-contact btn-nav-gmaps">Ambulans (118)</a>
                         <a href="tel:110" class="btn-contact" style="background:#1e293b; color:white;">Polisi (110)</a>
                     </div>
                 </div>
 
                 <button type="submit" class="btn-danger-sos">
-                    <span>🚨</span>
+                    <span></span>
                     <span>PANCARKAN SINYAL SOS SEKARANG</span>
                 </button>
             </div>

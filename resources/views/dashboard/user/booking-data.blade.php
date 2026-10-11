@@ -14,24 +14,24 @@
     <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto text-xs font-semibold">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
+                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
                 Pilih Kursi
             </span>
             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
-                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">2</span>
+                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">2</span>
                 Data Penumpang & Promo
             </span>
             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
-                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px]">3</span>
+                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs">3</span>
                 Pembayaran
             </span>
         </div>
 
         {{-- Seat Lock Countdown Timer --}}
         <div class="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold shadow-2xs">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
             <span>Sisa Waktu Seat Lock:</span>
             <span class="font-mono text-sm text-amber-700 bg-white px-2 py-0.5 rounded-md border border-amber-200" x-text="formatTimer(remainingSeconds)"></span>
         </div>
@@ -57,7 +57,7 @@
                             </div>
                             <h3 class="font-bold text-slate-900 text-base">Data Pemesan (Kontak Utama)</h3>
                         </div>
-                        <span class="text-[11px] text-slate-400">E-Ticket QR akan dikirim ke kontak ini</span>
+                        <span class="text-xs text-slate-400">E-Ticket QR akan dikirim ke kontak ini</span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
@@ -88,7 +88,7 @@
                             </div>
                             <div>
                                 <h3 class="font-bold text-slate-900 text-base">Detail Penumpang</h3>
-                                <p class="text-[11px] text-slate-400">Isi nama sesuai kartu identitas untuk verifikasi boarding</p>
+                                <p class="text-xs text-slate-400">Isi nama sesuai kartu identitas untuk verifikasi boarding</p>
                             </div>
                         </div>
                         <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
@@ -112,7 +112,7 @@
 
                                     {{-- FITUR QUICK PASSENGER (DITARIK DARI TAB AKUN) --}}
                                     <div class="flex items-center gap-1.5">
-                                        <span class="text-[11px] text-slate-400">Isi Cepat:</span>
+                                        <span class="text-xs text-slate-400">Isi Cepat:</span>
                                         <div class="relative inline-block text-left" x-data="{ open: false }">
                                             <button type="button" @click="open = !open" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition shadow-2xs">
                                                 <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -120,9 +120,9 @@
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
                                             </button>
                                             <div x-show="open" @click.outside="open = false" class="origin-top-right absolute right-0 mt-1 w-72 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-30 p-1">
-                                                <div class="p-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                                                <div class="p-2 text-xs font-bold text-slate-400 flex items-center justify-between">
                                                     <span>Data Tersimpan (Tab Akun):</span>
-                                                    <a href="{{ route('dashboard.user.user-akun') }}" target="_blank" class="text-[10px] text-emerald-600 hover:underline inline-flex items-center gap-0.5">Kelola &rarr;</a>
+                                                    <a href="{{ route('dashboard.user.user-akun') }}" target="_blank" class="text-xs text-emerald-600 hover:underline inline-flex items-center gap-0.5">Kelola</a>
                                                 </div>
                                                 <div class="py-1 space-y-1">
                                                     @foreach($quickPassengers as $qp)
@@ -131,11 +131,11 @@
                                                                 class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition flex items-center justify-between group">
                                                             <div class="min-w-0 pr-2">
                                                                 <span class="font-bold block truncate text-slate-800 group-hover:text-emerald-900">{{ $qp['name'] }}</span>
-                                                                <span class="text-[10px] text-slate-400 block truncate">
+                                                                <span class="text-xs text-slate-400 block truncate">
                                                                     NIK: {{ $qp['nik'] ? substr($qp['nik'], 0, 4) . '••••' . substr($qp['nik'], -4) : '-' }}
                                                                 </span>
                                                             </div>
-                                                            <span class="text-[10px] text-emerald-700 font-mono bg-emerald-100/70 px-2 py-0.5 rounded-md flex-shrink-0">Pilih</span>
+                                                            <span class="text-xs text-emerald-700 font-mono bg-emerald-100/70 px-2 py-0.5 rounded-md flex-shrink-0">Pilih</span>
                                                         </button>
                                                     @endforeach
                                                 </div>
@@ -146,8 +146,8 @@
 
                                 {{-- Quick Chips Horizontal untuk opsi klik centang cepat --}}
                                 @if(count($quickPassengers) > 0)
-                                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px]">
-                                        <span class="text-slate-400 text-[10px] flex-shrink-0 font-medium">Gunakan:</span>
+                                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                                        <span class="text-slate-400 text-xs flex-shrink-0 font-medium">Gunakan:</span>
                                         @foreach($quickPassengers as $qp)
                                             <button type="button"
                                                     @click="fillPassenger({{ $passenger->id }}, '{{ addslashes($qp['name']) }}', '{{ $qp['phone'] }}', '{{ $qp['nik'] }}')"
@@ -170,7 +170,7 @@
                                                class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none transition focus:border-emerald-600">
                                     </div>
                                     <div>
-                                        <label class="block font-semibold text-slate-600 mb-1">NIK / ID Asuransi (16 Digit)</label>
+                                        <label class="block font-semibold text-slate-600 mb-1">NIK (16 digit)</label>
                                         <input type="text" name="passengers[{{ $idx }}][nik]" id="p_nik_{{ $passenger->id }}" maxlength="16"
                                                value="{{ old('passengers.'.$idx.'.nik', $passenger->nik ?? '') }}"
                                                placeholder="3273xxxxxxxxxxxx"
@@ -208,11 +208,11 @@
                             </div>
                             <div>
                                 <h3 class="font-bold text-slate-900 text-base">Metode Pembayaran (Midtrans)</h3>
-                                <p class="text-[11px] text-slate-400">Pilih salah satu metode pembayaran sebelum menekan tombol checkout</p>
+                                <p class="text-xs text-slate-400">Pilih salah satu metode pembayaran sebelum menekan tombol checkout</p>
                             </div>
                         </div>
                         <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5 self-start sm:self-auto">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                             Payment Gateway Aktif
                         </span>
                     </div>
@@ -230,14 +230,14 @@
                                 class="flex-1 py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                             <span>Bank Transfer (Virtual Account)</span>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">6 Bank</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">6 Bank</span>
                         </button>
                         <button type="button" @click="activeCategory = 'qris'"
                                 :class="activeCategory === 'qris' ? 'bg-white text-emerald-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
                                 class="flex-1 py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                             <span>E-Wallet & QRIS</span>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800">Universal</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800">Universal</span>
                         </button>
                     </div>
 
@@ -257,13 +257,13 @@
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">BCA Virtual Account</h4>
-                                            <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
+                                            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'bca' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">m-BCA, KlikBCA, myBCA, atau ATM BCA dengan verifikasi instan.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">m-BCA, KlikBCA, myBCA, atau ATM BCA dengan verifikasi instan.</p>
                             </div>
 
                             {{-- Mandiri --}}
@@ -272,18 +272,18 @@
                                  class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-amber-600 text-white font-black text-[10px] tracking-tight flex items-center justify-center shadow-xs">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">
                                             MANDIRI
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">Bank Mandiri</h4>
-                                            <span class="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Bill Payment</span>
+                                            <span class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Bill Payment</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'mandiri' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">Livin by Mandiri & ATM Mandiri via Biller Code & Bill Key resmi.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">Livin by Mandiri & ATM Mandiri via Biller Code & Bill Key resmi.</p>
                             </div>
 
                             {{-- BNI --}}
@@ -297,13 +297,13 @@
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">BNI Virtual Account</h4>
-                                            <span class="text-[10px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
+                                            <span class="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'bni' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">BNI Mobile Banking, Internet Banking, atau ATM BNI.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">BNI Mobile Banking, Internet Banking, atau ATM BNI.</p>
                             </div>
 
                             {{-- BRI --}}
@@ -317,13 +317,13 @@
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">BRI Virtual Account (BRIVA)</h4>
-                                            <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded">BRIVA Otomatis</span>
+                                            <span class="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded">BRIVA Otomatis</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'bri' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">BRImo, ATM BRI, & Mini ATM EDC dengan verifikasi waktu-nyata.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">BRImo, ATM BRI, & Mini ATM EDC dengan verifikasi waktu-nyata.</p>
                             </div>
 
                             {{-- BSI --}}
@@ -337,13 +337,13 @@
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">BSI Virtual Account</h4>
-                                            <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Syariah Otomatis</span>
+                                            <span class="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Syariah Otomatis</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'bsi' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">BSI Mobile & ATM BSI via Virtual Account Bank Syariah.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">BSI Mobile & ATM BSI via Virtual Account Bank Syariah.</p>
                             </div>
 
                             {{-- SeaBank --}}
@@ -352,18 +352,18 @@
                                  class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-orange-600 text-white font-black text-[9px] tracking-tight flex items-center justify-center shadow-xs">
+                                        <div class="w-10 h-10 rounded-xl bg-orange-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">
                                             SEABANK
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">SeaBank</h4>
-                                            <span class="text-[10px] font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">Bebas Biaya Transfer</span>
+                                            <span class="text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">Bebas Biaya Transfer</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'seabank' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">Transfer gratis dari SeaBank via BI-FAST / Virtual Account Permata.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">Transfer gratis dari SeaBank via BI-FAST / Virtual Account Permata.</p>
                             </div>
                         </div>
 
@@ -373,8 +373,8 @@
                                 <svg class="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                                 <span>Panduan Khusus SeaBank:</span>
                             </div>
-                            <p class="text-[11px] leading-relaxed text-orange-800">
-                                Midtrans terintegrasi menggunakan Virtual Account Permata (Kode Bank: <strong>013</strong>). Di aplikasi SeaBank, pilih menu <strong>Transfer &rarr; Virtual Account / Bank Lain (BI-FAST)</strong>, masukkan nomor VA yang diterbitkan, bebas biaya admin!
+                            <p class="text-xs leading-relaxed text-orange-800">
+                                Midtrans terintegrasi menggunakan Virtual Account Permata (Kode Bank: <strong>013</strong>). Di aplikasi SeaBank, pilih menu <strong>Transfer ke Virtual Account / Bank Lain (BI-FAST)</strong>, masukkan nomor VA yang diterbitkan, bebas biaya admin!
                             </p>
                         </div>
                     </div>
@@ -395,13 +395,13 @@
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">QRIS Dinamis</h4>
-                                            <span class="text-[9px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1 py-0.5 rounded">Universal</span>
+                                            <span class="text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1 py-0.5 rounded">Universal</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'qris' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Livin, BRImo, dll.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Livin, BRImo, dll.</p>
                             </div>
 
                             {{-- GoPay --}}
@@ -410,18 +410,18 @@
                                  class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-9 h-9 rounded-xl bg-sky-600 text-white font-black text-[10px] flex items-center justify-center shadow-xs">
+                                        <div class="w-9 h-9 rounded-xl bg-sky-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
                                             GOPAY
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">GoPay</h4>
-                                            <span class="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.5 rounded">Direct App</span>
+                                            <span class="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.5 rounded">Direct App</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'gopay' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">Otomatis membuka aplikasi GoPay / Gojek di smartphone Anda.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">Otomatis membuka aplikasi GoPay / Gojek di smartphone Anda.</p>
                             </div>
 
                             {{-- ShopeePay --}}
@@ -430,18 +430,18 @@
                                  class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-9 h-9 rounded-xl bg-orange-500 text-white font-black text-[9px] flex items-center justify-center shadow-xs">
+                                        <div class="w-9 h-9 rounded-xl bg-orange-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
                                             SHOPEE
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-slate-900 text-sm">ShopeePay</h4>
-                                            <span class="text-[9px] font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1 py-0.5 rounded">Deep Link</span>
+                                            <span class="text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1 py-0.5 rounded">Deep Link</span>
                                         </div>
                                     </div>
                                     <span :class="selectedChannel === 'shopeepay' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition">✓</span>
+                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
                                 </div>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">Direct verifikasi pin via aplikasi Shopee secara instan.</p>
+                                <p class="text-xs text-slate-500 leading-relaxed">Direct verifikasi pin via aplikasi Shopee secara instan.</p>
                             </div>
                         </div>
 
@@ -451,7 +451,7 @@
                                 <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
                                 <span>QRIS Bersifat Universal:</span>
                             </div>
-                            <p class="text-[11px] leading-relaxed text-rose-800">
+                            <p class="text-xs leading-relaxed text-rose-800">
                                 Satu kode QR dinamis Midtrans dapat di-scan dari aplikasi apapun: <strong>GoPay, OVO, DANA, ShopeePay, LinkAja</strong> serta seluruh aplikasi perbankan (BCA, Mandiri, BRI, BNI, dll).
                             </p>
                         </div>
@@ -476,7 +476,7 @@
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Masukkan Kode Voucer</label>
                         <div class="flex gap-2">
                             <input type="text" x-model="promoInput" placeholder="HEMATLIBURAN"
-                                   class="flex-1 uppercase font-mono font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none transition focus:border-emerald-600">
+                                   class="flex-1 font-mono font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none transition focus:border-emerald-600">
                             <button type="button" @click="applyPromo()"
                                      class="px-4 py-2 text-xs font-bold text-white rounded-xl shadow-2xs transition"
                                      style="background:#087f55;"
@@ -503,14 +503,14 @@
 
                     {{-- Quick promo chips --}}
                     <div class="pt-2 border-t border-slate-100 space-y-1.5">
-                        <p class="text-[11px] text-slate-400 font-medium">Voucer Tersedia:</p>
+                        <p class="text-xs text-slate-400 font-medium">Voucer Tersedia:</p>
                         <div class="flex flex-wrap gap-1.5">
                             <button type="button" @click="promoInput = 'HEMATLIBURAN'; applyPromo()"
-                                    class="text-[11px] font-mono font-semibold px-2 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition">
+                                    class="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition">
                                 HEMATLIBURAN (-25%)
                             </button>
                             <button type="button" @click="promoInput = 'TRAVELHEMAT'; applyPromo()"
-                                    class="text-[11px] font-mono font-semibold px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition">
+                                    class="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition">
                                 TRAVELHEMAT (-20rb)
                             </button>
                         </div>
@@ -532,15 +532,11 @@
                         <div class="flex justify-between text-emerald-700" x-show="discount > 0">
                             <span class="flex items-center gap-1">
                                 <span>Potongan Diskon:</span>
-                                <span class="text-[10px] font-mono font-bold bg-emerald-100 px-1 rounded" x-text="appliedPromoCode"></span>
+                                <span class="text-xs font-mono font-bold bg-emerald-100 px-1 rounded" x-text="appliedPromoCode"></span>
                             </span>
                             <span class="font-bold" x-text="'- ' + formatRupiah(discount)"></span>
                         </div>
 
-                        <div class="flex justify-between text-slate-600">
-                            <span>Biaya Layanan & Asuransi:</span>
-                            <span class="font-semibold text-emerald-700">GRATIS (Rp 0)</span>
-                        </div>
 
                         <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-extrabold">
                             <span class="text-slate-900">Total Tagihan:</span>
@@ -549,10 +545,10 @@
 
                         {{-- Ringkasan Metode Bayar Terpilih --}}
                         <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-                            <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider block">Metode Pembayaran Dipilih:</span>
+                            <span class="text-slate-400 text-xs font-bold block">Metode Pembayaran Dipilih:</span>
                             <div class="flex items-center justify-between">
                                 <span class="font-bold text-slate-800" x-text="getChannelName(selectedChannel)"></span>
-                                <span class="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">MIDTRANS</span>
+                                <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">MIDTRANS</span>
                             </div>
                         </div>
                     </div>
@@ -566,7 +562,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
 
-                    <p class="text-[11px] text-center text-slate-400 flex items-center justify-center gap-1.5">
+                    <p class="text-xs text-center text-slate-400 flex items-center justify-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         Transaksi aman & terverifikasi otomatis via Payment Gateway
                     </p>

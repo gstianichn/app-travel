@@ -445,7 +445,7 @@
             </div>
             <div style="display: flex; gap: 8px;">
                 <a href="{{ route('dashboard.admin.kelola-staff.show', $staff->id) }}" class="btn-cancel">
-                    👁️ Lihat Detail
+                    Lihat Detail
                 </a>
                 <a href="{{ route('dashboard.admin.kelola-staff.index') }}" class="btn-cancel">
                     ← Kembali
@@ -464,9 +464,6 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            👤
-                        </div>
                         <div class="section-header-text">
                             <h3>1. Profil & Penempatan Staf</h3>
                             <p>Informasi data pribadi dan cabang/loket penugasan staf.</p>
@@ -602,9 +599,6 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🚦
-                        </div>
                         <div class="section-header-text">
                             <h3>2. Status Kepegawaian & Akses Akun</h3>
                             <p>Aktifkan untuk staf yang bertugas, atau nonaktifkan akun staf yang telah berhenti bekerja.</p>
@@ -625,7 +619,7 @@
                                 {{ $currentStatus === 'active' ? 'checked' : '' }}
                             >
                             <div class="status-option-text">
-                                <h4>🟢 Aktif Bekerja</h4>
+                                <h4>Aktif Bekerja</h4>
                                 <p>Staf masih aktif bertugas. Akun dapat digunakan untuk login ke sistem loket dan memproses pesanan tiket.</p>
                             </div>
                         </label>
@@ -639,7 +633,7 @@
                                 {{ $currentStatus === 'inactive' ? 'checked' : '' }}
                             >
                             <div class="status-option-text">
-                                <h4>⛔ Berhenti Bekerja / Nonaktif</h4>
+                                <h4>Berhenti Bekerja / Nonaktif</h4>
                                 <p>Staf telah keluar atau dinonaktifkan. Akses login dan otorisasi operasional staf akan langsung diblokir.</p>
                             </div>
                         </label>
@@ -655,9 +649,6 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🔐
-                        </div>
                         <div class="section-header-text">
                             <h3>3. Pengaturan Hak Akses (Role & Permission)</h3>
                             <p>Pemisahan wewenang operasional. Staf loket standar dibatasi dari persetujuan refund dan hapus data.</p>
@@ -668,16 +659,16 @@
                     <div class="preset-toolbar" style="margin-bottom: 16px;">
                         <span class="preset-toolbar-label">Pilihan Cepat Wewenang:</span>
                         <button type="button" class="btn-preset" onclick="applyPreset('loket')">
-                            🎫 Staf Loket Standar
+                            Staf Loket Standar
                         </button>
                         <button type="button" class="btn-preset" onclick="applyPreset('supervisor')">
-                            📊 Supervisor Cabang / Pool
+                            Supervisor Cabang / Pool
                         </button>
                         <button type="button" class="btn-preset" onclick="applyPreset('all')">
-                            ✨ Pilih Semua
+                            Pilih Semua
                         </button>
                         <button type="button" class="btn-preset" onclick="applyPreset('none')">
-                            ✕ Kosongkan
+                            Kosongkan
                         </button>
                     </div>
 
@@ -704,9 +695,9 @@
                                     <div class="perm-top">
                                         <span class="perm-title">{{ $perm['label'] }}</span>
                                         @if($isRestricted)
-                                            <span class="perm-badge restricted">⛔ Khusus Admin</span>
+                                            <span class="perm-badge restricted">Khusus Admin</span>
                                         @else
-                                            <span class="perm-badge standard">✓ Standar Loket</span>
+                                            <span class="perm-badge standard">Standar Loket</span>
                                         @endif
                                     </div>
                                     <p class="perm-desc">{{ $perm['description'] }}</p>
@@ -725,9 +716,6 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🔑
-                        </div>
                         <div class="section-header-text">
                             <h3>4. Ubah Kata Sandi Akun (Opsional)</h3>
                             <p>Biarkan kedua kolom di bawah kosong jika tidak bermaksud mengubah kata sandi akun staf ini.</p>
@@ -772,7 +760,7 @@
                         Batal
                     </a>
                     <button type="submit" class="btn-save">
-                        <span>💾</span>
+                        <span></span>
                         <span>Simpan Perubahan Staf</span>
                     </button>
                 </div>

@@ -173,7 +173,7 @@
                         <span class="metric-lbl">Ukuran Asli File:</span>
                         <span class="metric-val text-muted" id="comp-size-original">3.40 MB</span>
                     </div>
-                    <div class="metric-arrow">&rarr;</div>
+                    <div class="metric-arrow"></div>
                     <div class="metric-block">
                         <span class="metric-lbl">Ukuran Terkompresi:</span>
                         <span class="metric-val text-brand" id="comp-size-result">374 KB</span>
@@ -194,10 +194,10 @@
                     <div class="target-select-wrap">
                         <label class="target-label">Kirim ke Sesi Live Chat Penumpang:</label>
                         <select id="sf-target-chat-select" class="form-select-cs">
-                            <option value="1">Budi Prasetyo &bull; TRV-2026-0925 (Bandung &rarr; Jakarta 14:00)</option>
-                            <option value="4">Dewi Lestari &bull; TRV-2026-0612 (Bekasi &rarr; Bandung 13:00 - Lansia)</option>
-                            <option value="2">Hendra Gunawan &bull; TRV-2026-0811 (Jakarta &rarr; Bandung 13:45)</option>
-                            <option value="3">Siti Rahma &bull; TRV-2026-0774 (Bandung &rarr; Soetta 15:30)</option>
+                            <option value="1">Budi Prasetyo &bull; TRV-2026-0925 (Bandung ke Jakarta 14:00)</option>
+                            <option value="4">Dewi Lestari &bull; TRV-2026-0612 (Bekasi ke Bandung 13:00 - Lansia)</option>
+                            <option value="2">Hendra Gunawan &bull; TRV-2026-0811 (Jakarta ke Bandung 13:45)</option>
+                            <option value="3">Siti Rahma &bull; TRV-2026-0774 (Bandung ke Soetta 15:30)</option>
                         </select>
                     </div>
                     <button type="button" class="cs-btn cs-btn-primary" onclick="dispatchFileToChat()">
@@ -232,10 +232,10 @@
             <div class="ticket-selector-group">
                 <label class="target-label">Pilih Tiket Pemesanan Aktif:</label>
                 <select id="ticket-source-select" class="form-select-cs" onchange="updateTicketPreview(this.value)">
-                    <option value="1">TRV-2026-0925 &bull; Budi Prasetyo (Bandung &rarr; Jakarta 14:00 WIB)</option>
-                    <option value="4">TRV-2026-0612 &bull; Dewi Lestari (Bekasi &rarr; Bandung 13:00 WIB)</option>
-                    <option value="2">TRV-2026-0811 &bull; Hendra Gunawan (Jakarta &rarr; Bandung 13:45 WIB)</option>
-                    <option value="3">TRV-2026-0774 &bull; Siti Rahma (Bandung &rarr; Soetta T3 15:30 WIB)</option>
+                    <option value="1">TRV-2026-0925 &bull; Budi Prasetyo (Bandung ke Jakarta 14:00 WIB)</option>
+                    <option value="4">TRV-2026-0612 &bull; Dewi Lestari (Bekasi ke Bandung 13:00 WIB)</option>
+                    <option value="2">TRV-2026-0811 &bull; Hendra Gunawan (Jakarta ke Bandung 13:45 WIB)</option>
+                    <option value="3">TRV-2026-0774 &bull; Siti Rahma (Bandung ke Soetta T3 15:30 WIB)</option>
                 </select>
             </div>
 
@@ -264,7 +264,7 @@
                         </div>
                         <div class="t-cell">
                             <span class="t-lbl">RUTE PERJALANAN</span>
-                            <strong class="t-val text-brand" id="t-route">Bandung (Pasteur) &rarr; Jakarta (Semanggi)</strong>
+                            <strong class="t-val text-brand" id="t-route">Bandung (Pasteur) ke Jakarta (Semanggi)</strong>
                         </div>
                         <div class="t-cell">
                             <span class="t-lbl">WAKTU KEBERANGKATAN</span>
@@ -361,7 +361,7 @@
                         <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>E-Tiket-TRV-2026-0925.pdf</span></td>
                         <td><span class="badge-cat-ticket">E-Tiket Resmi</span></td>
                         <td><span class="badge-comp-opt">124 KB (PDF Siap Cetak)</span></td>
-                        <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
+                        <td><span class="badge-sent-ok">Diterima Penumpang</span></td>
                         <td>
                             <button type="button" class="btn-table-action" onclick="alert('Mengunduh e-tiket PDF...')">Unduh</button>
                         </td>
@@ -371,8 +371,8 @@
                         <td>Dewi Lestari (TRV-2026-0612)</td>
                         <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Foto-Titik-Kumpul-Pasteur.jpg</span></td>
                         <td><span class="badge-cat-photo">Panduan Pool</span></td>
-                        <td><span class="badge-comp-opt">3.8 MB &rarr; 380 KB (-90%)</span></td>
-                        <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
+                        <td><span class="badge-comp-opt">3.8 MB ke 380 KB (-90%)</span></td>
+                        <td><span class="badge-sent-ok">Diterima Penumpang</span></td>
                         <td>
                             <button type="button" class="btn-table-action" onclick="alert('Membuka foto panduan...')">Pratinjau</button>
                         </td>
@@ -383,7 +383,7 @@
                         <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Bukti-Transfer-Refund-BCA.pdf</span></td>
                         <td><span class="badge-cat-transfer">Bukti Rekening</span></td>
                         <td><span class="badge-comp-opt">210 KB (PDF Dokumen)</span></td>
-                        <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
+                        <td><span class="badge-sent-ok">Diterima Penumpang</span></td>
                         <td>
                             <button type="button" class="btn-table-action" onclick="alert('Mengunduh bukti refund...')">Unduh</button>
                         </td>
@@ -393,8 +393,8 @@
                         <td>Siti Rahma (TRV-2026-0774)</td>
                         <td><span class="file-link-pill"><svg style="display:inline-block; vertical-align:-2px; margin-right:4px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Foto-Bagasi-Koper-28inch.png</span></td>
                         <td><span class="badge-cat-photo">Validasi Bagasi</span></td>
-                        <td><span class="badge-comp-opt">2.4 MB &rarr; 290 KB (-88%)</span></td>
-                        <td><span class="badge-sent-ok">✓ Diterima Penumpang</span></td>
+                        <td><span class="badge-comp-opt">2.4 MB ke 290 KB (-88%)</span></td>
+                        <td><span class="badge-sent-ok">Diterima Penumpang</span></td>
                         <td>
                             <button type="button" class="btn-table-action" onclick="alert('Membuka foto koper...')">Pratinjau</button>
                         </td>
@@ -1178,7 +1178,7 @@
         '1': {
             code: 'TRV-2026-0925',
             passenger: 'Budi Prasetyo',
-            route: 'Bandung (Pasteur) &rarr; Jakarta (Semanggi)',
+            route: 'Bandung (Pasteur) ke Jakarta (Semanggi)',
             departure: 'Jumat, 25 Sep 2026 &bull; 14:00 WIB',
             vehicle: 'Toyota HiAce Premio (D 7182 AB)',
             seat: '03A (Single Window)',
@@ -1187,7 +1187,7 @@
         '4': {
             code: 'TRV-2026-0612',
             passenger: 'Dewi Lestari (Bersama Lansia)',
-            route: 'Bekasi (Cyber Park) &rarr; Bandung (Dipatiukur)',
+            route: 'Bekasi (Cyber Park) ke Bandung (Dipatiukur)',
             departure: 'Jumat, 25 Sep 2026 &bull; 13:00 WIB',
             vehicle: 'HiAce Commuter (B 1092 PQR)',
             seat: '01B (Depan Samping Driver)',
@@ -1196,7 +1196,7 @@
         '2': {
             code: 'TRV-2026-0811',
             passenger: 'Hendra Gunawan',
-            route: 'Jakarta (Semanggi) &rarr; Bandung (Dipatiukur)',
+            route: 'Jakarta (Semanggi) ke Bandung (Dipatiukur)',
             departure: 'Jumat, 25 Sep 2026 &bull; 13:45 WIB',
             vehicle: 'HiAce Luxury (B 8911 JKT)',
             seat: '01B (Depan Driver)',
@@ -1205,7 +1205,7 @@
         '3': {
             code: 'TRV-2026-0774',
             passenger: 'Siti Rahma',
-            route: 'Bandung (Pasteur) &rarr; Bandara Soetta (T3)',
+            route: 'Bandung (Pasteur) ke Bandara Soetta (T3)',
             departure: 'Jumat, 25 Sep 2026 &bull; 15:30 WIB',
             vehicle: 'HiAce Premio (D 9021 CG)',
             seat: '02B (Jendela Kanan)',

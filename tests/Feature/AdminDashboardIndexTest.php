@@ -22,21 +22,21 @@ test('admin can access dashboard index with all modular components loaded', func
 
     $response->assertOk();
     // Welcome Banner
-    $response->assertSee('Selamat Datang,');
-    $response->assertSee('Sistem Operasional Aktif');
+    $response->assertSee('Halo,');
+    $response->assertDontSee('Sistem Operasional Aktif');
     // KPI Metrics
-    $response->assertSee('Metrik Utama Hari Ini');
-    $response->assertSee('Tiket Terjual Hari Ini');
-    $response->assertSee('Pendapatan Hari Ini');
-    $response->assertSee('Armada Sedang Jalan');
-    $response->assertSee('Total Kursi Kosong');
+    $response->assertSee('Angka hari ini', false);
+    $response->assertSee('Tiket terjual');
+    $response->assertSee('Pendapatan hari ini');
+    $response->assertSee('Armada terjadwal');
+    $response->assertSee('Kursi kosong');
     // Alerts & Notifications
-    $response->assertSee('Notifikasi & Pengingat Penting', false);
+    $response->assertSee('Penumpang baru');
     // Schedules Table
-    $response->assertSee('Jadwal Perjalanan Terdekat');
-    $response->assertSee('Daftar Jadwal Keberangkatan');
+    $response->assertSee('Jadwal terdekat');
+    $response->assertSee('Belum ada jadwal mendatang.');
     // Quick Nav
-    $response->assertSee('Akses Modul Administrasi');
+    $response->assertSee('Menu admin', false);
     $response->assertSee('Kelola User');
     $response->assertSee('Rute Perjalanan');
 });

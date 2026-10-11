@@ -131,7 +131,7 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        Auth::login($user);
+        Auth::login($user, $request->boolean('remember'));
 
         $request->session()->regenerate();
 

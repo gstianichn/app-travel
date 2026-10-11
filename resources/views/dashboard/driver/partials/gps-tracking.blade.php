@@ -1,9 +1,6 @@
         <!-- ================= 6. GPS TRACKING AKTIF (BACKGROUND & LIVE) ================= -->
         <section class="gps-panel" id="section-gps">
             <div class="gps-status-group">
-                <div class="radar-box">
-                    🛰️
-                </div>
                 <div class="gps-info">
                     <h3>GPS Tracking Latar Belakang Aktif</h3>
                     <p id="gpsCoordsDisplay">
@@ -19,7 +16,7 @@
 
             <div style="display:flex; gap:10px; align-items:center;">
                 <button type="button" class="gps-action-btn" onclick="triggerManualGpsSync()">
-                    <span>🔄</span>
+                    <span></span>
                     <span>Perbarui Posisi Sekarang</span>
                 </button>
             </div>

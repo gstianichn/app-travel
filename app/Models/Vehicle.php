@@ -147,9 +147,7 @@ class Vehicle extends Model
             return $this->parking_location;
         }
 
-        $bayNum = (($this->id ?: 1) % 5) + 1;
-
-        return "Bay {$bayNum} - Garasi Timur Pool";
+        return 'Belum dicatat';
     }
 
     /**

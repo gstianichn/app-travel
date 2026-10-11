@@ -12,8 +12,8 @@
                 </svg>
             </div>
             <div class="brand-text">
-                <h2>TRAVEL MINIBUS</h2>
-                <span>Cockpit Driver v2.0</span>
+                <h2>TravelKu</h2>
+                <span>Driver</span>
             </div>
         </div>
 

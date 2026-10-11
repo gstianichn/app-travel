@@ -1,0 +1,583 @@
+/*
+ * Staff dashboards (admin utama, staf pool, customer service, driver).
+ *
+ * Part 1 re-points each role's older CSS variables at the brand tokens, so pages that keep
+ * their own markup still share one palette, one typeface and readable grey text.
+ * Part 2 holds the "ds-" components used by the rebuilt home pages.
+ *
+ * Load this file last in the <head>, after the role's own styles.
+ */
+
+@import './brand-tokens.css';
+
+/* =========================
+   1. SHARED TOKENS FOR OLDER STYLES
+========================= */
+
+body[data-staff] {
+    /* admin utama + customer service */
+    --brand: #0C7950;
+    --brand-dark: #0C5A3E;
+    --brand-deep: #0C392F;
+    --brand-light: #DFF0E8;
+    --brand-soft: #EEF6F1;
+    --page: #F6F4EC;
+    --surface: #FFFDF8;
+    --white: #FFFDF8;
+    --text: #13201B;
+    --text-secondary: #4B5D55;
+    --text-muted: #5C6862;
+    --border: #DEDAC9;
+    --border-subtle: #ECE8DA;
+    --danger: #A3341F;
+    --danger-soft: #F8E3DC;
+    --warning: #8A5300;
+    --warning-soft: #FBEBD0;
+    --info: #1F5F8B;
+    --info-soft: #E3EEF6;
+    --purple: #5B4A8B;
+    --purple-soft: #ECE8F5;
+
+    /* staf pool (admin biasa) */
+    --primary: #0C7950;
+    --primary-dark: #0C5A3E;
+    --primary-light: #DFF0E8;
+    --accent: #0C5A3E;
+    --accent-light: #EEF6F1;
+    --background: #F6F4EC;
+    --text-dark: #13201B;
+    --text-light: #5C6862;
+    --success: #0C7950;
+    --success-bg: #DFF0E8;
+    --warning-bg: #FBEBD0;
+    --danger-bg: #F8E3DC;
+
+    /* driver */
+    --brand-primary: #0C7950;
+    --brand-primary-dark: #0C5A3E;
+    --brand-primary-light: #DFF0E8;
+    --brand-accent: #1F5F8B;
+    --brand-surface: #FFFDF8;
+    --brand-bg: #F6F4EC;
+    --brand-border: #DEDAC9;
+    --text-main: #13201B;
+    --text-sub: #5C6862;
+    --danger-dark: #7E2716;
+    --warning-dark: #6B4100;
+    --shadow-sm: 0 1px 2px rgb(12 57 47 / 0.06);
+    --shadow-md: 0 2px 6px rgb(12 57 47 / 0.08);
+    --shadow-lg: 0 10px 24px -12px rgb(12 57 47 / 0.25);
+
+    font-family: 'Overpass', ui-sans-serif, system-ui, sans-serif !important;
+    background: var(--lp-paper);
+    color: var(--lp-ink);
+}
+
+body[data-staff='driver'] {
+    /* In the driver styles --brand-dark is a near-black surface, not a hover green. */
+    --brand-dark: #0C392F;
+}
+
+body[data-staff] :is(button, input, select, textarea) {
+    font-family: inherit;
+}
+
+body[data-staff] :focus-visible {
+    outline: 3px solid var(--lp-ink);
+    outline-offset: 2px;
+}
+
+/* Sidebars of every role: forest, like the staff login scene. */
+body[data-staff] :is(.admin-sidebar, .sidebar, .cs-sidebar, .driver-sidebar) {
+    background: var(--lp-forest) !important;
+    background-image: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body[data-staff] *,
+    body[data-staff] *::before,
+    body[data-staff] *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =========================
+   2. DS COMPONENTS
+========================= */
+
+.ds {
+    display: grid;
+    gap: clamp(28px, 4vw, 44px);
+    color: var(--lp-ink);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+.ds h1,
+.ds h2,
+.ds h3 {
+    color: var(--lp-forest);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+}
+
+.ds a {
+    color: inherit;
+}
+
+.ds-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 32px;
+}
+
+.ds-head h1 {
+    font-size: clamp(1.7rem, 3vw, 2.3rem);
+}
+
+.ds-head p {
+    margin-top: 4px;
+    color: var(--lp-muted);
+}
+
+.ds-head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* One ruled row of numbers instead of four identical cards. */
+.ds-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    border-block: 1px solid var(--lp-line);
+}
+
+.ds-stat {
+    padding: 18px 20px 16px 0;
+}
+
+.ds-stat + .ds-stat {
+    padding-left: 20px;
+    border-left: 1px solid var(--lp-line);
+}
+
+.ds-stat dt {
+    color: var(--lp-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ds-stat dd {
+    margin-top: 2px;
+    color: var(--lp-forest);
+    font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+    font-weight: 800;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-stat dd small {
+    display: block;
+    margin-top: 4px;
+    color: var(--lp-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.ds-stat--lead dd {
+    font-size: clamp(2rem, 3.4vw, 2.7rem);
+}
+
+.ds-grid-2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: clamp(24px, 3vw, 36px);
+    align-items: start;
+}
+
+.ds-panel {
+    border: 1px solid var(--lp-line);
+    border-radius: 14px;
+    background: var(--lp-card);
+}
+
+.ds-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 20px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--lp-line);
+}
+
+.ds-panel-head h2 {
+    font-size: 1.25rem;
+}
+
+.ds-panel-head p {
+    color: var(--lp-muted);
+    font-size: 0.9rem;
+}
+
+.ds-panel-body {
+    padding: 18px 22px;
+}
+
+.ds-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--lp-green) !important;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ds-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.ds-btn--primary {
+    background: var(--lp-green);
+    color: #FFFFFF !important;
+}
+
+.ds-btn--primary:hover {
+    background: var(--lp-forest);
+}
+
+.ds-btn--secondary {
+    border-color: var(--lp-field-border);
+    background: #FFFFFF;
+    color: var(--lp-forest) !important;
+}
+
+.ds-btn--secondary:hover {
+    border-color: var(--lp-green);
+    background: var(--lp-mint);
+}
+
+.ds-btn--accent {
+    background: var(--lp-sun);
+    color: var(--lp-forest) !important;
+}
+
+.ds-btn--accent:hover {
+    background: var(--lp-sun-soft);
+}
+
+.ds-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ds-badge--ok { background: var(--lp-mint); color: #0C4535; }
+.ds-badge--warn { background: var(--lp-warn-soft); color: #6B4100; }
+.ds-badge--danger { background: var(--lp-danger-soft); color: #7E2716; }
+.ds-badge--info { background: #E3EEF6; color: #174A6E; }
+.ds-badge--muted { background: #ECE8DA; color: #45433A; }
+
+/* Departures: time leads, then route, vehicle, seats and the action. */
+.ds-departures {
+    list-style: none;
+}
+
+.ds-departure {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1.4fr) minmax(0, 1fr) 150px auto;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--lp-line);
+}
+
+.ds-departure:last-child {
+    border-bottom: 0;
+}
+
+.ds-time {
+    color: var(--lp-forest);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-time small {
+    display: block;
+    margin-top: 4px;
+    color: var(--lp-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.ds-route b {
+    color: var(--lp-ink);
+}
+
+.ds-route span,
+.ds-sub {
+    color: var(--lp-muted);
+    font-size: 0.9rem;
+}
+
+.ds-seats {
+    display: grid;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.ds-meter {
+    height: 6px;
+    border-radius: 3px;
+    background: #ECE8DA;
+    overflow: hidden;
+}
+
+.ds-meter span {
+    display: block;
+    height: 100%;
+    background: var(--lp-green);
+}
+
+.ds-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ds-table-wrap {
+    overflow-x: auto;
+}
+
+.ds-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.ds-table th {
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--lp-line);
+    color: var(--lp-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ds-table td {
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--lp-line);
+    vertical-align: top;
+}
+
+.ds-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.ds-list {
+    list-style: none;
+}
+
+.ds-list li {
+    display: grid;
+    gap: 2px;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--lp-line);
+}
+
+.ds-list li:last-child {
+    border-bottom: 0;
+}
+
+.ds-list b {
+    color: var(--lp-ink);
+}
+
+.ds-empty {
+    padding: 28px 22px;
+    color: var(--lp-muted);
+}
+
+.ds-empty b {
+    display: block;
+    color: var(--lp-ink);
+}
+
+.ds-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+    list-style: none;
+}
+
+.ds-nav a {
+    display: grid;
+    gap: 2px;
+    min-height: 44px;
+    padding: 14px 16px;
+    border: 1px solid var(--lp-line);
+    border-radius: 10px;
+    background: var(--lp-card);
+    text-decoration: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.ds-nav a:hover {
+    border-color: var(--lp-green);
+    background: var(--lp-mint);
+}
+
+.ds-nav b {
+    color: var(--lp-forest);
+}
+
+.ds-nav span {
+    color: var(--lp-muted);
+    font-size: 0.9rem;
+}
+
+.ds-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.ds-search input {
+    flex: 1 1 280px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1.5px solid var(--lp-field-border);
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: var(--lp-ink);
+    font: inherit;
+}
+
+.ds-search input:focus-visible {
+    border-color: var(--lp-green);
+}
+
+.ds-notice {
+    padding: 14px 18px;
+    border: 1.5px solid #C77A12;
+    border-radius: 10px;
+    background: var(--lp-warn-soft);
+    color: #4F3000;
+}
+
+.ds-notice b {
+    color: #4F3000;
+}
+
+.ds-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+    .ds-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .ds-departure {
+        grid-template-columns: 80px minmax(0, 1fr) auto;
+    }
+
+    .ds-departure > :nth-child(3),
+    .ds-departure > :nth-child(4) {
+        grid-column: 2 / -1;
+    }
+
+    .ds-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .ds-stat {
+        padding-left: 0 !important;
+        border-left: 0 !important;
+        border-top: 1px solid var(--lp-line);
+    }
+
+    .ds-departure {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .ds-departure > * {
+        grid-column: 1 !important;
+    }
+}
+
+/* Row actions used to be emoji-only squares; they now carry a text label. */
+body[data-staff] :is(.btn-action-icon, .action-btn) {
+    width: auto !important;
+    min-width: 44px;
+    min-height: 36px;
+    padding: 0 12px !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+body[data-staff] :is(.vehicle-thumb-fallback, .hero-thumb-fallback) {
+    display: grid;
+    place-items: center;
+    color: var(--lp-muted);
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+/* Labelled row actions wrap instead of pushing the table past the screen edge. */
+body[data-staff] :is(.actions-cell, .action-group) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+    max-width: 180px;
+    white-space: normal;
+}
+
+body[data-staff] :is(.actions-cell, .action-group) form {
+    display: contents;
+}
+
+body[data-staff] :is(.table-wrapper, .table-responsive, .table-container, .data-table-wrapper) {
+    overflow-x: auto;
+}

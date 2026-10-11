@@ -403,9 +403,6 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            👤
-                        </div>
                         <div class="section-header-text">
                             <h3>1. Profil & Penempatan Staf</h3>
                             <p>Informasi identitas dasar dan lokasi penempatan operasional staf.</p>
@@ -574,9 +571,6 @@
                 ========================================== --}}
                 <div>
                     <div class="section-header">
-                        <div class="section-header-icon">
-                            🔐
-                        </div>
                         <div class="section-header-text">
                             <h3>2. Pengaturan Hak Akses (Role & Permission)</h3>
                             <p>Pemisahan wewenang operasional. Staf loket standar dibatasi dari persetujuan refund dan hapus data.</p>
@@ -587,16 +581,16 @@
                     <div class="preset-toolbar" style="margin-bottom: 16px;">
                         <span class="preset-toolbar-label">Pilihan Cepat Wewenang:</span>
                         <button type="button" class="btn-preset active-preset" onclick="applyPreset('loket')">
-                            🎫 Staf Loket Standar (Direkomendasikan)
+                            Staf Loket Standar (Direkomendasikan)
                         </button>
                         <button type="button" class="btn-preset" onclick="applyPreset('supervisor')">
-                            📊 Supervisor Cabang / Pool
+                            Supervisor Cabang / Pool
                         </button>
                         <button type="button" class="btn-preset" onclick="applyPreset('all')">
-                            ✨ Pilih Semua
+                            Pilih Semua
                         </button>
                         <button type="button" class="btn-preset" onclick="applyPreset('none')">
-                            ✕ Kosongkan
+                            Kosongkan
                         </button>
                     </div>
 
@@ -622,9 +616,9 @@
                                     <div class="perm-top">
                                         <span class="perm-title">{{ $perm['label'] }}</span>
                                         @if($isRestricted)
-                                            <span class="perm-badge restricted">⛔ Khusus Admin</span>
+                                            <span class="perm-badge restricted">Khusus Admin</span>
                                         @else
-                                            <span class="perm-badge standard">✓ Standar Loket</span>
+                                            <span class="perm-badge standard">Standar Loket</span>
                                         @endif
                                     </div>
                                     <p class="perm-desc">{{ $perm['description'] }}</p>
@@ -644,7 +638,7 @@
                         Batal
                     </a>
                     <button type="submit" class="btn-save">
-                        <span>💾</span>
+                        <span></span>
                         <span>Simpan & Daftarkan Staf</span>
                     </button>
                 </div>

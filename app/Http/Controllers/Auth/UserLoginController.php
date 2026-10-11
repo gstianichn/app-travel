@@ -5,14 +5,23 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class UserLoginController extends Controller
 {
     /**
      * Menampilkan halaman login khusus User.
      */
-    public function create()
+    public function create(Request $request): View
     {
+        // Pages such as search results send ?redirect= so the passenger lands back where they were.
+        $redirect = $request->query('redirect');
+
+        if (is_string($redirect) && Str::startsWith($redirect, url('/'))) {
+            $request->session()->put('url.intended', $redirect);
+        }
+
         return view('auth.user-login');
     }
 
@@ -54,12 +63,12 @@ class UserLoginController extends Controller
                 'locked_until' => null,
             ]);
 
-            return redirect()->route('dashboard.user.index');
+            return redirect()->intended(route('dashboard.user.index'));
         }
 
         return back()
             ->withErrors([
-                'email' => 'Email atau password User tidak sesuai.',
+                'email' => 'Email atau password salah.',
             ])
             ->onlyInput('email');
     }

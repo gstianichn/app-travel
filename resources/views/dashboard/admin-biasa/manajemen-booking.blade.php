@@ -801,66 +801,19 @@
             }
         }
     </style>
+    @fonts('overpass')
+    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
+    @vite(['resources/css/dashboard-staff.css'])
 </head>
 
-<body>
+<body data-staff="staff">
 
 <div class="dashboard-wrapper">
 
     <!-- =========================================
          SIDEBAR STAF
     ========================================== -->
-    <aside class="sidebar">
-
-        <div class="logo-area">
-            <div class="logo-icon">T</div>
-            <div class="logo-text">
-                <h2>Travel</h2>
-                <span>Management System</span>
-            </div>
-        </div>
-
-        <nav class="menu">
-            <div class="menu-title">
-                Menu Utama
-            </div>
-
-            <!-- DASHBOARD -->
-            <a href="{{ route('dashboard.admin-biasa.index') }}">
-                <div class="menu-icon">⌂</div>
-                <span>Dashboard</span>
-            </a>
-
-            <!-- MANAJEMEN BOOKING (ACTIVE) -->
-            <a href="{{ route('dashboard.admin-biasa.booking') }}" class="active">
-                <div class="menu-icon">🎫</div>
-                <span>Manajemen Booking</span>
-            </a>
-
-            <!-- MELIHAT INFORMASI PERJALANAN -->
-            <a href="{{ route('dashboard.admin-biasa.perjalanan') }}">
-                <div class="menu-icon">🗺️</div>
-                <span>Melihat Informasi Perjalanan</span>
-            </a>
-
-            <!-- VALIDASI E-TICKET -->
-            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}">
-                <div class="menu-icon">🎟️</div>
-                <span>Validasi E-Ticket</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-bottom">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="logout-btn">
-                    <div class="menu-icon">↪</div>
-                    <span>Logout</span>
-                </button>
-            </form>
-        </div>
-
-    </aside>
+    @include('dashboard.admin-biasa.partials.sidebar')
 
 
     <!-- =========================================
@@ -905,22 +858,22 @@
                                 @foreach($scheduleList as $sched)
                                     @php
                                         $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
-                                        $starTag = $bCount > 0 ? " • ⭐ {$bCount} Penumpang Terdaftar" : "";
+                                        $starTag = $bCount > 0 ? " • {$bCount} Penumpang Terdaftar" : "";
                                         $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
                                     @endphp
                                     <option value="{{ $sched->id }}" {{ ($selectedSchedule && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
-                                        {{ $dateText }}{{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '13:00' }} WIB — {{ $sched->route?->origin?->name ?? 'Bandung' }} ➔ {{ $sched->route?->destination?->name ?? 'Jakarta' }} ({{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }}){{ $starTag }}
+                                        {{ $dateText }}{{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '13:00' }} WIB — {{ $sched->route?->origin?->name ?? 'Bandung' }} ke {{ $sched->route?->destination?->name ?? 'Jakarta' }} ({{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }}){{ $starTag }}
                                     </option>
                                 @endforeach
                             @else
                                 <option value="1" selected>
-                                    13:00 WIB — Bandung (Dipatiukur) ➔ Jakarta (Semanggi) (D 7812 AB)
+                                    13:00 WIB — Bandung (Dipatiukur) ke Jakarta (Semanggi) (D 7812 AB)
                                 </option>
                                 <option value="2">
-                                    14:15 WIB — Bandung (Pasteur) ➔ Bandara Soetta T3 (B 1945 TKL)
+                                    14:15 WIB — Bandung (Pasteur) ke Bandara Soetta T3 (B 1945 TKL)
                                 </option>
                                 <option value="3">
-                                    15:30 WIB — Bandung (Dipatiukur) ➔ Bekasi Timur (D 7023 XY)
+                                    15:30 WIB — Bandung (Dipatiukur) ke Bekasi Timur (D 7023 XY)
                                 </option>
                             @endif
                         </select>
@@ -929,7 +882,7 @@
                     <!-- Tombol Aksi: Cetak & WhatsApp Driver -->
                     <div class="trip-header-actions">
                         <button type="button" class="btn-action btn-print" onclick="window.print()">
-                            🖨️ Cetak Manifes
+                            Cetak Manifes
                         </button>
 
                         @php
@@ -940,7 +893,7 @@
                             target="_blank"
                             class="btn-action btn-driver-wa"
                         >
-                            📲 Kirim Manifes ke Driver
+                            Kirim Manifes ke Driver
                         </a>
                     </div>
                 </div>
@@ -950,19 +903,19 @@
                     <div class="trip-summary-box">
                         <span>Rute & Waktu</span>
                         <strong>{{ $activeTripInfo->route_name }}</strong>
-                        <small>🕒 {{ $activeTripInfo->time }} • {{ $activeTripInfo->date }}</small>
+                        <small>{{ $activeTripInfo->time }} • {{ $activeTripInfo->date }}</small>
                     </div>
 
                     <div class="trip-summary-box">
                         <span>Armada & Pelat</span>
-                        <strong>🚐 {{ $activeTripInfo->plate_number }}</strong>
+                        <strong>{{ $activeTripInfo->plate_number }}</strong>
                         <small>{{ $activeTripInfo->vehicle_name }}</small>
                     </div>
 
                     <div class="trip-summary-box">
                         <span>Driver Bertugas</span>
-                        <strong>👤 {{ $activeTripInfo->driver_name }}</strong>
-                        <small>📞 {{ $activeTripInfo->driver_phone }} (Standby)</small>
+                        <strong>{{ $activeTripInfo->driver_name }}</strong>
+                        <small>{{ $activeTripInfo->driver_phone }} (Standby)</small>
                     </div>
 
                     <div class="trip-summary-box">
@@ -982,7 +935,7 @@
 
                 <!-- KOLOM PENCARIAN (Berdasarkan Nama atau Nomor Kursi) -->
                 <div class="search-container">
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon"></span>
                     <input
                         type="text"
                         id="passengerSearch"
@@ -1060,7 +1013,7 @@
                                     <td>
                                         <div class="passenger-info">
                                             <strong class="passenger-name-text">{{ $p->name }}</strong>
-                                            <span class="passenger-code">🎫 {{ $p->booking_code }}</span>
+                                            <span class="passenger-code">{{ $p->booking_code }}</span>
                                         </div>
                                     </td>
 
@@ -1068,7 +1021,7 @@
                                     <td>
                                         <div class="contact-group">
                                             <div class="contact-number">
-                                                📱 {{ $p->phone }}
+                                                {{ $p->phone }}
                                             </div>
 
                                             <div class="contact-actions">
@@ -1079,7 +1032,7 @@
                                                     class="btn-wa-direct"
                                                     title="Kirim Pesan WhatsApp Langsung"
                                                 >
-                                                    💬 WhatsApp
+                                                    WhatsApp
                                                 </a>
 
                                                 <!-- Tombol Panggil Langsung -->
@@ -1088,7 +1041,7 @@
                                                     class="btn-call-direct"
                                                     title="Hubungi Nomor Telepon"
                                                 >
-                                                    📞 Panggil
+                                                    Panggil
                                                 </a>
                                             </div>
                                         </div>
@@ -1098,14 +1051,14 @@
                                     <td>
                                         <div class="route-stops">
                                             <div class="stop-item pickup">
-                                                <span class="stop-icon">🟢</span>
+                                                <span class="stop-icon"></span>
                                                 <div>
                                                     <strong>Naik:</strong> {{ $p->pickup_point }}
                                                 </div>
                                             </div>
 
                                             <div class="stop-item dropoff">
-                                                <span class="stop-icon">📍</span>
+                                                <span class="stop-icon"></span>
                                                 <div>
                                                     <strong>Turun:</strong> {{ $p->drop_point }}
                                                 </div>
@@ -1125,7 +1078,7 @@
                                         <div id="badge-status-{{ $p->id }}">
                                             @if($isBoarded)
                                                 <span class="status-badge-boarded">
-                                                    ✓ Sudah Boarding
+                                                    Sudah Boarding
                                                 </span>
                                             @else
                                                 <span class="status-badge-pending">
@@ -1158,7 +1111,7 @@
                 <!-- Pesan jika hasil pencarian nihil -->
                 <div id="noResultsMessage" style="display: none; padding: 40px; text-align: center;">
                     <p style="font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">
-                        🔍 Penumpang Tidak Ditemukan
+                        Penumpang Tidak Ditemukan
                     </p>
                     <p style="font-size: 13px; color: var(--text-light);">
                         Tidak ada penumpang atau nomor kursi yang cocok dengan kata kunci tersebut.
@@ -1260,7 +1213,7 @@
                 if (newStatus === 'boarded') {
                     // Ubah menjadi Sudah Boarding
                     row.setAttribute('data-boarded', 'true');
-                    badgeContainer.innerHTML = '<span class="status-badge-boarded">✓ Sudah Boarding</span>';
+                    badgeContainer.innerHTML = '<span class="status-badge-boarded">Sudah Boarding</span>';
                     toggleBtn.className = 'btn-toggle-boarding btn-toggle-boarded';
                     toggleBtn.innerText = 'Batalkan';
                 } else {

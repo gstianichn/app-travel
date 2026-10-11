@@ -22,40 +22,31 @@ test('staff can access admin-biasa dashboard index with all modular components l
 
     $response->assertOk();
 
-    // 1. Sidebar
+    // Sidebar
     $response->assertSee('Menu Utama');
     $response->assertSee('Manajemen Booking');
     $response->assertSee('Melihat Informasi Perjalanan');
     $response->assertSee('Validasi E-Ticket');
 
-    // 2. Topbar
-    $response->assertSee('Dashboard Operasional (Layar Utama)');
+    // Greeting, numbers and departures
+    $response->assertSee('Halo, Staf.');
+    $response->assertSee('Boarding dibuka sekarang');
+    $response->assertSee('Jadwal hari ini');
+    $response->assertSee('Keberangkatan terdekat');
+    $response->assertSee('Aktivitas terakhir');
 
-    // 3. Shift Banner
-    $response->assertSee('Buka Kamera Pemindai');
-    $response->assertSee('Tombol Pintas (Scan QR)');
+    // Scanning goes to the real validation page; the old simulated scanner is gone
+    $response->assertSee(route('dashboard.admin-biasa.validasi-tiket'), false);
+    $response->assertDontSee('simulateScan');
+    $response->assertDontSee('Ahmad Subarjo');
+});
 
-    // 4. Stats Grid
-    $response->assertSee('Jadwal Aktif Hari Ini');
-    $response->assertSee('Boarding Dibuka');
-    $response->assertSee('Tahap Persiapan');
-    $response->assertSee('Pemesanan Hari Ini');
+test('staff dashboard shows an honest empty state when no schedules exist', function () {
+    $response = $this->actingAs($this->staff)
+        ->get(route('dashboard.admin-biasa.index'));
 
-    // 5. Departures Section
-    $response->assertSee('Daftar Keberangkatan Terdekat', false);
-    $response->assertSee('Live Monitor');
-
-    // 6. Quick Actions & Activity
-    $response->assertSee('Akses Cepat Operasional');
-    $response->assertSee('Aktivitas Terkini');
-
-    // 7. Scanner Modal
-    $response->assertSee('Kamera Pemindai QR Code E-Ticket');
-    $response->assertSee('scannerModal');
-
-    // 8. Scripts
-    $response->assertSee('openScannerModal');
-    $response->assertSee('confirmBoarding');
+    $response->assertOk();
+    $response->assertSee('Belum ada jadwal mendatang.');
 });
 
 test('staff can access informasi perjalanan page safely without memory issues', function () {
