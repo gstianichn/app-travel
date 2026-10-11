@@ -1,639 +1,207 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Akun & Profil')
+@section('page-title', 'Akun')
 
-@section('content')
 @php
-    // Inisialisasi data tiket default untuk konteks WhatsApp CS
-    $firstBooking = $recentBookings->first();
-    $defaultBookingId = $firstBooking ? $firstBooking->id : '';
+    $fieldClass = 'w-full min-h-12 rounded-lg border-[1.5px] border-[#7D7969] bg-white px-4 text-slate-900';
+    $labelClass = 'block font-semibold text-slate-900';
+    $whatsappBaseUrl = \App\Models\AppSetting::whatsappUrl();
+    $companyName = \App\Models\AppSetting::companyName();
+    $helpBookings = $recentBookings->map(fn ($booking) => [
+        'id' => (string) $booking->id,
+        'code' => $booking->booking_code,
+        'route' => ($booking->schedule?->route?->origin?->name ?? '-').' ke '.($booking->schedule?->route?->destination?->name ?? '-'),
+        'date' => $booking->schedule?->departureCarbon()->locale('id')->isoFormat('D MMM YYYY, HH:mm').' WIB',
+    ])->values();
 @endphp
 
-<div x-data="accountPageHandler({
-    selectedBookingId: '{{ $defaultBookingId }}',
-    userName: '{{ addslashes(auth()->user()->name ?? 'Pengguna') }}',
-    bookings: @js($recentBookings->map(fn($b) => [
-        'id' => (string)$b->id,
-        'code' => $b->booking_code,
-        'ticket' => $b->ticket?->ticket_number ?? 'TKT-'.$b->booking_code,
-        'route' => ($b->schedule?->route?->origin?->name ?? 'Asal') . ' ke ' . ($b->schedule?->route?->destination?->name ?? 'Tujuan'),
-        'date' => \Carbon\Carbon::parse($b->schedule?->departure_date)->translatedFormat('d M Y'),
-        'time' => \Carbon\Carbon::parse($b->schedule?->departure_time)->format('H:i') . ' WIB',
-        'passenger' => $b->passengers->first()?->name ?? $user->name,
-    ]))
-})">
+@section('content')
+<div class="space-y-10 max-w-3xl">
 
-<div class="space-y-6 max-w-3xl mx-auto">
+    @include('dashboard.user.partials.flash')
 
-    {{-- Alert Messages --}}
-    @if(session('success'))
-        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
-            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
-            <span>{{ session('success') }}</span>
+    {{-- Profile --}}
+    <section aria-labelledby="profil" class="space-y-3">
+        <h1 id="profil" class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">{{ $user->name }}</h1>
+        <p class="text-slate-700">
+            {{ $user->email }}<br>
+            {{ $user->phone ?: 'Nomor HP belum diisi' }}
+        </p>
+
+        <details class="rounded-xl border border-slate-300 bg-white" @if ($errors->hasAny(['name', 'email', 'phone'])) open @endif>
+            <summary class="cursor-pointer list-none flex items-center min-h-11 px-5 py-3 font-semibold text-brand-800">Ubah nama, email, atau nomor HP</summary>
+            <form action="{{ route('dashboard.user.profil.update') }}" method="POST" class="grid sm:grid-cols-2 gap-4 border-t border-slate-200 p-5">
+                @csrf
+                <div class="space-y-1.5 sm:col-span-2">
+                    <label for="profile-name" class="{{ $labelClass }}">Nama lengkap</label>
+                    <input id="profile-name" type="text" name="name" required maxlength="255" autocomplete="name" value="{{ old('name', $user->name) }}" class="{{ $fieldClass }}">
+                </div>
+                <div class="space-y-1.5">
+                    <label for="profile-email" class="{{ $labelClass }}">Email</label>
+                    <input id="profile-email" type="email" name="email" required maxlength="255" autocomplete="email" value="{{ old('email', $user->email) }}" class="{{ $fieldClass }}">
+                </div>
+                <div class="space-y-1.5">
+                    <label for="profile-phone" class="{{ $labelClass }}">Nomor HP (WhatsApp)</label>
+                    <input id="profile-phone" type="tel" name="phone" maxlength="25" autocomplete="tel" inputmode="tel" value="{{ old('phone', $user->phone) }}" placeholder="08xxxxxxxxxx" class="{{ $fieldClass }}">
+                </div>
+                <div class="sm:col-span-2">
+                    <button type="submit" class="lp-btn lp-btn--green">Simpan profil</button>
+                </div>
+            </form>
+        </details>
+    </section>
+
+    {{-- Saved passengers: filled once, offered again at checkout --}}
+    <section aria-labelledby="penumpang-tersimpan" class="space-y-4">
+        <div>
+            <h2 id="penumpang-tersimpan" class="text-2xl font-extrabold text-brand-900">Daftar Penumpang Tersimpan</h2>
+            <p class="text-slate-600">Orang yang sering ikut bepergian. Saat memesan, nama dan nomor HP-nya tinggal dipilih.</p>
         </div>
-    @endif
 
-    @if(session('error'))
-        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2.5 shadow-2xs">
-            <span class="w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs"></span>
-            <span>{{ session('error') }}</span>
-        </div>
-    @endif
+        @if ($savedPassengers->isEmpty())
+            <p class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-6 text-slate-700">Belum ada penumpang tersimpan.</p>
+        @else
+            <ul class="divide-y divide-slate-200 border-y border-slate-200">
+                @foreach ($savedPassengers as $savedPassenger)
+                    <li class="py-4" id="saved-passenger-{{ $savedPassenger->id }}">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <p class="font-bold text-slate-900">
+                                    {{ $savedPassenger->name }}
+                                    @if ($savedPassenger->is_primary)
+                                        <span class="ml-1 px-2 py-0.5 rounded-md bg-brand-100 text-sm font-semibold text-brand-800">Utama</span>
+                                    @endif
+                                </p>
+                                <p class="text-slate-600">HP {{ $savedPassenger->phone ?: '-' }}, NIK {{ $savedPassenger->maskedNik() }}</p>
+                            </div>
+                            <form action="{{ route('dashboard.user.saved-passenger.destroy', $savedPassenger) }}" method="POST"
+                                  onsubmit="return confirm(@js('Hapus '.$savedPassenger->name.' dari daftar?'))">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="inline-flex items-center min-h-11 text-sm font-semibold text-slate-600 hover:text-rose-800">Hapus</button>
+                            </form>
+                        </div>
 
-    @if($errors->any())
-        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-1">
-            <p class="font-bold">Terjadi kesalahan pengisian data:</p>
-            <ul class="list-disc list-inside space-y-0.5">
-                @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
+                        <details class="mt-1">
+                            <summary class="cursor-pointer list-none inline-flex items-center min-h-11 font-semibold text-brand-700 underline underline-offset-2">Ubah</summary>
+                            <form action="{{ route('dashboard.user.saved-passenger.update', $savedPassenger) }}" method="POST" class="mt-3 grid sm:grid-cols-2 gap-4 rounded-xl border border-slate-300 bg-white p-5">
+                                @csrf
+                                @method('PUT')
+                                @include('dashboard.user.partials.saved-passenger-fields', ['savedPassenger' => $savedPassenger, 'prefix' => 'edit-'.$savedPassenger->id])
+                                <div class="sm:col-span-2">
+                                    <button type="submit" class="lp-btn lp-btn--green">Simpan perubahan</button>
+                                </div>
+                            </form>
+                        </details>
+                    </li>
                 @endforeach
             </ul>
-        </div>
-    @endif
+        @endif
 
-    <!-- ============================================================
-         1. HEADER PROFIL (IDENTITAS PENGGUNA)
-    ============================================================ -->
-    <div style="background: linear-gradient(135deg, #087f55 0%, #066b47 100%);" class="rounded-3xl p-6 sm:p-7 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-5 shadow-lg relative overflow-hidden">
-        <div class="flex items-center gap-5 relative z-10">
-            <!-- Avatar -->
-            <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl flex items-center justify-center text-2xl font-black text-white flex-shrink-0 shadow-inner"
-                 style="background: rgba(255,255,255,.22); border: 2px solid rgba(255,255,255,.3);">
-                {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
-            </div>
-            <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                    <h2 class="font-black text-xl sm:text-2xl leading-tight truncate">{{ $user->name ?? 'Nama Pengguna' }}</h2>
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-white/20 text-emerald-100 border border-white/20">
-                        Member
-                    </span>
-                </div>
-                <p class="text-xs sm:text-sm mt-1 text-emerald-100/90 truncate flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5 opacity-75" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                    <span>{{ $user->email ?? 'user@email.com' }}</span>
-                </p>
-                <p class="text-xs mt-0.5 text-emerald-200/80 flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5 opacity-75" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    <span>{{ $user->phone ?? '+62 812-xxxx-xxxx' }}</span>
-                </p>
-            </div>
-        </div>
-
-        <button id="btn-edit-profile" @click="showEditProfile = true"
-            class="self-start sm:self-center px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm relative z-10"
-            style="background: rgba(255,255,255,.20);"
-            onmouseover="this.style.background='rgba(255,255,255,.30)'"
-            onmouseout="this.style.background='rgba(255,255,255,.20)'">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/>
-            </svg>
-            <span>Edit Profil</span>
-        </button>
-    </div>
-
-    <!-- ============================================================
-         A. ALUR PENUMPANG TERSIMPAN (SAVED PASSENGER LIST)
-    ============================================================ -->
-    <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div class="px-6 py-4 flex items-center justify-between border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:#e3f5ee;">
-                    <svg width="20" height="20" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87m-4-12a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base">Daftar Penumpang Tersimpan (Saved Passengers)</h3>
-                    <p class="text-xs text-slate-400">Isi sekali, lalu pilih saat checkout tanpa mengetik ulang.</p>
-                </div>
-            </div>
-            <button id="btn-tambah-penumpang" @click="openAddPassengerModal()" 
-                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-sm transition flex items-center gap-1.5"
-                    style="background:#087f55;"
-                    onmouseover="this.style.background='#066b47'"
-                    onmouseout="this.style.background='#087f55'">
-                <span class="text-sm">+</span>
-                <span>Tambah Data</span>
-            </button>
-        </div>
-
-        {{-- Daftar Penumpang --}}
-        <div class="divide-y divide-slate-100">
-            @forelse($savedPassengers as $sp)
-                <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/70 transition" id="saved-passenger-{{ $sp->id }}">
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black text-slate-600 bg-slate-100 flex-shrink-0">
-                            {{ strtoupper(substr($sp->name, 0, 1)) }}
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <p class="text-sm font-bold text-slate-800">{{ $sp->name }}</p>
-                                @if($sp->is_primary)
-                                    <span class="text-xs font-extrabold px-2 py-0.5 rounded-full" style="background:#e3f5ee; color:#087f55;">
-                                        Utama
-                                    </span>
-                                @endif
-                            </div>
-                            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-400 mt-0.5 font-mono">
-                                <span>NIK: <strong class="text-slate-600">{{ $sp->maskedNik() }}</strong></span>
-                                <span>•</span>
-                                <span>HP: <strong class="text-slate-600">{{ $sp->phone ?: '-' }}</strong></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Tombol Aksi: Edit & Hapus --}}
-                    <div class="flex items-center gap-2 self-end sm:self-center">
-                        <button type="button" 
-                                @click="openEditPassengerModal({{ $sp->id }}, '{{ addslashes($sp->name) }}', '{{ $sp->nik }}', '{{ $sp->phone }}', {{ $sp->is_primary ? 'true' : 'false' }})"
-                                class="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-semibold transition flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
-                            <span>Edit</span>
-                        </button>
-
-                        <form action="{{ route('dashboard.user.saved-passenger.destroy', $sp) }}" method="POST" onsubmit="return confirm('Hapus penumpang {{ addslashes($sp->name) }} dari daftar tersimpan?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Hapus Penumpang">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            @empty
-                <div class="px-6 py-8 text-center text-slate-400">
-                    <p class="text-sm font-medium">Belum ada penumpang tersimpan.</p>
-                    <p class="text-xs mt-1">Klik tombol "+ Tambah Data" untuk menyimpan data penumpang sekali saja.</p>
-                </div>
-            @endforelse
-        </div>
-    </div>
-
-    <!-- ============================================================
-         B. ALUR MANAJEMEN PROMO & VOUCHER (DOMPET VOUCHER)
-    ============================================================ -->
-    <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div class="px-6 py-4 flex items-center justify-between border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-amber-50 rounded-2xl flex items-center justify-center flex-shrink-0">
-                    <svg width="20" height="20" fill="none" stroke="#f59e0b" stroke-width="2" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="m9 9 6 6m0-6-6 6"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base">Dompet Voucher & Promo Saya (My Vouchers)</h3>
-                    <p class="text-xs text-slate-400">Voucher klaim promo & kompensasi tersimpan otomatis dengan validasi syarat order</p>
-                </div>
-            </div>
-            <a href="{{ route('dashboard.user.user-promo') }}" class="text-xs font-bold hover:underline flex items-center gap-1" style="color:#087f55;">
-                <span>Lihat Semua</span>
-                <span class="text-sm"></span>
-            </a>
-        </div>
-
-        {{-- Preview Voucher Terbaru --}}
-        <div class="p-6 space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                @forelse($vouchers->take(2) as $vc)
-                    @php
-                        $st = $vc->statusInfo();
-                    @endphp
-                    <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:border-emerald-300 transition space-y-2.5">
-                        <div class="flex items-center justify-between">
-                            <span class="font-mono font-black text-sm text-slate-900">
-                                {{ $vc->code }}
-                            </span>
-                            <span class="text-xs font-extrabold px-2 py-0.5 rounded-full border {{ $st['badge_class'] }}">
-                                {{ $st['label'] }}
-                            </span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-800">{{ $vc->title }}</p>
-                            <p class="text-xs text-slate-500 mt-0.5">{{ $vc->discountText() }} • {{ $vc->minOrderText() }}</p>
-                        </div>
-                        <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-400">
-                            <span>Berlaku s/d: {{ $vc->expires_at ? $vc->expires_at->translatedFormat('d M Y') : 'Selamanya' }}</span>
-                            @if($vc->isActive())
-                                <a href="{{ route('dashboard.user.search') }}" class="text-emerald-700 font-bold hover:underline inline-flex items-center gap-0.5">Gunakan</a>
-                            @endif
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-2 text-center py-4 text-xs text-slate-400">
-                        Belum ada voucher tersimpan di dompet Anda.
-                    </div>
-                @endforelse
-            </div>
-
-            {{-- Form Cepat Klaim Kode Voucher --}}
-            <form action="{{ route('dashboard.user.voucher.claim') }}" method="POST" class="pt-2 flex flex-col sm:flex-row gap-2">
+        <details class="rounded-xl border border-slate-300 bg-white">
+            <summary class="cursor-pointer list-none flex items-center min-h-11 px-5 py-3 font-semibold text-brand-800">Tambah penumpang</summary>
+            <form action="{{ route('dashboard.user.saved-passenger.store') }}" method="POST" class="grid sm:grid-cols-2 gap-4 border-t border-slate-200 p-5">
                 @csrf
-                <div class="relative flex-1">
-                    <input type="text" name="code" required placeholder="Punya kode promo / kompensasi? Masukkan di sini (misal: KOMPENSASI50)"
-                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono font-bold outline-none transition focus:border-emerald-600">
+                @include('dashboard.user.partials.saved-passenger-fields', ['savedPassenger' => null, 'prefix' => 'new'])
+                <div class="sm:col-span-2">
+                    <button type="submit" class="lp-btn lp-btn--green">Simpan penumpang</button>
                 </div>
-                <button type="submit" 
-                        class="px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5"
-                        style="background:#087f55;"
-                        onmouseover="this.style.background='#066b47'"
-                        onmouseout="this.style.background='#087f55'">
-                    <span>Klaim ke Dompet</span>
-                </button>
             </form>
+        </details>
+    </section>
+
+    {{-- Vouchers live on their own page; here only the count and the way there --}}
+    <section aria-labelledby="voucher" class="flex flex-wrap items-center justify-between gap-3 border-y border-slate-200 py-5">
+        <div>
+            <h2 id="voucher" class="text-xl font-extrabold text-brand-900">Dompet Voucher</h2>
+            <p class="text-slate-600">{{ $activeVouchersCount }} voucher masih berlaku.</p>
         </div>
-    </div>
+        <a href="{{ route('dashboard.user.user-promo') }}" class="inline-flex items-center min-h-11 font-semibold text-brand-700 underline underline-offset-2">Lihat dan simpan voucher</a>
+    </section>
 
-    <!-- ============================================================
-         C. BANTUAN (WHATSAPP CS DENGAN KONTEKS TIKET)
-    ============================================================ -->
-    <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm" id="section-helpdesk">
-        <div class="px-6 py-4 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:#e3f5ee;">
-                    <svg width="20" height="20" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base">Bantuan</h3>
-                    <p class="text-xs text-slate-400">Pilih tiket bermasalah untuk menyertakan nomor tiket & rute secara otomatis</p>
-                </div>
+    {{-- Help: the WhatsApp message carries the booking code so CS does not have to ask --}}
+    <section aria-labelledby="bantuan" class="space-y-4" x-data="helpMessage({ bookings: @js($helpBookings), baseUrl: @js($whatsappBaseUrl ?? ''), userName: @js($user->name), companyName: @js($companyName) })">
+        <h2 id="bantuan" class="text-2xl font-extrabold text-brand-900">Bantuan</h2>
+
+        @if ($whatsappBaseUrl)
+            <div class="space-y-1.5">
+                <label for="help-booking" class="{{ $labelClass }}">Pesanan yang ditanyakan</label>
+                <select id="help-booking" x-model="selectedId" class="{{ $fieldClass }}">
+                    <option value="">Pertanyaan umum, bukan soal pesanan tertentu</option>
+                    @foreach ($helpBookings as $helpBooking)
+                        <option value="{{ $helpBooking['id'] }}">{{ $helpBooking['code'] }}, {{ $helpBooking['route'] }}</option>
+                    @endforeach
+                </select>
             </div>
-        </div>
-
-        <div class="p-6 space-y-5">
-            {{-- SELECTOR KONTEKS TIKET OTOMATIS --}}
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
-                <label class="block text-xs font-bold text-slate-700">
-                    Pilih Tiket Perjalanan yang Membutuhkan Bantuan:
-                </label>
-                <div class="relative">
-                    <select x-model="selectedBookingId" @change="updateContext()"
-                            class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 outline-none transition focus:border-emerald-600 shadow-2xs">
-                        <option value="">-- Pertanyaan Umum / Tanpa Tiket Spesifik --</option>
-                        @foreach($recentBookings as $b)
-                            <option value="{{ $b->id }}" {{ (string)$b->id === (string)$defaultBookingId ? 'selected' : '' }}>
-                                #{{ $b->booking_code }} ({{ $b->ticket?->ticket_number ?? 'TKT' }}) • {{ $b->schedule?->route?->origin?->name }} ke {{ $b->schedule?->route?->destination?->name }} ({{ \Carbon\Carbon::parse($b->schedule?->departure_date)->format('d M') }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                {{-- Preview Pesan Pre-filled WhatsApp --}}
-                <div class="pt-2 text-xs text-slate-500">
-                    <span class="font-semibold text-slate-700">Pratinjau Pesan CS Otomatis:</span>
-                    <div class="mt-1 p-2.5 rounded-xl bg-white border border-slate-200/80 font-mono text-xs text-slate-600 whitespace-pre-line" x-text="previewMessage"></div>
-                </div>
+            <p class="rounded-lg bg-slate-100 px-4 py-3 text-slate-700 whitespace-pre-line" x-text="message"></p>
+            <a :href="url" target="_blank" rel="noopener" class="lp-btn lp-btn--green">Kirim lewat WhatsApp</a>
+        @else
+            <div class="rounded-xl border border-slate-300 bg-white px-5 py-4">
+                <p class="font-bold text-slate-900">Nomor WhatsApp CS belum diisi</p>
+                <p class="mt-1 text-slate-600">Sementara itu, jawaban soal pembatalan, refund, dan boarding ada di <a href="{{ route('home') }}#faq" class="font-semibold text-brand-700 underline underline-offset-2">halaman bantuan</a>.</p>
             </div>
+        @endif
+    </section>
 
-            {{-- TOMBOL WHATSAPP CS --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                
-                {{-- Tombol WhatsApp CS dengan pesan terisi (nomor dari Pengaturan admin) --}}
-                @if (\App\Models\AppSetting::whatsappUrl())
-                <a :href="waUrl" target="_blank" rel="noopener" id="btn-whatsapp-cs"
-                   class="px-5 py-4 rounded-2xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/70 transition flex items-center gap-3.5 group shadow-2xs">
-                    <div class="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-xs font-bold text-slate-900">Chat WhatsApp CS</p>
-                        <p class="text-sm text-emerald-800">Pesan otomatis berisi nomor tiket dan rute</p>
-                    </div>
-                    <svg class="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                </a>
-                @else
-                <div class="px-5 py-4 rounded-2xl border border-slate-200 bg-white">
-                    <p class="font-bold text-slate-900">Nomor WhatsApp CS belum diisi</p>
-                    <p class="text-sm text-slate-600 mt-1">Sementara itu, jawaban soal pembatalan, refund, dan boarding ada di <a href="{{ route('home') }}#faq" class="font-semibold text-brand-700 underline">halaman bantuan</a>.</p>
-                </div>
+    {{-- Password and sign out --}}
+    <section aria-labelledby="keamanan" class="space-y-4">
+        <h2 id="keamanan" class="text-2xl font-extrabold text-brand-900">Keamanan</h2>
+
+        @if ($user->google_id)
+            <p class="text-slate-700">Akun ini masuk dengan Google ({{ $user->email }}).</p>
+        @endif
+
+        <details class="rounded-xl border border-slate-300 bg-white" @if ($errors->hasAny(['current_password', 'password'])) open @endif>
+            <summary class="cursor-pointer list-none flex items-center min-h-11 px-5 py-3 font-semibold text-brand-800">Ganti password</summary>
+            <form action="{{ route('dashboard.user.profil.password') }}" method="POST" class="space-y-4 border-t border-slate-200 p-5">
+                @csrf
+                @if ($user->google_id)
+                    <p class="text-slate-600">Belum pernah membuat password? Keluar dulu, lalu pakai <b>Lupa password</b> di halaman masuk.</p>
                 @endif
-
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================
-         4. PENGATURAN KEAMANAN AKUN
-    ============================================================ -->
-    <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-        <div class="px-6 py-4 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-slate-100 rounded-2xl flex items-center justify-center">
-                    <svg width="20" height="20" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    </svg>
+                <div class="space-y-1.5">
+                    <label for="current_password" class="{{ $labelClass }}">Password sekarang</label>
+                    <input id="current_password" type="password" name="current_password" required autocomplete="current-password" class="{{ $fieldClass }}">
                 </div>
-                <h3 class="font-bold text-slate-900 text-sm sm:text-base">Keamanan & Pengaturan Akun</h3>
-            </div>
-        </div>
-        <div class="divide-y divide-slate-100 text-xs sm:text-sm font-semibold">
-            <button id="btn-ganti-password" @click="showChangePassword = true"
-               class="w-full px-6 py-4 flex items-center gap-4 hover:bg-slate-50 transition text-left group">
-                <div class="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0 text-slate-500">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label for="new_password" class="{{ $labelClass }}">Password baru</label>
+                        <input id="new_password" type="password" name="password" required minlength="8" autocomplete="new-password" aria-describedby="new_password-hint" class="{{ $fieldClass }}">
+                        <p id="new_password-hint" class="text-sm text-slate-600">Minimal 8 karakter.</p>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="new_password_confirmation" class="{{ $labelClass }}">Ulangi password baru</label>
+                        <input id="new_password_confirmation" type="password" name="password_confirmation" required minlength="8" autocomplete="new-password" class="{{ $fieldClass }}">
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <p class="font-bold text-slate-800">Ganti Password</p>
-                    <p class="text-xs text-slate-400 font-normal">Perbarui kata sandi akun secara berkala</p>
-                </div>
-                <svg class="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
-        </div>
-    </div>
+                <button type="submit" class="lp-btn lp-btn--green">Simpan password</button>
+            </form>
+        </details>
 
-    <!-- ============================================================
-         5. LOGOUT
-    ============================================================ -->
-    <div class="bg-white border border-rose-100 rounded-3xl overflow-hidden shadow-sm">
-        <form action="{{ route('logout') }}" method="POST">
+        <form action="{{ route('user.logout') }}" method="POST">
             @csrf
-            <button id="btn-logout" type="submit"
-                class="w-full px-6 py-4 flex items-center gap-4 hover:bg-rose-50/80 transition text-left group">
-                <div class="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-bold text-rose-600">Keluar dari Akun</p>
-                    <p class="text-xs text-slate-400">Akhiri sesi portal penumpang Anda</p>
-                </div>
-                <svg class="w-4 h-4 text-rose-300 group-hover:text-rose-600 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+            <button type="submit" class="inline-flex items-center min-h-11 px-4 rounded-lg border-2 border-rose-800 font-bold text-rose-800 hover:bg-rose-50">Keluar dari akun</button>
         </form>
-    </div>
-
-
-
+    </section>
 </div>
-
-{{-- ============================================================
-     MODAL 1: TAMBAH PENUMPANG TERSIMPAN
-============================================================ --}}
-<div x-show="showAddPassenger" x-cloak
-     class="fixed inset-0 z-50 flex items-center justify-center px-4"
-     style="background: rgba(0,0,0,.5); backdrop-filter: blur(4px);"
-     @click.self="showAddPassenger = false">
-
-    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-900 text-base">Tambah Penumpang Tersimpan</h3>
-            <button @click="showAddPassenger = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-        </div>
-
-        <form action="{{ route('dashboard.user.saved-passenger.store') }}" method="POST" class="space-y-3.5 text-xs">
-            @csrf
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Nama Lengkap Penumpang *</label>
-                <input type="text" name="name" required placeholder="Sesuai KTP / SIM / Paspor"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">NIK / No. Identitas Kependudukan (16 Digit)</label>
-                <input type="text" name="nik" maxlength="16" placeholder="16 digit NIK"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono outline-none transition focus:border-emerald-600">
-                <p class="text-xs text-slate-400 mt-1">NIK dicatat di manifes penumpang.</p>
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP</label>
-                <input type="tel" name="phone" placeholder="08xxxxxxxxxx"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div class="pt-1">
-                <label class="inline-flex items-center gap-2 cursor-pointer text-slate-700">
-                    <input type="checkbox" name="is_primary" value="1" class="w-4 h-4 text-emerald-600 rounded border-slate-300">
-                    <span class="font-medium">Jadikan Penumpang Utama</span>
-                </label>
-            </div>
-
-            <div class="flex gap-3 pt-3">
-                <button type="button" @click="showAddPassenger = false" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition">
-                    Batal
-                </button>
-                <button type="submit" class="flex-1 py-2.5 text-white font-bold rounded-xl transition shadow-sm" style="background:#087f55;">
-                    Simpan Penumpang
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- ============================================================
-     MODAL 2: EDIT PENUMPANG TERSIMPAN
-============================================================ --}}
-<div x-show="showEditPassenger" x-cloak
-     class="fixed inset-0 z-50 flex items-center justify-center px-4"
-     style="background: rgba(0,0,0,.5); backdrop-filter: blur(4px);"
-     @click.self="showEditPassenger = false">
-
-    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-900 text-base">Edit Penumpang Tersimpan</h3>
-            <button @click="showEditPassenger = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-        </div>
-
-        <form :action="'{{ url('user/penumpang-tersimpan') }}/' + editData.id" method="POST" class="space-y-3.5 text-xs">
-            @csrf
-            @method('PUT')
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Nama Lengkap Penumpang *</label>
-                <input type="text" name="name" required x-model="editData.name"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">NIK / No. Identitas Kependudukan (16 Digit)</label>
-                <input type="text" name="nik" maxlength="16" x-model="editData.nik"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP</label>
-                <input type="tel" name="phone" x-model="editData.phone"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div class="pt-1">
-                <label class="inline-flex items-center gap-2 cursor-pointer text-slate-700">
-                    <input type="checkbox" name="is_primary" value="1" :checked="editData.is_primary" class="w-4 h-4 text-emerald-600 rounded border-slate-300">
-                    <span class="font-medium">Jadikan Penumpang Utama</span>
-                </label>
-            </div>
-
-            <div class="flex gap-3 pt-3">
-                <button type="button" @click="showEditPassenger = false" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition">
-                    Batal
-                </button>
-                <button type="submit" class="flex-1 py-2.5 text-white font-bold rounded-xl transition shadow-sm" style="background:#087f55;">
-                    Perbarui Data
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- ============================================================
-     MODAL 3: EDIT PROFIL AKUN
-============================================================ --}}
-<div x-show="showEditProfile" x-cloak
-     class="fixed inset-0 z-50 flex items-center justify-center px-4"
-     style="background: rgba(0,0,0,.5); backdrop-filter: blur(4px);"
-     @click.self="showEditProfile = false">
-
-    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-900 text-base">Edit Profil Akun</h3>
-            <button @click="showEditProfile = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-        </div>
-
-        <form action="{{ route('dashboard.user.profil.update') }}" method="POST" class="space-y-3.5 text-xs">
-            @csrf
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Nama Lengkap *</label>
-                <input type="text" name="name" required value="{{ $user->name }}"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Email *</label>
-                <input type="email" name="email" required value="{{ $user->email }}"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP</label>
-                <input type="tel" name="phone" value="{{ $user->phone }}" placeholder="08xxxxxxxxxx"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-
-            <div class="flex gap-3 pt-3">
-                <button type="button" @click="showEditProfile = false" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition">
-                    Batal
-                </button>
-                <button type="submit" class="flex-1 py-2.5 text-white font-bold rounded-xl transition shadow-sm" style="background:#087f55;">
-                    Simpan Profil
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- ============================================================
-     MODAL 4: GANTI PASSWORD
-============================================================ --}}
-<div x-show="showChangePassword" x-cloak
-     class="fixed inset-0 z-50 flex items-center justify-center px-4"
-     style="background: rgba(0,0,0,.5); backdrop-filter: blur(4px);"
-     @click.self="showChangePassword = false">
-
-    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 class="font-bold text-slate-900 text-base">Ganti Password</h3>
-            <button @click="showChangePassword = false" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-        </div>
-
-        <form action="{{ route('dashboard.user.profil.password') }}" method="POST" class="space-y-3.5 text-xs">
-            @csrf
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Password Saat Ini *</label>
-                <input type="password" name="current_password" required
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Password Baru (min. 8 karakter) *</label>
-                <input type="password" name="password" required minlength="8"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-            <div>
-                <label class="block font-semibold text-slate-600 mb-1">Konfirmasi Password Baru *</label>
-                <input type="password" name="password_confirmation" required minlength="8"
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-            </div>
-
-            <div class="flex gap-3 pt-3">
-                <button type="button" @click="showChangePassword = false" class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition">
-                    Batal
-                </button>
-                <button type="submit" class="flex-1 py-2.5 text-white font-bold rounded-xl transition shadow-sm" style="background:#087f55;">
-                    Update Sandi
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-</div>{{-- end x-data --}}
 
 <script>
-const companyName = @js(\App\Models\AppSetting::companyName());
-
-function accountPageHandler(config) {
+function helpMessage(config) {
     return {
-        selectedBookingId: config.selectedBookingId || '',
-        userName: config.userName || 'Pengguna',
-        bookings: config.bookings || [],
-        showAddPassenger: false,
-        showEditPassenger: false,
-        showEditProfile: false,
-        showChangePassword: false,
-        editData: {
-            id: null,
-            name: '',
-            nik: '',
-            phone: '',
-            is_primary: false
-        },
-        waUrl: @js(\App\Models\AppSetting::whatsappUrl() ?? ''),
-        previewMessage: '',
+        selectedId: config.bookings[0]?.id ?? '',
 
-        init() {
-            this.updateContext();
-        },
+        get message() {
+            const booking = config.bookings.find((item) => item.id === this.selectedId);
 
-        get selectedBooking() {
-            if (!this.selectedBookingId) return null;
-            return this.bookings.find(b => String(b.id) === String(this.selectedBookingId)) || null;
-        },
-
-        updateContext() {
-            const b = this.selectedBooking;
-            let msg = '';
-            if (b) {
-                msg = `Halo CS ${companyName}, saya butuh bantuan untuk tiket perjalanan saya:\n• No. Tiket: ${b.ticket}\n• Kode Booking: #${b.code}\n• Rute: ${b.route}\n• Jadwal: ${b.date}, ${b.time}\n• Penumpang: ${b.passenger}\n\nKendala yang saya alami: [Mohon dibantu terkait kendala tiket ini]`;
-            } else {
-                msg = `Halo CS ${companyName}, saya ${this.userName} butuh bantuan soal akun saya.`;
+            if (!booking) {
+                return `Halo CS ${config.companyName}, saya ${config.userName} mau bertanya soal akun saya.`;
             }
 
-            this.previewMessage = msg;
-            this.waUrl = this.waUrl ? this.waUrl.split('?')[0] + '?text=' + encodeURIComponent(msg) : '';
+            return `Halo CS ${config.companyName}, saya butuh bantuan untuk pesanan ini:\nKode booking: ${booking.code}\nRute: ${booking.route}\nJadwal: ${booking.date}\n\nKendala: `;
         },
 
-        openAddPassengerModal() {
-            this.showAddPassenger = true;
+        get url() {
+            return config.baseUrl ? config.baseUrl.split('?')[0] + '?text=' + encodeURIComponent(this.message) : '';
         },
-
-        openEditPassengerModal(id, name, nik, phone, isPrimary) {
-            this.editData = {
-                id: id,
-                name: name,
-                nik: nik || '',
-                phone: phone || '',
-                is_primary: isPrimary
-            };
-            this.showEditPassenger = true;
-        }
     };
 }
 </script>

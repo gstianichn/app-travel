@@ -1,578 +1,250 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Pengisian Data & Penerapan Promo')
+@section('page-title', 'Data pemesan')
+
+@php
+    $account = auth()->user();
+    $returnUrl = url()->current();
+    $holdUntil = $booking->expired_at?->copy()->timezone(config('app.timezone'));
+    $channelGroups = [
+        'Transfer virtual account' => [
+            'bca' => ['BCA', 'm-BCA, myBCA, KlikBCA, atau ATM BCA'],
+            'mandiri' => ['Mandiri', "Livin' by Mandiri atau ATM, pakai kode perusahaan dan nomor tagihan"],
+            'bni' => ['BNI', 'BNI Mobile, internet banking, atau ATM BNI'],
+            'bri' => ['BRI (BRIVA)', 'BRImo atau ATM BRI'],
+            'bsi' => ['BSI', 'BSI Mobile atau ATM BSI'],
+            'seabank' => ['SeaBank', 'Transfer dari aplikasi SeaBank ke virtual account Permata'],
+        ],
+        'QRIS dan e-wallet' => [
+            'qris' => ['QRIS', 'Pindai dengan aplikasi bank atau e-wallet apa pun'],
+            'gopay' => ['GoPay', 'Dibuka di aplikasi Gojek atau GoPay'],
+            'shopeepay' => ['ShopeePay', 'Dibuka di aplikasi Shopee'],
+        ],
+    ];
+    $selectedChannel = old('payment_channel', 'bca');
+    $inputClass = 'w-full min-h-12 rounded-lg border-[1.5px] border-[#7D7969] bg-white px-4 text-slate-900 focus:border-brand-500';
+@endphp
 
 @section('content')
-<div class="space-y-6 max-w-5xl mx-auto" x-data="bookingDataHandler({
+<div class="space-y-8" x-data="bookingDataHandler({
     remainingSeconds: {{ $remainingSeconds }},
     bookingId: {{ $booking->id }},
     subtotal: {{ (float) $booking->subtotal }},
     csrfToken: '{{ csrf_token() }}'
 })">
 
-    {{-- ===== STEPPER FLOW & COUNTDOWN SEAT LOCK ===== --}}
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto text-xs font-semibold">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
-                Pilih Kursi
-            </span>
-            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
-                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">2</span>
-                Data Penumpang & Promo
-            </span>
-            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
-                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs">3</span>
-                Pembayaran
-            </span>
-        </div>
+    @include('dashboard.user.partials.booking-steps', ['current' => 2])
 
-        {{-- Seat Lock Countdown Timer --}}
-        <div class="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold shadow-2xs">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            <span>Sisa Waktu Seat Lock:</span>
-            <span class="font-mono text-sm text-amber-700 bg-white px-2 py-0.5 rounded-md border border-amber-200" x-text="formatTimer(remainingSeconds)"></span>
-        </div>
+    @include('dashboard.user.partials.flash')
+
+    <header class="space-y-4">
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">Siapa yang berangkat?</h1>
+        @include('dashboard.user.partials.trip-summary', ['schedule' => $booking->schedule])
+    </header>
+
+    {{-- Seat hold: the deadline is the one thing that can undo this page, so it stays visible --}}
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-amber-600 bg-amber-50 px-5 py-4 text-amber-950" role="timer" aria-live="off">
+        <p x-show="remainingSeconds > 0">
+            Kursi <b>{{ $booking->passengerSeatNumbers() }}</b> ditahan untukmu sampai
+            <b>{{ $holdUntil?->format('H:i') }} WIB</b>.
+        </p>
+        <p class="font-mono text-2xl font-extrabold tabular-nums" x-show="remainingSeconds > 0" x-text="formatTimer(remainingSeconds)"></p>
+        <p x-show="remainingSeconds <= 0" x-cloak>
+            <b>Waktu tahan kursi sudah habis.</b> Kursinya dilepas untuk penumpang lain.
+            <a href="{{ route('dashboard.user.booking.pilih-kursi', ['schedule' => $booking->schedule_id, 'passengers' => $booking->total_passenger]) }}" class="font-semibold underline underline-offset-2">Pilih kursi lagi</a>
+        </p>
     </div>
 
-    {{-- Form Data Penumpang & Pembayaran --}}
-    <form action="{{ route('dashboard.user.booking.save-passenger', $booking) }}" method="POST" id="form-booking-data" @submit="validateBeforeSubmit($event)">
+    <form action="{{ route('dashboard.user.booking.save-passenger', $booking) }}" method="POST" id="form-booking-data" class="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
         @csrf
-        <input type="hidden" name="payment_channel" :value="selectedChannel">
-        <input type="hidden" name="payment_category" :value="activeCategory">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="space-y-10">
 
-            {{-- KOLOM KIRI: DATA PEMESAN & DATA PENUMPANG --}}
-            <div class="lg:col-span-8 space-y-6">
-
-                {{-- 1. DATA PEMESAN (KONTAK UTAMA) --}}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#e3f5ee;">
-                                <svg width="15" height="15" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            </div>
-                            <h3 class="font-bold text-slate-900 text-base">Data Pemesan (Kontak Utama)</h3>
-                        </div>
-                        <span class="text-xs text-slate-400">E-Ticket QR akan dikirim ke kontak ini</span>
+            {{-- Guests can book; logging in is offered, never required --}}
+            @guest
+                <section class="rounded-xl border border-brand-300 bg-brand-50 p-6" aria-labelledby="tanpa-akun">
+                    <h2 id="tanpa-akun" class="text-lg font-extrabold text-brand-900">Tidak wajib punya akun</h2>
+                    <p class="mt-2 text-slate-700">
+                        Cukup isi nama, nomor HP, dan email di bawah, lalu bayar. Setelah pembayaran masuk, e-ticket kami kirim ke email itu.
+                    </p>
+                    <p class="mt-2 text-slate-700">
+                        Kalau kamu masuk dulu, pesanan ini tersimpan di akunmu: tiket bisa dibuka lagi kapan saja, pembatalan bisa diajukan sendiri, dan data penumpang tidak perlu diketik ulang lain kali.
+                    </p>
+                    <div class="mt-4 flex flex-wrap items-center gap-3">
+                        <a href="{{ route('auth.google.redirect', ['redirect' => $returnUrl]) }}"
+                           class="inline-flex items-center gap-3 min-h-11 px-4 rounded-lg border border-slate-300 bg-white font-semibold text-slate-900 hover:border-slate-500">
+                            @include('auth.partials.google-mark')
+                            Masuk dengan Google
+                        </a>
+                        <a href="{{ route('user.login', ['redirect' => $returnUrl]) }}" class="inline-flex items-center min-h-11 px-4 rounded-lg border-2 border-brand-800 font-semibold text-brand-800 hover:bg-white">
+                            Masuk dengan email
+                        </a>
+                        <a href="{{ route('register', ['redirect' => $returnUrl]) }}" class="inline-flex items-center min-h-11 font-semibold text-brand-700 underline underline-offset-2">
+                            Belum punya akun? Daftar
+                        </a>
                     </div>
+                </section>
+            @endguest
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                        <div>
-                            <label class="block font-semibold text-slate-600 mb-1.5">Nama Lengkap Pemesan *</label>
-                            <input type="text" name="booker_name" required value="{{ old('booker_name', auth()->user()->name) }}"
-                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-slate-600 mb-1.5">Nomor WhatsApp / HP *</label>
-                            <input type="tel" name="booker_phone" required value="{{ old('booker_phone', auth()->user()->phone ?? '081234567894') }}"
-                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-slate-600 mb-1.5">Alamat Email *</label>
-                            <input type="email" name="booker_email" required value="{{ old('booker_email', auth()->user()->email) }}"
-                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none transition focus:border-emerald-600">
-                        </div>
-                    </div>
+            <section class="space-y-4" aria-labelledby="pemesan">
+                <div>
+                    <h2 id="pemesan" class="text-xl font-extrabold text-brand-900">Kontak pemesan</h2>
+                    <p class="text-slate-600">E-ticket dan kabar soal perjalanan ini dikirim ke kontak ini.</p>
                 </div>
 
-                {{-- 2. DATA PENUMPANG (SESUAI KURSI YANG DIKUNCI) --}}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100">
-                                <svg width="15" height="15" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base">Detail Penumpang</h3>
-                                <p class="text-xs text-slate-400">Isi nama sesuai kartu identitas untuk verifikasi boarding</p>
-                            </div>
-                        </div>
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
-                            {{ $booking->passengers->count() }} Penumpang Terkunci
-                        </span>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5 sm:col-span-2">
+                        <label for="booker_name" class="block font-semibold text-slate-800">Nama lengkap</label>
+                        <input type="text" id="booker_name" name="booker_name" required maxlength="150" autocomplete="name"
+                               value="{{ old('booker_name', $booking->contact_name ?? $account?->name) }}"
+                               placeholder="Nama sesuai KTP"
+                               @error('booker_name') aria-invalid="true" aria-describedby="booker_name-error" @enderror
+                               class="{{ $inputClass }}">
+                        @error('booker_name')
+                            <p id="booker_name-error" class="text-sm font-semibold text-rose-800">{{ $message }}</p>
+                        @enderror
                     </div>
+                    <div class="space-y-1.5">
+                        <label for="booker_phone" class="block font-semibold text-slate-800">Nomor HP (WhatsApp)</label>
+                        <input type="tel" id="booker_phone" name="booker_phone" required maxlength="25" autocomplete="tel" inputmode="tel"
+                               value="{{ old('booker_phone', $booking->contact_phone ?? $account?->phone) }}"
+                               placeholder="08xxxxxxxxxx"
+                               @error('booker_phone') aria-invalid="true" aria-describedby="booker_phone-error" @enderror
+                               class="{{ $inputClass }}">
+                        @error('booker_phone')
+                            <p id="booker_phone-error" class="text-sm font-semibold text-rose-800">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="space-y-1.5">
+                        <label for="booker_email" class="block font-semibold text-slate-800">Email</label>
+                        <input type="email" id="booker_email" name="booker_email" required maxlength="150" autocomplete="email"
+                               value="{{ old('booker_email', $booking->contact_email ?? $account?->email) }}"
+                               placeholder="email@contoh.com"
+                               aria-describedby="booker_email-hint @error('booker_email') booker_email-error @enderror"
+                               @error('booker_email') aria-invalid="true" @enderror
+                               class="{{ $inputClass }}">
+                        <p id="booker_email-hint" class="text-sm text-slate-600">E-ticket dikirim ke sini setelah lunas.</p>
+                        @error('booker_email')
+                            <p id="booker_email-error" class="text-sm font-semibold text-rose-800">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </section>
 
-                    <div class="space-y-5">
-                        @foreach($booking->passengers as $idx => $passenger)
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3" id="card-passenger-{{ $passenger->id }}">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:#087f55;">
-                                            {{ $idx + 1 }}
-                                        </span>
-                                        <span class="font-bold text-slate-800 text-sm">Penumpang {{ $idx + 1 }}</span>
-                                        <span class="text-xs px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-200">
-                                            Nomor Kursi: {{ $passenger->seat?->seat_number ?? '-' }}
-                                        </span>
-                                    </div>
+            <section class="space-y-4" aria-labelledby="penumpang">
+                <div>
+                    <h2 id="penumpang" class="text-xl font-extrabold text-brand-900">Penumpang</h2>
+                    <p class="text-slate-600">Tulis nama sesuai kartu identitas. Petugas mencocokkannya saat naik.</p>
+                </div>
 
-                                    {{-- FITUR QUICK PASSENGER (DITARIK DARI TAB AKUN) --}}
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs text-slate-400">Isi Cepat:</span>
-                                        <div class="relative inline-block text-left" x-data="{ open: false }">
-                                            <button type="button" @click="open = !open" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 transition shadow-2xs">
-                                                <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                                                <span>Pilih Penumpang Tersimpan</span>
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                                            </button>
-                                            <div x-show="open" @click.outside="open = false" class="origin-top-right absolute right-0 mt-1 w-72 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-30 p-1">
-                                                <div class="p-2 text-xs font-bold text-slate-400 flex items-center justify-between">
-                                                    <span>Data Tersimpan (Tab Akun):</span>
-                                                    <a href="{{ route('dashboard.user.user-akun') }}" target="_blank" class="text-xs text-emerald-600 hover:underline inline-flex items-center gap-0.5">Kelola</a>
-                                                </div>
-                                                <div class="py-1 space-y-1">
-                                                    @foreach($quickPassengers as $qp)
-                                                        <button type="button" 
-                                                                @click="fillPassenger({{ $passenger->id }}, '{{ addslashes($qp['name']) }}', '{{ $qp['phone'] }}', '{{ $qp['nik'] }}'); open = false;"
-                                                                class="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-900 transition flex items-center justify-between group">
-                                                            <div class="min-w-0 pr-2">
-                                                                <span class="font-bold block truncate text-slate-800 group-hover:text-emerald-900">{{ $qp['name'] }}</span>
-                                                                <span class="text-xs text-slate-400 block truncate">
-                                                                    NIK: {{ $qp['nik'] ? substr($qp['nik'], 0, 4) . '••••' . substr($qp['nik'], -4) : '-' }}
-                                                                </span>
-                                                            </div>
-                                                            <span class="text-xs text-emerald-700 font-mono bg-emerald-100/70 px-2 py-0.5 rounded-md flex-shrink-0">Pilih</span>
-                                                        </button>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Quick Chips Horizontal untuk opsi klik centang cepat --}}
-                                @if(count($quickPassengers) > 0)
-                                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                                        <span class="text-slate-400 text-xs flex-shrink-0 font-medium">Gunakan:</span>
-                                        @foreach($quickPassengers as $qp)
+                <ol class="space-y-4">
+                    @foreach ($booking->passengers as $index => $passenger)
+                        <li class="rounded-xl border border-slate-300 bg-white p-5 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <h3 class="font-extrabold text-slate-900">Kursi {{ $passenger->seat?->seat_number ?? ($index + 1) }}</h3>
+                                @if (count($quickPassengers) > 0)
+                                    <div class="flex flex-wrap items-center gap-2 text-sm">
+                                        <span class="text-slate-600">Isi dengan:</span>
+                                        @foreach ($quickPassengers as $saved)
                                             <button type="button"
-                                                    @click="fillPassenger({{ $passenger->id }}, '{{ addslashes($qp['name']) }}', '{{ $qp['phone'] }}', '{{ $qp['nik'] }}')"
-                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-emerald-500 hover:text-emerald-700 transition flex-shrink-0">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                <span class="font-semibold">{{ Str::limit($qp['name'], 15) }}</span>
+                                                    @click="fillPassenger({{ $passenger->id }}, @js($saved['name']), @js($saved['phone']))"
+                                                    class="min-h-11 px-3 rounded-lg border border-slate-300 bg-white font-semibold text-slate-800 hover:border-brand-600">
+                                                {{ \Illuminate\Support\Str::limit($saved['name'], 18) }}
                                             </button>
                                         @endforeach
                                     </div>
                                 @endif
+                            </div>
 
-                                <input type="hidden" name="passengers[{{ $idx }}][id]" value="{{ $passenger->id }}">
+                            <input type="hidden" name="passengers[{{ $index }}][id]" value="{{ $passenger->id }}">
 
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                                    <div>
-                                        <label class="block font-semibold text-slate-600 mb-1">Nama Lengkap Penumpang *</label>
-                                        <input type="text" name="passengers[{{ $idx }}][name]" id="p_name_{{ $passenger->id }}" required
-                                               value="{{ old('passengers.'.$idx.'.name', $passenger->name) }}"
-                                               placeholder="Contoh: Budi Santoso"
-                                               class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none transition focus:border-emerald-600">
-                                    </div>
-                                    <div>
-                                        <label class="block font-semibold text-slate-600 mb-1">NIK (16 digit)</label>
-                                        <input type="text" name="passengers[{{ $idx }}][nik]" id="p_nik_{{ $passenger->id }}" maxlength="16"
-                                               value="{{ old('passengers.'.$idx.'.nik', $passenger->nik ?? '') }}"
-                                               placeholder="3273xxxxxxxxxxxx"
-                                               class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none transition focus:border-emerald-600 font-mono">
-                                    </div>
-                                    <div>
-                                        <label class="block font-semibold text-slate-600 mb-1">Nomor WhatsApp / HP</label>
-                                        <input type="tel" name="passengers[{{ $idx }}][phone]" id="p_phone_{{ $passenger->id }}"
-                                               value="{{ old('passengers.'.$idx.'.phone', $passenger->phone) }}"
-                                               placeholder="08xxxxxxxxxx"
-                                               class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none transition focus:border-emerald-600">
-                                    </div>
+                            <div class="grid sm:grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label for="p_name_{{ $passenger->id }}" class="block font-semibold text-slate-800">Nama penumpang</label>
+                                    <input type="text" name="passengers[{{ $index }}][name]" id="p_name_{{ $passenger->id }}" required maxlength="150"
+                                           value="{{ old('passengers.'.$index.'.name', $passenger->name) }}"
+                                           placeholder="Nama lengkap"
+                                           class="{{ $inputClass }}">
                                 </div>
-
-                                <div class="text-xs">
-                                    <label class="block font-medium text-slate-500 mb-1">Permintaan Khusus (Opsional)</label>
-                                    <input type="text" name="passengers[{{ $idx }}][special_request]"
-                                           value="{{ old('passengers.'.$idx.'.special_request', $passenger->special_request) }}"
-                                           placeholder="Contoh: Bawa koper 20 inch, lansia butuh kursi dekat pintu"
-                                           class="w-full bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs outline-none transition focus:border-emerald-600">
+                                <div class="space-y-1.5">
+                                    <label for="p_phone_{{ $passenger->id }}" class="block font-semibold text-slate-800">Nomor HP <span class="font-normal text-slate-600">(boleh kosong)</span></label>
+                                    <input type="tel" name="passengers[{{ $index }}][phone]" id="p_phone_{{ $passenger->id }}" maxlength="25" inputmode="tel"
+                                           value="{{ old('passengers.'.$index.'.phone', $passenger->phone) }}"
+                                           placeholder="08xxxxxxxxxx"
+                                           class="{{ $inputClass }}">
+                                </div>
+                                <div class="space-y-1.5 sm:col-span-2">
+                                    <label for="p_note_{{ $passenger->id }}" class="block font-semibold text-slate-800">Catatan untuk sopir <span class="font-normal text-slate-600">(boleh kosong)</span></label>
+                                    <input type="text" name="passengers[{{ $index }}][special_request]" id="p_note_{{ $passenger->id }}" maxlength="255"
+                                           value="{{ old('passengers.'.$index.'.special_request', $passenger->special_request) }}"
+                                           placeholder="Misalnya bawa koper besar"
+                                           class="{{ $inputClass }}">
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+
+            <section class="space-y-4" aria-labelledby="metode-bayar">
+                <div>
+                    <h2 id="metode-bayar" class="text-xl font-extrabold text-brand-900">Cara bayar</h2>
+                    <p class="text-slate-600">Nomor virtual account atau kode QR muncul di langkah berikutnya. Pembayaran diproses Midtrans.</p>
                 </div>
 
-                {{-- 3. PILIHAN METODE PEMBAYARAN MIDTRANS --}}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5" id="payment-method-section">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center shadow-xs" style="background:#e3f5ee;">
-                                <svg width="18" height="18" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24">
-                                    <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base">Metode Pembayaran (Midtrans)</h3>
-                                <p class="text-xs text-slate-400">Pilih salah satu metode pembayaran sebelum menekan tombol checkout</p>
-                            </div>
+                @foreach ($channelGroups as $groupLabel => $channels)
+                    <fieldset class="space-y-2">
+                        <legend class="mb-2 font-semibold text-slate-800">{{ $groupLabel }}</legend>
+                        <div class="grid sm:grid-cols-2 gap-2">
+                            @foreach ($channels as $code => [$label, $hint])
+                                @continue(! isset($paymentChannels[$code]))
+                                <label class="flex items-start gap-3 min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-3 cursor-pointer hover:border-brand-600 has-[:checked]:border-2 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50">
+                                    <input type="radio" name="payment_channel" value="{{ $code }}" class="mt-1 w-4 h-4 accent-[#0C5A3E]" @checked($selectedChannel === $code)>
+                                    <span class="min-w-0">
+                                        <img src="{{ asset('images/payments/'.$code.'.svg') }}" alt="" class="h-6 w-auto max-w-28 object-contain object-left mb-1.5" loading="lazy">
+                                        <span class="block font-bold text-slate-900">{{ $label }}</span>
+                                        <span class="block text-sm text-slate-600">{{ $hint }}</span>
+                                    </span>
+                                </label>
+                            @endforeach
                         </div>
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1.5 self-start sm:self-auto">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            Payment Gateway Aktif
-                        </span>
-                    </div>
-
-                    {{-- Validation Error Alert --}}
-                    <div x-show="channelError" x-transition class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 font-medium">
-                        <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <span x-text="channelError"></span>
-                    </div>
-
-                    {{-- CATEGORY SWITCHER TABS --}}
-                    <div class="flex bg-slate-100 p-1.5 rounded-xl gap-1.5 text-xs font-bold">
-                        <button type="button" @click="activeCategory = 'va'"
-                                :class="activeCategory === 'va' ? 'bg-white text-emerald-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
-                                class="flex-1 py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                            <span>Bank Transfer (Virtual Account)</span>
-                            <span class="text-xs px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800">6 Bank</span>
-                        </button>
-                        <button type="button" @click="activeCategory = 'qris'"
-                                :class="activeCategory === 'qris' ? 'bg-white text-emerald-800 shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'"
-                                class="flex-1 py-2.5 px-3 rounded-lg transition flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                            <span>E-Wallet & QRIS</span>
-                            <span class="text-xs px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-800">Universal</span>
-                        </button>
-                    </div>
-
-                    {{-- SECTION 1: VIRTUAL ACCOUNT CHANNELS --}}
-                    <div x-show="activeCategory === 'va'" class="space-y-3">
-                        <p class="text-xs font-semibold text-slate-500">Pilih Bank Virtual Account:</p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {{-- BCA --}}
-                            <div @click="selectChannel('bca', 'va')"
-                                 :class="selectedChannel === 'bca' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            BCA
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">BCA Virtual Account</h4>
-                                            <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'bca' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">m-BCA, KlikBCA, myBCA, atau ATM BCA dengan verifikasi instan.</p>
-                            </div>
-
-                            {{-- Mandiri --}}
-                            <div @click="selectChannel('mandiri', 'va')"
-                                 :class="selectedChannel === 'mandiri' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-amber-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">
-                                            MANDIRI
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">Bank Mandiri</h4>
-                                            <span class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Bill Payment</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'mandiri' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">Livin by Mandiri & ATM Mandiri via Biller Code & Bill Key resmi.</p>
-                            </div>
-
-                            {{-- BNI --}}
-                            <div @click="selectChannel('bni', 'va')"
-                                 :class="selectedChannel === 'bni' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-teal-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            BNI
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">BNI Virtual Account</h4>
-                                            <span class="text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded">Otomatis 24 Jam</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'bni' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">BNI Mobile Banking, Internet Banking, atau ATM BNI.</p>
-                            </div>
-
-                            {{-- BRI --}}
-                            <div @click="selectChannel('bri', 'va')"
-                                 :class="selectedChannel === 'bri' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-sky-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            BRI
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">BRI Virtual Account (BRIVA)</h4>
-                                            <span class="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded">BRIVA Otomatis</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'bri' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">BRImo, ATM BRI, & Mini ATM EDC dengan verifikasi waktu-nyata.</p>
-                            </div>
-
-                            {{-- BSI --}}
-                            <div @click="selectChannel('bsi', 'va')"
-                                 :class="selectedChannel === 'bsi' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            BSI
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">BSI Virtual Account</h4>
-                                            <span class="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Syariah Otomatis</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'bsi' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">BSI Mobile & ATM BSI via Virtual Account Bank Syariah.</p>
-                            </div>
-
-                            {{-- SeaBank --}}
-                            <div @click="selectChannel('seabank', 'va')"
-                                 :class="selectedChannel === 'seabank' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-orange-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">
-                                            SEABANK
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">SeaBank</h4>
-                                            <span class="text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">Bebas Biaya Transfer</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'seabank' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">Transfer gratis dari SeaBank via BI-FAST / Virtual Account Permata.</p>
-                            </div>
-                        </div>
-
-                        {{-- SEABANK HELPER BANNER --}}
-                        <div x-show="selectedChannel === 'seabank'" x-transition class="p-3.5 rounded-xl bg-orange-50 border border-orange-200 text-xs text-orange-950 space-y-1">
-                            <div class="flex items-center gap-2 font-bold text-orange-900">
-                                <svg class="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                                <span>Panduan Khusus SeaBank:</span>
-                            </div>
-                            <p class="text-xs leading-relaxed text-orange-800">
-                                Midtrans terintegrasi menggunakan Virtual Account Permata (Kode Bank: <strong>013</strong>). Di aplikasi SeaBank, pilih menu <strong>Transfer ke Virtual Account / Bank Lain (BI-FAST)</strong>, masukkan nomor VA yang diterbitkan, bebas biaya admin!
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- SECTION 2: QRIS & E-WALLET CHANNELS --}}
-                    <div x-show="activeCategory === 'qris'" class="space-y-3" style="display: none;">
-                        <p class="text-xs font-semibold text-slate-500">Pilih Layanan E-Wallet / QRIS:</p>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {{-- QRIS --}}
-                            <div @click="selectChannel('qris', 'qris')"
-                                 :class="selectedChannel === 'qris' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-9 h-9 rounded-xl bg-rose-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            QRIS
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">QRIS Dinamis</h4>
-                                            <span class="text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-1 py-0.5 rounded">Universal</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'qris' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Livin, BRImo, dll.</p>
-                            </div>
-
-                            {{-- GoPay --}}
-                            <div @click="selectChannel('gopay', 'qris')"
-                                 :class="selectedChannel === 'gopay' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-9 h-9 rounded-xl bg-sky-600 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            GOPAY
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">GoPay</h4>
-                                            <span class="text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.5 rounded">Direct App</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'gopay' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">Otomatis membuka aplikasi GoPay / Gojek di smartphone Anda.</p>
-                            </div>
-
-                            {{-- ShopeePay --}}
-                            <div @click="selectChannel('shopeepay', 'qris')"
-                                 :class="selectedChannel === 'shopeepay' ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 bg-white hover:border-slate-300'"
-                                 class="p-4 rounded-xl border-2 cursor-pointer transition relative flex flex-col justify-between gap-2.5 shadow-2xs">
-                                <div class="flex items-start justify-between gap-2">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-9 h-9 rounded-xl bg-orange-500 text-white font-black text-xs flex items-center justify-center shadow-xs">
-                                            SHOPEE
-                                        </div>
-                                        <div>
-                                            <h4 class="font-bold text-slate-900 text-sm">ShopeePay</h4>
-                                            <span class="text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 px-1 py-0.5 rounded">Deep Link</span>
-                                        </div>
-                                    </div>
-                                    <span :class="selectedChannel === 'shopeepay' ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 bg-white text-transparent'"
-                                          class="w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-bold transition"></span>
-                                </div>
-                                <p class="text-xs text-slate-500 leading-relaxed">Direct verifikasi pin via aplikasi Shopee secara instan.</p>
-                            </div>
-                        </div>
-
-                        {{-- QRIS UNIVERSAL HELPER BANNER --}}
-                        <div x-show="selectedChannel === 'qris'" x-transition class="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-950 space-y-1">
-                            <div class="flex items-center gap-2 font-bold text-rose-900">
-                                <svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                                <span>QRIS Bersifat Universal:</span>
-                            </div>
-                            <p class="text-xs leading-relaxed text-rose-800">
-                                Satu kode QR dinamis Midtrans dapat di-scan dari aplikasi apapun: <strong>GoPay, OVO, DANA, ShopeePay, LinkAja</strong> serta seluruh aplikasi perbankan (BCA, Mandiri, BRI, BNI, dll).
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            {{-- KOLOM KANAN: KODE VOUCHER PROMO & RINGKASAN BIAYA --}}
-            <div class="lg:col-span-4 space-y-4">
-
-                {{-- CARD PENERAPAN VOUCHER PROMO --}}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3.5">
-                    <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                        <div class="w-6 h-6 rounded-md bg-amber-100 flex items-center justify-center text-amber-700">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                        </div>
-                        <h4 class="font-bold text-slate-900 text-sm">Voucer & Promo Diskon</h4>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Masukkan Kode Voucer</label>
-                        <div class="flex gap-2">
-                            <input type="text" x-model="promoInput" placeholder="HEMATLIBURAN"
-                                   class="flex-1 font-mono font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none transition focus:border-emerald-600">
-                            <button type="button" @click="applyPromo()"
-                                     class="px-4 py-2 text-xs font-bold text-white rounded-xl shadow-2xs transition"
-                                     style="background:#087f55;"
-                                     onmouseover="this.style.background='#066b47'"
-                                     onmouseout="this.style.background='#087f55'">
-                                Pasang
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Feedback status promo --}}
-                    <div x-show="promoMessage" x-transition>
-                        <div :class="promoSuccess ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'"
-                             class="p-2.5 rounded-xl border text-xs leading-relaxed flex items-start gap-2">
-                            <template x-if="promoSuccess">
-                                <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            </template>
-                            <template x-if="!promoSuccess">
-                                <svg class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                            </template>
-                            <span x-text="promoMessage"></span>
-                        </div>
-                    </div>
-
-                    {{-- Quick promo chips --}}
-                    <div class="pt-2 border-t border-slate-100 space-y-1.5">
-                        <p class="text-xs text-slate-400 font-medium">Voucer Tersedia:</p>
-                        <div class="flex flex-wrap gap-1.5">
-                            <button type="button" @click="promoInput = 'HEMATLIBURAN'; applyPromo()"
-                                    class="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition">
-                                HEMATLIBURAN (-25%)
-                            </button>
-                            <button type="button" @click="promoInput = 'TRAVELHEMAT'; applyPromo()"
-                                    class="text-xs font-mono font-semibold px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition">
-                                TRAVELHEMAT (-20rb)
-                            </button>
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="promo_code" :value="appliedPromoCode">
-                </div>
-
-                {{-- CARD RINCIAN PEMBAYARAN --}}
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-                    <h4 class="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2.5">Rincian Pembayaran</h4>
-
-                    <div class="space-y-2 text-xs">
-                        <div class="flex justify-between text-slate-600">
-                            <span>Subtotal ({{ $booking->total_passenger }} Tiket):</span>
-                            <span class="font-semibold text-slate-800" x-text="formatRupiah(subtotal)"></span>
-                        </div>
-
-                        <div class="flex justify-between text-emerald-700" x-show="discount > 0">
-                            <span class="flex items-center gap-1">
-                                <span>Potongan Diskon:</span>
-                                <span class="text-xs font-mono font-bold bg-emerald-100 px-1 rounded" x-text="appliedPromoCode"></span>
-                            </span>
-                            <span class="font-bold" x-text="'- ' + formatRupiah(discount)"></span>
-                        </div>
-
-
-                        <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-sm font-extrabold">
-                            <span class="text-slate-900">Total Tagihan:</span>
-                            <span class="text-lg" style="color:#087f55;" x-text="formatRupiah(totalPrice)"></span>
-                        </div>
-
-                        {{-- Ringkasan Metode Bayar Terpilih --}}
-                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
-                            <span class="text-slate-400 text-xs font-bold block">Metode Pembayaran Dipilih:</span>
-                            <div class="flex items-center justify-between">
-                                <span class="font-bold text-slate-800" x-text="getChannelName(selectedChannel)"></span>
-                                <span class="text-xs font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">MIDTRANS</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit"
-                            class="w-full text-white font-bold py-3.5 px-4 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2"
-                            style="background:#087f55;"
-                            onmouseover="this.style.background='#066b47'"
-                            onmouseout="this.style.background='#087f55'">
-                        <span>Checkout & Bayar Tiket</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-
-                    <p class="text-xs text-center text-slate-400 flex items-center justify-center gap-1.5">
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        Transaksi aman & terverifikasi otomatis via Payment Gateway
-                    </p>
-                </div>
-
-            </div>
-
+                    </fieldset>
+                @endforeach
+            </section>
         </div>
-    </form>
 
+        <aside class="lg:sticky lg:top-24 space-y-6 rounded-xl border border-slate-300 bg-white p-6" aria-labelledby="ringkasan-bayar">
+            <h2 id="ringkasan-bayar" class="text-xl font-extrabold text-brand-900">Ringkasan</h2>
+
+            <div class="space-y-2">
+                <label for="promo_input" class="block font-semibold text-slate-800">Kode promo <span class="font-normal text-slate-600">(kalau ada)</span></label>
+                <div class="flex gap-2">
+                    <input type="text" id="promo_input" x-model="promoInput" @keydown.enter.prevent="applyPromo()" autocomplete="off"
+                           class="{{ $inputClass }} uppercase font-bold">
+                    <button type="button" @click="applyPromo()" class="min-h-12 px-4 rounded-lg border-2 border-brand-800 font-bold text-brand-800 hover:bg-brand-50">Pakai</button>
+                </div>
+                <p class="text-sm font-semibold" :class="promoSuccess ? 'text-brand-700' : 'text-rose-800'" role="status" aria-live="polite" x-text="promoMessage"></p>
+                <input type="hidden" name="promo_code" :value="appliedPromoCode">
+            </div>
+
+            <dl class="space-y-2 border-t border-slate-200 pt-4">
+                <div class="flex justify-between gap-4 text-slate-600">
+                    <dt>{{ $booking->total_passenger }} kursi</dt>
+                    <dd x-text="formatRupiah(subtotal)">Rp {{ number_format($booking->subtotal, 0, ',', '.') }}</dd>
+                </div>
+                <div class="flex justify-between gap-4 text-brand-700" x-show="discount > 0" x-cloak>
+                    <dt>Promo <span class="font-bold" x-text="appliedPromoCode"></span></dt>
+                    <dd x-text="'- ' + formatRupiah(discount)"></dd>
+                </div>
+                <div class="flex justify-between gap-4 text-lg font-extrabold text-slate-900">
+                    <dt>Total bayar</dt>
+                    <dd x-text="formatRupiah(totalPrice)">Rp {{ number_format($booking->subtotal, 0, ',', '.') }}</dd>
+                </div>
+            </dl>
+
+            <button type="submit" class="lp-btn lp-btn--primary w-full" :disabled="remainingSeconds <= 0">Lanjut ke pembayaran</button>
+        </aside>
+    </form>
 </div>
 
 <script>
@@ -588,95 +260,56 @@ function bookingDataHandler(config) {
         promoMessage: '',
         promoSuccess: false,
         csrfToken: config.csrfToken,
-        activeCategory: 'va',
-        selectedChannel: 'bca',
-        channelError: '',
-        channelNames: {
-            'bca': 'Virtual Account BCA',
-            'mandiri': 'Mandiri Bill Payment',
-            'bni': 'Virtual Account BNI',
-            'bri': 'Virtual Account BRI (BRIVA)',
-            'bsi': 'Virtual Account BSI',
-            'seabank': 'SeaBank (Transfer VA Permata)',
-            'qris': 'QRIS Dinamis Universal',
-            'gopay': 'GoPay Instant',
-            'shopeepay': 'ShopeePay'
-        },
-
-        selectChannel(code, category) {
-            this.selectedChannel = code;
-            if (category) {
-                this.activeCategory = category;
-            }
-            this.channelError = '';
-        },
-
-        getChannelName(code) {
-            return this.channelNames[code] || 'Virtual Account BCA';
-        },
-
-        validateBeforeSubmit(e) {
-            if (!this.selectedChannel) {
-                e.preventDefault();
-                this.channelError = 'Silakan pilih salah satu metode pembayaran terlebih dahulu sebelum checkout.';
-                document.getElementById('payment-method-section')?.scrollIntoView({ behavior: 'smooth' });
-                return false;
-            }
-            return true;
-        },
 
         init() {
-            // Ticker countdown
-            setInterval(() => {
-                if (this.remainingSeconds > 0) {
-                    this.remainingSeconds--;
-                } else {
-                    alert('Waktu penguncian kursi Anda telah habis. Halaman akan dialihkan kembali ke pencarian.');
-                    window.location.href = "{{ route('dashboard.user.search') }}";
+            const timer = setInterval(() => {
+                this.remainingSeconds = Math.max(0, this.remainingSeconds - 1);
+
+                if (this.remainingSeconds === 0) {
+                    clearInterval(timer);
                 }
             }, 1000);
         },
 
-        formatTimer(sec) {
-            const m = Math.floor(sec / 60);
-            const s = sec % 60;
-            return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+        formatTimer(totalSeconds) {
+            const seconds = Math.max(0, Math.floor(totalSeconds));
+
+            return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
         },
 
         formatRupiah(amount) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
         },
 
-        fillPassenger(id, name, phone, nik = '') {
-            const nameInput = document.getElementById('p_name_' + id);
-            const phoneInput = document.getElementById('p_phone_' + id);
-            const nikInput = document.getElementById('p_nik_' + id);
-            if (nameInput) nameInput.value = name;
-            if (phoneInput) phoneInput.value = phone;
-            if (nikInput && nik) nikInput.value = nik;
+        fillPassenger(id, name, phone) {
+            document.getElementById('p_name_' + id).value = name;
+            document.getElementById('p_phone_' + id).value = phone || '';
+        },
+
+        resetPromo(message) {
+            this.promoSuccess = false;
+            this.promoMessage = message;
+            this.appliedPromoCode = '';
+            this.discount = 0;
+            this.totalPrice = this.subtotal;
         },
 
         async applyPromo() {
             if (!this.promoInput.trim()) {
-                this.promoMessage = 'Masukkan kode voucer terlebih dahulu.';
-                this.promoSuccess = false;
+                this.resetPromo('Tulis kodenya dulu.');
                 return;
             }
 
             try {
-                const response = await fetch("{{ route('dashboard.user.booking.validate-promo') }}", {
+                const response = await fetch(@js(route('dashboard.user.booking.validate-promo')), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': this.csrfToken,
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
                     },
-                    body: JSON.stringify({
-                        booking_id: this.bookingId,
-                        promo_code: this.promoInput.trim()
-                    })
+                    body: JSON.stringify({ booking_id: this.bookingId, promo_code: this.promoInput.trim() }),
                 });
-
                 const data = await response.json();
 
                 if (response.ok && data.valid) {
@@ -686,17 +319,12 @@ function bookingDataHandler(config) {
                     this.discount = data.discount;
                     this.totalPrice = data.new_total;
                 } else {
-                    this.promoSuccess = false;
-                    this.promoMessage = data.message || 'Kode voucer tidak dapat digunakan.';
-                    this.appliedPromoCode = '';
-                    this.discount = 0;
-                    this.totalPrice = this.subtotal;
+                    this.resetPromo(data.message || 'Kode ini tidak bisa dipakai untuk pesanan ini.');
                 }
-            } catch (err) {
-                this.promoSuccess = false;
-                this.promoMessage = 'Gagal memvalidasi promo. Periksa koneksi Anda.';
+            } catch (error) {
+                this.resetPromo('Kode belum bisa dicek. Periksa koneksi internet lalu coba lagi.');
             }
-        }
+        },
     };
 }
 </script>

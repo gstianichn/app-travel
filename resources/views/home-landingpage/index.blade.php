@@ -137,6 +137,25 @@
                         </li>
                     @endforeach
                 </ol>
+                {{-- The minibus drives along the road while the signs pass by --}}
+                <div class="lp-routes-van" aria-hidden="true" data-routes-van>
+                    <svg viewBox="0 0 160 70">
+                        <path fill="#FBFAF6" stroke="#0C392F" stroke-width="2" d="M10 20q0-12 12-12h90q10 0 18 8l16 18q6 2 6 10v8q0 6-6 6H14q-6 0-6-6z" />
+                        <path fill="#22403A" d="M20 14h20v16H20zm24 0h20v16H44zm24 0h20v16H68zm24 0h16v16H92zm22 0h12l14 18h-26z" />
+                        <path fill="#0C7950" d="M8 40h144v6H8z" />
+                        <path fill="#F2B25C" d="M144 36h8v5h-8z" />
+                        <g class="lp-wheel">
+                            <circle cx="38" cy="58" r="10" fill="#1B2420" />
+                            <circle cx="38" cy="58" r="4" fill="#C9D3CE" />
+                            <path stroke="#C9D3CE" stroke-width="2" d="M38 49v18M29 58h18" />
+                        </g>
+                        <g class="lp-wheel">
+                            <circle cx="124" cy="58" r="10" fill="#1B2420" />
+                            <circle cx="124" cy="58" r="4" fill="#C9D3CE" />
+                            <path stroke="#C9D3CE" stroke-width="2" d="M124 49v18M115 58h18" />
+                        </g>
+                    </svg>
+                </div>
                 <div class="lp-road" aria-hidden="true" data-routes-road></div>
             </div>
         @endif
@@ -181,7 +200,7 @@
                 <li data-step>
                     <span class="lp-km" aria-hidden="true">KM<b>4</b></span>
                     <h3>Tunjukkan QR saat naik</h3>
-                    <p>E-ticket muncul di akunmu begitu pembayaran masuk. Boarding dibuka 15 menit sebelum berangkat; petugas memindai QR-nya, atau mencari kode booking kalau QR tidak terbaca.</p>
+                    <p>E-ticket dikirim ke emailmu begitu pembayaran masuk, dan tersimpan di akun kalau kamu masuk. Boarding dibuka 15 menit sebelum berangkat; petugas memindai QR-nya, atau mencari kode booking kalau QR tidak terbaca.</p>
                 </li>
             </ol>
         </div>
@@ -261,7 +280,7 @@
         <div class="lp-faq-list">
             <details>
                 <summary>Sampai kapan tiket bisa dibatalkan?</summary>
-                <p>Pembatalan bisa diajukan dari akunmu paling lambat 1 jam sebelum jam berangkat. Besaran refund ditentukan admin, dan dananya kembali lewat metode bayar yang kamu pakai.</p>
+                <p>Pembatalan bisa diajukan dari akunmu paling lambat 1 jam sebelum jam berangkat. Besaran refund ditentukan admin, dan dananya kembali lewat metode bayar yang kamu pakai. Kalau kamu memesan tanpa akun, masuk dengan Google memakai email yang sama dengan pesananmu; tiketnya ikut muncul di akun.</p>
             </details>
             <details>
                 <summary>Berapa lama kursi ditahan saat saya membayar?</summary>
@@ -300,7 +319,7 @@
 
     <div class="container lp-dusk-copy">
         <h2 id="dusk-title">Tinggal pilih tanggalnya.</h2>
-        <p>Rute, jam, dan kursi bisa kamu cek sekarang tanpa daftar dulu.</p>
+        <p>Cek rute, jam, dan kursi, lalu pesan langsung. Tidak perlu daftar akun dulu.</p>
         <a href="#cari" class="lp-btn lp-btn--light" data-focus-search>Isi pencarian</a>
     </div>
 </section>

@@ -32,6 +32,70 @@ Route::post('/reset-password', [ResetPasswordController::class, 'store'])
 
 /*
 |--------------------------------------------------------------------------
+| Pemesanan Tiket (tanpa wajib login)
+|--------------------------------------------------------------------------
+| Pick a seat, fill in contact details and pay. Guests can do all of it;
+| BookingAccess keeps each guest booking tied to the session that made it.
+*/
+
+Route::get('/user/booking/pilih-kursi/{schedule}', [
+    UserDashboardController::class,
+    'selectSeat',
+])->name('dashboard.user.booking.pilih-kursi');
+
+Route::post('/user/booking/lock-seats', [
+    UserDashboardController::class,
+    'lockSeats',
+])->name('dashboard.user.booking.lock-seats');
+
+Route::get('/user/booking/data-penumpang/{booking}', [
+    UserDashboardController::class,
+    'passengerData',
+])->name('dashboard.user.booking.data-penumpang');
+
+Route::post('/user/booking/validate-promo', [
+    UserDashboardController::class,
+    'validatePromo',
+])->name('dashboard.user.booking.validate-promo');
+
+Route::post('/user/booking/save-passenger/{booking}', [
+    UserDashboardController::class,
+    'savePassengerData',
+])->name('dashboard.user.booking.save-passenger');
+
+Route::get('/user/booking/pembayaran/{booking}', [
+    UserDashboardController::class,
+    'payment',
+])->name('dashboard.user.booking.pembayaran');
+
+Route::post('/user/booking/pembayaran/{booking}/switch', [
+    UserDashboardController::class,
+    'switchPaymentMethod',
+])->name('dashboard.user.booking.switch-payment');
+
+Route::get('/user/booking/pembayaran/{booking}/status', [
+    UserDashboardController::class,
+    'checkPaymentStatus',
+])->name('dashboard.user.booking.payment-status');
+
+Route::post('/user/booking/simulate-payment/{booking}', [
+    UserDashboardController::class,
+    'simulatePayment',
+])->name('dashboard.user.booking.simulate-payment');
+
+Route::get('/user/booking/sukses/{booking}', [
+    UserDashboardController::class,
+    'paymentSuccess',
+])->name('dashboard.user.booking.sukses');
+
+// E-ticket link from the confirmation email (works without logging in).
+Route::get('/e-tiket/{booking}', [
+    UserDashboardController::class,
+    'eTicket',
+])->middleware('signed')->name('booking.e-ticket');
+
+/*
+|--------------------------------------------------------------------------
 | Admin Utama
 |--------------------------------------------------------------------------
 */
@@ -778,57 +842,6 @@ Route::middleware(['auth', 'role:user'])
             UserDashboardController::class,
             'akun',
         ])->name('dashboard.user.user-akun');
-
-        // Sub-Flow Transaksi (Pencarian s/d Pembayaran)
-        Route::get('/user/booking/pilih-kursi/{schedule}', [
-            UserDashboardController::class,
-            'selectSeat',
-        ])->name('dashboard.user.booking.pilih-kursi');
-
-        Route::post('/user/booking/lock-seats', [
-            UserDashboardController::class,
-            'lockSeats',
-        ])->name('dashboard.user.booking.lock-seats');
-
-        Route::get('/user/booking/data-penumpang/{booking}', [
-            UserDashboardController::class,
-            'passengerData',
-        ])->name('dashboard.user.booking.data-penumpang');
-
-        Route::post('/user/booking/validate-promo', [
-            UserDashboardController::class,
-            'validatePromo',
-        ])->name('dashboard.user.booking.validate-promo');
-
-        Route::post('/user/booking/save-passenger/{booking}', [
-            UserDashboardController::class,
-            'savePassengerData',
-        ])->name('dashboard.user.booking.save-passenger');
-
-        Route::get('/user/booking/pembayaran/{booking}', [
-            UserDashboardController::class,
-            'payment',
-        ])->name('dashboard.user.booking.pembayaran');
-
-        Route::post('/user/booking/pembayaran/{booking}/switch', [
-            UserDashboardController::class,
-            'switchPaymentMethod',
-        ])->name('dashboard.user.booking.switch-payment');
-
-        Route::get('/user/booking/pembayaran/{booking}/status', [
-            UserDashboardController::class,
-            'checkPaymentStatus',
-        ])->name('dashboard.user.booking.payment-status');
-
-        Route::post('/user/booking/simulate-payment/{booking}', [
-            UserDashboardController::class,
-            'simulatePayment',
-        ])->name('dashboard.user.booking.simulate-payment');
-
-        Route::get('/user/booking/sukses/{booking}', [
-            UserDashboardController::class,
-            'paymentSuccess',
-        ])->name('dashboard.user.booking.sukses');
 
         // Sub-Flow Tab Tiket Saya: Check-in, Pembatalan & Refund, Ulasan
         Route::post('/user/tiket/{ticket}/check-in', [

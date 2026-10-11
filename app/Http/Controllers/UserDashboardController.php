@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TicketIssuedMail;
 use App\Models\Booking;
 use App\Models\BookingPassenger;
 use App\Models\Location;
@@ -18,6 +19,7 @@ use App\Models\UserVoucher;
 use App\Notifications\BookingStatusNotification;
 use App\Notifications\OperationalInfoNotification;
 use App\Notifications\TripReminderNotification;
+use App\Services\BookingAccess;
 use App\Services\MidtransService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -26,12 +28,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class UserDashboardController extends Controller
 {
+    public function __construct(private BookingAccess $bookingAccess) {}
+
     /**
      * Tab Beranda (Home) Penumpang.
      */
@@ -180,6 +186,11 @@ class UserDashboardController extends Controller
                 ->whereDate('departure_date', $validated['departure_date'])
                 ->where('available_seats', '>=', $validated['passengers'])
                 ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
+                // Departures that already left today cannot be booked any more.
+                ->when(
+                    $validated['departure_date'] === now()->toDateString(),
+                    fn ($query) => $query->where('departure_time', '>', now()->format('H:i')),
+                )
                 ->whereHas('route', function ($q) use ($validated) {
                     $q->where('origin_id', $validated['origin'])
                         ->where('destination_id', $validated['destination']);
@@ -262,15 +273,22 @@ class UserDashboardController extends Controller
             $this->releaseExpiredLocks($schedule);
 
             // 4. Periksa apakah ada kursi yang bentrok (sudah dipesan / terkunci oleh pengguna lain)
+            $ownPendingIds = $this->bookingAccess
+                ->scopeToCurrentVisitor(Booking::query())
+                ->where('schedule_id', $schedule->id)
+                ->where('status', 'pending')
+                ->pluck('id')
+                ->all();
+
             $occupiedSeatIds = BookingPassenger::query()
-                ->whereHas('booking', function ($q) use ($schedule) {
+                ->whereHas('booking', function ($q) use ($schedule, $ownPendingIds) {
                     $q->where('schedule_id', $schedule->id)
-                        ->where(function ($sub) {
+                        ->where(function ($sub) use ($ownPendingIds) {
                             $sub->whereIn('status', ['paid', 'confirmed', 'success', 'lunas'])
-                                ->orWhere(function ($pending) {
+                                ->orWhere(function ($pending) use ($ownPendingIds) {
                                     $pending->where('status', 'pending')
                                         ->where('expired_at', '>', Carbon::now())
-                                        ->where('user_id', '!=', Auth::id());
+                                        ->whereNotIn('id', $ownPendingIds);
                                 });
                         });
                 })
@@ -283,11 +301,8 @@ class UserDashboardController extends Controller
                 return back()->with('error', 'Sebagian kursi yang Anda pilih baru saja dikunci atau dipesan oleh penumpang lain. Silakan pilih kursi lain.');
             }
 
-            // 5. Hapus booking pending lama milik user ini di jadwal yang sama jika ada
-            Booking::where('user_id', Auth::id())
-                ->where('schedule_id', $schedule->id)
-                ->where('status', 'pending')
-                ->delete();
+            // 5. Hapus booking pending lama milik pemesan ini di jadwal yang sama jika ada
+            Booking::whereIn('id', $ownPendingIds)->delete();
 
             $bookingCode = 'TRV-'.Carbon::now()->format('Ymd').'-'.strtoupper(Str::random(5));
             $unitPrice = $schedule->effectivePrice();
@@ -307,16 +322,18 @@ class UserDashboardController extends Controller
                 'expired_at' => Carbon::now()->addMinutes(15), // Seat Lock 15 Menit sesuai spesifikasi
             ]);
 
-            // Daftarkan penumpang sementara untuk masing-masing kursi
+            // Daftarkan penumpang sementara untuk masing-masing kursi; namanya diisi di langkah berikutnya
             $user = Auth::user();
             foreach ($seatIds as $idx => $seatId) {
                 BookingPassenger::create([
                     'booking_id' => $booking->id,
                     'seat_id' => $seatId,
-                    'name' => $idx === 0 ? $user->name : 'Penumpang '.($idx + 1),
-                    'phone' => $idx === 0 ? ($user->phone ?? '081234567890') : '',
+                    'name' => $idx === 0 && $user ? $user->name : '',
+                    'phone' => $idx === 0 && $user ? ($user->phone ?? '') : '',
                 ]);
             }
+
+            $this->bookingAccess->remember($booking);
 
             $schedule->recalculateAvailableSeats();
 
@@ -329,8 +346,10 @@ class UserDashboardController extends Controller
      */
     public function passengerData(Booking $booking): View|RedirectResponse
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403, 'Akses tidak diizinkan.');
+        $this->authorizeBookingAccess($booking);
+
+        if ($booking->isPaid()) {
+            return redirect()->route('dashboard.user.booking.sukses', $booking);
         }
 
         // Cek apakah waktu lock habis
@@ -338,8 +357,8 @@ class UserDashboardController extends Controller
             $booking->update(['status' => 'cancelled']);
             $booking->schedule?->recalculateAvailableSeats();
 
-            return redirect()->route('dashboard.user.search')
-                ->with('error', 'Waktu reservasi kursi Anda (Seat Lock) telah habis. Silakan pilih kembali jadwal perjalanan.');
+            return redirect()->route(Auth::check() ? 'dashboard.user.search' : 'search')
+                ->with('error', 'Waktu tahan kursi sudah habis, jadi kursinya dilepas. Pilih jadwal dan kursi lagi.');
         }
 
         $booking->load([
@@ -350,7 +369,7 @@ class UserDashboardController extends Controller
         ]);
 
         // Hitung sisa detik penguncian kursi
-        $remainingSeconds = max(0, Carbon::now()->diffInSeconds($booking->expired_at, false));
+        $remainingSeconds = (int) max(0, floor(Carbon::now()->diffInSeconds($booking->expired_at, false)));
 
         // Quick Passenger Presets dari Tab Akun / Profil Pengguna (Database)
         $user = Auth::user();
@@ -371,17 +390,6 @@ class UserDashboardController extends Controller
             ];
         }
 
-        // Jika kosong sama sekali, sediakan fallback data akun
-        if (empty($quickPassengers) && $user) {
-            $quickPassengers[] = [
-                'id' => 'user-me',
-                'name' => $user->name,
-                'phone' => $user->phone ?? '',
-                'nik' => '',
-                'label' => $user->name.' (Saya / Akun)',
-            ];
-        }
-
         $paymentChannels = MidtransService::getAvailableChannels();
 
         return view('dashboard.user.booking-data', compact('booking', 'remainingSeconds', 'quickPassengers', 'paymentChannels'));
@@ -398,6 +406,7 @@ class UserDashboardController extends Controller
         ]);
 
         $booking = Booking::with('schedule.route.origin', 'schedule.route.destination')->findOrFail($validated['booking_id']);
+        $this->authorizeBookingAccess($booking);
         $code = strtoupper(trim($validated['promo_code']));
         $subtotal = (float) $booking->subtotal;
 
@@ -519,13 +528,11 @@ class UserDashboardController extends Controller
      */
     public function savePassengerData(Request $request, Booking $booking): RedirectResponse
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorizeBookingAccess($booking);
 
         $validated = $request->validate([
             'booker_name' => ['required', 'string', 'max:150'],
-            'booker_phone' => ['required', 'string', 'max:25'],
+            'booker_phone' => ['required', 'string', 'max:25', 'regex:/^[0-9+\-\s()]{8,25}$/'],
             'booker_email' => ['required', 'email', 'max:150'],
             'passengers' => ['required', 'array'],
             'passengers.*.id' => ['required', 'integer', 'exists:booking_passengers,id'],
@@ -536,6 +543,8 @@ class UserDashboardController extends Controller
             'notes' => ['nullable', 'string', 'max:500'],
             'payment_channel' => ['nullable', 'string', 'in:bca,mandiri,bni,bri,bsi,seabank,qris,gopay,shopeepay'],
             'payment_category' => ['nullable', 'string', 'in:va,qris,ewallet'],
+        ], [
+            'booker_phone.regex' => 'Nomor HP hanya boleh berisi angka, spasi, +, atau -, minimal 8 digit.',
         ]);
 
         $subtotal = (float) $booking->subtotal;
@@ -552,6 +561,9 @@ class UserDashboardController extends Controller
 
         // Update data booking
         $booking->update([
+            'contact_name' => $validated['booker_name'],
+            'contact_phone' => $validated['booker_phone'],
+            'contact_email' => $validated['booker_email'],
             'discount' => $discount,
             'total_price' => $totalPrice,
             'notes' => $validated['notes'] ?? null,
@@ -587,9 +599,7 @@ class UserDashboardController extends Controller
      */
     public function payment(Booking $booking): View|RedirectResponse
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorizeBookingAccess($booking);
 
         // Jika sudah terverifikasi, langsung ke halaman sukses
         if (in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])) {
@@ -609,7 +619,7 @@ class UserDashboardController extends Controller
             return redirect()->route('dashboard.user.booking.data-penumpang', $booking);
         }
 
-        $remainingPaymentSeconds = max(0, Carbon::now()->diffInSeconds($payment->expired_at ?? $booking->expired_at, false));
+        $remainingPaymentSeconds = (int) max(0, floor(Carbon::now()->diffInSeconds($payment->expired_at ?? $booking->expired_at, false)));
         $paymentChannels = MidtransService::getAvailableChannels();
 
         return view('dashboard.user.booking-payment', compact('booking', 'payment', 'remainingPaymentSeconds', 'paymentChannels'));
@@ -620,9 +630,7 @@ class UserDashboardController extends Controller
      */
     public function switchPaymentMethod(Request $request, Booking $booking): RedirectResponse
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorizeBookingAccess($booking);
 
         if (in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])) {
             return redirect()->route('dashboard.user.booking.sukses', $booking);
@@ -647,7 +655,7 @@ class UserDashboardController extends Controller
      */
     public function checkPaymentStatus(Booking $booking): JsonResponse
     {
-        if ($booking->user_id !== Auth::id()) {
+        if (! $this->bookingAccess->canAccess($booking)) {
             return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
         }
 
@@ -692,7 +700,7 @@ class UserDashboardController extends Controller
         ]);
 
         $booking = Booking::with('user', 'schedule.route.origin', 'schedule.route.destination')->findOrFail($validated['booking_id']);
-        if (Auth::check() && $booking->user_id !== Auth::id()) {
+        if (! $this->bookingAccess->canAccess($booking)) {
             return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
         }
 
@@ -723,7 +731,7 @@ class UserDashboardController extends Controller
         ]);
 
         $booking = Booking::with('user')->findOrFail($validated['booking_id']);
-        if (Auth::check() && $booking->user_id !== Auth::id()) {
+        if (! $this->bookingAccess->canAccess($booking)) {
             return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
         }
 
@@ -754,9 +762,10 @@ class UserDashboardController extends Controller
      */
     public function simulatePayment(Booking $booking): RedirectResponse
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorizeBookingAccess($booking);
+
+        // Developer shortcut only: in production a booking is paid by the Midtrans webhook.
+        abort_if(app()->isProduction(), 404);
 
         $payment = $booking->payment;
         $method = $payment?->payment_method ?: 'Virtual Account BCA';
@@ -764,7 +773,7 @@ class UserDashboardController extends Controller
         $this->confirmAndIssueTicket($booking, $method);
 
         return redirect()->route('dashboard.user.booking.sukses', $booking)
-            ->with('success', 'Pembayaran berhasil diverifikasi secara otomatis oleh Payment Gateway Midtrans!');
+            ->with('success', 'Pembayaran ditandai lunas (mode uji).');
     }
 
     /**
@@ -952,10 +961,27 @@ class UserDashboardController extends Controller
      */
     public function paymentSuccess(Booking $booking): View|RedirectResponse
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
+        $this->authorizeBookingAccess($booking);
+
+        if (! $booking->isPaid()) {
+            return redirect()->route('dashboard.user.booking.pembayaran', $booking);
         }
 
+        return $this->showETicket($booking);
+    }
+
+    /**
+     * E-ticket opened from the link in the confirmation email; the URL signature is the access check.
+     */
+    public function eTicket(Booking $booking): View|RedirectResponse
+    {
+        abort_unless($booking->isPaid(), 404);
+
+        return $this->showETicket($booking);
+    }
+
+    protected function showETicket(Booking $booking): View
+    {
         $booking->load([
             'payment',
             'ticket',
@@ -1859,7 +1885,7 @@ class UserDashboardController extends Controller
 
             foreach ($b->passengers as $p) {
                 if ($p->seat_id) {
-                    $status = $isPaid ? 'paid' : ($b->user_id === Auth::id() ? 'my_lock' : 'locked');
+                    $status = $isPaid ? 'paid' : ($this->bookingAccess->canAccess($b) ? 'my_lock' : 'locked');
                     $occupiedSeats[$p->seat_id] = [
                         'status' => $status,
                         'passenger_name' => $p->name,
@@ -1899,6 +1925,11 @@ class UserDashboardController extends Controller
      */
     protected function confirmAndIssueTicket(Booking $booking, string $paymentMethod = 'Virtual Account BCA', array $rawPayload = []): void
     {
+        // Webhook, polling and the status check can all land here; issue the ticket and email only once.
+        if ($booking->fresh()?->isPaid() && $booking->ticket()->exists()) {
+            return;
+        }
+
         DB::transaction(function () use ($booking, $paymentMethod, $rawPayload) {
             $booking->update([
                 'status' => 'confirmed',
@@ -1931,5 +1962,34 @@ class UserDashboardController extends Controller
             $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user', 'ticket']);
             $booking->user?->notify(new BookingStatusNotification($booking, 'confirmed'));
         });
+
+        $this->sendTicketEmail($booking);
+    }
+
+    /**
+     * Email the e-ticket. A failed send must not undo a confirmed payment, so it is only logged.
+     */
+    protected function sendTicketEmail(Booking $booking): void
+    {
+        $email = $booking->customerEmail();
+
+        if (! $email) {
+            return;
+        }
+
+        try {
+            $booking->loadMissing(['schedule.route.origin', 'schedule.route.destination', 'passengers.seat']);
+            Mail::to($email)->send(new TicketIssuedMail($booking));
+        } catch (\Throwable $exception) {
+            Log::error('E-ticket email gagal dikirim', [
+                'booking_code' => $booking->booking_code,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    protected function authorizeBookingAccess(Booking $booking): void
+    {
+        abort_unless($this->bookingAccess->canAccess($booking), 403, 'Pesanan ini tidak bisa dibuka dari sesi ini.');
     }
 }

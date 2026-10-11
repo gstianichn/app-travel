@@ -97,6 +97,9 @@ test('user can view beranda tab with search widget and active promos', function 
 });
 
 test('subflow 1: user can search schedules matching origin, destination, and active armada', function () {
+    // The 14:30 departure is still bookable in the morning; afternoon runs would hide it as already departed.
+    $this->travelTo(Carbon::today()->setTime(8, 0));
+
     $response = $this->actingAs($this->user)->get(route('dashboard.user.search', [
         'origin' => $this->origin->id,
         'destination' => $this->destination->id,
@@ -108,10 +111,10 @@ test('subflow 1: user can search schedules matching origin, destination, and act
     $response->assertSee('Toyota HiAce Premio');
     $response->assertSee('14:30');
     $response->assertSee('Rp 125.000');
-    $response->assertSee('Pilih Kursi');
+    $response->assertSee('Pilih kursi');
 });
 
-test('subflow 2: user can view seat map and lock seats with 10-minute temporary reservation', function () {
+test('subflow 2: user can view seat map and lock seats with 15-minute temporary reservation', function () {
     // 1. View seat map
     $response = $this->actingAs($this->user)->get(route('dashboard.user.booking.pilih-kursi', [
         'schedule' => $this->schedule->id,
@@ -119,10 +122,10 @@ test('subflow 2: user can view seat map and lock seats with 10-minute temporary 
     ]));
 
     $response->assertOk();
-    $response->assertSee('Denah Kursi Penumpang');
-    $response->assertSee('10 Menit');
-    $response->assertSee('Setir Kanan');
-    $response->assertSee('Pintu Kiri');
+    $response->assertSee('Denah kursi');
+    $response->assertSee('15 menit');
+    $response->assertSee('Sopir');
+    $response->assertSee('Belakang');
 
     // 2. Lock 2 seats
     $seats = $this->vehicle->seats()->take(2)->get();
@@ -236,7 +239,7 @@ test('subflow 4: user can view payment page and simulate payment with instant ti
     $viewResponse->assertOk();
     $viewResponse->assertSee('Virtual Account BCA');
     $viewResponse->assertSee('8271000212345678');
-    $viewResponse->assertSee('Simulasi Pembayaran Berhasil');
+    $viewResponse->assertSee('Tandai sudah dibayar');
 
     // Simulate Gateway Payment
     $simResponse = $this->actingAs($this->user)->post(route('dashboard.user.booking.simulate-payment', $booking));
@@ -257,7 +260,7 @@ test('subflow 4: user can view payment page and simulate payment with instant ti
     // Success page
     $successResponse = $this->actingAs($this->user)->get(route('dashboard.user.booking.sukses', $booking));
     $successResponse->assertOk();
-    $successResponse->assertSee('Pembayaran Terverifikasi Otomatis');
+    $successResponse->assertSee('Tiketmu sudah terbit');
     $successResponse->assertSee($ticket->ticket_number);
 });
 
@@ -476,8 +479,8 @@ test('user searching connected route sees active available schedules with pricin
     ]));
 
     $response->assertOk();
-    $response->assertSee('Jadwal & Armada Tersedia');
-    $response->assertSee('Pilih Kursi');
+    $response->assertSee('keberangkatan');
+    $response->assertSee('Pilih kursi');
     $response->assertSee('Rp');
 });
 
@@ -503,9 +506,9 @@ test('user searching unconnected route sees friendly notification and transit hu
     ]));
 
     $response->assertOk();
-    $response->assertSee('Mohon maaf, rute langsung dari');
-    $response->assertSee('saat ini belum tersedia. Silakan pilih rute transit atau hub terdekat.');
-    $response->assertSee('Rekomendasi Rute Transit Terdekat');
+    $response->assertSee('Belum ada rute langsung dari');
+    $response->assertSee('dengan dua perjalanan');
+    $response->assertSee('Perjalanan 1');
     $response->assertSee('Pool Dipatiukur (Bandung)');
 });
 

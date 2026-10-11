@@ -4,7 +4,14 @@
 
 @section('content')
     <h1 class="au-title">Daftar akun</h1>
-    <p class="au-lead">Dengan akun, kamu bisa memilih kursi, menyimpan e-ticket, dan melihat riwayat perjalanan.</p>
+    <p class="au-lead">Akun menyimpan e-ticket dan riwayat perjalananmu, jadi data penumpang tidak perlu diketik ulang. Memesan tetap bisa tanpa akun.</p>
+
+    <a href="{{ route('auth.google.redirect') }}" class="au-google">
+        @include('auth.partials.google-mark')
+        Daftar dengan Google
+    </a>
+
+    <p class="au-or">atau isi data di bawah</p>
 
     <form method="POST" action="{{ route('register.store') }}" class="au-form" data-auth-form>
         @csrf

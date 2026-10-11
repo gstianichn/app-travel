@@ -88,9 +88,8 @@
     }
 }
 
-/* The ticket form sits inside the page here, not over a hero. */
+/* The ticket form sits inside the page here, not over a hero (the landing page's overlap margins are not loaded). */
 .ud .lp-search {
-    margin: 0;
     padding: 0;
 }
 

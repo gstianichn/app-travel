@@ -1,602 +1,322 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Pembayaran & Verifikasi Gateway')
+@section('page-title', 'Pembayaran')
 
-@section('content')
 @php
     $raw = $payment->raw_response ?? [];
-    $methodStr = strtolower($payment->payment_method ?? '');
-    $bankStr = strtolower($payment->bank_name ?? '');
+    $method = strtolower(($payment->payment_method ?? '').' '.($payment->bank_name ?? ''));
+    $isSimulated = (bool) ($raw['simulated'] ?? false);
 
-    // Deteksi channel aktif
-    $isMandiri = str_contains($methodStr, 'mandiri') || str_contains($bankStr, 'mandiri');
-    $isBca = str_contains($methodStr, 'bca') || str_contains($bankStr, 'bca');
-    $isBni = str_contains($methodStr, 'bni') || str_contains($bankStr, 'bni');
-    $isBri = str_contains($methodStr, 'bri') || str_contains($bankStr, 'bri');
-    $isBsi = str_contains($methodStr, 'bsi') || str_contains($bankStr, 'bsi');
-    $isSeabank = str_contains($methodStr, 'seabank') || str_contains($bankStr, 'seabank');
-    $isQris = str_contains($methodStr, 'qris') || str_contains($bankStr, 'qris');
-    $isGopay = str_contains($methodStr, 'gopay') || str_contains($bankStr, 'gopay');
-    $isShopeepay = str_contains($methodStr, 'shopee') || str_contains($bankStr, 'shopee');
-    $isVa = !$isQris && !$isGopay && !$isShopeepay;
+    $channel = match (true) {
+        str_contains($method, 'mandiri') => 'mandiri',
+        str_contains($method, 'seabank') => 'seabank',
+        str_contains($method, 'bsi') => 'bsi',
+        str_contains($method, 'bca') => 'bca',
+        str_contains($method, 'bni') => 'bni',
+        str_contains($method, 'bri') => 'bri',
+        str_contains($method, 'qris') => 'qris',
+        str_contains($method, 'gopay') => 'gopay',
+        str_contains($method, 'shopee') => 'shopeepay',
+        default => 'va',
+    };
 
-    // Ambil QR URL / Deeplink dari actions jika ada
-    $qrUrl = null;
+    $qrImageUrl = null;
     $deeplinkUrl = null;
-    if (!empty($raw['actions']) && is_array($raw['actions'])) {
-        foreach ($raw['actions'] as $action) {
-            if (($action['name'] ?? '') === 'generate-qr-code') {
-                $qrUrl = $action['url'] ?? null;
-            } elseif (($action['name'] ?? '') === 'deeplink-redirect') {
-                $deeplinkUrl = $action['url'] ?? null;
-            }
+    foreach ((array) ($raw['actions'] ?? []) as $action) {
+        if (($action['name'] ?? '') === 'generate-qr-code') {
+            $qrImageUrl = $action['url'] ?? null;
+        } elseif (($action['name'] ?? '') === 'deeplink-redirect') {
+            $deeplinkUrl = $action['url'] ?? null;
         }
     }
-    $qrString = $raw['qr_string'] ?? '00020101021226540014ID.LINKAJA.WWW011893600014000000000002030005104000840502015303360540'.str_pad((string)(int)$booking->total_price, 8, '0', STR_PAD_LEFT).'5802ID5919PT FAST TRAVEL INDO6007BANDUNG';
+    $qrString = $raw['qr_string'] ?? null;
 
-    // Biller code & bill key untuk Mandiri
     $billerCode = $raw['biller_code'] ?? '70012';
     $billKey = $raw['bill_key'] ?? $payment->account_number;
+    $companyName = $payment->account_name ?: \App\Models\AppSetting::companyName();
+    $amount = 'Rp '.number_format($booking->total_price, 0, ',', '.');
+    $deadline = ($payment->expired_at ?? $booking->expired_at)?->copy()->timezone(config('app.timezone'));
+    $searchUrl = auth()->check() ? route('dashboard.user.search') : route('search');
+
+    $channelLabels = [
+        'bca' => 'BCA', 'mandiri' => 'Mandiri', 'bni' => 'BNI', 'bri' => 'BRI (BRIVA)', 'bsi' => 'BSI',
+        'seabank' => 'SeaBank', 'qris' => 'QRIS', 'gopay' => 'GoPay', 'shopeepay' => 'ShopeePay',
+    ];
+    $copyClass = 'inline-flex items-center justify-center min-h-11 px-4 rounded-lg border-2 border-brand-800 font-bold text-brand-800 hover:bg-brand-50';
 @endphp
 
-<div class="space-y-6 max-w-4xl mx-auto" x-data="paymentHandler({
+@section('content')
+<div class="space-y-8 max-w-4xl" x-data="paymentHandler({
     remainingSeconds: {{ $remainingPaymentSeconds }},
-    bookingId: {{ $booking->id }},
-    statusCheckUrl: '{{ route('dashboard.user.booking.payment-status', $booking) }}',
-    successUrl: '{{ route('dashboard.user.booking.sukses', $booking) }}'
+    statusCheckUrl: @js(route('dashboard.user.booking.payment-status', $booking)),
+    successUrl: @js(route('dashboard.user.booking.sukses', $booking))
 })">
 
-    {{-- Alert Flash Message --}}
-    @if(session('success'))
-        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between shadow-2xs">
-            <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                <span>{{ session('success') }}</span>
-            </div>
-            <button type="button" @click="$el.parentElement.remove()" class="text-emerald-600 hover:text-emerald-800 text-xs font-bold">Tutup</button>
-        </div>
-    @endif
+    @include('dashboard.user.partials.booking-steps', ['current' => 3])
 
-    {{-- ===== STEPPER FLOW ===== --}}
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto text-xs font-semibold">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
-                Pilih Kursi
-            </span>
-            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
-                Data & Metode Bayar
-            </span>
-            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
-                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">3</span>
-                Bayar Tiket (Midtrans)
-            </span>
-        </div>
+    @include('dashboard.user.partials.flash')
 
-        <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                Menunggu Pembayaran
-            </span>
-        </div>
+    <header class="space-y-2">
+        <p class="font-semibold text-slate-600">Kode booking <span class="font-extrabold text-slate-900 tracking-wide">{{ $booking->booking_code }}</span></p>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">Bayar {{ $amount }}</h1>
+        <p class="text-slate-600">
+            {{ $booking->schedule?->route?->origin?->name }} ke {{ $booking->schedule?->route?->destination?->name }},
+            {{ $booking->schedule?->departureCarbon()->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB, kursi {{ $booking->passengerSeatNumbers() }}.
+        </p>
+    </header>
+
+    {{-- Deadline first: unpaid bookings are cancelled and the seats released when it runs out --}}
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-amber-600 bg-amber-50 px-5 py-4 text-amber-950">
+        <p x-show="remainingSeconds > 0">Bayar sebelum <b>{{ $deadline?->format('H:i') }} WIB</b>. Lewat dari itu, pesanan batal dan kursinya dilepas.</p>
+        <p class="font-mono text-2xl font-extrabold tabular-nums" x-show="remainingSeconds > 0" x-text="formatTimer(remainingSeconds)" role="timer"></p>
+        <p x-show="remainingSeconds <= 0" x-cloak>
+            <b>Batas waktu bayar sudah lewat.</b> Kalau kamu sudah transfer, tunggu sebentar lalu cek status di bawah. Kalau belum, <a href="{{ $searchUrl }}" class="font-semibold underline underline-offset-2">pesan ulang</a>.
+        </p>
     </div>
 
-    {{-- ===== BANNER PAYMENT TIMER & ORDER INFO ===== --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div>
-                <span class="text-xs font-bold text-slate-400">Kode Booking Transaksi</span>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <h2 class="text-xl font-mono font-bold text-slate-900">{{ $booking->booking_code }}</h2>
-                    <button type="button" @click="copyText('{{ $booking->booking_code }}', 'Kode booking berhasil disalin!')"
-                            class="text-slate-400 hover:text-slate-600 transition" title="Salin Kode Booking">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    </button>
-                </div>
-                <p class="text-xs text-slate-500 mt-0.5">
-                    No. Invoice Midtrans: <span class="font-mono font-semibold text-slate-700">{{ $payment->order_id }}</span>
-                </p>
-            </div>
-
-            {{-- COUNTDOWN TIMER --}}
-            <div class="flex flex-col sm:items-end">
-                <span class="text-xs font-semibold text-slate-500 mb-1 flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-amber-600 animate-spin" style="animation-duration: 3s;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Batas Waktu Pembayaran (Timer)
-                </span>
-                <div class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-950">
-                    <span class="text-xs font-medium">Sisa Waktu:</span>
-                    <span class="font-mono text-xl font-extrabold text-amber-700" x-text="formatTimer(remainingSeconds)"></span>
-                </div>
-            </div>
-        </div>
-
-        {{-- TOTAL JUMLAH BAYAR & GANTI METODE BUTTON --}}
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-                <p class="text-xs text-slate-500 font-medium">Total Nominal Tagihan:</p>
-                <p class="text-2xl font-black text-slate-900 tracking-tight" style="color:#087f55;">
-                    Rp {{ number_format($booking->total_price, 0, ',', '.') }}
-                </p>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" @click="copyText('{{ (int)$booking->total_price }}', 'Nominal Rp {{ number_format($booking->total_price, 0, ',', '.') }} berhasil disalin!')"
-                        class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition shadow-2xs flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    Salin Nominal
-                </button>
-                <button type="button" @click="showSwitchModal = true"
-                        class="px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition shadow-2xs flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    Ganti Metode Bayar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    {{-- ===== DETAIL PEMBAYARAN SESUAI METODE TERPILIH ===== --}}
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        
-        {{-- HEADER METODE AKTIF --}}
-        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
-            <div class="flex items-center gap-3">
-                @if($isBca)
-                    <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-xs">BCA</div>
-                @elseif($isMandiri)
-                    <div class="w-12 h-12 rounded-2xl bg-amber-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">MANDIRI</div>
-                @elseif($isBni)
-                    <div class="w-12 h-12 rounded-2xl bg-teal-600 text-white font-black text-sm flex items-center justify-center shadow-xs">BNI</div>
-                @elseif($isBri)
-                    <div class="w-12 h-12 rounded-2xl bg-sky-700 text-white font-black text-sm flex items-center justify-center shadow-xs">BRI</div>
-                @elseif($isBsi)
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">BSI</div>
-                @elseif($isSeabank)
-                    <div class="w-12 h-12 rounded-2xl bg-orange-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">SEABANK</div>
-                @elseif($isQris)
-                    <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white font-black text-sm flex items-center justify-center shadow-xs">QRIS</div>
-                @elseif($isGopay)
-                    <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white font-black text-xs flex items-center justify-center shadow-xs">GOPAY</div>
-                @elseif($isShopeepay)
-                    <div class="w-12 h-12 rounded-2xl bg-orange-500 text-white font-black text-xs flex items-center justify-center shadow-xs">SHOPEE</div>
-                @else
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-700 text-white font-black text-sm flex items-center justify-center shadow-xs">VA</div>
+    <section class="rounded-xl border border-slate-300 bg-white" aria-labelledby="cara-bayar">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-6 py-4">
+            <div class="flex items-center gap-4">
+                @if ($channel !== 'va')
+                    <img src="{{ asset('images/payments/'.$channel.'.svg') }}" alt="" class="h-8 w-auto max-w-32 object-contain">
                 @endif
-
-                <div>
-                    <h3 class="font-extrabold text-slate-900 text-lg">{{ $payment->payment_method ?: 'Virtual Account' }}</h3>
-                    <p class="text-xs text-slate-500">Midtrans Payment Gateway &bull; Verifikasi Otomatis Waktu-Nyata</p>
-                </div>
+                <h2 id="cara-bayar" class="text-xl font-extrabold text-brand-900">{{ $payment->payment_method ?: 'Virtual account' }}</h2>
             </div>
-
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Otomatis Dicek
-                </span>
-            </div>
+            <p class="text-sm text-slate-600">Status dicek otomatis setiap beberapa detik.</p>
         </div>
 
-        {{-- BODY 1: VIRTUAL ACCOUNT (BCA, BNI, BRI, BSI, SEABANK) --}}
-        @if($isVa && !$isMandiri)
-            <div class="p-6 space-y-6">
-                {{-- Box Nomor Virtual Account --}}
-                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="p-6 space-y-6">
+            @if (in_array($channel, ['bca', 'bni', 'bri', 'bsi', 'seabank', 'va'], true))
+                <div class="flex flex-wrap items-end justify-between gap-4">
                     <div>
-                        <span class="text-xs text-slate-400 font-medium">Nomor Virtual Account (VA):</span>
-                        <p class="font-mono text-2xl sm:text-3xl font-black text-slate-900 mt-0.5">
-                            {{ $payment->account_number }}
-                        </p>
-                        <p class="text-xs text-slate-500 mt-1">
-                            Nama Penerima: <strong class="text-slate-800">{{ $payment->account_name ?: \App\Models\AppSetting::companyName() }}</strong>
-                        </p>
+                        <p class="text-slate-600">Nomor virtual account</p>
+                        <p class="font-mono text-3xl sm:text-4xl font-extrabold tracking-wider text-slate-900 break-all">{{ $payment->account_number }}</p>
+                        <p class="mt-1 text-slate-600">Atas nama <b class="text-slate-900">{{ $companyName }}</b></p>
+                    </div>
+                    <button type="button" class="{{ $copyClass }}" @click="copyText(@js((string) $payment->account_number), 'Nomor virtual account tersalin.')">Salin nomor</button>
+                </div>
+
+                <div class="space-y-2 border-t border-slate-200 pt-5">
+                    @switch($channel)
+                        @case('bca')
+                            <h3 class="font-bold text-slate-900">Bayar lewat m-BCA, myBCA, atau ATM BCA</h3>
+                            <ol class="list-decimal pl-5 space-y-1 text-slate-700">
+                                <li>Pilih <b>m-Transfer</b>, lalu <b>BCA Virtual Account</b>.</li>
+                                <li>Masukkan nomor <b class="font-mono">{{ $payment->account_number }}</b>.</li>
+                                <li>Pastikan penerima {{ $companyName }} dan nominal {{ $amount }}, lalu masukkan PIN.</li>
+                            </ol>
+                            @break
+                        @case('bni')
+                            <h3 class="font-bold text-slate-900">Bayar lewat BNI Mobile atau ATM BNI</h3>
+                            <ol class="list-decimal pl-5 space-y-1 text-slate-700">
+                                <li>Pilih <b>Pembayaran</b>, lalu <b>Virtual Account Billing</b>.</li>
+                                <li>Masukkan nomor <b class="font-mono">{{ $payment->account_number }}</b>.</li>
+                                <li>Cek nominal {{ $amount }} dan nama penerima, lalu masukkan password transaksi.</li>
+                            </ol>
+                            @break
+                        @case('bri')
+                            <h3 class="font-bold text-slate-900">Bayar lewat BRImo</h3>
+                            <ol class="list-decimal pl-5 space-y-1 text-slate-700">
+                                <li>Pilih <b>BRIVA</b>, lalu <b>Pembayaran Baru</b>.</li>
+                                <li>Masukkan nomor <b class="font-mono">{{ $payment->account_number }}</b>.</li>
+                                <li>Cek rincian, pilih sumber dana, lalu masukkan PIN.</li>
+                            </ol>
+                            @break
+                        @case('bsi')
+                            <h3 class="font-bold text-slate-900">Bayar lewat BSI Mobile</h3>
+                            <ol class="list-decimal pl-5 space-y-1 text-slate-700">
+                                <li>Pilih <b>Transfer</b>, lalu <b>Transfer Antar Bank / Virtual Account</b>.</li>
+                                <li>Bank tujuan: <b>Bank Permata</b> (kode 013).</li>
+                                <li>Masukkan nomor <b class="font-mono">{{ $payment->account_number }}</b>, cek penerima {{ $companyName }}, lalu konfirmasi dengan PIN.</li>
+                            </ol>
+                            @break
+                        @case('seabank')
+                            <h3 class="font-bold text-slate-900">Bayar dari aplikasi SeaBank</h3>
+                            <ol class="list-decimal pl-5 space-y-1 text-slate-700">
+                                <li>Pilih <b>Transfer</b>, lalu <b>Bank Lain</b>.</li>
+                                <li>Bank tujuan: <b>Bank Permata</b> (kode 013).</li>
+                                <li>Masukkan nomor <b class="font-mono">{{ $payment->account_number }}</b> dan pilih <b>BI-FAST</b>.</li>
+                                <li>Nominal {{ $amount }} muncul sendiri. Konfirmasi dengan PIN SeaBank.</li>
+                            </ol>
+                            @break
+                    @endswitch
+                </div>
+            @elseif ($channel === 'mandiri')
+                <div class="grid sm:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-slate-600">Kode perusahaan (Biller Code)</p>
+                        <p class="font-mono text-3xl font-extrabold text-slate-900">{{ $billerCode }}</p>
+                        <button type="button" class="mt-2 {{ $copyClass }}" @click="copyText(@js((string) $billerCode), 'Kode perusahaan tersalin.')">Salin kode</button>
                     </div>
                     <div>
-                        <button type="button" @click="copyText('{{ $payment->account_number }}', 'Nomor Virtual Account disalin!')"
-                                class="w-full sm:w-auto px-5 py-3 text-xs font-bold text-white rounded-xl shadow-sm transition flex items-center justify-center gap-2"
-                                style="background:#087f55;"
-                                onmouseover="this.style.background='#066b47'"
-                                onmouseout="this.style.background='#087f55'">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            <span>Salin Nomor VA</span>
-                        </button>
+                        <p class="text-slate-600">Nomor tagihan (Bill Key)</p>
+                        <p class="font-mono text-3xl font-extrabold text-slate-900 break-all">{{ $billKey }}</p>
+                        <button type="button" class="mt-2 {{ $copyClass }}" @click="copyText(@js((string) $billKey), 'Nomor tagihan tersalin.')">Salin nomor</button>
                     </div>
                 </div>
-
-                {{-- Khusus SeaBank Alert Box --}}
-                @if($isSeabank)
-                    <div class="p-4 rounded-2xl bg-orange-50 border border-orange-200 space-y-2">
-                        <div class="flex items-center gap-2 text-orange-950 font-bold text-xs">
-                            <svg class="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                            <span>Instruksi Khusus Transfer dari SeaBank:</span>
-                        </div>
-                        <ol class="list-decimal list-inside text-xs text-orange-900 space-y-1 pl-1 leading-relaxed">
-                            <li>Buka aplikasi <strong>SeaBank</strong> di smartphone Anda.</li>
-                            <li>Pilih menu <strong>Transfer</strong> &gt; <strong>Virtual Account</strong> atau <strong>Bank Lain</strong>.</li>
-                            <li>Pilih Bank Penerima: <strong>Bank Permata</strong> (Kode Bank: <strong>013</strong>).</li>
-                            <li>Masukkan Nomor Virtual Account: <strong class="font-mono text-orange-950">{{ $payment->account_number }}</strong>.</li>
-                            <li>Pilih metode transfer <strong>BI-FAST</strong> (bebas biaya admin).</li>
-                            <li>Nominal tagihan <strong>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</strong> akan otomatis muncul. Masukkan PIN SeaBank Anda!</li>
-                        </ol>
-                    </div>
-                @endif
-
-                {{-- Khusus BSI Alert Box --}}
-                @if($isBsi)
-                    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2">
-                        <div class="flex items-center gap-2 text-emerald-950 font-bold text-xs">
-                            <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                            <span>Instruksi Pembayaran BSI Mobile:</span>
-                        </div>
-                        <ol class="list-decimal list-inside text-xs text-emerald-900 space-y-1 pl-1 leading-relaxed">
-                            <li>Buka aplikasi <strong>BSI Mobile</strong>.</li>
-                            <li>Pilih menu <strong>Transfer</strong> &gt; <strong>Transfer Antar Bank / Virtual Account</strong>.</li>
-                            <li>Pilih Bank Penerima: <strong>Bank Permata Syariah</strong> (Kode: 013).</li>
-                            <li>Masukkan Nomor VA: <strong class="font-mono text-emerald-950">{{ $payment->account_number }}</strong>.</li>
-                            <li>Pastikan nama penerima <strong>{{ \App\Models\AppSetting::companyName() }}</strong> dan nominal sesuai, lalu konfirmasi dengan PIN.</li>
-                        </ol>
-                    </div>
-                @endif
-
-                {{-- Instruksi Pembayaran Bank Lain (BCA, BNI, BRI) --}}
-                @if($isBca)
-                    <div class="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
-                        <p class="font-bold text-slate-800 text-sm">Cara Bayar via BCA Mobile / myBCA / ATM BCA:</p>
-                        <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
-                            <li>Buka aplikasi <strong>m-BCA</strong> atau ATM BCA terdekat.</li>
-                            <li>Pilih menu <strong>m-Transfer</strong> &gt; <strong>BCA Virtual Account</strong>.</li>
-                            <li>Masukkan nomor Virtual Account: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
-                            <li>Pastikan nama penerima <strong>{{ \App\Models\AppSetting::companyName() }}</strong> dan nominal tagihan sesuai.</li>
-                            <li>Konfirmasi dan masukkan PIN m-BCA Anda. Transaksi selesai & tiket langsung terbit!</li>
-                        </ol>
-                    </div>
-                @elseif($isBni)
-                    <div class="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
-                        <p class="font-bold text-slate-800 text-sm">Cara Bayar via BNI Mobile Banking / ATM BNI:</p>
-                        <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
-                            <li>Buka aplikasi <strong>BNI Mobile Banking</strong>.</li>
-                            <li>Pilih menu <strong>Pembayaran</strong> &gt; <strong>Virtual Account Billing</strong>.</li>
-                            <li>Input nomor Virtual Account: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
-                            <li>Periksa nominal dan nama penerima, lalu masukkan password transaksi Anda.</li>
-                        </ol>
-                    </div>
-                @elseif($isBri)
-                    <div class="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
-                        <p class="font-bold text-slate-800 text-sm">Cara Bayar via BRImo (BRI Virtual Account / BRIVA):</p>
-                        <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
-                            <li>Buka aplikasi <strong>BRImo</strong> di HP Anda.</li>
-                            <li>Pilih menu <strong>Tagihan</strong> &gt; <strong>BRIVA</strong>.</li>
-                            <li>Pilih <strong>Pembayaran Baru</strong> dan masukkan nomor BRIVA: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
-                            <li>Periksa rincian pembayaran, pilih sumber dana, lalu masukkan PIN BRImo Anda.</li>
-                        </ol>
-                    </div>
-                @endif
-            </div>
-        @endif
-
-        {{-- BODY 2: MANDIRI BILL PAYMENT --}}
-        @if($isMandiri)
-            <div class="p-6 space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {{-- Kode Perusahaan (Biller Code) --}}
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <span class="text-xs text-slate-400 font-medium">Kode Perusahaan (Biller Code):</span>
-                        <div class="flex items-center justify-between">
-                            <span class="font-mono text-xl sm:text-2xl font-black text-slate-900">{{ $billerCode }}</span>
-                            <button type="button" @click="copyText('{{ $billerCode }}', 'Kode Perusahaan disalin!')"
-                                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
-                                Salin
-                            </button>
-                        </div>
-                        <p class="text-xs text-slate-500">Nama Biller: <strong>Midtrans / {{ \App\Models\AppSetting::companyName() }}</strong></p>
-                    </div>
-
-                    {{-- Nomor Tagihan (Bill Key) --}}
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <span class="text-xs text-slate-400 font-medium">Nomor Tagihan (Bill Key):</span>
-                        <div class="flex items-center justify-between">
-                            <span class="font-mono text-xl sm:text-2xl font-black text-slate-900">{{ $billKey }}</span>
-                            <button type="button" @click="copyText('{{ $billKey }}', 'Nomor Tagihan (Bill Key) disalin!')"
-                                    class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
-                                Salin
-                            </button>
-                        </div>
-                        <p class="text-xs text-slate-500">Penerima: <strong>{{ \App\Models\AppSetting::companyName() }}</strong></p>
-                    </div>
-                </div>
-
-                {{-- Instruksi Mandiri Livin --}}
-                <div class="border-t border-slate-100 pt-4 space-y-2 text-xs text-slate-600">
-                    <p class="font-bold text-slate-800 text-sm">Cara Bayar via Livin' by Mandiri (Kuning):</p>
-                    <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
-                        <li>Buka aplikasi <strong>Livin' by Mandiri</strong>.</li>
-                        <li>Pilih menu <strong>Bayar</strong> &gt; cari penyedia jasa <strong>Midtrans (70012)</strong>.</li>
-                        <li>Masukkan <strong>Nomor Tagihan / Bill Key: <span class="font-mono font-bold text-slate-800">{{ $billKey }}</span></strong>.</li>
-                        <li>Pastikan jumlah pembayaran <strong>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</strong> sesuai.</li>
-                        <li>Lanjutkan dan masukkan PIN Livin' Anda. Selesai!</li>
+                <div class="space-y-2 border-t border-slate-200 pt-5">
+                    <h3 class="font-bold text-slate-900">Bayar lewat Livin' by Mandiri</h3>
+                    <ol class="list-decimal pl-5 space-y-1 text-slate-700">
+                        <li>Pilih <b>Bayar</b>, lalu cari <b>Midtrans</b> ({{ $billerCode }}).</li>
+                        <li>Masukkan nomor tagihan <b class="font-mono">{{ $billKey }}</b>.</li>
+                        <li>Pastikan nominal {{ $amount }}, lalu masukkan PIN Livin'.</li>
                     </ol>
                 </div>
-            </div>
-        @endif
-
-        {{-- BODY 3: QRIS DINAMIS UNIVERSAL --}}
-        @if($isQris)
-            <div class="p-6 text-center space-y-6">
-                <div class="max-w-sm mx-auto space-y-4">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
-                        <span>QRIS Standar Pembayaran Nasional</span>
-                    </div>
-
-                    <h4 class="font-bold text-slate-900 text-base">Scan Kode QRIS di Bawah</h4>
-                    <p class="text-xs text-slate-500">
-                        Bisa discan langsung menggunakan <strong>GoPay, OVO, DANA, ShopeePay, LinkAja, BCA, Livin Mandiri, BRImo</strong>, dan mobile banking apapun.
-                    </p>
-
-                    {{-- QRIS CARD CONTAINER --}}
-                    <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-md mx-auto flex flex-col items-center justify-center relative">
-                        <div class="mb-3 flex items-center justify-center gap-1">
-                            <span class="text-xl font-black text-rose-600">QRIS</span>
-                            <span class="text-xs text-slate-400 font-bold">Universal</span>
-                        </div>
-
-                        {{-- QR Visual (Image / SVG) --}}
-                        <div class="w-56 h-56 bg-white rounded-2xl p-2 border border-slate-100 flex items-center justify-center shadow-inner">
-                            @if($qrUrl)
-                                <img src="{{ $qrUrl }}" alt="Kode QRIS Midtrans" class="w-full h-full object-contain rounded-xl">
-                            @else
-                                {{-- SVG QR Mockup with dynamic pattern --}}
-                                <div class="w-full h-full bg-slate-900 rounded-xl p-3 flex flex-col items-center justify-center text-white relative">
-                                    <svg class="w-full h-full text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                                        <rect x="2" y="2" width="8" height="8" rx="1"/>
-                                        <rect x="4" y="4" width="4" height="4" fill="currentColor"/>
-                                        <rect x="14" y="2" width="8" height="8" rx="1"/>
-                                        <rect x="16" y="4" width="4" height="4" fill="currentColor"/>
-                                        <rect x="2" y="14" width="8" height="8" rx="1"/>
-                                        <rect x="4" y="16" width="4" height="4" fill="currentColor"/>
-                                        <rect x="14" y="14" width="3" height="3" fill="currentColor"/>
-                                        <rect x="19" y="14" width="3" height="3" fill="currentColor"/>
-                                        <rect x="14" y="19" width="8" height="3" fill="currentColor"/>
-                                    </svg>
-                                    <span class="text-xs mt-1 text-slate-300">QR simulasi, tidak bisa dipindai</span>
-                                </div>
+            @elseif ($channel === 'qris')
+                <div class="grid sm:grid-cols-[220px_minmax(0,1fr)] gap-6 items-start">
+                    <div class="space-y-3">
+                        <div class="w-[220px] aspect-square rounded-lg border border-slate-300 bg-white p-3">
+                            @if ($qrImageUrl)
+                                <img src="{{ $qrImageUrl }}" alt="Kode QRIS untuk membayar {{ $amount }}" class="w-full h-full object-contain">
+                            @elseif ($qrString)
+                                <div class="w-full h-full" data-qr="{{ $qrString }}" role="img" aria-label="Kode QRIS untuk membayar {{ $amount }}"></div>
                             @endif
                         </div>
-
-                        <p class="mt-4 text-center text-xs font-bold text-slate-800">{{ \App\Models\AppSetting::companyName() }}</p>
-                    </div>
-
-                    {{-- Actions: Salin String & Download --}}
-                    <div class="flex flex-wrap gap-2 justify-center pt-1">
-                        <button type="button" @click="copyText('{{ $qrString }}', 'String kode QRIS berhasil disalin!')"
-                                class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            Salin Kode QR
-                        </button>
-                        @if ($qrUrl)
-                        <a href="{{ $qrUrl }}" download="qris-{{ $booking->booking_code }}.png" target="_blank" rel="noopener"
-                                class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Unduh gambar QRIS
-                        </a>
+                        @if ($isSimulated)
+                            <p class="text-sm font-semibold text-amber-900">Mode uji: QR ini tidak terhubung ke Midtrans, jadi tidak bisa dibayar.</p>
                         @endif
                     </div>
-
-                    {{-- Supported E-wallet Badges --}}
-                    <div class="pt-3 border-t border-slate-100">
-                        <p class="text-xs text-slate-400 font-medium mb-2">Didukung oleh seluruh aplikasi pembayaran:</p>
-                        <div class="flex flex-wrap items-center justify-center gap-1.5 text-xs font-bold text-slate-600">
-                            <span class="px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">GoPay</span>
-                            <span class="px-2 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-100">OVO</span>
-                            <span class="px-2 py-1 rounded-md bg-sky-50 text-sky-700 border border-sky-100">DANA</span>
-                            <span class="px-2 py-1 rounded-md bg-orange-50 text-orange-700 border border-orange-100">ShopeePay</span>
-                            <span class="px-2 py-1 rounded-md bg-red-50 text-red-700 border border-red-100">LinkAja</span>
-                            <span class="px-2 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-100">BCA / Mandiri / BRI / BNI</span>
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-slate-900">Pindai dengan aplikasi apa pun yang mendukung QRIS</h3>
+                        <p class="text-slate-700">GoPay, OVO, DANA, ShopeePay, LinkAja, atau aplikasi m-banking. Nominal {{ $amount }} terisi sendiri setelah dipindai.</p>
+                        <div class="flex flex-wrap gap-2">
+                            @if ($qrString)
+                                <button type="button" class="{{ $copyClass }}" @click="copyText(@js($qrString), 'Kode QR tersalin.')">Salin Kode QR</button>
+                            @endif
+                            @if ($qrImageUrl)
+                                <a href="{{ $qrImageUrl }}" download="qris-{{ $booking->booking_code }}.png" target="_blank" rel="noopener" class="{{ $copyClass }}">Unduh gambar QRIS</a>
+                            @endif
                         </div>
                     </div>
                 </div>
-            </div>
-        @endif
-
-        {{-- BODY 4: GOPAY / SHOPEEPAY DIRECT --}}
-        @if($isGopay || $isShopeepay)
-            <div class="p-6 text-center space-y-5">
-                <div class="max-w-sm mx-auto space-y-3">
-                    <h4 class="font-bold text-slate-900 text-base">Pembayaran Aplikasi {{ $isGopay ? 'GoPay' : 'ShopeePay' }}</h4>
-                    <p class="text-xs text-slate-500">
-                        Klik tombol di bawah untuk membuka aplikasi {{ $isGopay ? 'GoPay / Gojek' : 'Shopee' }} dan menyelesaikan pembayaran secara instan.
-                    </p>
-
-                    <div class="pt-2">
-                        @if($deeplinkUrl)
-                            <a href="{{ $deeplinkUrl }}" target="_blank"
-                               class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-white font-bold text-sm shadow-md transition {{ $isGopay ? 'bg-sky-600 hover:bg-sky-700' : 'bg-orange-500 hover:bg-orange-600' }}">
-                                <span>Buka Aplikasi {{ $isGopay ? 'GoPay' : 'ShopeePay' }}</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            </a>
-                        @else
-                            <button type="button" @click="alert('Membuka aplikasi {{ $isGopay ? 'GoPay' : 'Shopee' }}...')"
-                                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-white font-bold text-sm shadow-md transition {{ $isGopay ? 'bg-sky-600 hover:bg-sky-700' : 'bg-orange-500 hover:bg-orange-600' }}">
-                                <span>Buka Aplikasi {{ $isGopay ? 'GoPay' : 'ShopeePay' }}</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            </button>
-                        @endif
-                    </div>
-
-                    <p class="text-xs text-slate-400">
-                        Setelah pembayaran diverifikasi di aplikasi e-wallet, layar ini akan otomatis menerbitkan E-Ticket QR Anda.
-                    </p>
+            @else
+                <div class="space-y-3 max-w-md">
+                    <h3 class="font-bold text-slate-900">Selesaikan di aplikasi {{ $channel === 'gopay' ? 'Gojek atau GoPay' : 'Shopee' }}</h3>
+                    <p class="text-slate-700">Halaman ini pindah ke e-ticket sendiri begitu pembayaran masuk.</p>
+                    @if ($deeplinkUrl)
+                        <a href="{{ $deeplinkUrl }}" target="_blank" rel="noopener" class="lp-btn lp-btn--green">Buka {{ $channel === 'gopay' ? 'GoPay' : 'ShopeePay' }}</a>
+                    @else
+                        <p class="font-semibold text-amber-900">Tautan aplikasi belum diterima dari Midtrans. Pilih cara bayar lain di bawah, atau coba lagi sebentar.</p>
+                    @endif
                 </div>
-            </div>
-        @endif
+            @endif
 
-    </div>
-
-    {{-- ===== TRIGGER SIMULASI WEBHOOK PAYMENT GATEWAY ===== --}}
-    <div class="bg-white rounded-2xl border-2 border-emerald-200 shadow-sm p-6 space-y-4">
-        <div class="flex items-start gap-3">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#e3f5ee;">
-                <svg width="18" height="18" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            </div>
-            <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                    <h4 class="font-bold text-slate-900 text-base">Verifikasi Otomatis via Midtrans Webhook</h4>
-                    <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold" x-text="pollCount > 0 ? 'Live Syncing...' : 'Siap'"></span>
-                </div>
-                <p class="text-xs text-slate-500 leading-relaxed">
-                    Sistem mendeteksi webhook Midtrans secara otomatis. Ketika Anda mentransfer ke Virtual Account atau men-scan QRIS di atas, sistem akan mengubah status menjadi <strong>Confirmed</strong> dan menerbitkan E-Ticket QR.
-                </p>
-            </div>
-        </div>
-
-        {{-- Action Button Simulasi Langsung --}}
-        <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
-            <form action="{{ route('dashboard.user.booking.simulate-payment', $booking) }}" method="POST" class="w-full sm:w-auto">
-                @csrf
-                <button type="submit"
-                        class="w-full sm:w-auto px-6 py-3 text-white font-bold text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2"
-                        style="background:#087f55;"
-                        onmouseover="this.style.background='#066b47'"
-                        onmouseout="this.style.background='#087f55'">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-                    <span>Simulasi Pembayaran Berhasil (Trigger Webhook)</span>
+            <div class="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
+                <button type="button" class="{{ $copyClass }}" @click="copyText(@js((string) (int) $booking->total_price), 'Nominal tersalin.')">Salin nominal {{ $amount }}</button>
+                <button type="button" @click="checkStatusManual()" :disabled="isChecking"
+                        class="inline-flex items-center min-h-11 px-4 rounded-lg font-semibold text-brand-700 underline underline-offset-2 disabled:opacity-60">
+                    <span x-text="isChecking ? 'Mengecek...' : 'Saya sudah bayar, cek status'"></span>
                 </button>
-            </form>
-
-            <button type="button" @click="checkStatusManual()"
-                    class="w-full sm:w-auto px-4 py-3 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-1.5">
-                <svg class="w-4 h-4 text-slate-500" :class="isChecking ? 'animate-spin' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span>Cek Status Pembayaran</span>
-            </button>
-
-            <a href="{{ route('dashboard.user.user-tiket') }}" class="w-full sm:w-auto text-center px-4 py-3 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition">
-                Cek Nanti di Tiket Saya
-            </a>
-        </div>
-    </div>
-
-    {{-- ===== MODAL GANTI METODE PEMBAYARAN ===== --}}
-    <div x-show="showSwitchModal" x-transition class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" style="display: none;">
-        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-200" @click.away="showSwitchModal = false">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    </div>
-                    <h3 class="font-bold text-slate-900 text-base">Ganti Metode Pembayaran</h3>
-                </div>
-                <button type="button" @click="showSwitchModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
             </div>
-
-            <form action="{{ route('dashboard.user.booking.switch-payment', $booking) }}" method="POST" class="space-y-4">
-                @csrf
-                <p class="text-xs text-slate-500">Pilih salah satu metode pembayaran baru di bawah:</p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto pr-1">
-                    @foreach($paymentChannels ?? [] as $code => $ch)
-                        <label class="p-3 rounded-xl border border-slate-200 hover:border-emerald-500 cursor-pointer transition flex items-center justify-between gap-2 bg-slate-50 hover:bg-emerald-50/30">
-                            <div class="flex items-center gap-2.5">
-                                <input type="radio" name="payment_channel" value="{{ $code }}" {{ ($payment->bank_name && strtolower($payment->bank_name) === strtolower($ch['bank_name'])) ? 'checked' : '' }}
-                                       class="text-emerald-600 focus:ring-emerald-500">
-                                <div>
-                                    <p class="text-xs font-bold text-slate-900">{{ $ch['name'] }}</p>
-                                    <span class="text-xs text-slate-400">{{ $ch['badge'] }}</span>
-                                </div>
-                            </div>
-                        </label>
-                    @endforeach
-                </div>
-
-                <div class="flex gap-2 pt-2">
-                    <button type="button" @click="showSwitchModal = false"
-                            class="flex-1 py-2.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-                        Batal
-                    </button>
-                    <button type="submit"
-                            class="flex-1 py-2.5 text-xs font-bold text-white rounded-xl shadow-sm transition"
-                            style="background:#087f55;">
-                        Terapkan Metode Ini
-                    </button>
-                </div>
-            </form>
+            <p class="text-sm font-semibold text-brand-800" role="status" aria-live="polite" x-text="feedback"></p>
         </div>
-    </div>
+    </section>
 
+    {{-- Changing the method is inline, not a modal: it is a short list and the page stays readable around it --}}
+    <details class="rounded-xl border border-slate-300 bg-white">
+        <summary class="cursor-pointer list-none flex items-center justify-between gap-3 min-h-11 px-6 py-4 font-bold text-slate-900">
+            Ganti cara bayar
+            <svg class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </summary>
+        <form action="{{ route('dashboard.user.booking.switch-payment', $booking) }}" method="POST" class="border-t border-slate-200 p-6 space-y-4">
+            @csrf
+            <div class="grid sm:grid-cols-3 gap-2">
+                @foreach ($paymentChannels ?? [] as $code => $paymentChannel)
+                    <label class="flex items-center gap-3 min-h-11 rounded-lg border border-slate-300 px-4 py-2 cursor-pointer hover:border-brand-600 has-[:checked]:border-2 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50">
+                        <input type="radio" name="payment_channel" value="{{ $code }}" class="w-4 h-4 accent-[#0C5A3E]" @checked($channel === $code)>
+                        <img src="{{ asset('images/payments/'.$code.'.svg') }}" alt="" class="h-5 w-12 object-contain" loading="lazy">
+                        <span class="font-semibold text-slate-900">{{ $channelLabels[$code] ?? $paymentChannel['name'] }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="text-sm text-slate-600">Nomor bayar yang lama tidak berlaku lagi setelah diganti.</p>
+            <button type="submit" class="lp-btn lp-btn--green">Pakai cara bayar ini</button>
+        </form>
+    </details>
+
+    @auth
+        <p class="text-slate-600">Bisa ditinggal dulu. Pesanan ini ada di <a href="{{ route('dashboard.user.index') }}" class="font-semibold text-brand-700 underline underline-offset-2">Beranda</a> sampai batas waktu bayar.</p>
+    @else
+        <p class="text-slate-600">Simpan kode booking <b>{{ $booking->booking_code }}</b>. Setelah lunas, e-ticket dikirim ke <b>{{ $booking->customerEmail() }}</b>.</p>
+    @endauth
+
+    @unless (app()->isProduction())
+        {{-- TODO: developer shortcut, hidden in production where the Midtrans webhook confirms payments --}}
+        <details class="rounded-xl border-2 border-dashed border-slate-400 px-6 py-4 text-slate-700">
+            <summary class="cursor-pointer font-semibold">Mode uji (tidak tampil di production)</summary>
+            <form action="{{ route('dashboard.user.booking.simulate-payment', $booking) }}" method="POST" class="mt-3 space-y-2">
+                @csrf
+                <p class="text-sm">Menandai pesanan ini lunas tanpa membayar, sama seperti webhook Midtrans mengirim status settlement.</p>
+                <button type="submit" class="inline-flex items-center min-h-11 px-4 rounded-lg bg-slate-800 font-bold text-white hover:bg-slate-900">Tandai sudah dibayar</button>
+            </form>
+        </details>
+    @endunless
 </div>
+
+@include('dashboard.user.partials.qr-script')
 
 <script>
 function paymentHandler(config) {
     return {
         remainingSeconds: config.remainingSeconds,
-        bookingId: config.bookingId,
         statusCheckUrl: config.statusCheckUrl,
         successUrl: config.successUrl,
-        showSwitchModal: false,
         isChecking: false,
-        pollCount: 0,
+        feedback: '',
 
         init() {
-            // Hitung mundur payment timer
             const timer = setInterval(() => {
-                if (this.remainingSeconds > 0) {
-                    this.remainingSeconds--;
-                } else {
+                this.remainingSeconds = Math.max(0, this.remainingSeconds - 1);
+
+                if (this.remainingSeconds === 0) {
                     clearInterval(timer);
-                    alert('Waktu pembayaran telah habis. Transaksi ini dibatalkan otomatis.');
-                    window.location.href = "{{ route('dashboard.user.search') }}";
                 }
             }, 1000);
 
-            // Polling realtime status pembayaran ke server setiap 4 detik
-            setInterval(() => {
-                this.pollStatus();
-            }, 4000);
+            setInterval(() => this.fetchStatus().catch(() => {}), 5000);
         },
 
-        formatTimer(sec) {
-            const m = Math.floor(sec / 60);
-            const s = sec % 60;
-            return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+        formatTimer(totalSeconds) {
+            const seconds = Math.max(0, Math.floor(totalSeconds));
+
+            return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
         },
 
-        copyText(text, msg) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert(msg);
-            }).catch(() => {
-                alert('Teks berhasil disalin: ' + text);
-            });
-        },
-
-        async pollStatus() {
+        async copyText(text, message) {
             try {
-                this.pollCount++;
-                const res = await fetch(this.statusCheckUrl);
-                const data = await res.json();
-                if (data.is_paid) {
-                    window.location.href = this.successUrl;
-                }
-            } catch (e) {
-                // background poll silent
+                await navigator.clipboard.writeText(text);
+                this.feedback = message;
+            } catch (error) {
+                this.feedback = 'Browser menolak menyalin. Pilih teksnya lalu salin manual.';
             }
+        },
+
+        async fetchStatus() {
+            const response = await fetch(this.statusCheckUrl, { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+
+            if (data.is_paid) {
+                window.location.href = this.successUrl;
+            }
+
+            return data;
         },
 
         async checkStatusManual() {
             this.isChecking = true;
+
             try {
-                const res = await fetch(this.statusCheckUrl);
-                const data = await res.json();
-                if (data.is_paid) {
-                    alert('Pembayaran berhasil dikonfirmasi! Mengalihkan ke tiket Anda...');
-                    window.location.href = this.successUrl;
-                } else {
-                    alert('Status transaksi saat ini: ' + (data.payment_status || 'Menunggu Pembayaran') + '. Silakan selesaikan pembayaran sesuai instruksi.');
+                const data = await this.fetchStatus();
+
+                if (!data.is_paid) {
+                    this.feedback = 'Pembayaran belum masuk. Transfer bank bisa butuh 1 sampai 2 menit, halaman ini akan pindah sendiri.';
                 }
-            } catch (e) {
-                alert('Gagal memeriksa status pembayaran. Pastikan koneksi internet stabil.');
+            } catch (error) {
+                this.feedback = 'Status belum bisa dicek. Periksa koneksi internet lalu coba lagi.';
             } finally {
                 this.isChecking = false;
             }
-        }
+        },
     };
 }
 </script>

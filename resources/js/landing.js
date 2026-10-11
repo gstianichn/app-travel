@@ -53,7 +53,9 @@ function updateScenes(viewportHeight) {
 const routes = document.querySelector('[data-routes]');
 const routesViewport = routes?.querySelector('[data-routes-viewport]');
 const routesTrack = routes?.querySelector('[data-routes-track]');
+const routesVan = routes?.querySelector('[data-routes-van]');
 let routesOverflow = 0;
+let vanTravel = 0;
 
 function canPinRoutes() {
     return Boolean(routesTrack) && wideViewport.matches && !prefersReducedMotion.matches;
@@ -69,6 +71,8 @@ function layoutRoutes() {
     routesTrack.style.transform = '';
     routesViewport.style.removeProperty('--road-x');
     routesViewport.style.removeProperty('--hills-x');
+    routesViewport.style.removeProperty('--van-x');
+    routesViewport.style.removeProperty('--wheel-turn');
 
     if (!canPinRoutes()) {
         return;
@@ -82,6 +86,9 @@ function layoutRoutes() {
 
     routes.classList.add('is-pinned');
     routes.style.height = `${routes.querySelector('.lp-routes-sticky').offsetHeight + routesOverflow}px`;
+
+    // The van starts parked on the left and reaches the right edge as the last sign arrives.
+    vanTravel = routesVan ? Math.max(0, routesViewport.clientWidth - routesVan.offsetWidth - routesVan.offsetLeft * 2) : 0;
 }
 
 function routesProgress() {
@@ -102,6 +109,9 @@ function updateRoutes() {
     // The road is closer than the signs and the hills are further away, so they move faster and slower.
     routesViewport.style.setProperty('--road-x', `${(-shift * 1.5).toFixed(1)}px`);
     routesViewport.style.setProperty('--hills-x', `${(-shift * 0.4).toFixed(1)}px`);
+    routesViewport.style.setProperty('--van-x', `${(routesProgress() * vanTravel).toFixed(1)}px`);
+    // Wheels turn with the road (one turn per ~45px of road), so the van reads as driving rather than sliding.
+    routesViewport.style.setProperty('--wheel-turn', `${((shift * 1.5) / 45 * 360).toFixed(0)}deg`);
 }
 
 // Keyboard users tabbing through signs in pinned mode: scroll the page so the focused sign is on screen.

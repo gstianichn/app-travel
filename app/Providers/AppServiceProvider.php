@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\AppSetting;
-use App\Models\Route;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -34,15 +33,6 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('components.footer', function (ViewInstance $view): void {
             $view->with([
-                // One route per pair of cities, whichever direction is cheaper, so the list covers more of the map.
-                'footerRoutes' => Route::cheapestPerCityPair()
-                    ->unique(function (Route $route) {
-                        $cities = [$route->origin->city ?: $route->origin->name, $route->destination->city ?: $route->destination->name];
-                        sort($cities);
-
-                        return implode('|', $cities);
-                    })
-                    ->take(6),
                 'footerContact' => [
                     'phone' => AppSetting::companyPhone(),
                     'whatsapp' => AppSetting::whatsappUrl(),

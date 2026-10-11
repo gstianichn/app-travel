@@ -103,17 +103,18 @@ test('user can see payment channels in passenger data page before checkout', fun
 
     $response = $this->actingAs($this->user)->get(route('dashboard.user.booking.data-penumpang', $booking));
     $response->assertOk();
-    $response->assertSee('Metode Pembayaran (Midtrans)');
-    $response->assertSee('BCA Virtual Account');
-    $response->assertSee('Bank Mandiri');
-    $response->assertSee('BNI Virtual Account');
-    $response->assertSee('BRI Virtual Account (BRIVA)');
-    $response->assertSee('BSI Virtual Account');
+    $response->assertSee('Cara bayar');
+    $response->assertSee('Transfer virtual account');
+    $response->assertSee('value="bca"', false);
+    $response->assertSee('value="mandiri"', false);
+    $response->assertSee('value="bni"', false);
+    $response->assertSee('BRI (BRIVA)');
+    $response->assertSee('value="bsi"', false);
     $response->assertSee('SeaBank');
-    $response->assertSee('QRIS Dinamis');
+    $response->assertSee('QRIS');
     $response->assertSee('GoPay');
     $response->assertSee('ShopeePay');
-    $response->assertSee('Checkout & Bayar Tiket', false);
+    $response->assertSee('Lanjut ke pembayaran');
 });
 
 test('user can checkout with Mandiri bill payment and receives biller code & bill key', function () {

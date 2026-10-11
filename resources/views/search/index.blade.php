@@ -99,7 +99,12 @@
             @if ($schedules->isNotEmpty())
                 <div class="sr-results-head">
                     <h2>{{ $schedules->count() }} keberangkatan</h2>
-                    <p>Jam dalam WIB. Jam tiba adalah perkiraan, bisa bergeser karena kondisi jalan.</p>
+                    <p>
+                        Jam dalam WIB. Jam tiba adalah perkiraan, bisa bergeser karena kondisi jalan.
+                        @guest
+                            Bisa pesan tanpa akun; e-ticket dikirim ke email setelah bayar.
+                        @endguest
+                    </p>
                 </div>
 
                 <ol class="sr-trips">
@@ -137,11 +142,7 @@
                                     Rp {{ number_format($schedule->effectivePrice(), 0, ',', '.') }}
                                     <small>per orang</small>
                                 </p>
-                                @auth
-                                    <a href="{{ $seatUrl }}" class="lp-btn lp-btn--green">Pilih kursi</a>
-                                @else
-                                    <a href="{{ route('user.login', ['redirect' => $seatUrl]) }}" class="lp-btn lp-btn--green">Masuk untuk pesan</a>
-                                @endauth
+                                <a href="{{ $seatUrl }}" class="lp-btn lp-btn--green">Pilih kursi</a>
                             </div>
                         </li>
                     @endforeach

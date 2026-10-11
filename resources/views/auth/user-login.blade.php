@@ -10,6 +10,17 @@
         <p class="au-alert au-alert--ok" role="status">{{ session('status') }}</p>
     @endif
 
+    @error('google')
+        <p class="au-alert au-alert--error" role="alert">{{ $message }}</p>
+    @enderror
+
+    <a href="{{ route('auth.google.redirect') }}" class="au-google">
+        @include('auth.partials.google-mark')
+        Masuk dengan Google
+    </a>
+
+    <p class="au-or">atau pakai email</p>
+
     <form method="POST" action="{{ route('user.login.store') }}" class="au-form" data-auth-form>
         @csrf
 
@@ -54,5 +65,6 @@
 
     <div class="au-switch">
         <p>Belum punya akun? <a href="{{ route('register') }}" class="au-link">Daftar akun</a></p>
+        <p>Atau <a href="{{ route('search') }}" class="au-link">pesan tiket tanpa akun</a>; e-ticket dikirim ke email.</p>
     </div>
 @endsection

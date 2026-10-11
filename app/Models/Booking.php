@@ -17,6 +17,9 @@ class Booking extends Model
     protected $fillable = [
         'booking_code',
         'user_id',
+        'contact_name',
+        'contact_phone',
+        'contact_email',
         'schedule_id',
         'total_passenger',
         'subtotal',
@@ -150,7 +153,7 @@ class Booking extends Model
      */
     public function customerName(): string
     {
-        return $this->user?->name ?? ($this->passengers->first()?->name ?? 'Tamu Walk-in');
+        return $this->contact_name ?: ($this->user?->name ?? ($this->passengers->first()?->name ?? 'Tamu Walk-in'));
     }
 
     /**
@@ -158,7 +161,31 @@ class Booking extends Model
      */
     public function customerPhone(): string
     {
-        return $this->user?->phone ?? ($this->passengers->first()?->phone ?? '-');
+        return $this->contact_phone ?: ($this->user?->phone ?? ($this->passengers->first()?->phone ?? '-'));
+    }
+
+    /**
+     * Email the e-ticket goes to: the one typed at checkout, else the account email.
+     */
+    public function customerEmail(): ?string
+    {
+        return $this->contact_email ?: $this->user?->email;
+    }
+
+    /**
+     * Booked without an account (guest checkout).
+     */
+    public function isGuestBooking(): bool
+    {
+        return $this->user_id === null;
+    }
+
+    /**
+     * Whether payment has gone through and the e-ticket is issued.
+     */
+    public function isPaid(): bool
+    {
+        return in_array(strtolower($this->status ?? ''), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'completed'], true);
     }
 
     /**

@@ -1,9 +1,8 @@
 {{--
-    Public footer (landing and search). $footerRoutes and $footerContact come from the
-    view composer in AppServiceProvider; contact lines only appear once the admin fills them in.
+    Public footer (landing and search). $footerContact comes from the view composer in
+    AppServiceProvider; contact lines only appear once the admin fills them in.
 --}}
 @php
-    $cityOf = fn ($location) => $location->city ?: $location->name;
     $hasContact = $footerContact['phone'] || $footerContact['whatsapp'] || $footerContact['email'] || $footerContact['address'];
 @endphp
 
@@ -30,22 +29,6 @@
                 @endguest
             </div>
         </div>
-
-        @if ($footerRoutes->isNotEmpty())
-            <nav class="ft-col" aria-labelledby="ft-rute">
-                <h2 id="ft-rute" class="ft-heading">Rute populer</h2>
-                <ul class="ft-routes">
-                    @foreach ($footerRoutes as $footerRoute)
-                        <li>
-                            <a href="{{ route('search', ['origin' => $footerRoute->origin_id, 'destination' => $footerRoute->destination_id, 'departure_date' => now()->addDay()->toDateString(), 'passengers' => 1]) }}#hasil">
-                                <span>{{ $cityOf($footerRoute->origin) }} ke {{ $cityOf($footerRoute->destination) }}</span>
-                                <small>mulai {{ $footerRoute->formattedPrice() }}</small>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </nav>
-        @endif
 
         <nav class="ft-col" aria-labelledby="ft-bantuan">
             <h2 id="ft-bantuan" class="ft-heading">Bantuan</h2>
@@ -82,8 +65,8 @@
             @endif
 
             <h2 class="ft-heading {{ $hasContact ? 'ft-heading--spaced' : '' }}">Pembayaran</h2>
-            <p class="ft-pay">Virtual account BCA, Mandiri, BNI, BRI, BSI, SeaBank. QRIS, GoPay, ShopeePay.</p>
-            <p class="ft-note">Diproses lewat Midtrans.</p>
+            @include('components.payment-logos', ['class' => 'ft-pay-logos'])
+            <p class="ft-note">Virtual account, QRIS, dan e-wallet. Diproses lewat Midtrans.</p>
         </div>
     </div>
 

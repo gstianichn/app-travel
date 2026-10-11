@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\BookingAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -28,7 +29,7 @@ class UserLoginController extends Controller
     /**
      * Proses login khusus User.
      */
-    public function store(Request $request)
+    public function store(Request $request, BookingAccess $bookingAccess)
     {
         $credentials = $request->validate([
             'email' => [
@@ -62,6 +63,9 @@ class UserLoginController extends Controller
                 'failed_login_attempts' => 0,
                 'locked_until' => null,
             ]);
+
+            // A booking started before logging in now belongs to this account.
+            $bookingAccess->claimFor($request->user());
 
             return redirect()->intended(route('dashboard.user.index'));
         }

@@ -28,7 +28,7 @@
     <header class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between gap-4 h-16">
-                <a href="{{ route('dashboard.user.index') }}" class="flex items-center gap-2 min-h-11 text-brand-900 font-extrabold text-xl">
+                <a href="{{ $layoutUser ? route('dashboard.user.index') : route('home') }}" class="flex items-center gap-2 min-h-11 text-brand-900 font-extrabold text-xl">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M3 6h13l4 4v7H3V6z" />
                         <circle cx="7.5" cy="17.5" r="2" />
@@ -39,6 +39,7 @@
                     <span>TravelKu</span>
                 </a>
 
+                @if ($layoutUser)
                 <nav class="hidden md:flex items-center gap-1 font-semibold" aria-label="Menu akun penumpang">
                     @foreach ($navItems as $item)
                         @php $isActive = request()->routeIs(...$item['active']); @endphp
@@ -81,15 +82,21 @@
                         </div>
                     </div>
                 </div>
+                @else
+                    <nav class="flex items-center gap-2 font-semibold" aria-label="Menu">
+                        <a href="{{ route('search') }}" class="hidden sm:inline-flex items-center min-h-11 px-3 rounded-lg text-slate-600 hover:text-brand-700 hover:bg-slate-100">Cari jadwal</a>
+                        <a href="{{ route('user.login', ['redirect' => url()->current()]) }}" class="inline-flex items-center min-h-11 px-4 rounded-lg border-2 border-brand-800 text-brand-800 hover:bg-brand-50">Masuk</a>
+                    </nav>
+                @endif
             </div>
         </div>
     </header>
 
-    <main id="konten" class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 pb-28 md:pb-16">
+    <main id="konten" @class(['flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 md:pb-16', 'pb-28' => $layoutUser, 'pb-16' => ! $layoutUser])>
         @yield('content')
     </main>
 
-    <footer class="hidden md:block border-t border-slate-200 mt-auto">
+    <footer @class(['border-t border-slate-200 mt-auto', 'hidden md:block' => $layoutUser])>
         <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-slate-600">
             <p>&copy; {{ date('Y') }} TravelKu</p>
             <nav class="flex flex-wrap gap-x-6" aria-label="Bantuan">
@@ -101,6 +108,7 @@
     </footer>
 
     {{-- Phone navigation: thumb-reachable, same destinations as the header --}}
+    @if ($layoutUser)
     <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)]" aria-label="Menu akun penumpang">
         <div class="grid grid-cols-5">
             @foreach ($navItems as $item)
@@ -118,6 +126,7 @@
             @endforeach
         </div>
     </nav>
+    @endif
 
     @stack('scripts')
 </body>

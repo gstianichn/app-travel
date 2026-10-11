@@ -118,7 +118,7 @@ test('tab notifikasi dapat diakses dan menampilkan unread count serta filter kat
 
     $response->assertStatus(200);
     $response->assertSee('Pemberitahuan');
-    $response->assertSee('Penyampaian Ganda');
+    $response->assertSee('Izinkan notifikasi');
     $response->assertSee('Status Transaksi');
     $response->assertSee('Pengingat (H-2 Jam)');
     $response->assertSee('Info Operasional');

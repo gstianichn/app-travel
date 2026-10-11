@@ -1,350 +1,144 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Pilih Kursi Armada (Seat Map)')
+@section('page-title', 'Pilih kursi')
+
+@php
+    $frontRow = $occupancyMap['1'] ?? [];
+    $cabinRows = collect($occupancyMap)->except('1');
+@endphp
 
 @section('content')
-<div class="space-y-6 max-w-5xl mx-auto" x-data="seatPicker({
-    maxSeats: {{ $passengers }},
-    unitPrice: {{ $schedule->effectivePrice() }}
-})">
+<div class="space-y-8" x-data="seatPicker({ maxSeats: {{ $passengers }}, unitPrice: {{ $schedule->effectivePrice() }} })">
 
-    {{-- ===== BREADCRUMB / STEPPER FLOW ===== --}}
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto text-xs font-semibold">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
-                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">1</span>
-                Pilih Kursi
-            </span>
-            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
-                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs">2</span>
-                Data Penumpang & Promo
-            </span>
-            <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500">
-                <span class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs">3</span>
-                Pembayaran
-            </span>
-        </div>
+    @include('dashboard.user.partials.booking-steps', ['current' => 1])
 
-        {{-- Lock timer badge --}}
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
-            <span>Reservasi Kursi: <strong>10 Menit</strong> Seat Lock</span>
-        </div>
-    </div>
+    @include('dashboard.user.partials.flash')
 
-    {{-- Error banner jika ada tabrakan lock --}}
-    @if(session('error'))
-        <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-3">
-            <svg class="w-5 h-5 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <div>{{ session('error') }}</div>
-        </div>
-    @endif
+    <header class="space-y-4">
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">Pilih {{ $passengers }} kursi</h1>
+        @include('dashboard.user.partials.trip-summary', ['schedule' => $schedule])
+    </header>
 
-    {{-- ===== KONTEN UTAMA: DENAH KURSI & SIDEBAR RINGKASAN ===== --}}
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div class="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
 
-        {{-- KOLOM DENAH KURSI (SEAT MAP) --}}
-        <div class="lg:col-span-7 space-y-4">
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                
-                {{-- Header Denah --}}
-                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
-                    <div>
-                        <h3 class="font-bold text-slate-900 text-base">Denah Kursi Penumpang</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Silakan pilih <span class="font-bold text-emerald-800">{{ $passengers }} kursi</span> di denah bawah ini</p>
-                    </div>
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
-                        {{ $schedule->vehicle?->type ?? 'Toyota HiAce Premio' }}
-                    </span>
+        {{-- Cabin: drawn front to back, driver on the right like Indonesian minibuses --}}
+        <section aria-labelledby="denah" class="space-y-5">
+            <div class="flex flex-wrap items-baseline justify-between gap-3">
+                <h2 id="denah" class="text-xl font-extrabold text-brand-900">Denah kursi</h2>
+                <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-700">
+                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded border-2 border-brand-600 bg-white" aria-hidden="true"></span> Kosong</li>
+                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded bg-brand-800" aria-hidden="true"></span> Pilihanmu</li>
+                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded border-2 border-dashed border-amber-700 bg-amber-50" aria-hidden="true"></span> Ditahan orang lain</li>
+                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded bg-slate-300" aria-hidden="true"></span> Terisi</li>
+                </ul>
+            </div>
+
+            @if (empty($occupancyMap))
+                <div class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-8">
+                    <p class="font-bold text-slate-900">Denah kursi untuk jadwal ini belum tersedia.</p>
+                    <p class="mt-1 text-slate-600">Kendaraannya belum ditentukan admin. Pilih jam lain atau coba lagi nanti.</p>
+                    <a href="{{ route('search') }}" class="mt-4 inline-flex items-center min-h-11 font-semibold text-brand-700 underline underline-offset-2">Kembali ke jadwal</a>
                 </div>
-
-                {{-- Legenda Warna Kursi --}}
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs mb-6 pb-4 border-b border-slate-100">
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md border-2 border-emerald-500 bg-emerald-50"></div>
-                        <span class="text-slate-600">Tersedia</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md text-white flex items-center justify-center text-xs" style="background:#087f55;"></div>
-                        <span class="text-slate-600 font-semibold">Dipilih</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md bg-amber-200 border border-amber-400 flex items-center justify-center text-xs text-amber-800">
-                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            @else
+                <div class="max-w-sm rounded-[2.5rem_2.5rem_1.25rem_1.25rem] border-4 border-slate-400 bg-white px-6 pt-6 pb-5">
+                    <div class="flex items-end justify-between border-b-2 border-dashed border-slate-300 pb-4">
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="flex gap-2">
+                                @foreach ($frontRow as $seat)
+                                    @include('dashboard.user.partials.seat-button', ['seat' => $seat])
+                                @endforeach
+                            </div>
+                            <span class="text-xs text-slate-500">Depan</span>
                         </div>
-                        <span class="text-slate-600">Terkunci</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded-md bg-slate-300 border border-slate-400 flex items-center justify-center text-xs"></div>
-                        <span class="text-slate-600">Terisi</span>
-                    </div>
-                </div>
-
-                {{-- Layout Fisik Kabin Minibus HiAce / Van (Standar Kemudi Kanan Indonesia) --}}
-                <div class="max-w-xs mx-auto bg-slate-50 rounded-3xl p-6 border-2 border-slate-200 shadow-inner relative">
-                    
-                    {{-- Bagian Depan Minibus (Kaca Depan & Kabin Supir Setir Kanan) --}}
-                    <div class="border-b-2 border-dashed border-slate-300 pb-4 mb-5 text-center">
-                        <div class="flex items-center justify-between px-2 mb-2.5">
-                            <span class="text-xs font-bold text-slate-400 flex items-center gap-1">
-                                <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"/><path d="M17 12h.01"/></svg>
-                                Pintu Kiri
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="w-12 h-12 rounded-lg bg-slate-800 text-white flex items-center justify-center" title="Sopir">
+                                <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2" /><path d="M12 14v7M10.2 11 3.5 9.5M13.8 11l6.7-1.5" /></svg>
                             </span>
-                            <div class="h-1.5 w-24 rounded-full bg-slate-300" title="Kaca Depan Minibus"></div>
-                            <span class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m12 2v20m10-10H2"/></svg>
-                                Setir Kanan
-                            </span>
-                        </div>
-                        <div class="flex items-center justify-between px-2">
-                            {{-- Kursi 1A (Baris Depan Kiri - Samping Pintu Penumpang) --}}
-                            @php
-                                $seat1A = null;
-                                foreach($occupancyMap as $row) {
-                                    foreach($row as $s) {
-                                        if ($s['seat_number'] === '1A') {
-                                            $seat1A = $s;
-                                            break 2;
-                                        }
-                                    }
-                                }
-                            @endphp
-                            <div class="flex flex-col items-center">
-                                @if($seat1A)
-                                    @include('dashboard.user.partials.seat-button', ['seat' => $seat1A])
-                                @else
-                                    <div class="w-14 h-14 rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-xs">
-                                        Kosong
-                                    </div>
-                                @endif
-                                <span class="text-xs font-semibold text-slate-400 mt-1">Depan Kiri</span>
-                            </div>
-
-                            {{-- Lorong Tangga / Pintu Masuk Depan --}}
-                            <div class="flex flex-col items-center justify-center px-1">
-                                <span class="text-xs font-bold text-slate-400">Pintu / Depan</span>
-                            </div>
-
-                            {{-- Kursi Kemudi Sopir (Kanan - Standar Kendaraan Indonesia) --}}
-                            <div class="flex flex-col items-center">
-                                <div class="w-14 h-14 rounded-2xl bg-slate-900 border-2 border-slate-700 flex flex-col items-center justify-center text-amber-400 shadow-sm" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <circle cx="12" cy="12" r="10"/>
-                                        <path d="m12 2v20m10-10H2"/>
-                                    </svg>
-                                    <span class="text-xs font-bold mt-0.5 text-white">Sopir</span>
-                                </div>
-                                <span class="text-xs font-bold text-slate-500 mt-1">Setir Kanan</span>
-                            </div>
+                            <span class="text-xs text-slate-500">Sopir</span>
                         </div>
                     </div>
 
-                    {{-- Baris Kursi Penumpang (Row 2 dst - Realistis Minibus Indonesia) --}}
-                    <div class="space-y-3.5">
-                        @foreach($occupancyMap as $rowIndex => $rowSeats)
-                            {{-- Lewatkan baris 1 jika sudah ditaruh di depan --}}
-                            @if((string) $rowIndex === '1')
-                                @continue
-                            @endif
-
-                            <div class="flex items-center justify-between px-2">
-                                @php
-                                    $seatCount = count($rowSeats);
-                                @endphp
-
-                                @if($seatCount === 2)
-                                    {{-- Kursi Kiri (Sisi Jendela Kiri / Pintu Geser) --}}
-                                    <div class="flex items-center gap-2 w-14 justify-center">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
-                                    </div>
-
-                                    {{-- Lorong Tengah --}}
-                                    <div class="text-xs text-slate-300 font-mono">
-                                        R{{ $rowIndex }}
-                                    </div>
-
-                                    {{-- Kursi Kanan (Belakang Kemudi Sopir) --}}
-                                    <div class="flex items-center gap-2 w-14 justify-center">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
-                                    </div>
-                                @elseif($seatCount === 3)
-                                    <div class="flex items-center gap-2">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[2]])
-                                    </div>
-                                @elseif($seatCount >= 4)
-                                    <div class="flex items-center gap-1.5">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[0]])
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[1]])
-                                    </div>
-                                    <div class="text-xs text-slate-300 font-mono">
-                                        R{{ $rowIndex }}
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[2]])
-                                        @include('dashboard.user.partials.seat-button', ['seat' => $rowSeats[3]])
-                                    </div>
-                                @else
-                                    <div class="flex items-center gap-2">
-                                        @foreach($rowSeats as $st)
-                                            @include('dashboard.user.partials.seat-button', ['seat' => $st])
+                    <div class="space-y-3 pt-4">
+                        @foreach ($cabinRows as $rowSeats)
+                            <div @class([
+                                'flex items-center gap-2',
+                                'justify-between' => count($rowSeats) !== 3,
+                                'justify-around' => count($rowSeats) === 3,
+                            ])>
+                                @if (count($rowSeats) >= 4)
+                                    <div class="flex gap-2">
+                                        @foreach (array_slice($rowSeats, 0, 2) as $seat)
+                                            @include('dashboard.user.partials.seat-button', ['seat' => $seat])
                                         @endforeach
                                     </div>
+                                    <div class="flex gap-2">
+                                        @foreach (array_slice($rowSeats, 2) as $seat)
+                                            @include('dashboard.user.partials.seat-button', ['seat' => $seat])
+                                        @endforeach
+                                    </div>
+                                @else
+                                    @foreach ($rowSeats as $seat)
+                                        @include('dashboard.user.partials.seat-button', ['seat' => $seat])
+                                    @endforeach
                                 @endif
                             </div>
                         @endforeach
                     </div>
 
-                    {{-- Bagian Belakang Kabin / Bagasi --}}
-                    <div class="mt-6 pt-3 border-t-2 border-dashed border-slate-300 text-center">
-                        <span class="text-xs font-bold text-slate-400">Bagasi Luas Belakang</span>
-                    </div>
-
+                    <p class="mt-4 border-t-2 border-dashed border-slate-300 pt-3 text-center text-xs text-slate-500">Belakang</p>
                 </div>
+            @endif
+        </section>
 
-            </div>
-        </div>
+        {{-- Summary sits beside the map on desktop and under it on a phone --}}
+        <aside class="lg:sticky lg:top-24 rounded-xl border border-slate-300 bg-white p-6 space-y-5" aria-labelledby="kursi-pilihan">
+            <h2 id="kursi-pilihan" class="text-xl font-extrabold text-brand-900">Kursi pilihanmu</h2>
 
-        {{-- KOLOM RINGKASAN PEMESANAN & AKSI LOCK --}}
-        <div class="lg:col-span-5 space-y-4">
-            
-            {{-- Detail Perjalanan Card --}}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <h4 class="font-bold text-slate-900 text-sm">Ringkasan Jadwal</h4>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-md" style="background:#e3f5ee; color:#087f55;">
-                        Konfirmasi Instan
-                    </span>
+            <p class="text-slate-700" x-show="selectedSeats.length === 0">Ketuk kursi kosong di denah. Kamu perlu memilih {{ $passengers }} kursi.</p>
+            <ul class="flex flex-wrap gap-2" x-show="selectedSeats.length > 0" x-cloak>
+                <template x-for="seat in selectedSeats" :key="seat.id">
+                    <li>
+                        <button type="button" @click="toggleSeat(seat.id, seat.number)"
+                                class="inline-flex items-center gap-2 min-h-11 pl-3 pr-2 rounded-lg bg-brand-800 text-white font-bold"
+                                :aria-label="'Batalkan kursi ' + seat.number">
+                            <span x-text="seat.number"></span>
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                        </button>
+                    </li>
+                </template>
+            </ul>
+            <p class="text-sm font-semibold text-amber-900" role="status" aria-live="polite" x-text="limitMessage"></p>
+
+            <dl class="space-y-2 border-t border-slate-200 pt-4">
+                <div class="flex justify-between gap-4 text-slate-600">
+                    <dt>Harga per kursi</dt>
+                    <dd>{{ $schedule->formattedEffectivePrice() }}</dd>
                 </div>
-
-                {{-- Rute & Waktu --}}
-                <div class="space-y-3 text-xs">
-                    <div class="flex items-start gap-3">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#e3f5ee;">
-                            <svg width="14" height="14" fill="none" stroke="#087f55" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-slate-400 font-medium">Titik Keberangkatan</p>
-                            <p class="font-bold text-slate-800 text-sm">{{ $schedule->route?->origin?->name }}</p>
-                            <p class="text-slate-500 text-xs">{{ $schedule->route?->origin?->address ?? 'Pool Utama' }}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start gap-3">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-100">
-                            <svg width="14" height="14" fill="none" stroke="#64748b" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-slate-400 font-medium">Titik Tujuan</p>
-                            <p class="font-bold text-slate-800 text-sm">{{ $schedule->route?->destination?->name }}</p>
-                            <p class="text-slate-500 text-xs">{{ $schedule->route?->destination?->address ?? 'Pool Tujuan' }}</p>
-                        </div>
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
-                        <div>
-                            <p class="text-slate-400">Tanggal</p>
-                            <p class="font-semibold text-slate-800">{{ \Carbon\Carbon::parse($schedule->departure_date)->translatedFormat('d M Y') }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-400">Jam Berangkat</p>
-                            <p class="font-semibold text-slate-800">{{ \Carbon\Carbon::parse($schedule->departure_time)->format('H:i') }} WIB</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-400">Tipe Armada</p>
-                            <p class="font-semibold text-slate-800">{{ $schedule->vehicle?->type }}</p>
-                        </div>
-                        <div>
-                            <p class="text-slate-400">Plat Nomor</p>
-                            <p class="font-semibold text-slate-800 font-mono">{{ $schedule->vehicle?->plate_number }}</p>
-                        </div>
-                    </div>
+                <div class="flex justify-between gap-4 text-slate-600">
+                    <dt>Dipilih</dt>
+                    <dd x-text="selectedSeats.length + ' dari ' + maxSeats"></dd>
                 </div>
-            </div>
-
-            {{-- Form Konfirmasi Kunci Kursi (Seat Lock) --}}
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-                <h4 class="font-bold text-slate-900 text-sm">Kursi Pilihan Anda</h4>
-
-                {{-- Display Tag Kursi Terpilih --}}
-                <div>
-                    <template x-if="selectedSeats.length > 0">
-                        <div class="flex flex-wrap gap-2">
-                            <template x-for="seat in selectedSeats" :key="seat.id">
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-white font-bold text-xs" style="background:#087f55;">
-                                    Kursi <span x-text="seat.number"></span>
-                                    <button type="button" @click="toggleSeat(seat.id, seat.number)" class="hover:text-rose-200" aria-label="Hapus kursi ini">&times;</button>
-                                </span>
-                            </template>
-                        </div>
-                    </template>
-                    <template x-if="selectedSeats.length === 0">
-                        <p class="text-xs text-amber-600 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
-                            Silakan klik kursi di denah sebelah kiri untuk memilih.
-                        </p>
-                    </template>
+                <div class="flex justify-between gap-4 text-lg font-extrabold text-slate-900">
+                    <dt>Total</dt>
+                    <dd x-text="formatRupiah(selectedSeats.length * unitPrice)"></dd>
                 </div>
+            </dl>
 
-                {{-- Kalkulasi Harga --}}
-                <div class="pt-3 border-t border-slate-100 space-y-2 text-xs">
-                    <div class="flex justify-between text-slate-600">
-                        <span>Tarif per kursi:</span>
-                        <span class="font-semibold">{{ $schedule->formattedEffectivePrice() }}</span>
-                    </div>
-                    <div class="flex justify-between text-slate-600">
-                        <span>Jumlah kursi dipilih:</span>
-                        <span class="font-bold" x-text="selectedSeats.length + ' dari ' + maxSeats + ' kursi'"></span>
-                    </div>
-                    <div class="flex justify-between text-base font-extrabold pt-2 border-t border-slate-100">
-                        <span>Estimasi Total:</span>
-                        <span style="color:#087f55;" x-text="formatRupiah(selectedSeats.length * unitPrice)"></span>
-                    </div>
-                </div>
+            <form action="{{ route('dashboard.user.booking.lock-seats') }}" method="POST" class="space-y-3">
+                @csrf
+                <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
+                <input type="hidden" name="passengers" value="{{ $passengers }}">
+                <template x-for="seat in selectedSeats" :key="seat.id">
+                    <input type="hidden" name="seat_ids[]" :value="seat.id">
+                </template>
 
-                {{-- Mekanisme Seat Lock Alert --}}
-                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs space-y-1">
-                    <p class="font-bold text-slate-800 flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        Mekanisme Reservasi Sementara (Seat Lock)
-                    </p>
-                    <p>Setelah menekan tombol di bawah, kursi pilihan Anda akan <strong>dikunci otomatis selama 10 menit</strong> agar tidak diserobot pengguna lain selagi Anda mengisi data penumpang.</p>
-                </div>
-
-                {{-- Form submit lock --}}
-                <form action="{{ route('dashboard.user.booking.lock-seats') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
-                    <input type="hidden" name="passengers" value="{{ $passengers }}">
-                    
-                    {{-- Hidden input array untuk kursi yang dipilih --}}
-                    <template x-for="seat in selectedSeats" :key="seat.id">
-                        <input type="hidden" name="seat_ids[]" :value="seat.id">
-                    </template>
-
-                    <button type="submit"
-                            :disabled="selectedSeats.length !== maxSeats"
-                            class="w-full text-white font-bold py-3 px-4 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2"
-                            :style="selectedSeats.length === maxSeats ? 'background:#087f55;' : 'background:#cbd5e1; cursor:not-allowed;'"
-                            onmouseover="if(this.getAttribute('disabled') === null) this.style.background='#066b47'"
-                            onmouseout="if(this.getAttribute('disabled') === null) this.style.background='#087f55'">
-                        <span>Kunci Kursi & Lanjut Isi Data</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                </form>
-
-            </div>
-
-        </div>
-
+                <button type="submit" class="lp-btn lp-btn--primary w-full" :disabled="selectedSeats.length !== maxSeats">
+                    Tahan kursi dan isi data
+                </button>
+                <p class="text-sm text-slate-600">Kursinya kami tahan 15 menit untuk kamu, jadi tidak bisa diambil penumpang lain selama kamu mengisi data dan membayar.</p>
+            </form>
+        </aside>
     </div>
-
 </div>
 
 <script>
@@ -353,27 +147,32 @@ function seatPicker(config) {
         maxSeats: config.maxSeats,
         unitPrice: config.unitPrice,
         selectedSeats: [],
+        limitMessage: '',
 
         toggleSeat(id, number) {
-            const index = this.selectedSeats.findIndex(s => s.id === id);
+            const index = this.selectedSeats.findIndex((seat) => seat.id === id);
+            this.limitMessage = '';
+
             if (index > -1) {
                 this.selectedSeats.splice(index, 1);
-            } else {
-                if (this.selectedSeats.length >= this.maxSeats) {
-                    alert('Anda telah memilih maksimal ' + this.maxSeats + ' kursi sesuai pencarian.');
-                    return;
-                }
-                this.selectedSeats.push({ id: id, number: number });
+                return;
             }
+
+            if (this.selectedSeats.length >= this.maxSeats) {
+                this.limitMessage = `Sudah ${this.maxSeats} kursi. Batalkan salah satu dulu kalau mau ganti.`;
+                return;
+            }
+
+            this.selectedSeats.push({ id, number });
         },
 
         isSelected(id) {
-            return this.selectedSeats.some(s => s.id === id);
+            return this.selectedSeats.some((seat) => seat.id === id);
         },
 
         formatRupiah(amount) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
-        }
+        },
     };
 }
 </script>
