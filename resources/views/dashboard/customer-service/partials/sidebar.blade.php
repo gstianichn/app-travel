@@ -33,7 +33,7 @@
             <div class="agent-avatar">
                 {{ strtoupper(substr(auth()->user()->name ?? 'CS', 0, 2)) }}
             </div>
-            <span class="agent-status-dot online" id="sidebar-status-dot" title="Status: Online"></span>
+            
         </div>
         <div class="agent-meta">
             <div class="agent-name">{{ auth()->user()->name ?? 'Customer Service' }}</div>
@@ -70,7 +70,7 @@
                         </svg>
                     </span>
                     <span class="menu-text">Layanan Pelanggan</span>
-                    <span class="menu-badge">Live</span>
+                    <span class="menu-badge">Contoh</span>
                 </a>
             </li>
 

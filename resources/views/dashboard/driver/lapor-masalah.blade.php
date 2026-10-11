@@ -16,11 +16,11 @@
             <div class="cockpit-hero-header" style="background: linear-gradient(135deg, #78350f 0%, #b45309 100%);">
                 <div class="cockpit-title-group">
                     <div class="cockpit-tag-pill" style="background: rgba(255,255,255,0.18); color: white;">
-                        <span>⚠️</span>
+                        <span></span>
                         <span>STATUS LAPORAN AKTIF</span>
                     </div>
                     <h2>
-                        <span>⚠️</span>
+                        <span></span>
                         <span>Kendala Jalan Terlaporkan pada Perjalanan Ini</span>
                     </h2>
                     <p>Kendala berikut sedang ditindaklanjuti oleh koordinator pool dan dispatcher.</p>
@@ -33,7 +33,7 @@
                             <div>
                                 <strong style="color:#92400e; font-size: 15px;">{{ $inc->categoryIcon() }} {{ $inc->categoryLabel() }}</strong>
                                 <p style="font-size:13px; color:#78350f; margin: 4px 0 6px 0;">{{ $inc->description }}</p>
-                                <small style="font-size:11.5px; color:#b45309;">📍 Lokasi: {{ $inc->location_name }} • ⏰ Dilaporkan: {{ $inc->reported_at?->format('H:i') }} WIB • Estimasi Tertunda: {{ $inc->estimated_delay_minutes ?? 15 }} menit</small>
+                                <small style="font-size:11.5px; color:#b45309;">Lokasi: {{ $inc->location_name }} • ⏰ Dilaporkan: {{ $inc->reported_at?->format('H:i') }} WIB • Estimasi Tertunda: {{ $inc->estimated_delay_minutes ?? 15 }} menit</small>
                             </div>
                             <span class="pill-badge" style="background:white; font-size:12px; font-weight:800; color: #b45309; padding: 6px 14px; border-radius: 8px; border: 1px solid #fcd34d;">
                                 {{ $inc->statusLabel() }}
@@ -55,7 +55,7 @@
                     <span>BANTUAN OPERASIONAL & KENDALA</span>
                 </div>
                 <h2>
-                    <span>⚠️</span>
+                    <span></span>
                     <span>Form Melaporkan Masalah Perjalanan</span>
                 </h2>
                 <p>Laporkan kendala lapangan seperti ban bocor, kemacetan parah, mogok, atau kendala penumpang secara instan ke pusat operasional.</p>
@@ -72,13 +72,13 @@
                     <div>
                         <label style="display: block; font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">Kategori Kendala Operasional</label>
                         <select name="category" class="form-control" style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px;" required>
-                            <option value="ban_bocor">🛞 Ban Bocor / Kempes</option>
-                            <option value="macet_parah">🚦 Macet Parah / Total (Keterlambatan)</option>
-                            <option value="mesin_mogok">⚙️ Kendala Mesin / Radiator Panas</option>
-                            <option value="penumpang_batal">👤 Penumpang Batal Mendadak / Tidak Datang</option>
-                            <option value="kecelakaan">💥 Insiden Senggolan / Kecelakaan Jalan</option>
-                            <option value="darurat_medis">🩺 Darurat Medis Penumpang</option>
-                            <option value="lainnya">⚠️ Kendala Lainnya</option>
+                            <option value="ban_bocor">Ban Bocor / Kempes</option>
+                            <option value="macet_parah">Macet Parah / Total (Keterlambatan)</option>
+                            <option value="mesin_mogok">Kendala Mesin / Radiator Panas</option>
+                            <option value="penumpang_batal">Penumpang Batal Mendadak / Tidak Datang</option>
+                            <option value="kecelakaan">Insiden Senggolan / Kecelakaan Jalan</option>
+                            <option value="darurat_medis">Darurat Medis Penumpang</option>
+                            <option value="lainnya">Kendala Lainnya</option>
                         </select>
                     </div>
 
@@ -109,7 +109,7 @@
                         Batal
                     </a>
                     <button type="submit" class="btn-main-status-trigger" style="margin-top: 0; width: auto; padding: 12px 28px; background: linear-gradient(135deg, #b45309 0%, #d97706 100%);">
-                        <span>⚠️ Kirim Laporan Kendala ke Pusat Kendali</span>
+                        <span>Kirim Laporan Kendala ke Pusat Kendali</span>
                     </button>
                 </div>
             </form>

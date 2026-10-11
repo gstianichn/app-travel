@@ -9,13 +9,15 @@
     </title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    @stack('head')
 </head>
 
-<body>
+<body class="@yield('body-class')">
 
     @include('components.navbar')
 
-    <main>
+    <main id="konten">
         @yield('content')
     </main>
 

@@ -3,15 +3,7 @@
         <header class="topbar">
 
             <div class="page-title">
-
-                <h1>
-                    Dashboard Operasional (Layar Utama)
-                </h1>
-
-                <p>
-                    Pusat pemantauan keberangkatan armada, validasi tiket, dan operasional loket.
-                </p>
-
+                <p><strong>TravelKu</strong>, staf pool</p>
             </div>
 
 
@@ -37,7 +29,7 @@
                     </strong>
 
                     <span>
-                        {{ $shiftInfo['pool_name'] }}
+                        {{ ($shiftInfo['pool_name'] ?? null) ?: 'Staf pool' }}
                     </span>
 
                 </div>

@@ -442,11 +442,10 @@
             </a>
             @if($payment->booking)
                 <a href="{{ route('dashboard.admin.pemesanan.show', $payment->booking->id) }}" class="btn-back">
-                    Lihat E-Ticket &rarr;
-                </a>
+                    Lihat E-Ticket</a>
             @endif
             <button type="button" class="btn-print" onclick="window.print()">
-                🖨️ Cetak Faktur (Print / PDF)
+                Cetak Faktur (Print / PDF)
             </button>
         </div>
     </div>
@@ -454,13 +453,13 @@
     {{-- ALERTS --}}
     @if(session('success'))
         <div style="padding: 12px 18px; border-radius: 10px; font-size: 13px; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
-            <span>✓ {{ session('success') }}</span>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div style="padding: 12px 18px; border-radius: 10px; font-size: 13px; background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">
-            <span>⚠️ {{ session('error') }}</span>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
@@ -487,7 +486,7 @@
             <div class="grid-specs">
                 {{-- Kiri: Info Perjalanan & Pelanggan --}}
                 <div class="spec-card">
-                    <span class="spec-card-title">👤 Informasi Pemesan & Rute</span>
+                    <span class="spec-card-title">Informasi Pemesan & Rute</span>
 
                     <div class="spec-row">
                         <span class="spec-label">Nama Lengkap</span>
@@ -509,7 +508,7 @@
                     <div class="spec-row">
                         <span class="spec-label">Rute Perjalanan</span>
                         <span class="spec-value" style="color: #0284c7;">
-                            {{ $payment->booking?->schedule?->route ? ($payment->booking->schedule->route->origin?->name . ' → ' . $payment->booking->schedule->route->destination?->name) : 'Rute Travel' }}
+                            {{ $payment->booking?->schedule?->route ? ($payment->booking->schedule->route->origin?->name . ' ke ' . $payment->booking->schedule->route->destination?->name) : 'Rute Travel' }}
                         </span>
                     </div>
 
@@ -532,7 +531,7 @@
 
                 {{-- Kanan: Status & Rincian Pembayaran --}}
                 <div class="spec-card">
-                    <span class="spec-card-title">💳 Rincian Tagihan & Status</span>
+                    <span class="spec-card-title">Rincian Tagihan & Status</span>
 
                     <div class="spec-row">
                         <span class="spec-label">Status Pembayaran</span>
@@ -578,7 +577,7 @@
 
             {{-- DAFTAR PENUMPANG & ALOKASI KURSI --}}
             <div>
-                <span class="spec-card-title" style="margin-bottom: 8px;">💺 Rincian Penumpang & Kursi Terdaftar</span>
+                <span class="spec-card-title" style="margin-bottom: 8px;">Rincian Penumpang & Kursi Terdaftar</span>
                 <table class="passenger-table">
                     <thead>
                         <tr>
@@ -624,15 +623,15 @@
     @if($payment->isManualTransfer() || $payment->hasProof())
         <div class="verification-panel">
             <div class="verification-header">
-                <h3>🏦 Bukti Pembayaran Transfer Bank Langsung</h3>
+                <h3>Bukti Pembayaran Transfer Bank Langsung</h3>
                 <div>
                     @if(in_array(strtolower($payment->status), ['success', 'paid', 'lunas']))
                         <span style="font-size: 12px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 4px 10px; border-radius: 6px;">
-                            ✓ Pembayaran Telah Disetujui
+                            Pembayaran Telah Disetujui
                         </span>
                     @elseif(in_array(strtolower($payment->status), ['failed', 'gagal', 'ditolak']))
                         <span style="font-size: 12px; font-weight: 700; color: #b91c1c; background: #fee2e2; padding: 4px 10px; border-radius: 6px;">
-                            ✕ Pembayaran Ditolak
+                            Pembayaran Ditolak
                         </span>
                     @else
                         <span style="font-size: 12px; font-weight: 700; color: #d97706; background: #fef3c7; padding: 4px 10px; border-radius: 6px;">
@@ -649,7 +648,7 @@
                         <img src="{{ asset('storage/' . $payment->proof_image) }}" alt="Bukti Transfer">
                     @else
                         <span style="font-size: 12px; color: #94a3b8; text-align: center; padding: 10px;">
-                            📷 Belum ada foto bukti transfer
+                            Belum ada foto bukti transfer
                         </span>
                     @endif
                 </div>
@@ -676,13 +675,13 @@
                                 @method('PATCH')
                                 <input type="hidden" name="action" value="approve">
                                 <button type="submit" class="btn-approve">
-                                    ✓ Setujui (Lunas & Terbitkan Tiket)
+                                    Setujui (Lunas & Terbitkan Tiket)
                                 </button>
                             </form>
 
                             {{-- Form Reject Button triggers prompt --}}
                             <button type="button" class="btn-reject" onclick="showRejectInput()">
-                                ✕ Tolak Bukti
+                                Tolak Bukti
                             </button>
                         </div>
 
@@ -728,7 +727,7 @@
     <div class="gateway-section">
         <div class="gateway-header">
             <div>
-                <h3>⚡ Status Payment Gateway (Midtrans / Xendit / Tripay)</h3>
+                <h3>Status Payment Gateway (Midtrans / Xendit / Tripay)</h3>
                 <span style="font-size: 12px; color: #64748b;">
                     Log pembaruan otomatis dari webhook penyedia gerbang pembayaran digital
                 </span>
@@ -751,7 +750,7 @@
                     </select>
 
                     <button type="submit" class="btn-back" style="padding: 6px 12px; font-size: 11px; background: #0284c7; color: white; border: none; font-weight: 700;">
-                        🔄 Sinkronkan Gateway
+                        Sinkronkan Gateway
                     </button>
                 </form>
             </div>
@@ -784,11 +783,11 @@
         <div>
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                 <span style="font-size: 12px; font-weight: 700; color: #475569;">
-                    📄 Raw Webhook Callback Payload (JSON)
+                    Raw Webhook Callback Payload (JSON)
                 </span>
                 @if($payment->raw_response)
                     <button type="button" class="btn-back" onclick="copyDetailJson()" style="font-size: 11px;">
-                        📋 Salin JSON
+                        Salin JSON
                     </button>
                 @endif
             </div>

@@ -335,21 +335,21 @@
 
             @if($booking->schedule_id)
                 <a href="{{ route('dashboard.admin.pemesanan.seat-map', $booking->schedule_id) }}" class="btn-action-back">
-                    💺 Denah Kursi
+                    Denah Kursi
                 </a>
                 <a href="{{ route('dashboard.admin.pemesanan.manifes', $booking->schedule_id) }}" class="btn-action-back">
-                    📋 Manifes Jadwal
+                    Manifes Jadwal
                 </a>
             @endif
 
             @if(strtolower($booking->status) !== 'cancelled')
                 <a href="{{ route('dashboard.admin.pemesanan.reschedule', $booking->id) }}" class="btn-action-reschedule">
-                    🔄 Reschedule / Geser Kursi
+                    Reschedule / Geser Kursi
                 </a>
             @endif
 
             <button type="button" class="btn-action-print" onclick="window.print()">
-                🖨️ Cetak E-Ticket
+                Cetak E-Ticket
             </button>
         </div>
     </div>
@@ -357,14 +357,14 @@
     {{-- FLASH ALERTS --}}
     @if(session('success'))
         <div class="flash-alert flash-success">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="flash-alert flash-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -373,7 +373,7 @@
     <div class="eticket-card">
         @php
             $routeLabel = $booking->schedule?->route 
-                ? ($booking->schedule->route->origin?->name . ' → ' . $booking->schedule->route->destination?->name) 
+                ? ($booking->schedule->route->origin?->name . ' ke ' . $booking->schedule->route->destination?->name) 
                 : ($booking->schedule?->travelRoute?->name ?? 'Rute Travel');
         @endphp
         <div class="eticket-header">
@@ -396,7 +396,7 @@
             <div class="ticket-grid">
                 {{-- JADWAL PERJALANAN --}}
                 <div>
-                    <div class="ticket-section-title">📅 Informasi Perjalanan</div>
+                    <div class="ticket-section-title">Informasi Perjalanan</div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <div class="spec-item">
                             <span class="spec-lbl">Rute</span>
@@ -423,7 +423,7 @@
 
                 {{-- PEMESAN & PEMBAYARAN --}}
                 <div>
-                    <div class="ticket-section-title">👤 Informasi Pemesan & Pembayaran</div>
+                    <div class="ticket-section-title">Informasi Pemesan & Pembayaran</div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <div class="spec-item">
                             <span class="spec-lbl">Nama Pemesan</span>
@@ -467,7 +467,7 @@
 
             {{-- DAFTAR PENUMPANG & NOMOR KURSI --}}
             <div>
-                <div class="ticket-section-title">💺 Daftar Penumpang & Alokasi Kursi</div>
+                <div class="ticket-section-title">Daftar Penumpang & Alokasi Kursi</div>
                 <table class="passenger-table">
                     <thead>
                         <tr>

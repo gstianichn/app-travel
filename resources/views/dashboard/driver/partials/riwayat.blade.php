@@ -40,7 +40,7 @@
                                         <div style="font-size:11px; color:var(--text-muted);">{{ $cTrip->vehicle?->name ?? 'Toyota HiAce' }}</div>
                                     </td>
                                     <td>
-                                        {{ $cTrip->route?->origin?->name ?? 'Bandung' }} &nbsp;→&nbsp; {{ $cTrip->route?->destination?->name ?? 'Jakarta' }}
+                                        {{ $cTrip->route?->origin?->name ?? 'Bandung' }} &nbsp; ke &nbsp; {{ $cTrip->route?->destination?->name ?? 'Jakarta' }}
                                     </td>
                                     <td>
                                         <span class="seat-badge-pill" style="background:#059669; border-color:#059669;">
@@ -49,7 +49,7 @@
                                     </td>
                                     <td>
                                         <span class="badge-status-completed" style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11px;">
-                                            ✓ Ditutup Selesai
+                                            Ditutup Selesai
                                         </span>
                                     </td>
                                 </tr>
@@ -65,9 +65,9 @@
                                         <strong>D 7812 AB</strong>
                                         <div style="font-size:11px; color:var(--text-muted);">Toyota HiAce Premio Eksekutif</div>
                                     </td>
-                                    <td>Bandung (Dipatiukur) → Jakarta (Semanggi)</td>
+                                    <td>Bandung (Dipatiukur) ke Jakarta (Semanggi)</td>
                                     <td><span class="seat-badge-pill" style="background:#059669;">10 Orang</span></td>
-                                    <td><span class="badge-status-completed" style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11px;">✓ Selesai</span></td>
+                                    <td><span class="badge-status-completed" style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11px;">Selesai</span></td>
                                 </tr>
                                 <tr>
                                     <td>2</td>
@@ -79,9 +79,9 @@
                                         <strong>D 7812 AB</strong>
                                         <div style="font-size:11px; color:var(--text-muted);">Toyota HiAce Premio Eksekutif</div>
                                     </td>
-                                    <td>Jakarta (Semanggi) → Bandung (Dipatiukur)</td>
+                                    <td>Jakarta (Semanggi) ke Bandung (Dipatiukur)</td>
                                     <td><span class="seat-badge-pill" style="background:#059669;">9 Orang</span></td>
-                                    <td><span class="badge-status-completed" style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11px;">✓ Selesai</span></td>
+                                    <td><span class="badge-status-completed" style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11px;">Selesai</span></td>
                                 </tr>
                             @endforelse
                         </tbody>

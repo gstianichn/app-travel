@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AppSetting;
 use App\Models\Booking;
 use App\Models\Location;
 use App\Models\Route;
@@ -28,7 +29,7 @@ test('A1: user can view akun dashboard with initialized presets of saved passeng
     $response->assertOk();
     $response->assertSee('Daftar Penumpang Tersimpan');
     $response->assertSee('Dompet Voucher');
-    $response->assertSee('Pusat Bantuan CS');
+    $response->assertSee('Nomor WhatsApp CS belum diisi');
 
     // Presets should be created
     expect($this->user->savedPassengers()->count())->toBeGreaterThanOrEqual(1);
@@ -169,6 +170,8 @@ test('B3: voucher validation API rejects invalid route or under min order', func
 });
 
 test('C1: customer support WhatsApp URL includes ticket number and route context automatically', function () {
+    AppSetting::set('company_whatsapp', '0812-1111-2222');
+
     $locA = Location::create(['name' => 'Pool Pasteur', 'code' => 'PST-01', 'city' => 'Bandung', 'address' => 'Jl Pasteur', 'is_active' => true]);
     $locB = Location::create(['name' => 'Gambir', 'code' => 'GMB-01', 'city' => 'Jakarta', 'address' => 'Stasiun Gambir', 'is_active' => true]);
     $route = Route::create(['origin_id' => $locA->id, 'destination_id' => $locB->id, 'distance' => 150, 'duration' => 180, 'price' => 120000]);
@@ -209,6 +212,7 @@ test('C1: customer support WhatsApp URL includes ticket number and route context
     $response->assertSee('BK-CS-889900');
     $response->assertSee('Pool Pasteur');
     $response->assertSee('Gambir');
+    $response->assertSee('https://wa.me/6281211112222?text=', false);
 
     // Cek juga di halaman akun bahwa selector tiket menyertakan booking ini
     $responseAkun = $this->actingAs($this->user)->get(route('dashboard.user.user-akun'));
@@ -237,4 +241,12 @@ test('D1: user can update account profile information and password', function ()
     $resPassword->assertRedirect();
     $resPassword->assertSessionHas('success');
     expect(Hash::check('newpassword123', $this->user->fresh()->password))->toBeTrue();
+});
+
+test('C2: WhatsApp help button is hidden until the admin sets a company number', function () {
+    $response = $this->actingAs($this->user)->get(route('dashboard.user.user-akun'));
+
+    $response->assertOk();
+    $response->assertSee('Nomor WhatsApp CS belum diisi');
+    $response->assertDontSee('wa.me/', false);
 });

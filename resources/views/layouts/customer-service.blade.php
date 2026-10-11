@@ -7,10 +7,6 @@
 
     <title>@yield('title', 'Dashboard Customer Service - TravelKu')</title>
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Vite Assets -->
     @vite([
@@ -22,8 +18,11 @@
     @include('dashboard.customer-service.partials.styles')
 
     @stack('styles')
+    @fonts('overpass')
+    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
+    @vite(['resources/css/dashboard-staff.css'])
 </head>
-<body class="cs-body">
+<body class="cs-body" data-staff="cs">
 
     <!-- Backdrop untuk Tampilan Mobile saat Sidebar Aktif -->
     <div id="cs-sidebar-overlay" class="sidebar-overlay" onclick="toggleCsSidebar(false)"></div>
@@ -82,16 +81,20 @@
 
             <!-- Dynamic Content Area -->
             <main class="cs-main-content">
+                @unless (request()->routeIs('dashboard.customer-service.index'))
+                    {{-- TODO: live chat, chat history, file sending and escalation have no backend yet --}}
+                    <p class="ds-notice" role="note" style="margin-bottom: 20px;">
+                        <b>Contoh tampilan.</b> Percakapan, nama, dan nomor di halaman ini belum tersambung ke data sistem.
+                        Untuk mencari pesanan sungguhan, pakai <a href="{{ route('dashboard.customer-service.index') }}" style="font-weight:700; text-decoration:underline;">pencarian di beranda</a>.
+                    </p>
+                @endunless
                 @yield('content')
             </main>
 
             <!-- Footer CS Minimalis -->
             <footer class="cs-footer">
                 <div class="cs-footer-inner">
-                    <span>&copy; {{ date('Y') }} <strong>TravelKu FastShuttle</strong> — Customer Support & Helpdesk Hub</span>
-                    <span class="cs-footer-pill">
-                        <span class="status-dot-pulse"></span> Sistem Aktif (v2.4)
-                    </span>
+                    <span>&copy; {{ date('Y') }} TravelKu</span>
                 </div>
             </footer>
 

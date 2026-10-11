@@ -317,7 +317,6 @@
                      1. IDENTITAS UNIT MINIBUS
                 ========================================== --}}
                 <div class="section-header">
-                    <div class="section-header-icon">🚐</div>
                     <div class="section-header-text">
                         <h3>1. Identitas Unit Minibus</h3>
                         <p>Nomor polisi, tipe kendaraan travel, nama armada, dan kapasitas penumpang</p>
@@ -464,7 +463,6 @@
                      2. LEGALITAS & KELAIKAN ARMADA
                 ========================================== --}}
                 <div class="section-header">
-                    <div class="section-header-icon">📑</div>
                     <div class="section-header-text">
                         <h3>2. Legalitas & Kelaikan Jalan</h3>
                         <p>Batas waktu uji kelayakan berkala KIR Dishub dan jatuh tempo perpanjangan pajak STNK</p>
@@ -511,7 +509,6 @@
                      3. STATUS OPERASIONAL & FASILITAS
                 ========================================== --}}
                 <div class="section-header">
-                    <div class="section-header-icon">⚙️</div>
                     <div class="section-header-text">
                         <h3>3. Status Unit & Fasilitas Minibus</h3>
                         <p>Kondisi kesiapan operasional saat ini dan fasilitas kenyamanan armada</p>
@@ -542,13 +539,13 @@
                             required
                         >
                             <option value="siap_jalan" {{ $normalizedStatus === 'siap_jalan' ? 'selected' : '' }}>
-                                🟢 Siap Jalan (Standby di Pool / Prima Siap Ditugaskan)
+                                Siap Jalan (Standby di Pool / Prima Siap Ditugaskan)
                             </option>
                             <option value="beroperasi" {{ $normalizedStatus === 'beroperasi' ? 'selected' : '' }}>
-                                🔵 Sedang Beroperasi (Aktif di Perjalanan Membawa Penumpang)
+                                Sedang Beroperasi (Aktif di Perjalanan Membawa Penumpang)
                             </option>
                             <option value="maintenance" {{ $normalizedStatus === 'maintenance' ? 'selected' : '' }}>
-                                🔴 Masuk Bengkel (Servis Berkala / Perbaikan Mesin)
+                                Masuk Bengkel (Servis Berkala / Perbaikan Mesin)
                             </option>
                         </select>
                         @error('status')
@@ -582,7 +579,6 @@
                      4. FOTO & CATATAN PEMELIHARAAN
                 ========================================== --}}
                 <div class="section-header">
-                    <div class="section-header-icon">📷</div>
                     <div class="section-header-text">
                         <h3>4. Foto & Catatan Unit</h3>
                         <p>Dokumentasi fisik armada dan histori kondisi armada</p>

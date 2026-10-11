@@ -479,7 +479,7 @@
                 <span>›</span>
                 <span>Pengaturan</span>
             </div>
-            <h1>⚙ Pengaturan Sistem</h1>
+            <h1>Pengaturan Sistem</h1>
             <p>Konfigurasi lengkap sistem Travel Trans Utama</p>
         </div>
     </div>
@@ -487,14 +487,14 @@
     {{-- ALERTS --}}
     @if (session('success'))
         <div class="alert-banner alert-success" id="alert-success">
-            <span>✅</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if ($errors->any())
         <div class="alert-banner alert-error" id="alert-error">
-            <span>⚠️</span>
+            <span></span>
             <div>
                 <strong>Terdapat kesalahan:</strong>
                 <ul style="margin: 4px 0 0 16px; padding: 0;">
@@ -508,11 +508,11 @@
 
     {{-- TAB BAR --}}
     <div class="setting-tabs" id="settingTabBar">
-        <button class="tab-btn" data-tab="profil" id="tab-btn-profil">🏢 Profil Perusahaan</button>
-        <button class="tab-btn" data-tab="kebijakan" id="tab-btn-kebijakan">📋 Kebijakan Tiket</button>
-        <button class="tab-btn" data-tab="pembayaran" id="tab-btn-pembayaran">💳 Integrasi Pembayaran</button>
-        <button class="tab-btn" data-tab="lokasi" id="tab-btn-lokasi">📍 Titik Operasional</button>
-        <button class="tab-btn" data-tab="keamanan" id="tab-btn-keamanan">🔒 Keamanan Sistem</button>
+        <button class="tab-btn" data-tab="profil" id="tab-btn-profil">Profil Perusahaan</button>
+        <button class="tab-btn" data-tab="kebijakan" id="tab-btn-kebijakan">Kebijakan Tiket</button>
+        <button class="tab-btn" data-tab="pembayaran" id="tab-btn-pembayaran">Integrasi Pembayaran</button>
+        <button class="tab-btn" data-tab="lokasi" id="tab-btn-lokasi">Titik Operasional</button>
+        <button class="tab-btn" data-tab="keamanan" id="tab-btn-keamanan">Keamanan Sistem</button>
     </div>
 
     {{-- ══════════════════════════════════════════
@@ -523,7 +523,6 @@
             @csrf
             <div class="setting-card">
                 <div class="setting-card-header">
-                    <div class="setting-card-icon">🏢</div>
                     <div>
                         <p class="setting-card-title">Profil Perusahaan</p>
                         <p class="setting-card-subtitle">Identitas resmi dan kontak perusahaan yang tampil di tiket dan dokumen resmi.</p>
@@ -539,14 +538,14 @@
                                 @if ($settings->get('company_logo'))
                                     <img src="{{ Storage::url($settings->get('company_logo')) }}" alt="Logo Perusahaan" id="logoPreviewImg">
                                 @else
-                                    <span id="logoPlaceholder" style="font-size:32px;">🏢</span>
+                                    <span id="logoPlaceholder" style="font-size:32px;"></span>
                                     <img src="" alt="Logo" id="logoPreviewImg" style="display:none; width:100%; height:100%; object-fit:contain;">
                                 @endif
                             </div>
                             <div class="logo-upload-info">
                                 <h4>Upload Logo</h4>
                                 <p>Format JPG, PNG, atau WEBP. Maks. 2 MB.<br>Rekomendasi: ukuran transparan 200×200 px.</p>
-                                <label class="btn-upload" for="company_logo_input">📁 Pilih File</label>
+                                <label class="btn-upload" for="company_logo_input">Pilih File</label>
                                 <input type="file" id="company_logo_input" name="company_logo" accept="image/jpg,image/jpeg,image/png,image/webp" style="display:none;" onchange="previewLogo(this)">
                             </div>
                         </div>
@@ -562,7 +561,7 @@
                         <div class="form-group">
                             <label class="form-label">Nomor Telepon Kantor</label>
                             <div class="form-input-icon">
-                                <span class="icon-prefix">📞</span>
+                                <span class="icon-prefix"></span>
                                 <input type="text" name="company_phone" class="form-input @error('company_phone') is-invalid @enderror" value="{{ old('company_phone', $settings->get('company_phone')) }}" placeholder="cth: (022) 1234-5678" id="input-company-phone">
                             </div>
                         </div>
@@ -570,7 +569,7 @@
                         <div class="form-group">
                             <label class="form-label">Kontak WhatsApp Darurat (Call Center)</label>
                             <div class="form-input-icon">
-                                <span class="icon-prefix">💬</span>
+                                <span class="icon-prefix"></span>
                                 <input type="text" name="company_whatsapp" class="form-input @error('company_whatsapp') is-invalid @enderror" value="{{ old('company_whatsapp', $settings->get('company_whatsapp')) }}" placeholder="cth: 0812-3456-7890" id="input-company-whatsapp">
                             </div>
                         </div>
@@ -578,7 +577,7 @@
                         <div class="form-group form-full">
                             <label class="form-label">Email Resmi</label>
                             <div class="form-input-icon">
-                                <span class="icon-prefix">✉️</span>
+                                <span class="icon-prefix"></span>
                                 <input type="email" name="company_email" class="form-input @error('company_email') is-invalid @enderror" value="{{ old('company_email', $settings->get('company_email')) }}" placeholder="cth: info@transutama.co.id" id="input-company-email">
                             </div>
                         </div>
@@ -590,7 +589,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-save" id="btn-save-profil">💾 Simpan Profil Perusahaan</button>
+                        <button type="submit" class="btn-save" id="btn-save-profil">Simpan Profil Perusahaan</button>
                     </div>
                 </div>
             </div>
@@ -608,7 +607,7 @@
                 {{-- PAYMENT TIMEOUT --}}
                 <div class="setting-card">
                     <div class="setting-card-header">
-                        <div class="setting-card-icon">⏱️</div>
+                        <div class="setting-card-icon">⏱</div>
                         <div>
                             <p class="setting-card-title">Batas Waktu Pembayaran (Payment Timeout)</p>
                             <p class="setting-card-subtitle">Durasi kursi ditahan sebelum otomatis dibatalkan jika belum dibayar.</p>
@@ -633,7 +632,6 @@
                 {{-- REFUND TIERS --}}
                 <div class="setting-card">
                     <div class="setting-card-header">
-                        <div class="setting-card-icon">🔄</div>
                         <div>
                             <p class="setting-card-title">Aturan Refund dan Pembatalan</p>
                             <p class="setting-card-subtitle">Persentase potongan biaya admin berdasarkan waktu pembatalan sebelum keberangkatan.</p>
@@ -680,7 +678,6 @@
                 {{-- RESCHEDULE --}}
                 <div class="setting-card">
                     <div class="setting-card-header">
-                        <div class="setting-card-icon">📅</div>
                         <div>
                             <p class="setting-card-title">Aturan Reschedule (Ubah Jadwal)</p>
                             <p class="setting-card-subtitle">Batas waktu pengajuan ubah jadwal dan biaya penyesuaiannya.</p>
@@ -705,7 +702,6 @@
                 {{-- BAGASI --}}
                 <div class="setting-card">
                     <div class="setting-card-header">
-                        <div class="setting-card-icon">🧳</div>
                         <div>
                             <p class="setting-card-title">Ketentuan Bagasi</p>
                             <p class="setting-card-subtitle">Batas berat bawaan gratis dan tarif kelebihan muatan per kilogram.</p>
@@ -728,7 +724,7 @@
                 </div>
 
                 <div class="form-actions" style="margin-top:0;">
-                    <button type="submit" class="btn-save" id="btn-save-kebijakan">💾 Simpan Kebijakan</button>
+                    <button type="submit" class="btn-save" id="btn-save-kebijakan">Simpan Kebijakan</button>
                 </div>
             </div>
         </form>
@@ -745,7 +741,6 @@
                 {{-- REKENING BANK --}}
                 <div class="setting-card">
                     <div class="setting-card-header">
-                        <div class="setting-card-icon">🏦</div>
                         <div>
                             <p class="setting-card-title">Rekening Bank Manual</p>
                             <p class="setting-card-subtitle">Rekening resmi perusahaan untuk penerimaan transfer langsung dari penumpang.</p>
@@ -772,7 +767,6 @@
                 {{-- PAYMENT GATEWAY --}}
                 <div class="setting-card">
                     <div class="setting-card-header">
-                        <div class="setting-card-icon">⚡</div>
                         <div>
                             <p class="setting-card-title">Kredensial Payment Gateway</p>
                             <p class="setting-card-subtitle">API key untuk mengaktifkan QRIS, virtual account, dan e-wallet otomatis.</p>
@@ -785,15 +779,15 @@
                             <div class="gateway-provider-row">
                                 <div class="gateway-option">
                                     <input type="radio" name="gateway_provider" id="gw-none" value="none" {{ $gw === 'none' ? 'checked' : '' }}>
-                                    <label for="gw-none"><span class="gw-logo">🚫</span>Tidak Aktif</label>
+                                    <label for="gw-none"><span class="gw-logo"></span>Tidak Aktif</label>
                                 </div>
                                 <div class="gateway-option">
                                     <input type="radio" name="gateway_provider" id="gw-midtrans" value="midtrans" {{ $gw === 'midtrans' ? 'checked' : '' }}>
-                                    <label for="gw-midtrans"><span class="gw-logo">💙</span>Midtrans</label>
+                                    <label for="gw-midtrans"><span class="gw-logo"></span>Midtrans</label>
                                 </div>
                                 <div class="gateway-option">
                                     <input type="radio" name="gateway_provider" id="gw-xendit" value="xendit" {{ $gw === 'xendit' ? 'checked' : '' }}>
-                                    <label for="gw-xendit"><span class="gw-logo">💛</span>Xendit</label>
+                                    <label for="gw-xendit"><span class="gw-logo"></span>Xendit</label>
                                 </div>
                             </div>
                         </div>
@@ -804,7 +798,7 @@
                                     <label class="form-label">Server Key (Secret Key)</label>
                                     <div class="api-key-field">
                                         <input type="password" name="gateway_server_key" class="form-input @error('gateway_server_key') is-invalid @enderror" value="{{ old('gateway_server_key', $settings->get('gateway_server_key')) }}" placeholder="sk-••••••••••••••••••••••" autocomplete="off" id="input-server-key">
-                                        <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-server-key', this)" title="Tampilkan/Sembunyikan">👁</button>
+                                        <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-server-key', this)" title="Tampilkan/Sembunyikan">Lihat</button>
                                     </div>
                                     <span class="form-hint">Jangan bagikan server key. Disimpan aman di database.</span>
                                 </div>
@@ -812,7 +806,7 @@
                                     <label class="form-label">Client Key (Public Key)</label>
                                     <div class="api-key-field">
                                         <input type="password" name="gateway_client_key" class="form-input @error('gateway_client_key') is-invalid @enderror" value="{{ old('gateway_client_key', $settings->get('gateway_client_key')) }}" placeholder="pk-••••••••••••••••••••••" autocomplete="off" id="input-client-key">
-                                        <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-client-key', this)" title="Tampilkan/Sembunyikan">👁</button>
+                                        <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-client-key', this)" title="Tampilkan/Sembunyikan">Lihat</button>
                                     </div>
                                     <span class="form-hint">Digunakan di frontend untuk inisialisasi payment widget.</span>
                                 </div>
@@ -820,7 +814,7 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn-save" id="btn-save-pembayaran">💾 Simpan Integrasi Pembayaran</button>
+                            <button type="submit" class="btn-save" id="btn-save-pembayaran">Simpan Integrasi Pembayaran</button>
                         </div>
                     </div>
                 </div>
@@ -835,7 +829,6 @@
     <div class="tab-panel" id="panel-lokasi">
         <div class="setting-card">
             <div class="setting-card-header">
-                <div class="setting-card-icon">📍</div>
                 <div>
                     <p class="setting-card-title">Titik Operasional (Pool &amp; Cabang)</p>
                     <p class="setting-card-subtitle">Daftar pool keberangkatan, loket agen, dan titik antar-jemput beserta kontak pengurus.</p>
@@ -849,7 +842,6 @@
             <div class="setting-card-body" style="padding:0;">
                 @if ($locations->isEmpty())
                     <div class="empty-locations">
-                        <div class="empty-icon">📍</div>
                         <p style="font-weight:600; color:#3d4f46; margin:0 0 4px;">Belum ada titik operasional</p>
                         <p style="font-size:12px; margin:0;">Tambahkan pool keberangkatan, loket, atau titik jemput pertama.</p>
                     </div>
@@ -872,7 +864,7 @@
                                         <td style="max-width:220px; font-size:12px; color:#6a7972;">{{ $loc->address ?: '—' }}</td>
                                         <td>
                                             @if ($loc->maps_url)
-                                                <a href="{{ $loc->maps_url }}" target="_blank" class="location-maps">🗺 Buka Maps</a>
+                                                <a href="{{ $loc->maps_url }}" target="_blank" class="location-maps">Buka Maps</a>
                                             @elseif ($loc->coordinates)
                                                 <span style="font-size:12px; color:#8a9990;">{{ $loc->coordinates }}</span>
                                             @else
@@ -881,7 +873,7 @@
                                         </td>
                                         <td>
                                             @if ($loc->phone)
-                                                <span class="location-phone">📞 {{ $loc->phone }}</span>
+                                                <span class="location-phone">{{ $loc->phone }}</span>
                                             @else
                                                 <span style="color:#c8d5ce;">—</span>
                                             @endif
@@ -894,11 +886,11 @@
                                                     title="Edit"
                                                     onclick="openEditModal({{ $loc->id }}, {{ json_encode($loc->name) }}, {{ json_encode($loc->address) }}, {{ json_encode($loc->maps_url) }}, {{ json_encode($loc->coordinates) }}, {{ json_encode($loc->phone) }})"
                                                     id="btn-edit-loc-{{ $loc->id }}"
-                                                >✏️</button>
+                                                >Ubah</button>
                                                 <form action="{{ route('dashboard.admin.pengaturan.lokasi.destroy', $loc->id) }}" method="POST" onsubmit="return confirm('Hapus {{ addslashes($loc->name) }}?')" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn-del-loc" title="Hapus" id="btn-del-loc-{{ $loc->id }}">🗑️</button>
+                                                    <button type="submit" class="btn-del-loc" title="Hapus" id="btn-del-loc-{{ $loc->id }}">Hapus</button>
                                                 </form>
                                             </div>
                                         </td>
@@ -921,7 +913,6 @@
             {{-- CHANGE PASSWORD --}}
             <div class="setting-card">
                 <div class="setting-card-header">
-                    <div class="setting-card-icon">🔑</div>
                     <div>
                         <p class="setting-card-title">Ubah Kata Sandi Admin Utama</p>
                         <p class="setting-card-subtitle">Perbarui kata sandi akun superadmin secara berkala untuk menjaga keamanan sistem.</p>
@@ -935,7 +926,7 @@
                                 <label class="form-label">Kata Sandi Saat Ini <span class="required-star">*</span></label>
                                 <div class="api-key-field">
                                     <input type="password" name="current_password" class="form-input @error('current_password') is-invalid @enderror" placeholder="Masukkan kata sandi aktif saat ini..." autocomplete="current-password" id="input-current-password">
-                                    <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-current-password', this)">👁</button>
+                                    <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-current-password', this)">Lihat</button>
                                 </div>
                                 @error('current_password') <span class="form-error">{{ $message }}</span> @enderror
                             </div>
@@ -944,7 +935,7 @@
                                 <label class="form-label">Kata Sandi Baru <span class="required-star">*</span></label>
                                 <div class="api-key-field">
                                     <input type="password" name="new_password" class="form-input @error('new_password') is-invalid @enderror" placeholder="Minimal 8 karakter..." autocomplete="new-password" id="input-new-password">
-                                    <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-new-password', this)">👁</button>
+                                    <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-new-password', this)">Lihat</button>
                                 </div>
                                 @error('new_password') <span class="form-error">{{ $message }}</span> @enderror
                             </div>
@@ -953,7 +944,7 @@
                                 <label class="form-label">Konfirmasi Kata Sandi Baru <span class="required-star">*</span></label>
                                 <div class="api-key-field">
                                     <input type="password" name="new_password_confirmation" class="form-input" placeholder="Ulangi kata sandi baru..." autocomplete="new-password" id="input-confirm-password">
-                                    <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-confirm-password', this)">👁</button>
+                                    <button type="button" class="api-key-toggle" onclick="toggleApiKey('input-confirm-password', this)">Lihat</button>
                                 </div>
                             </div>
                         </div>
@@ -975,7 +966,7 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn-save" id="btn-save-keamanan">🔒 Perbarui Keamanan</button>
+                            <button type="submit" class="btn-save" id="btn-save-keamanan">Perbarui Keamanan</button>
                         </div>
                     </form>
                 </div>
@@ -984,7 +975,6 @@
             {{-- SESSION LOG --}}
             <div class="setting-card">
                 <div class="setting-card-header">
-                    <div class="setting-card-icon">📋</div>
                     <div>
                         <p class="setting-card-title">Riwayat Sesi Masuk</p>
                         <p class="setting-card-subtitle">Log perangkat dan IP address yang pernah mengakses akun admin utama ini.</p>
@@ -993,7 +983,6 @@
                 <div class="setting-card-body" style="padding:0;">
                     @if ($loginSessions->isEmpty())
                         <div class="empty-locations">
-                            <div class="empty-icon">📋</div>
                             <p style="font-weight:600; color:#3d4f46; margin:0 0 4px;">Belum ada riwayat sesi</p>
                             <p style="font-size:12px; margin:0;">Riwayat login akan muncul setelah terjadi perubahan kata sandi.</p>
                         </div>
@@ -1077,7 +1066,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="closeLocationModal()">Batal</button>
-                <button type="submit" class="btn-save" id="modal-loc-submit">💾 Simpan Titik</button>
+                <button type="submit" class="btn-save" id="modal-loc-submit">Simpan Titik</button>
             </div>
         </form>
     </div>
@@ -1141,10 +1130,10 @@
         var inp = document.getElementById(inputId);
         if (inp.type === 'password') {
             inp.type = 'text';
-            btn.textContent = '🙈';
+            btn.textContent = '';
         } else {
             inp.type = 'password';
-            btn.textContent = '👁';
+            btn.textContent = '';
         }
     }
 
@@ -1173,7 +1162,7 @@
         document.getElementById('modal-loc-maps').value    = '';
         document.getElementById('modal-loc-coords').value  = '';
         document.getElementById('modal-loc-phone').value   = '';
-        document.getElementById('modal-loc-submit').textContent = '💾 Simpan Titik';
+        document.getElementById('modal-loc-submit').textContent = 'Simpan Titik';
         document.getElementById('locationModal').classList.add('open');
     }
 
@@ -1187,7 +1176,7 @@
         document.getElementById('modal-loc-maps').value    = maps_url    || '';
         document.getElementById('modal-loc-coords').value  = coordinates || '';
         document.getElementById('modal-loc-phone').value   = phone       || '';
-        document.getElementById('modal-loc-submit').textContent = '💾 Perbarui Titik';
+        document.getElementById('modal-loc-submit').textContent = 'Perbarui Titik';
         document.getElementById('locationModal').classList.add('open');
     }
 

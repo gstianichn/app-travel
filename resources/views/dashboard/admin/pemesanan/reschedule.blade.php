@@ -240,7 +240,7 @@
     {{-- CURRENT JADWAL INFO CARD --}}
     @php
         $currRoute = $booking->schedule?->route 
-            ? ($booking->schedule->route->origin?->name . ' → ' . $booking->schedule->route->destination?->name) 
+            ? ($booking->schedule->route->origin?->name . ' ke ' . $booking->schedule->route->destination?->name) 
             : 'Rute Travel';
         $currDate = $booking->schedule?->departure_date ? $booking->schedule->departure_date->format('d M Y') : '-';
         $currTime = $booking->schedule?->departure_time ? \Carbon\Carbon::parse($booking->schedule->departure_time)->format('H:i') : '-';
@@ -250,7 +250,7 @@
             <span style="font-size: 11px; font-weight: 700; color: #b45309; text-transform: uppercase;">Jadwal Saat Ini:</span>
             <h3>{{ $currRoute }}</h3>
             <div class="current-meta">
-                📅 {{ $currDate }} &bull; Pukul {{ $currTime }} WIB &bull; Pemesan: <strong>{{ $booking->customerName() }}</strong> ({{ $booking->total_passenger }} Orang)
+                {{ $currDate }} &bull; Pukul {{ $currTime }} WIB &bull; Pemesan: <strong>{{ $booking->customerName() }}</strong> ({{ $booking->total_passenger }} Orang)
             </div>
         </div>
 
@@ -259,7 +259,7 @@
             <div style="display: flex; gap: 6px;">
                 @foreach($booking->passengers as $p)
                     <span class="seat-current-pill">
-                        💺 {{ $p->seat?->seat_number ?? '-' }}
+                        {{ $p->seat?->seat_number ?? '-' }}
                     </span>
                 @endforeach
             </div>
@@ -295,7 +295,7 @@
                         @foreach($availableSchedules as $sch)
                             @php
                                 $rLabel = $sch->route 
-                                    ? ($sch->route->origin?->name . ' → ' . $sch->route->destination?->name) 
+                                    ? ($sch->route->origin?->name . ' ke ' . $sch->route->destination?->name) 
                                     : ($sch->travelRoute?->name ?? 'Rute');
                                 $dDate = $sch->departure_date ? $sch->departure_date->format('d/m/Y') : '-';
                                 $dTime = $sch->departure_time ? \Carbon\Carbon::parse($sch->departure_time)->format('H:i') : '-';
@@ -400,7 +400,7 @@
                 html += `
                     <label class="seat-checkbox-label">
                         <input type="checkbox" name="new_seats[]" value="${s.id}" onchange="checkLimit(this)">
-                        <span>💺 ${s.number}</span>
+                        <span>${s.number}</span>
                     </label>
                 `;
             }

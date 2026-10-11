@@ -19,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);
+        // Passenger pages send guests to the passenger login; staff pages keep the staff login.
+        $middleware->redirectGuestsTo(
+            fn (Request $request) => in_array('role:user', $request->route()?->gatherMiddleware() ?? [], true)
+                ? route('user.login')
+                : route('login'),
+        );
         $middleware->validateCsrfTokens(except: [
             'api/*',
             'payment/webhook',

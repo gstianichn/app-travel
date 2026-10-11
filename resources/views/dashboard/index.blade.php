@@ -100,7 +100,7 @@
         <!-- ================= WELCOME ================= -->
         <section class="mb-8">
 
-            <p class="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-brand">
+            <p class="mb-1 text-xs font-bold tracking-[0.18em] text-brand">
                 DASHBOARD PELANGGAN
             </p>
 
@@ -176,7 +176,7 @@
 
             <div class="mb-5">
 
-                <p class="text-xs font-bold uppercase tracking-wider text-brand">
+                <p class="text-xs font-bold text-brand">
                     Ringkasan
                 </p>
 
@@ -280,8 +280,7 @@
                         </div>
 
                         <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-status text-xl text-brand">
-                            ⭐
-                        </div>
+                                                    </div>
 
                     </div>
 
@@ -297,7 +296,7 @@
 
             <div class="mb-5">
 
-                <p class="text-xs font-bold uppercase tracking-wider text-brand">
+                <p class="text-xs font-bold text-brand">
                     Akses Cepat
                 </p>
 
@@ -333,8 +332,7 @@
                     </p>
 
                     <span class="mt-4 inline-block text-sm font-bold text-brand">
-                        Cari sekarang →
-                    </span>
+                        Cari sekarang</span>
 
                 </a>
 
@@ -360,8 +358,7 @@
                     </p>
 
                     <span class="mt-4 inline-block text-sm font-bold text-brand">
-                        Lihat pesanan →
-                    </span>
+                        Lihat pesanan</span>
 
                 </a>
 
@@ -388,8 +385,7 @@
                     </p>
 
                     <span class="mt-4 inline-block text-sm font-bold text-brand">
-                        Lihat transaksi →
-                    </span>
+                        Lihat transaksi</span>
 
                 </a>
 
@@ -416,8 +412,7 @@
                     </p>
 
                     <span class="mt-4 inline-block text-sm font-bold text-brand">
-                        Edit profil →
-                    </span>
+                        Edit profil</span>
 
                 </a>
 
@@ -433,7 +428,7 @@
 
                 <div>
 
-                    <p class="text-xs font-bold uppercase tracking-wider text-brand">
+                    <p class="text-xs font-bold text-brand">
                         Perjalanan
                     </p>
 
@@ -447,8 +442,7 @@
                     href="{{ route('dashboard.user.user-tiket') }}"
                     class="text-sm font-bold text-brand transition hover:text-brand-dark"
                 >
-                    Lihat semua →
-                </a>
+                    Lihat semua</a>
 
             </div>
 

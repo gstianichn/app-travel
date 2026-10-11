@@ -1,54 +1,307 @@
 @extends('layouts.app')
 
-@section('title', 'TravelKu - Perjalanan Nyaman')
+@section('title', 'TravelKu - Travel minibus antar kota')
+
+@section('body-class', 'is-landing')
+
+@push('head')
+    @fonts('overpass')
+    @vite(['resources/css/landing.css', 'resources/js/landing.js'])
+@endpush
 
 @section('content')
-<section class="travel-hero">
-    <div class="travel-hero-image"></div>
-    <div class="container travel-hero-inner">
-        <div class="travel-hero-copy">
-            <span class="hero-kicker">TravelKu</span>
-            <h1>Perjalanan Nyaman,<br><span>Sampai Tujuan.</span></h1>
-            <p>Pesan tiket travel antar kota dengan mudah, cepat, dan nyaman.</p>
+@php
+    $cityOf = fn ($location) => $location->city ?: $location->name;
+@endphp
+
+{{-- HERO: layered hills, each layer drifts at its own depth while scrolling --}}
+<section class="lp-hero" data-scene="exit" aria-labelledby="hero-title">
+    <div class="lp-hero-scene" aria-hidden="true">
+        <div class="lp-sun" data-depth="0.55"></div>
+
+        <svg class="lp-clouds" data-depth="0.5" viewBox="0 0 1440 260" preserveAspectRatio="xMidYMin slice">
+            <path d="M520 70c0-22 18-40 40-40 10 0 19 4 26 10 8-16 25-27 44-27 27 0 49 22 49 49v8H520z" />
+            <path d="M980 70c0-17 14-31 31-31 8 0 15 3 20 8 6-12 19-21 34-21 21 0 38 17 38 38v6H980z" />
+            <path d="M1180 190c0-14 11-25 25-25 6 0 12 2 16 6 5-10 15-17 27-17 17 0 30 13 30 30v6h-98z" />
+        </svg>
+
+        <svg class="lp-layer lp-layer--far" data-depth="0.42" viewBox="0 0 1440 400" preserveAspectRatio="none">
+            <path fill="#B7D0C2" d="M0 300C160 262 300 236 430 242s210-34 330-92c80-40 140-82 190-88h30c50 8 100 46 140 88 80 52 200 62 320 40V400H0z" />
+            <path fill="#97BCA9" d="M0 332c200-30 360-50 520-30s300-52 460-56c160-4 320 28 460 22V400H0z" />
+        </svg>
+
+        <svg class="lp-layer lp-layer--mid" data-depth="0.28" viewBox="0 0 1440 300" preserveAspectRatio="none">
+            <path fill="#5E9D80" d="M0 120C180 60 360 70 520 120s240 30 360-10c140-50 360-40 560 20V300H0z" />
+            <g fill="none" stroke="#4C8B6E" stroke-width="9" stroke-linecap="round" stroke-dasharray="14 12" vector-effect="non-scaling-stroke">
+                <path d="M0 158C180 98 360 108 520 158s240 30 360-10c140-50 360-40 560 20" />
+                <path d="M0 196C180 136 360 146 520 196s240 30 360-10c140-50 360-40 560 20" />
+                <path d="M0 234C180 174 360 184 520 234s240 30 360-10c140-50 360-40 560 20" />
+                <path d="M0 272C180 212 360 222 520 272s240 30 360-10c140-50 360-40 560 20" />
+            </g>
+        </svg>
+
+        <div class="lp-layer lp-layer--near" data-depth="0.12">
+            <svg viewBox="0 0 1440 220" preserveAspectRatio="none">
+                <path fill="#2F7357" d="M0 70C240 30 520 40 760 62s460 0 680-22V220H0z" />
+                <path fill="#36423C" d="M0 104c360-8 720-6 1080-4 140 0 260 0 360-2v48c-360 4-720 6-1080 6-140 0-260 0-360 2z" />
+                <path fill="none" stroke="#F6F4EC" stroke-width="3" stroke-dasharray="26 22" vector-effect="non-scaling-stroke" d="M0 127c360-4 720-4 1440-4" />
+            </svg>
+            <svg class="lp-van" data-drive viewBox="0 0 160 70">
+                <path fill="#FBFAF6" stroke="#0C392F" stroke-width="2" d="M10 20q0-12 12-12h90q10 0 18 8l16 18q6 2 6 10v8q0 6-6 6H14q-6 0-6-6z" />
+                <path fill="#22403A" d="M20 14h20v16H20zm24 0h20v16H44zm24 0h20v16H68zm24 0h16v16H92zm22 0h12l14 18h-26z" />
+                <path fill="#0C7950" d="M8 40h144v6H8z" />
+                <path fill="#F2B25C" d="M144 36h8v5h-8z" />
+                <circle cx="38" cy="58" r="10" fill="#1B2420" />
+                <circle cx="38" cy="58" r="4" fill="#C9D3CE" />
+                <circle cx="124" cy="58" r="10" fill="#1B2420" />
+                <circle cx="124" cy="58" r="4" fill="#C9D3CE" />
+            </svg>
         </div>
 
-        <div class="travel-search-card">
-            <div class="search-card-heading">
-                <div><span class="section-label">Cari Perjalanan</span><h2>Mau pergi ke mana?</h2></div>
-                <span class="search-card-mark">01</span>
-            </div>
-            <form action="{{ route('search') }}" method="GET">
-                <div class="search-form-grid">
-                    <div class="form-group"><label for="origin">Dari</label><select name="origin" id="origin" class="form-control" required><option value="">Pilih kota asal</option>@foreach ($locations ?? [] as $location)<option value="{{ $location->id }}">{{ $location->name }}</option>@endforeach</select></div>
-                    <div class="form-group"><label for="destination">Ke</label><select name="destination" id="destination" class="form-control" required><option value="">Pilih kota tujuan</option>@foreach ($locations ?? [] as $location)<option value="{{ $location->id }}">{{ $location->name }}</option>@endforeach</select></div>
-                    <div class="form-group"><label for="departure_date">Tanggal</label><input type="date" name="departure_date" id="departure_date" class="form-control" min="{{ now()->toDateString() }}" required></div>
-                    <div class="form-group"><label for="passengers">Penumpang</label><select name="passengers" id="passengers" class="form-control" required>@for ($passenger = 1; $passenger <= 10; $passenger++)<option value="{{ $passenger }}">{{ $passenger }} Penumpang</option>@endfor</select></div>
+        <svg class="lp-layer lp-layer--front" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path fill="var(--lp-paper)" d="M0 70C300 30 600 40 900 70s400 10 540-10V120H0z" />
+        </svg>
+    </div>
+
+    <div class="container lp-hero-copy" data-depth="0.08">
+        <p class="lp-plate">Travel minibus antar kota</p>
+        <h1 id="hero-title">Antar kota, tanpa antre di loket.</h1>
+        <p class="lp-hero-lead">
+            Pilih rute, jam berangkat, dan kursimu dari HP. Bayar lewat virtual account, QRIS, atau e-wallet,
+            lalu tunjukkan QR e-ticket ke petugas saat naik.
+        </p>
+        @if ($activeRouteCount > 0)
+            <p class="lp-hero-facts">
+                <span>{{ $activeRouteCount }} rute aktif</span>
+                @if ($servedCityCount > 0)
+                    <span>{{ $servedCityCount }} kota terhubung</span>
+                @endif
+            </p>
+        @endif
+    </div>
+</section>
+
+{{-- SEARCH: the ticket form is the page's main job, so it sits right under the hero --}}
+@include('components.search-ticket', ['heading' => 'Mau berangkat ke mana?'])
+
+{{-- ROUTES: road signs pass by horizontally while the section is pinned (desktop) --}}
+<section class="lp-routes" id="rute" aria-labelledby="rute-title" data-routes>
+    <div class="lp-routes-sticky">
+        <div class="container lp-routes-head">
+            <h2 id="rute-title">Rute yang sudah jalan</h2>
+            <p>
+                Pilih salah satu rambu untuk mengisi pencarian di atas. Harga di rambu adalah tarif hari biasa;
+                akhir pekan dan hari libur bisa berbeda.
+            </p>
+        </div>
+
+        @if ($routeSigns->isEmpty())
+            <div class="container">
+                <div class="lp-routes-empty">
+                    <p class="lp-routes-empty-title">Rute sedang disiapkan</p>
+                    <p>Belum ada rute aktif saat ini. Begitu admin membuka rute, rambunya muncul di sini.</p>
                 </div>
-                <button type="submit" class="btn btn-primary search-button">Cari Travel <span aria-hidden="true">→</span></button>
-            </form>
+            </div>
+        @else
+            <div class="lp-routes-viewport" data-routes-viewport>
+                <div class="lp-routes-hills" aria-hidden="true" data-routes-hills></div>
+                <ol class="lp-routes-track" data-routes-track>
+                    @foreach ($routeSigns as $routeSign)
+                        @php
+                            $fromCity = $cityOf($routeSign->origin);
+                            $toCity = $cityOf($routeSign->destination);
+                        @endphp
+                        <li class="lp-sign-post">
+                            <a
+                                href="#cari"
+                                class="lp-sign"
+                                data-route-fill
+                                data-origin="{{ $routeSign->origin_id }}"
+                                data-destination="{{ $routeSign->destination_id }}"
+                                data-label="{{ $fromCity }} ke {{ $toCity }}"
+                                aria-label="Isi pencarian {{ $fromCity }} ke {{ $toCity }}, mulai {{ $routeSign->formattedPrice() }}"
+                            >
+                                <span class="lp-sign-face">
+                                    <span class="lp-sign-from">dari {{ $fromCity }}</span>
+                                    <span class="lp-sign-to">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 4 11h5v11h6V11h5z" /></svg>
+                                        {{ $toCity }}
+                                    </span>
+                                    <span class="lp-sign-meta">
+                                        {{ $routeSign->duration }}@if ($routeSign->distance_km), {{ $routeSign->distance_km }} km @endif
+                                    </span>
+                                </span>
+                                <span class="lp-sign-plate">mulai {{ $routeSign->formattedPrice() }}</span>
+                            </a>
+                            <span class="lp-sign-legs" aria-hidden="true"></span>
+                        </li>
+                    @endforeach
+                </ol>
+                <div class="lp-road" aria-hidden="true" data-routes-road></div>
+            </div>
+        @endif
+    </div>
+</section>
+
+{{-- HOW TO BOOK: the van drives down the road as the reader moves through the steps --}}
+<section class="lp-steps" id="cara-pesan" aria-labelledby="cara-pesan-title">
+    <div class="container lp-steps-grid">
+        <header class="lp-steps-head">
+            <h2 id="cara-pesan-title">Dari pilih kursi sampai naik mobil</h2>
+            <p>Semua lewat HP. Di pool, kamu cukup menunjukkan QR e-ticket ke petugas.</p>
+            <a href="#cari" class="lp-btn lp-btn--ghost" data-focus-search>Isi pencarian</a>
+        </header>
+
+        <div class="lp-steps-road" data-steps>
+            <div class="lp-steps-lane" aria-hidden="true">
+                <span class="lp-steps-progress" data-steps-progress></span>
+                <svg class="lp-steps-van" data-steps-van viewBox="0 0 40 72">
+                    <rect x="4" y="2" width="32" height="68" rx="9" fill="#FBFAF6" stroke="#0C392F" stroke-width="2" />
+                    <path fill="#22403A" d="M9 12h22l-2 12H11zM10 50h20v10H10z" />
+                    <path fill="#0C7950" d="M18 28h4v18h-4z" />
+                </svg>
+            </div>
+
+            <ol class="lp-steps-list">
+                <li data-step>
+                    <span class="lp-km" aria-hidden="true">KM<b>1</b></span>
+                    <h3>Cari rute dan tanggal</h3>
+                    <p>Tiap jadwal menampilkan jam berangkat, harga, dan sisa kursi, jadi kamu tahu sebelum memesan.</p>
+                </li>
+                <li data-step>
+                    <span class="lp-km" aria-hidden="true">KM<b>2</b></span>
+                    <h3>Pilih kursi sendiri</h3>
+                    <p>Denah kursinya mengikuti susunan di mobil. Kursi yang kamu pilih ditahan 15 menit selama kamu membayar.</p>
+                </li>
+                <li data-step>
+                    <span class="lp-km" aria-hidden="true">KM<b>3</b></span>
+                    <h3>Bayar</h3>
+                    <p>Virtual account BCA, Mandiri, BNI, BRI, BSI, dan SeaBank, QRIS, GoPay, atau ShopeePay. Pembayaran diproses Midtrans.</p>
+                </li>
+                <li data-step>
+                    <span class="lp-km" aria-hidden="true">KM<b>4</b></span>
+                    <h3>Tunjukkan QR saat naik</h3>
+                    <p>E-ticket muncul di akunmu begitu pembayaran masuk. Boarding dibuka 15 menit sebelum berangkat; petugas memindai QR-nya, atau mencari kode booking kalau QR tidak terbaca.</p>
+                </li>
+            </ol>
         </div>
     </div>
 </section>
 
-<section class="trust-strip"><div class="container trust-grid"><div><strong>✓</strong><span><b>Aman & Terpercaya</b><small>Driver terpilih dan berpengalaman</small></span></div><div><strong>₽</strong><span><b>Pembayaran Mudah</b><small>Berbagai metode pembayaran</small></span></div><div><strong>▣</strong><span><b>E-Ticket Instan</b><small>Tiket langsung di email Anda</small></span></div><div><strong>◉</strong><span><b>Customer Service</b><small>Siap membantu setiap hari</small></span></div></div></section>
+{{-- FLEET: seat dots mirror the seat map passengers will pick from --}}
+<section class="lp-fleet" id="armada" aria-labelledby="armada-title">
+    <div class="container">
+        <div class="lp-fleet-head">
+            <h2 id="armada-title">Mobil yang akan kamu naiki</h2>
+            <p>Jenis armada yang terdaftar saat ini. Kendaraan untuk tiap jadwal tertulis di halaman hasil pencarian.</p>
+        </div>
 
-<section class="section route-showcase"><div class="container"><div class="section-heading"><div><span class="section-label">Jelajahi Indonesia</span><h2>Rute Populer</h2></div><a href="{{ route('search') }}" class="section-link">Lihat Semua <span aria-hidden="true">→</span></a></div><div class="route-grid">
-    @php
-        $popularRoutes = [
-            ['from' => 'Jakarta', 'to' => 'Bandung', 'price' => 'Rp 150.000', 'image' => 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=700&q=80'],
-            ['from' => 'Jakarta', 'to' => 'Yogyakarta', 'price' => 'Rp 250.000', 'image' => 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=700&q=80'],
-            ['from' => 'Bandung', 'to' => 'Jakarta', 'price' => 'Rp 150.000', 'image' => 'https://images.unsplash.com/photo-1555899434-94d1368aa7af?auto=format&fit=crop&w=700&q=80'],
-            ['from' => 'Jakarta', 'to' => 'Cianjur', 'price' => 'Rp 125.000', 'image' => 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=700&q=80'],
-        ];
-    @endphp
-    @foreach ($popularRoutes as $route)<a href="{{ route('search') }}" class="route-photo-card"><img src="{{ $route['image'] }}" alt="Pemandangan perjalanan {{ $route['from'] }} ke {{ $route['to'] }}" loading="lazy"><div class="route-photo-overlay"><span>{{ $route['from'] }} → {{ $route['to'] }}</span><strong>{{ $route['price'] }}</strong></div></a>@endforeach
-</div></div></section>
+        @if ($fleetTypes->isEmpty())
+            <p class="lp-fleet-empty">Data armada belum diisi. Detail kendaraan tetap muncul di setiap jadwal.</p>
+        @else
+            <ul class="lp-fleet-list">
+                @foreach ($fleetTypes as $fleetType)
+                    <li class="lp-fleet-row">
+                        <div class="lp-fleet-name">
+                            <h3>{{ $fleetType['type'] }}</h3>
+                            <p>{{ $fleetType['capacity'] }} kursi penumpang, {{ $fleetType['units'] }} unit</p>
+                        </div>
+                        <div class="lp-seats" style="--seat-columns: {{ $fleetType['capacity'] > 10 ? 4 : 3 }}" role="img" aria-label="Denah {{ $fleetType['capacity'] }} kursi penumpang">
+                            <span class="lp-seat lp-seat--driver">S</span>
+                            @for ($seat = 1; $seat <= $fleetType['capacity']; $seat++)
+                                <span class="lp-seat"></span>
+                            @endfor
+                        </div>
+                        <p class="lp-fleet-facilities">
+                            {{ $fleetType['facilities'] ? implode(', ', $fleetType['facilities']) : 'Fasilitas belum dicatat' }}
+                        </p>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
+</section>
 
-<section class="promo-section"><div class="container promo-banner"><div><span class="section-label">Promo Spesial</span><h2>Perjalanan nyaman,<br><em>harga bersahabat.</em></h2><a href="{{ route('search') }}" class="btn btn-light">Lihat Promo <span aria-hidden="true">→</span></a></div><img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=900&q=85" alt="Bus travel TravelKu" loading="lazy"></div></section>
+{{-- REVIEWS: only rendered when real passenger reviews exist --}}
+@if ($reviewCount > 0 && $reviews->isNotEmpty())
+    <section class="lp-reviews" id="ulasan" aria-labelledby="ulasan-title">
+        <div class="container lp-reviews-grid">
+            <div class="lp-reviews-score">
+                <h2 id="ulasan-title">Kata penumpang</h2>
+                <p class="lp-reviews-average"><b>{{ number_format($reviewAverage, 1, ',', '.') }}</b> dari 5</p>
+                <p>Rata-rata dari {{ $reviewCount }} ulasan setelah perjalanan selesai.</p>
+            </div>
 
-<section class="section fleet-section"><div class="container"><div class="section-heading"><div><span class="section-label">Armada Kami</span><h2>Teman perjalanan terbaik</h2></div><a href="{{ route('search') }}" class="section-link">Lihat Semua <span aria-hidden="true">→</span></a></div><div class="fleet-grid"><article><img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=700&q=80" alt="Armada Hiace" loading="lazy"><h3>Hiace</h3><p>12 Kursi · AC · USB Charger</p></article><article><img src="https://images.unsplash.com/photo-1609521263047-f8f205293f24?auto=format&fit=crop&w=700&q=80" alt="Armada Isuzu Elf" loading="lazy"><h3>Isuzu Elf</h3><p>15 Kursi · AC · Bagasi</p></article><article><img src="https://images.unsplash.com/photo-1570125909232-eb263c188f7e?auto=format&fit=crop&w=700&q=80" alt="Armada Medium Bus" loading="lazy"><h3>Medium Bus</h3><p>25 Kursi · AC · Reclining Seat</p></article></div></div></section>
+            <ul class="lp-reviews-list">
+                @foreach ($reviews as $review)
+                    @php
+                        $reviewRoute = $review->schedule?->route;
+                    @endphp
+                    <li>
+                        <blockquote>{{ $review->comment }}</blockquote>
+                        <p class="lp-review-meta">
+                            <b>{{ \Illuminate\Support\Str::before($review->user?->name ?? 'Penumpang', ' ') ?: 'Penumpang' }}</b>
+                            @if ($reviewRoute?->origin && $reviewRoute?->destination)
+                                <span>{{ $cityOf($reviewRoute->origin) }} ke {{ $cityOf($reviewRoute->destination) }}</span>
+                            @endif
+                            <span>Nilai {{ number_format((float) $review->overall_rating, 1, ',', '.') }}</span>
+                        </p>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+@endif
 
-<section class="review-section"><div class="container"><div class="section-heading"><div><span class="section-label">Cerita Mereka</span><h2>Rating & Review</h2></div><div class="rating-score"><b>4.7/5</b><span>★★★★★<small> dari 1.250 ulasan</small></span></div></div><div class="review-grid"><article><div class="review-stars">★★★★★</div><p>Perjalanannya nyaman dan drivernya ramah. Pasti pesan lagi.</p><strong>Andi Pratama</strong><small>Jakarta → Bandung</small></article><article><div class="review-stars">★★★★★</div><p>Booking sangat mudah, armadanya bersih, dan tepat waktu.</p><strong>Siti Rahayu</strong><small>Bandung → Yogyakarta</small></article><article><div class="review-stars">★★★★★</div><p>Customer service responsif. Pengalaman travel yang menyenangkan.</p><strong>Budi Santoso</strong><small>Surabaya → Malang</small></article></div></div></section>
+{{-- FAQ: answers follow the rules the booking system actually enforces --}}
+<section class="lp-faq" id="faq" aria-labelledby="faq-title">
+    <div class="container lp-faq-grid">
+        <h2 id="faq-title">Yang sering ditanyakan sebelum berangkat</h2>
 
-<section class="faq-section section"><div class="container"><div class="section-heading centered"><div><span class="section-label">Punya Pertanyaan?</span><h2>FAQ</h2></div></div><div class="faq-grid"><details open><summary>Bagaimana cara memesan tiket?</summary><p>Pilih rute, tanggal, dan jumlah penumpang, lalu ikuti proses pemesanan.</p></details><details><summary>Apakah bisa melakukan perubahan jadwal?</summary><p>Hubungi customer service kami untuk bantuan perubahan jadwal.</p></details><details><summary>Bagaimana cara pembayaran?</summary><p>Kami menyediakan berbagai metode pembayaran digital yang praktis.</p></details><details><summary>Di mana saya menerima e-ticket?</summary><p>E-ticket dikirimkan setelah pembayaran berhasil dikonfirmasi.</p></details></div></div></section>
+        <div class="lp-faq-list">
+            <details>
+                <summary>Sampai kapan tiket bisa dibatalkan?</summary>
+                <p>Pembatalan bisa diajukan dari akunmu paling lambat 1 jam sebelum jam berangkat. Besaran refund ditentukan admin, dan dananya kembali lewat metode bayar yang kamu pakai.</p>
+            </details>
+            <details>
+                <summary>Berapa lama kursi ditahan saat saya membayar?</summary>
+                <p>15 menit. Kalau pembayaran belum masuk sampai batas itu, booking batal otomatis dan kursinya dilepas untuk penumpang lain.</p>
+            </details>
+            <details>
+                <summary>Kenapa harga akhir pekan berbeda?</summary>
+                <p>Tiap rute punya tarif hari biasa, akhir pekan, dan hari libur. Harga yang kamu bayar mengikuti tanggal berangkat yang kamu pilih.</p>
+            </details>
+            <details>
+                <summary>Kapan saya harus sudah di pool?</summary>
+                <p>Boarding dibuka 15 menit sebelum jam berangkat. Siapkan QR e-ticket di HP supaya petugas bisa langsung memindainya.</p>
+            </details>
+            <details>
+                <summary>Bagaimana kalau saya tidak datang?</summary>
+                <p>Tiket dicatat sebagai tidak hadir (no show), hangus, dan tidak bisa direfund. Kalau rencanamu berubah, batalkan paling lambat 1 jam sebelum berangkat.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+{{-- CLOSING: dusk hills rise into place as the section scrolls in --}}
+<section class="lp-dusk" data-scene="enter" aria-labelledby="dusk-title">
+    <div class="lp-dusk-scene" aria-hidden="true">
+        <span class="lp-moon" data-depth="0.6"></span>
+        <svg class="lp-layer lp-layer--far" data-depth="0.45" viewBox="0 0 1440 400" preserveAspectRatio="none">
+            <path fill="#2E6152" d="M0 300C160 262 300 236 430 242s210-34 330-92c80-40 140-82 190-88h30c50 8 100 46 140 88 80 52 200 62 320 40V400H0z" />
+        </svg>
+        <svg class="lp-layer lp-layer--mid" data-depth="0.3" viewBox="0 0 1440 300" preserveAspectRatio="none">
+            <path fill="#1F4C3F" d="M0 140C200 80 380 90 540 140s260 30 380-10c140-50 320-40 520 20V300H0z" />
+        </svg>
+        <svg class="lp-layer lp-layer--front" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path fill="#0C392F" d="M0 60C300 20 600 30 900 60s400 10 540-10V120H0z" />
+        </svg>
+    </div>
+
+    <div class="container lp-dusk-copy">
+        <h2 id="dusk-title">Tinggal pilih tanggalnya.</h2>
+        <p>Rute, jam, dan kursi bisa kamu cek sekarang tanpa daftar dulu.</p>
+        <a href="#cari" class="lp-btn lp-btn--light" data-focus-search>Isi pencarian</a>
+    </div>
+</section>
 @endsection

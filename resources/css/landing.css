@@ -1,0 +1,1570 @@
+/*
+ * TravelKu landing page.
+ * Identity motif: Indonesian highway direction signs (green panel, white inset border),
+ * which is also why the type is Overpass, a descendant of the Highway Gothic sign alphabet.
+ * Accent: one sunrise amber, used only for the sun and the primary "find a trip" actions.
+ */
+
+@import './brand-tokens.css';
+@import './components.css';
+
+:root {
+    --lp-overlap: 72px;
+}
+
+body.is-landing {
+    font-family: 'Overpass', ui-sans-serif, system-ui, sans-serif;
+    background: var(--lp-paper);
+    color: var(--lp-ink);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+.is-landing main h1,
+.is-landing main h2,
+.is-landing main h3 {
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--lp-forest);
+}
+
+.is-landing main h2 {
+    font-size: clamp(2rem, 4vw, 3.1rem);
+}
+
+.is-landing :focus-visible {
+    outline: 3px solid var(--lp-ink);
+    outline-offset: 3px;
+}
+
+.is-landing [id] {
+    scroll-margin-top: calc(var(--lp-nav-h) + 16px);
+}
+
+/* Navbar sits over the sky, then turns solid once the page scrolls (the only blurred surface). */
+.is-landing .navbar {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background: transparent;
+    border-bottom-color: transparent;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.is-landing .navbar.is-scrolled,
+.is-landing .navbar:has(.navbar-panel.is-open) {
+    background: rgb(246 244 236 / 0.94);
+    border-bottom-color: var(--lp-line);
+    backdrop-filter: blur(10px);
+}
+
+.is-landing .navbar-brand {
+    color: var(--lp-forest);
+}
+
+.is-landing .navbar-menu a {
+    color: #2E4A40;
+    font-weight: 600;
+}
+
+.is-landing .navbar-menu a:hover,
+.is-landing .navbar-menu a.navbar-link-active {
+    color: var(--lp-green);
+}
+
+.is-landing .navbar .btn-outline {
+    border-color: var(--lp-forest);
+    color: var(--lp-forest);
+}
+
+/* =========================
+   HERO
+========================= */
+
+.lp-hero {
+    --scene-h: clamp(300px, 50vh, 480px);
+    position: relative;
+    min-height: max(660px, 100svh);
+    padding-top: var(--lp-nav-h);
+    /* Room for the hills plus the overlapping ticket, so the copy never sits on the green. */
+    padding-bottom: calc(var(--scene-h) * 0.62 + var(--lp-overlap) + 48px);
+    overflow: hidden;
+    background: linear-gradient(180deg, #D7E9E1 0%, #EEF0DE 40%, #F7E4C4 72%, #F5D3A0 100%);
+    isolation: isolate;
+}
+
+.lp-hero-scene {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.lp-sun {
+    position: absolute;
+    top: 30%;
+    right: 16%;
+    width: clamp(90px, 11vw, 150px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--lp-sun);
+    box-shadow: 0 0 0 18px rgb(242 178 92 / 0.18), 0 0 0 40px rgb(242 178 92 / 0.1);
+}
+
+.lp-clouds {
+    position: absolute;
+    top: 14%;
+    left: 0;
+    width: 100%;
+    height: 220px;
+    fill: rgb(255 253 248 / 0.85);
+}
+
+.lp-layer {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    display: block;
+}
+
+.lp-hero .lp-layer--far,
+.lp-hero .lp-layer--mid,
+.lp-hero .lp-layer--near {
+    bottom: calc(var(--lp-overlap) + 24px);
+}
+
+.lp-hero .lp-layer--far {
+    height: calc(var(--scene-h) * 0.95);
+}
+
+.lp-hero .lp-layer--mid {
+    height: calc(var(--scene-h) * 0.62);
+}
+
+.lp-hero .lp-layer--near {
+    height: calc(var(--scene-h) * 0.42);
+}
+
+.lp-hero .lp-layer--near::after {
+    content: '';
+    position: absolute;
+    top: calc(100% - 1px);
+    left: 0;
+    right: 0;
+    height: 240px;
+    background: #2F7357;
+}
+
+.lp-layer--near > svg:first-child {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.lp-van {
+    position: absolute;
+    left: 8%;
+    bottom: 38%;
+    width: clamp(92px, 9vw, 150px);
+    height: auto;
+    animation: lp-van-arrive 1.6s var(--lp-ease-out) both;
+}
+
+.lp-hero .lp-layer--front {
+    bottom: 0;
+    height: calc(var(--lp-overlap) + 70px);
+}
+
+.lp-hero-copy {
+    position: relative;
+    padding-top: clamp(56px, 12vh, 140px);
+}
+
+.lp-hero-copy > * {
+    animation: lp-rise 0.8s var(--lp-ease-out) both;
+}
+
+.lp-hero-copy > :nth-child(2) {
+    animation-delay: 0.08s;
+}
+
+.lp-hero-copy > :nth-child(3) {
+    animation-delay: 0.16s;
+}
+
+.lp-hero-copy > :nth-child(4) {
+    animation-delay: 0.24s;
+}
+
+.lp-plate {
+    display: inline-block;
+    padding: 6px 14px 4px;
+    border: 2px solid #FBFAF6;
+    border-radius: 6px;
+    background: var(--lp-green);
+    box-shadow: 0 0 0 2px var(--lp-green);
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.lp-hero h1 {
+    max-width: 12ch;
+    margin-top: 22px;
+    font-size: clamp(2.6rem, 7vw, 5.4rem);
+    line-height: 1;
+}
+
+.lp-hero-lead {
+    max-width: 48ch;
+    margin-top: 22px;
+    color: #2E4A40;
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+}
+
+.lp-hero-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 22px;
+    color: var(--lp-forest);
+    font-weight: 600;
+}
+
+.lp-hero-facts span + span::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 24px;
+    border-radius: 50%;
+    background: var(--lp-green);
+    vertical-align: middle;
+}
+
+@keyframes lp-rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+}
+
+@keyframes lp-van-arrive {
+    from {
+        translate: -60vw 0;
+    }
+}
+
+/* =========================
+   SEARCH TICKET (overlap with the hero; the ticket itself lives in components.css)
+========================= */
+
+.lp-search {
+    position: relative;
+    z-index: 3;
+    margin-top: calc(var(--lp-overlap) * -1 - 40px);
+    padding-bottom: clamp(40px, 5vw, 64px);
+}
+
+.lp-search > .container {
+    /* Elevated on purpose: the ticket is the one surface that overlaps the hero. */
+    filter: drop-shadow(0 22px 26px rgb(12 57 47 / 0.2));
+}
+
+/* =========================
+   ROUTES (road signs)
+========================= */
+
+.lp-routes {
+    position: relative;
+    padding: clamp(40px, 6vw, 72px) 0 0;
+}
+
+.lp-routes-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 16px 48px;
+}
+
+.lp-routes-head p {
+    max-width: 46ch;
+    color: var(--lp-muted);
+}
+
+.lp-routes-viewport {
+    --road-x: 0px;
+    --hills-x: 0px;
+    position: relative;
+    margin-top: 40px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    background:
+        linear-gradient(90deg, #F6F4EC 0 28px, transparent 28px 54px) var(--road-x) calc(100% - 27px) / 54px 4px repeat-x,
+        linear-gradient(var(--lp-asphalt), var(--lp-asphalt)) 0 100% / 100% 58px no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 140' preserveAspectRatio='none'%3E%3Cpath fill='%23C9DDD1' d='M0 90C120 40 240 30 360 70s240 40 360 20v50H0z'/%3E%3Cpath fill='%23A8C9B6' d='M0 120c140-30 260-40 380-10s220 10 340 10v20H0z'/%3E%3C/svg%3E") var(--hills-x) calc(100% - 58px) / 720px 140px repeat-x;
+    background-attachment: local, local, local;
+}
+
+.lp-routes-hills {
+    display: none;
+}
+
+.lp-routes-track {
+    display: flex;
+    gap: clamp(32px, 5vw, 72px);
+    width: max-content;
+    padding: 12px max(5vw, calc((100vw - 1200px) / 2)) 58px;
+    list-style: none;
+}
+
+.lp-sign-post {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    scroll-snap-align: center;
+}
+
+.lp-sign {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 14px;
+    transition: transform 0.3s var(--lp-ease-out);
+}
+
+.lp-sign:hover {
+    transform: translateY(-6px);
+}
+
+.lp-sign:focus-visible {
+    outline: 3px solid var(--lp-ink);
+    outline-offset: 8px;
+}
+
+.lp-sign-face {
+    display: grid;
+    gap: 4px;
+    min-width: 250px;
+    padding: 16px 26px 14px;
+    border: 3px solid #FBFAF6;
+    border-radius: 12px;
+    background: var(--lp-green);
+    box-shadow: 0 0 0 4px var(--lp-green);
+    color: #FFFFFF;
+}
+
+.lp-sign-from {
+    color: #E3F2EA;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.lp-sign-to {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.lp-sign-to svg {
+    flex: none;
+    width: 1em;
+    height: 1em;
+}
+
+.lp-sign-meta {
+    color: #E3F2EA;
+    font-size: 0.95rem;
+}
+
+.lp-sign-plate {
+    margin-top: 10px;
+    padding: 5px 14px 3px;
+    border: 2px solid var(--lp-forest);
+    border-radius: 6px;
+    background: #FBFAF6;
+    color: var(--lp-forest);
+    font-weight: 800;
+    transition: background-color 0.2s ease;
+}
+
+.lp-sign:hover .lp-sign-plate,
+.lp-sign:focus-visible .lp-sign-plate {
+    background: var(--lp-sun);
+}
+
+.lp-sign-legs {
+    width: 120px;
+    height: 72px;
+    background: linear-gradient(90deg, transparent 18%, #7F8A84 18% 26%, transparent 26% 74%, #7F8A84 74% 82%, transparent 82%);
+}
+
+.lp-routes-empty {
+    margin-top: 32px;
+    padding: 28px 32px;
+    border: 3px solid #FBFAF6;
+    border-radius: 12px;
+    background: var(--lp-green);
+    box-shadow: 0 0 0 4px var(--lp-green);
+    color: #FFFFFF;
+    max-width: 560px;
+}
+
+.lp-routes-empty-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+/* Pinned mode (desktop, motion allowed): JS sets the section height and drives the track. */
+.lp-routes.is-pinned {
+    padding-top: 0;
+}
+
+.lp-routes.is-pinned .lp-routes-sticky {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding-top: calc(var(--lp-nav-h) + 24px);
+    overflow: hidden;
+}
+
+.lp-routes.is-pinned .lp-routes-viewport {
+    /* Fill the rest of the pinned screen: the road sits at the bottom and the hills grow behind the signs. */
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    scroll-snap-type: none;
+    background-attachment: scroll, scroll, scroll;
+    background-size: 54px 4px, 100% 58px, 1440px 62%;
+}
+
+/* Pinned: signs hang right under the heading and their posts run all the way down to the road. */
+.lp-routes.is-pinned .lp-routes-viewport {
+    align-items: stretch;
+}
+
+.lp-routes.is-pinned .lp-routes-track {
+    align-items: stretch;
+    padding-top: 28px;
+}
+
+.lp-routes.is-pinned .lp-sign-legs {
+    flex: 1;
+    min-height: 72px;
+}
+
+.lp-routes.is-pinned .lp-routes-track {
+    will-change: transform;
+}
+
+/* =========================
+   HOW TO BOOK
+========================= */
+
+.lp-steps {
+    padding: clamp(64px, 8vw, 112px) 0;
+}
+
+.lp-steps-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+}
+
+.lp-steps-head {
+    position: sticky;
+    top: calc(var(--lp-nav-h) + 40px);
+    display: grid;
+    gap: 20px;
+    justify-items: start;
+}
+
+.lp-steps-head p {
+    max-width: 36ch;
+    color: var(--lp-muted);
+    font-size: 1.125rem;
+}
+
+.lp-steps-road {
+    position: relative;
+    padding-left: 84px;
+}
+
+.lp-steps-lane {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 52px;
+    border-radius: 26px;
+    background:
+        linear-gradient(#F6F4EC 0 22px, transparent 22px 40px) 50% 0 / 3px 40px repeat-y,
+        var(--lp-asphalt);
+    overflow: hidden;
+}
+
+.lp-steps-progress {
+    position: absolute;
+    inset: 0;
+    background: rgb(12 121 80 / 0.7);
+    transform-origin: top;
+    transform: scaleY(var(--steps-progress, 0));
+}
+
+.lp-steps-van {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 30px;
+    margin-left: -15px;
+    transform: translateY(var(--van-y, 8px));
+}
+
+.lp-steps-list {
+    display: grid;
+    gap: clamp(48px, 7vw, 88px);
+    list-style: none;
+    padding: 16px 0;
+}
+
+.lp-steps-list li {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    column-gap: 22px;
+    row-gap: 8px;
+}
+
+.lp-steps-list h3 {
+    grid-column: 2;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+}
+
+.lp-steps-list p {
+    grid-column: 2;
+    max-width: 52ch;
+    color: var(--lp-muted);
+}
+
+/* Kilometre posts (patok): grey cap until the van reaches the step, then green. */
+.lp-km {
+    grid-row: 1 / span 2;
+    display: grid;
+    align-content: end;
+    justify-items: center;
+    width: 44px;
+    height: 58px;
+    padding-bottom: 6px;
+    border: 1.5px solid var(--lp-field-border);
+    border-radius: 12px 12px 4px 4px;
+    background: linear-gradient(var(--lp-field-border) 0 16px, #FFFFFF 16px);
+    color: var(--lp-ink);
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1.1;
+    transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+.lp-km b {
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.lp-steps-list li.is-reached .lp-km {
+    border-color: var(--lp-green);
+    background: linear-gradient(var(--lp-green) 0 16px, #FFFFFF 16px);
+}
+
+/* =========================
+   FLEET
+========================= */
+
+.lp-fleet {
+    padding: clamp(56px, 7vw, 96px) 0;
+    background: var(--lp-mint);
+}
+
+.lp-fleet-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 16px 48px;
+    margin-bottom: 40px;
+}
+
+.lp-fleet-head p,
+.lp-fleet-empty {
+    max-width: 46ch;
+    color: #3F544B;
+}
+
+.lp-fleet-list {
+    list-style: none;
+}
+
+.lp-fleet-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 20px 48px;
+    padding: 28px 0;
+    border-top: 1px solid rgb(12 57 47 / 0.2);
+}
+
+.lp-fleet-row:last-child {
+    border-bottom: 1px solid rgb(12 57 47 / 0.2);
+}
+
+.lp-fleet-name h3 {
+    font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+}
+
+.lp-fleet-name p,
+.lp-fleet-facilities {
+    color: #3F544B;
+}
+
+.lp-fleet-name p {
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.lp-seats {
+    display: grid;
+    grid-template-columns: repeat(var(--seat-columns, 3), 20px);
+    gap: 6px;
+    padding: 12px;
+    border: 1.5px solid var(--lp-forest);
+    border-radius: 18px 18px 8px 8px;
+    background: #FBFAF6;
+}
+
+.lp-seat {
+    display: grid;
+    place-items: center;
+    height: 20px;
+    border: 1.5px solid var(--lp-forest);
+    border-radius: 6px 6px 3px 3px;
+    background: var(--lp-mint);
+}
+
+.lp-seat--driver {
+    grid-column: -2;
+    grid-row: 1;
+    background: var(--lp-forest);
+    color: #FFFFFF;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+/* =========================
+   REVIEWS
+========================= */
+
+.lp-reviews {
+    padding: clamp(56px, 7vw, 96px) 0;
+}
+
+.lp-reviews-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: clamp(32px, 6vw, 96px);
+}
+
+.lp-reviews-average {
+    margin-top: 20px;
+    color: var(--lp-forest);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.lp-reviews-average b {
+    display: block;
+    font-size: clamp(4rem, 9vw, 7rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.lp-reviews-score > p:last-child {
+    margin-top: 8px;
+    color: var(--lp-muted);
+}
+
+.lp-reviews-list {
+    list-style: none;
+}
+
+.lp-reviews-list li {
+    padding: 28px 0;
+    border-top: 1px solid var(--lp-line);
+}
+
+.lp-reviews-list blockquote {
+    font-size: clamp(1.15rem, 1.8vw, 1.4rem);
+    line-height: 1.5;
+}
+
+.lp-review-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-top: 12px;
+    color: var(--lp-muted);
+}
+
+.lp-review-meta b {
+    color: var(--lp-ink);
+}
+
+/* =========================
+   FAQ
+========================= */
+
+.lp-faq {
+    padding: clamp(56px, 7vw, 96px) 0;
+    background: #ECE8DA;
+}
+
+.lp-faq-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: clamp(32px, 6vw, 96px);
+    align-items: start;
+}
+
+.lp-faq-list details {
+    border-bottom: 1px solid #C9C3AF;
+}
+
+.lp-faq-list details:first-child {
+    border-top: 1px solid #C9C3AF;
+}
+
+.lp-faq-list summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 14px 0;
+    color: var(--lp-forest);
+    font-size: 1.15rem;
+    font-weight: 600;
+    list-style: none;
+    cursor: pointer;
+}
+
+.lp-faq-list summary::-webkit-details-marker {
+    display: none;
+}
+
+.lp-faq-list summary::after {
+    content: '';
+    flex: none;
+    width: 14px;
+    height: 14px;
+    background:
+        linear-gradient(var(--lp-forest), var(--lp-forest)) center / 14px 2px no-repeat,
+        linear-gradient(var(--lp-forest), var(--lp-forest)) center / 2px 14px no-repeat;
+    transition: transform 0.3s var(--lp-ease-out);
+}
+
+.lp-faq-list details[open] summary::after {
+    transform: rotate(45deg);
+}
+
+.lp-faq-list details p {
+    max-width: 60ch;
+    padding-bottom: 20px;
+    color: var(--lp-muted);
+}
+
+/* =========================
+   DUSK CLOSING
+========================= */
+
+.lp-dusk {
+    --scene-h: clamp(220px, 34vw, 380px);
+    position: relative;
+    padding: clamp(72px, 8vw, 112px) 0 calc(var(--scene-h) * 0.6);
+    overflow: hidden;
+    background: linear-gradient(180deg, #16352D 0%, #1F4A3E 55%, #2B5D4E 100%);
+    color: #F6F4EC;
+    isolation: isolate;
+}
+
+.lp-dusk-scene {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.lp-moon {
+    position: absolute;
+    top: 18%;
+    right: 18%;
+    width: clamp(48px, 6vw, 80px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #F3E3BE;
+    box-shadow: 0 0 0 14px rgb(243 227 190 / 0.08);
+}
+
+.lp-dusk .lp-layer--far {
+    bottom: 30px;
+    height: calc(var(--scene-h) * 0.95);
+}
+
+.lp-dusk .lp-layer--mid {
+    bottom: 30px;
+    height: calc(var(--scene-h) * 0.6);
+}
+
+.lp-dusk .lp-layer--front {
+    bottom: 0;
+    height: 90px;
+}
+
+.lp-dusk-copy {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+}
+
+.is-landing main .lp-dusk h2 {
+    max-width: 14ch;
+    color: #F6F4EC;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+}
+
+.lp-dusk p {
+    max-width: 40ch;
+    color: #D5E2DA;
+    font-size: 1.15rem;
+}
+
+.lp-dusk :focus-visible {
+    outline-color: #F6F4EC;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.ft {
+    margin-top: -1px;
+    background: var(--lp-forest);
+    color: #C9DDD3;
+}
+
+/* The road the dusk hills run down to; the footer starts on the other side of it. */
+.ft-road {
+    height: 56px;
+    background:
+        linear-gradient(90deg, #F6F4EC 0 34px, transparent 34px 64px) 0 26px / 64px 4px repeat-x,
+        var(--lp-asphalt);
+}
+
+.ft-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr));
+    gap: 40px 48px;
+    padding: clamp(48px, 7vw, 80px) 0 clamp(40px, 6vw, 64px);
+}
+
+.ft-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    color: #F6F4EC !important;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.ft-brand p {
+    max-width: 40ch;
+    margin-top: 14px;
+    color: #C9DDD3;
+}
+
+.ft-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.ft-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 22px;
+    border: 2px solid #C9DDD3;
+    border-radius: 10px;
+    color: #F6F4EC !important;
+    font-weight: 800;
+    transition: background-color 0.2s ease;
+}
+
+.ft-btn-outline:hover {
+    background: rgb(246 244 236 / 0.08);
+}
+
+.ft-heading {
+    margin-bottom: 14px;
+    color: #F6F4EC;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.ft-heading--spaced {
+    margin-top: 28px;
+}
+
+.ft-links,
+.ft-routes {
+    display: grid;
+    gap: 2px;
+    list-style: none;
+}
+
+.ft-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    color: #C9DDD3 !important;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.ft-links a:hover {
+    color: #F6F4EC !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Route links are small road-sign plates, the same motif as the landing page. */
+.ft-routes {
+    gap: 12px;
+    padding: 2px;
+}
+
+.ft-routes a {
+    display: grid;
+    min-height: 44px;
+    padding: 6px 12px 5px;
+    border: 2px solid #FBFAF6;
+    border-radius: 7px;
+    background: var(--lp-green);
+    box-shadow: 0 0 0 2px var(--lp-green);
+    color: #FFFFFF !important;
+    text-decoration: none;
+    transition: transform 0.2s var(--lp-ease-out);
+}
+
+.ft-routes a:hover {
+    transform: translateY(-2px);
+}
+
+.ft-routes span {
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.ft-routes small {
+    color: #E3F2EA;
+    font-size: 0.85rem;
+}
+
+.ft-address,
+.ft-pay {
+    color: #C9DDD3;
+}
+
+.ft-note {
+    margin-top: 4px;
+    color: #A9C2B6;
+    font-size: 0.875rem;
+}
+
+.ft-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding: 20px 0 28px;
+    border-top: 1px solid rgb(201 221 211 / 0.25);
+    color: #A9C2B6;
+    font-size: 0.9rem;
+}
+
+.ft-top-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #C9DDD3 !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ft :focus-visible {
+    outline-color: #F6F4EC;
+}
+
+@media (max-width: 1000px) {
+    .ft-top {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ft-brand {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 560px) {
+    .ft-top {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================
+   SEARCH PAGE
+========================= */
+
+.sr-band {
+    --scene-h: clamp(200px, 30vh, 280px);
+    position: relative;
+    padding: calc(var(--lp-nav-h) + clamp(40px, 7vh, 72px)) 0 calc(var(--scene-h) * 0.5 + var(--lp-overlap));
+    overflow: hidden;
+    background: linear-gradient(180deg, #D7E9E1 0%, #EEF0DE 55%, #F7E4C4 100%);
+    isolation: isolate;
+}
+
+.sr-band-scene {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.sr-sun {
+    top: auto;
+    bottom: calc(var(--scene-h) * 0.7);
+    right: 14%;
+    width: clamp(70px, 8vw, 110px);
+}
+
+.sr-layer--far,
+.sr-layer--mid {
+    bottom: calc(var(--lp-overlap) + 40px);
+}
+
+.sr-layer--far {
+    height: var(--scene-h);
+}
+
+.sr-layer--mid {
+    height: calc(var(--scene-h) * 0.55);
+}
+
+.sr-layer--front {
+    bottom: 0;
+    height: calc(var(--lp-overlap) + 64px);
+}
+
+.sr-band::after {
+    /* Fills the gap under the mid hills so no sky shows below them. */
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(var(--lp-overlap) + 90px);
+    z-index: -2;
+    background: #5E9D80;
+}
+
+.sr-band-copy {
+    position: relative;
+}
+
+.sr-band-kicker {
+    color: #2E4A40;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.is-landing main .sr-band h1 {
+    margin-top: 8px;
+    font-size: clamp(2.3rem, 6vw, 4.4rem);
+    line-height: 1.02;
+}
+
+.sr-band h1 span {
+    color: var(--lp-green);
+    font-weight: 600;
+}
+
+.sr-band-lead {
+    max-width: 52ch;
+    margin-top: 14px;
+    color: #2E4A40;
+    font-size: 1.1rem;
+}
+
+.is-search .lp-search {
+    padding-bottom: clamp(32px, 5vw, 56px);
+}
+
+.sr-results {
+    padding-bottom: clamp(72px, 10vw, 120px);
+}
+
+.sr-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.sr-alert {
+    margin-bottom: 32px;
+    padding: 18px 22px;
+    border: 1.5px solid var(--lp-danger);
+    border-radius: 12px;
+    background: var(--lp-danger-soft);
+    color: #5E1D10;
+}
+
+.sr-alert-title {
+    font-weight: 800;
+}
+
+.sr-alert ul {
+    margin-top: 6px;
+    padding-left: 20px;
+}
+
+.sr-dates {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(64px, 1fr));
+    gap: 8px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.sr-date {
+    display: grid;
+    justify-items: center;
+    gap: 0;
+    min-height: 76px;
+    padding: 10px 6px 8px;
+    border: 1.5px solid var(--lp-line);
+    border-radius: 12px;
+    background: var(--lp-card);
+    color: var(--lp-muted);
+    font-size: 0.85rem;
+    line-height: 1.2;
+    transition: border-color 0.2s ease, transform 0.2s var(--lp-ease-out);
+}
+
+.sr-date b {
+    color: var(--lp-forest);
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.sr-date:hover {
+    border-color: var(--lp-green);
+    transform: translateY(-2px);
+}
+
+.sr-date.is-current {
+    border-color: var(--lp-green);
+    background: var(--lp-green);
+    color: #E3F2EA;
+}
+
+.sr-date.is-current b {
+    color: #FFFFFF;
+}
+
+.sr-results-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 32px;
+    margin-bottom: 20px;
+}
+
+.is-landing main .sr-results-head h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.sr-results-head p {
+    color: var(--lp-muted);
+}
+
+.sr-trips {
+    list-style: none;
+    border-top: 1px solid var(--lp-line);
+}
+
+.sr-trip {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr) 140px auto;
+    align-items: center;
+    gap: 16px 32px;
+    padding: 24px 4px;
+    border-bottom: 1px solid var(--lp-line);
+    animation: lp-rise 0.5s var(--lp-ease-out) both;
+}
+
+.sr-trip:nth-child(2) { animation-delay: 0.04s; }
+.sr-trip:nth-child(3) { animation-delay: 0.08s; }
+.sr-trip:nth-child(4) { animation-delay: 0.12s; }
+.sr-trip:nth-child(n + 5) { animation-delay: 0.16s; }
+
+.sr-trip-times {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sr-time {
+    color: var(--lp-forest);
+    font-size: 1.7rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.sr-time--arrive {
+    color: var(--lp-muted);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.sr-time-line {
+    flex: 1;
+    min-width: 24px;
+    height: 0;
+    border-top: 2px dashed var(--lp-field-border);
+}
+
+.sr-trip-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    color: var(--lp-ink);
+}
+
+.sr-trip-points span {
+    color: var(--lp-muted);
+}
+
+.sr-trip-meta {
+    margin-top: 4px;
+    color: var(--lp-muted);
+    font-size: 0.95rem;
+}
+
+.sr-seats {
+    color: var(--lp-forest);
+    font-weight: 600;
+}
+
+.sr-seats.is-low {
+    color: var(--lp-danger);
+}
+
+.sr-seats.is-low::before {
+    content: 'Hampir penuh: ';
+    font-weight: 800;
+}
+
+.sr-trip-buy {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: flex-end;
+}
+
+.sr-price {
+    display: grid;
+    color: var(--lp-forest);
+    font-size: 1.3rem;
+    font-weight: 800;
+    text-align: right;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.sr-price small {
+    color: var(--lp-muted);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.sr-empty {
+    max-width: 640px;
+    padding: 8px 0 24px;
+}
+
+.is-landing main .sr-empty h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.sr-empty p {
+    margin-top: 10px;
+    color: var(--lp-muted);
+}
+
+.sr-transit {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+    list-style: none;
+}
+
+.sr-transit a {
+    display: grid;
+    gap: 2px;
+    min-height: 44px;
+    padding: 14px 18px;
+    border: 1.5px solid var(--lp-green);
+    border-radius: 12px;
+    background: var(--lp-card);
+    color: var(--lp-forest);
+    font-weight: 800;
+}
+
+.sr-transit a span {
+    color: var(--lp-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.sr-transit a:hover {
+    background: var(--lp-mint);
+}
+
+.sr-suggest {
+    margin-top: 8px;
+}
+
+.sr-suggest > p {
+    margin-top: 6px;
+    color: var(--lp-muted);
+}
+
+.sr-suggest-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 22px;
+    margin-top: 24px;
+    list-style: none;
+}
+
+/* Small road signs, same motif as the landing page. */
+.sr-suggest-sign {
+    display: grid;
+    gap: 2px;
+    padding: 14px 18px 12px;
+    border: 3px solid #FBFAF6;
+    border-radius: 10px;
+    background: var(--lp-green);
+    box-shadow: 0 0 0 3px var(--lp-green);
+    color: #FFFFFF;
+    transition: transform 0.25s var(--lp-ease-out);
+}
+
+.sr-suggest-sign:hover {
+    transform: translateY(-4px);
+}
+
+.sr-suggest-sign:focus-visible {
+    outline-offset: 7px;
+}
+
+.sr-suggest-from,
+.sr-suggest-price {
+    color: #E3F2EA;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.sr-suggest-to {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+@media (max-width: 1000px) {
+    .sr-trip {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .sr-trip-times {
+        grid-column: 1 / -1;
+        max-width: 320px;
+    }
+
+    .sr-trip-buy {
+        grid-column: 1 / -1;
+        justify-content: space-between;
+    }
+
+    .sr-seats {
+        justify-self: end;
+        text-align: right;
+    }
+}
+
+@media (max-width: 560px) {
+    .sr-trip-route,
+    .sr-seats {
+        grid-column: 1 / -1;
+        justify-self: start;
+        text-align: left;
+    }
+
+    .sr-price {
+        text-align: left;
+    }
+
+    .sr-dates {
+        grid-template-columns: repeat(7, 64px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sr-trip {
+        animation: none;
+    }
+
+    .sr-date,
+    .sr-suggest-sign {
+        transition: none;
+    }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+    .lp-routes-head,
+    .lp-fleet-head,
+    .lp-steps-grid,
+    .lp-reviews-grid,
+    .lp-faq-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lp-steps-head {
+        position: static;
+    }
+
+    .lp-fleet-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .lp-fleet-facilities {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .is-landing .navbar-content {
+        min-height: 64px;
+    }
+}
+
+@media (max-width: 560px) {
+    :root {
+        --lp-overlap: 48px;
+    }
+
+    .lp-hero {
+        --scene-h: 300px;
+    }
+
+    .lp-clouds {
+        display: none;
+    }
+
+    .lp-sun {
+        top: auto;
+        bottom: calc(var(--scene-h) * 0.62);
+        right: 10%;
+    }
+
+    .lp-sign-face {
+        min-width: 220px;
+    }
+
+    .lp-steps-road {
+        padding-left: 64px;
+    }
+
+    .lp-steps-lane {
+        width: 40px;
+    }
+
+    .lp-steps-list li {
+        grid-template-columns: 1fr;
+    }
+
+    .lp-km {
+        grid-row: auto;
+        width: 40px;
+    }
+
+    .lp-steps-list h3,
+    .lp-steps-list p {
+        grid-column: 1;
+    }
+
+    .lp-fleet-row {
+        grid-template-columns: 1fr;
+        justify-items: start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lp-hero-copy > *,
+    .lp-van {
+        animation: none;
+    }
+
+    .lp-btn,
+    .lp-sign,
+    .lp-swap {
+        transition: none;
+    }
+
+    .lp-btn:hover,
+    .lp-sign:hover {
+        transform: none;
+    }
+}

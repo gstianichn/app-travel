@@ -93,7 +93,7 @@ test('user can view beranda tab with search widget and active promos', function 
     $response->assertSee('Pool Dipatiukur (Bandung)');
     $response->assertSee('Semanggi (Jakarta)');
     $response->assertSee('HEMATLIBURAN');
-    $response->assertSee('Cari Tiket');
+    $response->assertSee('Cari jadwal');
 });
 
 test('subflow 1: user can search schedules matching origin, destination, and active armada', function () {

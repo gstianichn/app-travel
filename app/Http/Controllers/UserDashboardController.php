@@ -63,8 +63,8 @@ class UserDashboardController extends Controller
                 'title' => 'Liburan Hemat Minibus',
                 'discount_label' => 'Diskon 25%',
                 'valid_until' => '30 Des 2026',
-                'route' => 'Bandung ➔ Jakarta',
-                'description' => 'Diskon 25% hingga Rp 50.000 untuk perjalanan rute Bandung ➔ Jakarta dengan minimum transaksi Rp 100.000.',
+                'route' => 'Bandung ke Jakarta',
+                'description' => 'Diskon 25% hingga Rp 50.000 untuk perjalanan rute Bandung ke Jakarta dengan minimum transaksi Rp 100.000.',
             ],
             [
                 'code' => 'TRAVELHEMAT',
@@ -413,7 +413,7 @@ class UserDashboardController extends Controller
             if (! $isRouteValid) {
                 return response()->json([
                     'valid' => false,
-                    'message' => 'Voucer HEMATLIBURAN hanya berlaku untuk rute Bandung ➔ Jakarta atau sebaliknya.',
+                    'message' => 'Voucer HEMATLIBURAN hanya berlaku untuk rute Bandung ke Jakarta atau sebaliknya.',
                 ], 422);
             }
 

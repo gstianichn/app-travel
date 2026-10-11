@@ -45,7 +45,7 @@
 
         <div class="quick-filter-chips">
             <button type="button" class="filter-chip active" onclick="setBookingFilter('all', this)">Semua Booking</button>
-            <button type="button" class="filter-chip" onclick="setBookingFilter('kritis', this)">🔴 Berangkat &lt; 60 Mnt</button>
+            <button type="button" class="filter-chip" onclick="setBookingFilter('kritis', this)">Berangkat &lt; 60 Mnt</button>
             <button type="button" class="filter-chip" onclick="setBookingFilter('today', this)">Hari Ini</button>
             <button type="button" class="filter-chip" onclick="setBookingFilter('pending', this)">Menunggu Bayar</button>
         </div>
@@ -130,7 +130,7 @@
                         </div>
                         <div class="data-field">
                             <span class="field-label">Rute Perjalanan:</span>
-                            <strong class="field-value text-brand-dark" id="detail-booking-route">Bandung (Pasteur) &rarr; Jakarta (Semanggi)</strong>
+                            <strong class="field-value text-brand-dark" id="detail-booking-route">Bandung (Pasteur) ke Jakarta (Semanggi)</strong>
                         </div>
                         <div class="data-field">
                             <span class="field-label">Jadwal Keberangkatan:</span>
@@ -143,7 +143,7 @@
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        <span id="detail-countdown-text">🔴 Sisa Waktu: 45 Menit Menuju Keberangkatan (Proses Boarding)</span>
+                        <span id="detail-countdown-text">Sisa Waktu: 45 Menit Menuju Keberangkatan (Proses Boarding)</span>
                     </div>
                 </div>
 
@@ -184,7 +184,7 @@
                         <div class="driver-profile-box">
                             <span class="box-label">Sopir Bertugas:</span>
                             <div class="driver-inner-row">
-                                <div class="driver-avatar">👨‍✈️</div>
+                                <div class="driver-avatar"></div>
                                 <div class="driver-info">
                                     <strong class="driver-name" id="detail-driver-name">Pak Suryanto</strong>
                                     <span class="driver-phone" id="detail-driver-phone">0812-7788-9900</span>
@@ -230,7 +230,6 @@
 
                             <!-- Instruksi Spesifik -->
                             <div class="instruction-box">
-                                <div class="inst-icon">💡</div>
                                 <div class="inst-content">
                                     <span class="inst-label">Instruksi Penjemputan:</span>
                                     <span class="inst-text" id="detail-pickup-instruction">
@@ -319,32 +318,29 @@
                     <div class="qa-grid-triad">
                         <!-- 1. Ubah Kursi -->
                         <button type="button" class="qa-feature-card qa-card-seat" onclick="openChangeSeatModal()">
-                            <div class="qa-card-icon">💺</div>
                             <div class="qa-card-content">
                                 <strong class="qa-card-title">Ubah Kursi</strong>
                                 <span class="qa-card-desc">Ganti nomor kursi di armada yang sama sesuai permintaan penumpang.</span>
                             </div>
-                            <span class="qa-action-link">Buka Pilihan Kursi &rarr;</span>
+                            <span class="qa-action-link">Buka Pilihan Kursi</span>
                         </button>
 
                         <!-- 2. Reschedule -->
                         <button type="button" class="qa-feature-card qa-card-reschedule" onclick="openRescheduleModal()">
-                            <div class="qa-card-icon">📅</div>
                             <div class="qa-card-content">
                                 <strong class="qa-card-title">Reschedule</strong>
                                 <span class="qa-card-desc">Ubah tanggal atau jam keberangkatan jika penumpang berhalangan.</span>
                             </div>
-                            <span class="qa-action-link">Pilih Jadwal Baru &rarr;</span>
+                            <span class="qa-action-link">Pilih Jadwal Baru</span>
                         </button>
 
                         <!-- 3. Ajukan Pembatalan -->
                         <button type="button" class="qa-feature-card qa-card-cancel" onclick="openCancellationModal()">
-                            <div class="qa-card-icon">🚫</div>
                             <div class="qa-card-content">
                                 <strong class="qa-card-title">Ajukan Pembatalan</strong>
                                 <span class="qa-card-desc">Teruskan pembatalan &amp; rekening refund ke Admin Utama (PRD 4.5).</span>
                             </div>
-                            <span class="qa-action-link">Kirim Pengajuan &rarr;</span>
+                            <span class="qa-action-link">Kirim Pengajuan</span>
                         </button>
                     </div>
                 </div>
@@ -364,7 +360,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge">💺</span>
+                <span class="modal-icon-badge"></span>
                 <h3 class="modal-title">Ubah Kursi Penumpang</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeChangeSeatModal()">&times;</button>
@@ -419,7 +415,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge">📅</span>
+                <span class="modal-icon-badge"></span>
                 <h3 class="modal-title">Reschedule Jadwal Keberangkatan</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeRescheduleModal()">&times;</button>
@@ -432,7 +428,7 @@
                 </div>
                 <div class="sum-row">
                     <span>Rute:</span>
-                    <strong id="modal-reschedule-route">Bandung &rarr; Jakarta</strong>
+                    <strong id="modal-reschedule-route">Bandung ke Jakarta</strong>
                 </div>
                 <div class="sum-row">
                     <span>Jadwal Semula:</span>
@@ -477,7 +473,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge cancel-icon-badge">🚫</span>
+                <span class="modal-icon-badge cancel-icon-badge"></span>
                 <h3 class="modal-title">Ajukan Pembatalan Tiket &amp; Refund</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeCancellationModal()">&times;</button>
@@ -1501,11 +1497,11 @@
             email: 'budi.p@mail.com',
             tier: 'Silver Member',
             urgency: 'kritis',
-            route: 'Bandung (Pasteur) &rarr; Jakarta (Semanggi)',
+            route: 'Bandung (Pasteur) ke Jakarta (Semanggi)',
             departureDate: 'Jumat, 25 Sep 2026',
             departureTime: '14:00 WIB',
             departure: 'Hari Ini, 14:00 WIB',
-            countdownText: '🔴 Sisa Waktu: 45 Menit Menuju Keberangkatan (Proses Boarding di Pool Pasteur)',
+            countdownText: 'Sisa Waktu: 45 Menit Menuju Keberangkatan (Proses Boarding di Pool Pasteur)',
             seat: '03A',
             seatType: 'Single Window (Baris 3)',
             vehicle: 'Toyota HiAce Premio',
@@ -1533,11 +1529,11 @@
             email: 'hendra.g@mail.com',
             tier: 'Gold Member',
             urgency: 'kritis',
-            route: 'Jakarta (Semanggi) &rarr; Bandung (Dipatiukur)',
+            route: 'Jakarta (Semanggi) ke Bandung (Dipatiukur)',
             departureDate: 'Jumat, 25 Sep 2026',
             departureTime: '13:45 WIB',
             departure: 'Hari Ini, 13:45 WIB',
-            countdownText: '🔴 Sisa Waktu: 30 Menit (Penumpang Terjebak Macet di Tol Pancoran)',
+            countdownText: 'Sisa Waktu: 30 Menit (Penumpang Terjebak Macet di Tol Pancoran)',
             seat: '01B',
             seatType: 'Depan Samping Driver',
             vehicle: 'HiAce Luxury',
@@ -1565,11 +1561,11 @@
             email: 'siti.rahma@mail.com',
             tier: 'Regular',
             urgency: 'today',
-            route: 'Bandung (Pasteur) &rarr; Bandara Soetta (T3)',
+            route: 'Bandung (Pasteur) ke Bandara Soetta (T3)',
             departureDate: 'Jumat, 25 Sep 2026',
             departureTime: '15:30 WIB',
             departure: 'Hari Ini, 15:30 WIB',
-            countdownText: '🟡 Sisa Waktu: 2 Jam 15 Menit',
+            countdownText: 'Sisa Waktu: 2 Jam 15 Menit',
             seat: '02B',
             seatType: 'Jendela Kanan Baris 2',
             vehicle: 'Toyota HiAce Premio',
@@ -1597,11 +1593,11 @@
             email: 'dewi.ratna@mail.com',
             tier: 'Silver Member',
             urgency: 'today',
-            route: 'Bekasi Barat &rarr; Bandung (Dipatiukur)',
+            route: 'Bekasi Barat ke Bandung (Dipatiukur)',
             departureDate: 'Jumat, 25 Sep 2026',
             departureTime: '14:45 WIB',
             departure: 'Hari Ini, 14:45 WIB',
-            countdownText: '🟡 Sisa Waktu: 1 Jam 30 Menit',
+            countdownText: 'Sisa Waktu: 1 Jam 30 Menit',
             seat: '04A',
             seatType: 'Lorong Tengah',
             vehicle: 'HiAce Commuter',
@@ -1629,11 +1625,11 @@
             email: 'rian.a@mail.com',
             tier: 'Regular',
             urgency: 'pending',
-            route: 'Bandung (Dipatiukur) &rarr; Jakarta (Semanggi)',
+            route: 'Bandung (Dipatiukur) ke Jakarta (Semanggi)',
             departureDate: 'Sabtu, 26 Sep 2026',
             departureTime: '07:00 WIB',
             departure: 'Besok, 07:00 WIB',
-            countdownText: '🟢 Jadwal Besok Pagi (Pemberangkatan Pertama 07:00 WIB)',
+            countdownText: 'Jadwal Besok Pagi (Pemberangkatan Pertama 07:00 WIB)',
             seat: '02A',
             seatType: 'Single Window Baris 2',
             vehicle: 'HiAce Premio',
@@ -1661,7 +1657,7 @@
             email: 'anisa.m@mail.com',
             tier: 'Gold Member',
             urgency: 'all',
-            route: 'Jakarta (Semanggi) &rarr; Bandung (Pasteur)',
+            route: 'Jakarta (Semanggi) ke Bandung (Pasteur)',
             departureDate: 'Jumat, 25 Sep 2026',
             departureTime: '11:00 WIB',
             departure: 'Telah Berangkat (11:00 WIB)',
@@ -1749,7 +1745,7 @@
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px 14px; color: var(--text-muted); font-size: 13px;">
-                    <div style="font-size: 30px; margin-bottom: 6px;">🔍</div>
+                    <div style="font-size: 30px; margin-bottom: 6px;"></div>
                     <strong>Tidak ada tiket ditemukan</strong>
                     <p style="font-size: 11px; margin-top: 4px;">Coba kata kunci lain atau pilih filter Semua Booking.</p>
                 </div>
@@ -1767,7 +1763,7 @@
                         <span class="payment-badge ${b.paymentStatusClass}">${b.paymentStatus}</span>
                     </div>
                     <div class="b-card-name">${b.passengerName}</div>
-                    <div class="b-card-route">${b.route.split('&rarr;')[0].trim()} &rarr; ${b.route.split('&rarr;')[1].trim()}</div>
+                    <div class="b-card-route">${b.route.split(' ke ')[0].trim()} ke ${b.route.split(' ke ')[1].trim()}</div>
                     <div class="b-card-footer">
                         <span>Kursi: <strong class="b-card-seat-pill">${b.seat}</strong></span>
                         <span style="color: var(--text-muted);">${b.departureTime}</span>
@@ -1950,7 +1946,7 @@
         b.departureDate = newDate;
         b.departureTime = newTime;
         b.departure = `${newDate}, ${newTime}`;
-        b.countdownText = '🟢 Jadwal Baru Terkonfirmasi';
+        b.countdownText = 'Jadwal Baru Terkonfirmasi';
 
         alert(`Jadwal tiket ${b.code} berhasil di-reschedule ke ${newDate} (${newTime}).`);
         closeRescheduleModal();

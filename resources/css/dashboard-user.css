@@ -1,0 +1,99 @@
+/*
+ * Passenger dashboard. Tailwind v4 built by Vite (it used to load the v3 CDN script).
+ * The palette is remapped to the TravelKu brand: "brand" is the road-sign green,
+ * "slate" becomes warm neutrals that match the paper background, and the greys used
+ * for small text are dark enough to pass WCAG AA on white.
+ */
+
+@import 'tailwindcss' source(none);
+@import './brand-tokens.css';
+@import './components.css';
+
+@source '../views/layouts/dashboard.blade.php';
+@source '../views/dashboard/user';
+@source '../views/components/search-ticket.blade.php';
+
+@theme {
+    --font-sans: 'Overpass', ui-sans-serif, system-ui, sans-serif;
+
+    --color-brand-50: #EEF6F1;
+    --color-brand-100: #DFF0E8;
+    --color-brand-200: #BFDCCD;
+    --color-brand-300: #8FC1A6;
+    --color-brand-400: #3F9A70;
+    --color-brand-500: #0C7950;
+    --color-brand-600: #0A6A46;
+    --color-brand-700: #0C5A3E;
+    --color-brand-800: #0C4535;
+    --color-brand-900: #0C392F;
+
+    --color-emerald-50: #EEF6F1;
+    --color-emerald-100: #DFF0E8;
+    --color-emerald-200: #BFDCCD;
+    --color-emerald-300: #8FC1A6;
+    --color-emerald-400: #3F9A70;
+    --color-emerald-500: #0C7950;
+    --color-emerald-600: #0A6A46;
+    --color-emerald-700: #0C5A3E;
+    --color-emerald-800: #0C4535;
+    --color-emerald-900: #0C392F;
+
+    --color-slate-50: #F6F4EC;
+    --color-slate-100: #EEEBE0;
+    --color-slate-200: #DEDAC9;
+    --color-slate-300: #C4BEA9;
+    --color-slate-400: #6E6A5C;
+    --color-slate-500: #57544A;
+    --color-slate-600: #45433A;
+    --color-slate-700: #34332C;
+    --color-slate-800: #24231E;
+    --color-slate-900: #13201B;
+
+    --color-white: #FFFDF8;
+
+    --radius-xl: 12px;
+    --radius-2xl: 14px;
+    --radius-3xl: 18px;
+}
+
+@layer base {
+    /* Tailwind v4 borders default to currentColor; keep the v3 behaviour the views were written for. */
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-slate-200, currentColor);
+    }
+
+    body {
+        background: var(--lp-paper);
+        color: var(--lp-ink);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--lp-ink);
+        outline-offset: 2px;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    button,
+    [role='button'] {
+        cursor: pointer;
+    }
+}
+
+/* The ticket form sits inside the page here, not over a hero. */
+.ud .lp-search {
+    margin: 0;
+    padding: 0;
+}
+
+.ud .lp-search > .container {
+    filter: drop-shadow(0 16px 22px rgb(12 57 47 / 0.14));
+}

@@ -1,0 +1,570 @@
+/*
+ * Auth pages (login, staff login, register, password reset).
+ * Left: the landing page sun, hills and minibus; the van drives off when the form is sent.
+ * Right: the form. Passenger pages use the morning sky, staff login uses the evening one.
+ */
+
+@import './brand-tokens.css';
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.au {
+    min-height: 100vh;
+    background: var(--lp-paper);
+    color: var(--lp-ink);
+    font-family: 'Overpass', ui-sans-serif, system-ui, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+.au a {
+    color: inherit;
+}
+
+.au :focus-visible {
+    outline: 3px solid var(--lp-ink);
+    outline-offset: 3px;
+}
+
+.au-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(420px, 1fr);
+    min-height: 100vh;
+}
+
+/* =========================
+   SCENE
+========================= */
+
+.au-scene {
+    --sky: linear-gradient(180deg, #D7E9E1 0%, #EEF0DE 45%, #F7E4C4 80%, #F5D3A0 100%);
+    --hill-far: #B7D0C2;
+    --hill-mid: #5E9D80;
+    --hill-near: #2F7357;
+    --scene-ink: var(--lp-forest);
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: clamp(28px, 4vw, 48px);
+    overflow: hidden;
+    background: var(--sky);
+    color: var(--scene-ink);
+    isolation: isolate;
+}
+
+.au--staff .au-scene {
+    --sky: linear-gradient(180deg, #102B25 0%, #18392F 50%, #24584A 100%);
+    --hill-far: #2E6152;
+    --hill-mid: #1F4C3F;
+    --hill-near: #173B31;
+    --scene-ink: #F6F4EC;
+}
+
+.au-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    align-self: flex-start;
+    min-height: 44px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.au--staff .au-brand:focus-visible {
+    outline-color: #F6F4EC;
+}
+
+/* Hills, road and the van */
+.au-hills {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 1;
+    height: 66%;
+    pointer-events: none;
+}
+
+
+.au-sun {
+    position: absolute;
+    right: 18%;
+    bottom: 58%;
+    z-index: 0;
+    width: clamp(110px, 12vw, 190px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--sun, var(--lp-sun));
+    box-shadow: 0 0 0 22px var(--sun-halo, rgb(242 178 92 / 0.18)), 0 0 0 48px var(--sun-halo-2, rgb(242 178 92 / 0.09));
+    pointer-events: none;
+}
+
+
+.au--staff .au-scene {
+    --sun: #F3E3BE;
+    --sun-halo: rgb(243 227 190 / 0.1);
+    --sun-halo-2: rgb(243 227 190 / 0.05);
+}
+
+.au-hill {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    display: block;
+}
+
+.au-hill--far {
+    bottom: 60px;
+    height: 100%;
+    fill: var(--hill-far);
+}
+
+.au-hill--mid {
+    bottom: 60px;
+    height: 58%;
+    fill: var(--hill-mid);
+}
+
+.au-road {
+    position: absolute;
+    inset: auto 0 0;
+    height: 104px;
+    background:
+        linear-gradient(90deg, #F6F4EC 0 36px, transparent 36px 68px) 0 58px / 68px 4px repeat-x,
+        var(--lp-asphalt);
+    box-shadow: 0 -30px 0 var(--hill-near);
+}
+
+.au-van {
+    position: absolute;
+    left: 9%;
+    bottom: 44px;
+    width: clamp(150px, 17vw, 270px);
+    animation: au-van-arrive 1.6s var(--lp-ease-out) both;
+    transition: transform 1.1s cubic-bezier(0.55, 0, 0.75, 0.2);
+}
+
+.au.is-departing .au-van {
+    transform: translateX(120vw);
+}
+
+/* =========================
+   PANEL
+========================= */
+
+.au-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(32px, 6vw, 72px) clamp(20px, 5vw, 64px);
+}
+
+.au-panel-inner {
+    width: min(100%, 440px);
+}
+
+.au-panel-inner > * {
+    animation: au-rise 0.7s var(--lp-ease-out) both;
+}
+
+.au-panel-inner > :nth-child(2) { animation-delay: 0.06s; }
+.au-panel-inner > :nth-child(3) { animation-delay: 0.12s; }
+.au-panel-inner > :nth-child(4) { animation-delay: 0.18s; }
+.au-panel-inner > :nth-child(n + 5) { animation-delay: 0.24s; }
+
+.au-title {
+    color: var(--lp-forest);
+    font-size: clamp(2rem, 3.6vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+}
+
+.au-lead {
+    margin-top: 10px;
+    color: var(--lp-muted);
+}
+
+.au-form {
+    display: grid;
+    gap: 18px;
+    margin-top: 28px;
+}
+
+.au-field {
+    display: grid;
+    gap: 6px;
+}
+
+.au-field label,
+.au-legend {
+    color: var(--lp-ink);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.au-hint {
+    color: var(--lp-muted);
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.au-input-wrap {
+    position: relative;
+}
+
+.au-field input[type='email'],
+.au-field input[type='text'],
+.au-field input[type='tel'],
+.au-field input[type='password'] {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 16px;
+    border: 1.5px solid var(--lp-field-border);
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: var(--lp-ink);
+    font: inherit;
+    transition: border-color 0.2s ease;
+}
+
+.au-input-wrap input {
+    padding-right: 56px !important;
+}
+
+.au-field input:focus-visible {
+    outline: 3px solid rgb(12 121 80 / 0.35);
+    outline-offset: 1px;
+    border-color: var(--lp-green);
+}
+
+.au-field input[aria-invalid='true'] {
+    border-color: var(--lp-danger);
+}
+
+.au-field-error {
+    color: var(--lp-danger);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.au-reveal {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--lp-forest);
+    cursor: pointer;
+}
+
+.au-reveal [hidden] {
+    display: none;
+}
+
+.au-reveal:hover {
+    background: var(--lp-mint);
+}
+
+.au-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+}
+
+.au-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.au-check input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--lp-green);
+}
+
+.au-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--lp-green) !important;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.au-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 54px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--lp-sun);
+    color: var(--lp-forest);
+    font: inherit;
+    font-size: 1.1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s var(--lp-ease-out);
+}
+
+.au-btn:hover {
+    background: var(--lp-sun-soft);
+    transform: translateY(-2px);
+}
+
+.au-btn[aria-busy='true'] {
+    cursor: progress;
+    transform: none;
+}
+
+.au-btn-spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: au-spin 0.7s linear infinite;
+}
+
+.au-btn[aria-busy='true'] .au-btn-spinner {
+    display: inline-block;
+}
+
+.au-alert {
+    margin-top: 22px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.au-alert--error {
+    border: 1.5px solid var(--lp-danger);
+    background: var(--lp-danger-soft);
+    color: #5E1D10;
+}
+
+.au-alert--ok {
+    border: 1.5px solid var(--lp-green);
+    background: var(--lp-mint);
+    color: var(--lp-forest);
+}
+
+.au-switch {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--lp-line);
+    color: var(--lp-muted);
+}
+
+.au-switch p + p {
+    margin-top: 2px;
+}
+
+/* Staff role picker: real radio inputs styled as a 2 x 2 choice grid. */
+.au-roles {
+    border: 0;
+}
+
+.au-role-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.au-role {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    min-height: 44px;
+    padding: 12px 14px 12px 42px;
+    border: 1.5px solid var(--lp-field-border);
+    border-radius: 10px;
+    background: #FFFFFF;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.au-role input {
+    position: absolute;
+    top: 15px;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--lp-green);
+}
+
+.au-role b {
+    color: var(--lp-forest);
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.au-role span {
+    color: var(--lp-muted);
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+
+.au-role:has(input:checked) {
+    border-color: var(--lp-green);
+    background: var(--lp-mint);
+}
+
+.au-role:has(input:focus-visible) {
+    outline: 3px solid var(--lp-ink);
+    outline-offset: 2px;
+}
+
+.au-roles[aria-invalid='true'] .au-role {
+    border-color: var(--lp-danger);
+}
+
+/* Register: password strength meter */
+.au-meter {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.au-meter span {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--lp-line);
+    transition: background-color 0.25s ease;
+}
+
+.au-meter[data-level='1'] span:nth-child(-n + 1) { background: var(--lp-danger); }
+.au-meter[data-level='2'] span:nth-child(-n + 2) { background: #C77A12; }
+.au-meter[data-level='3'] span:nth-child(-n + 3) { background: var(--lp-green); }
+.au-meter[data-level='4'] span:nth-child(-n + 4) { background: var(--lp-forest); }
+
+.au-live {
+    min-height: 1.4em;
+    color: var(--lp-muted);
+    font-size: 0.875rem;
+}
+
+.au-live.is-ok {
+    color: var(--lp-green);
+    font-weight: 600;
+}
+
+.au-live.is-bad {
+    color: var(--lp-danger);
+    font-weight: 600;
+}
+
+/* =========================
+   MOTION
+========================= */
+
+@keyframes au-rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+}
+
+@keyframes au-van-arrive {
+    from {
+        translate: -60vw 0;
+    }
+}
+
+@keyframes au-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 960px) {
+    .au-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .au-scene {
+        position: relative;
+        height: 220px;
+        padding: 20px;
+    }
+
+    .au-hills {
+        height: 58%;
+    }
+
+    .au-sun {
+        bottom: 46%;
+        width: 84px;
+    }
+
+    .au-road {
+        height: 64px;
+        background-position: 0 34px, 0 0;
+        box-shadow: 0 -16px 0 var(--hill-near);
+    }
+
+    .au-van {
+        bottom: 24px;
+        width: 120px;
+    }
+
+    .au-panel {
+        align-items: flex-start;
+        padding-top: 32px;
+    }
+}
+
+@media (max-width: 420px) {
+    .au-role-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .au-panel-inner > *,
+    .au-van {
+        animation: none;
+    }
+
+    .au-van,
+    .au-btn {
+        transition: none;
+    }
+
+    .au.is-departing .au-van {
+        transform: none;
+    }
+
+    .au-btn:hover {
+        transform: none;
+    }
+}

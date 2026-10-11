@@ -9,17 +9,17 @@
                         </span>
                     </div>
                     <h2>
-                        <span>📅</span>
+                        <span></span>
                         <span>Melihat Jadwal Perjalanan</span>
                     </h2>
                     <p style="font-size:14.5px; margin-top:5px; color:#ffffff;">
                         Jadwal & Rute Utama: <strong>{{ $activeSchedule->route?->origin?->name ?? 'Bandung (Dipatiukur)' }}</strong>
-                        &nbsp;➔&nbsp;
+                        &nbsp; ke &nbsp;
                         <strong>{{ $activeSchedule->route?->destination?->name ?? 'Jakarta (Semanggi)' }}</strong>,
-                        <strong>{{ $activeSchedule->formattedDepartureTime() }} WIB</strong>
+                        <strong>{{ $activeSchedule->formattedDepartureTime() }}</strong>
                     </p>
                     <p style="font-size:12px; color:#a7f3d0; margin-top:2px;">
-                        Jarak Tempuh: {{ $activeSchedule->route?->distance_km ?? 150 }} km &nbsp;•&nbsp; Estimasi Waktu Tiba: {{ $activeSchedule->estimatedArrivalTime() }} WIB
+                        Jarak Tempuh: {{ $activeSchedule->route?->distance_km ? $activeSchedule->route->distance_km.' km' : '-' }} &nbsp;•&nbsp; Estimasi Waktu Tiba: {{ $activeSchedule->estimatedArrivalTime() }} WIB
                     </p>
                 </div>
 
@@ -50,7 +50,7 @@
                 <!-- 1. Nomor Trip / Perjalanan -->
                 <div class="schedule-metric-card">
                     <div class="schedule-metric-top">
-                        <span class="schedule-metric-icon">🎫</span>
+                        <span class="schedule-metric-icon"></span>
                         <span class="schedule-metric-tag">Nomor Trip</span>
                     </div>
                     <div class="schedule-metric-val" style="font-family:'JetBrains Mono', monospace; font-size:16px;">
@@ -64,7 +64,7 @@
                 <!-- 2. Tanggal Perjalanan -->
                 <div class="schedule-metric-card">
                     <div class="schedule-metric-top">
-                        <span class="schedule-metric-icon">🗓️</span>
+                        <span class="schedule-metric-icon"></span>
                         <span class="schedule-metric-tag">Tanggal Perjalanan</span>
                     </div>
                     <div class="schedule-metric-val" style="font-size:15px;">
@@ -92,14 +92,14 @@
                 <!-- 4. Estimasi Total Durasi & Waktu Tiba -->
                 <div class="schedule-metric-card highlight-blue">
                     <div class="schedule-metric-top">
-                        <span class="schedule-metric-icon">⏱️</span>
+                        <span class="schedule-metric-icon">⏱</span>
                         <span class="schedule-metric-tag" style="color:#1e40af;">Estimasi Total Durasi</span>
                     </div>
                     <div class="schedule-metric-val">
                         ± {{ $activeSchedule->route?->duration ?? '2 Jam 45 Menit' }}
                     </div>
                     <div class="schedule-metric-sub">
-                        Jarak {{ $activeSchedule->route?->distance_km ?? 150 }} km &nbsp;•&nbsp; Estimasi Waktu Tiba: <strong>{{ $activeSchedule->estimatedArrivalTime() }}</strong>
+                        Jarak {{ $activeSchedule->route?->distance_km ? $activeSchedule->route->distance_km.' km' : '-' }} &nbsp;•&nbsp; Estimasi Waktu Tiba: <strong>{{ $activeSchedule->estimatedArrivalTime() }}</strong>
                     </div>
                 </div>
             </div>
@@ -109,7 +109,7 @@
                 <div class="calendar-agenda-header">
                     <div class="calendar-agenda-title">
                         <h4>
-                            <span>🗓️</span>
+                            <span></span>
                             <span>Kalender Kerja & Agenda Penugasan Driver</span>
                         </h4>
                         <p>Manajemen kalender kerja dan penugasan perjalanan driver: jadwal hari ini, besok, serta jadwal mendatang lengkap dengan waktu berkumpul di pool (standby time), waktu keberangkatan (departure time), dan estimasi total durasi perjalanan.</p>
@@ -117,7 +117,7 @@
 
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span class="badge-pill" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe;">
-                            📅 {{ Carbon\Carbon::today()->translatedFormat('F Y') }}
+                            {{ Carbon\Carbon::today()->translatedFormat('F Y') }}
                         </span>
                     </div>
                 </div>
@@ -156,15 +156,15 @@
                 <!-- 2. Tab Navigasi Agenda: Hari Ini, Besok, dan Jadwal Mendatang -->
                 <div class="agenda-tab-nav">
                     <button type="button" class="agenda-tab-btn active" id="tab-btn-today" onclick="switchScheduleTab('today')">
-                        <span>📌 Hari Ini</span>
+                        <span>Hari Ini</span>
                         <span class="agenda-tab-badge">{{ $todaySchedules->count() }}</span>
                     </button>
                     <button type="button" class="agenda-tab-btn" id="tab-btn-tomorrow" onclick="switchScheduleTab('tomorrow')">
-                        <span>🗓️ Besok</span>
+                        <span>Besok</span>
                         <span class="agenda-tab-badge">{{ $tomorrowSchedules->count() }}</span>
                     </button>
                     <button type="button" class="agenda-tab-btn" id="tab-btn-upcoming" onclick="switchScheduleTab('upcoming')">
-                        <span>🚀 Jadwal Mendatang</span>
+                        <span>Jadwal Mendatang</span>
                         <span class="agenda-tab-badge">{{ $upcomingSchedules->count() }}</span>
                     </button>
                 </div>
@@ -181,33 +181,33 @@
                                         {{ $sched->tripStatusLabel() }}
                                     </span>
                                     <span style="font-size:12px; color:var(--text-muted); font-weight:600;">
-                                        🗓️ Hari Ini, {{ $sched->formattedDepartureDate() }}
+                                        Hari Ini, {{ $sched->formattedDepartureDate() }}
                                     </span>
                                 </div>
 
                                 @if ($activeSchedule && $activeSchedule->id == $sched->id)
                                     <span class="pill-badge" style="background:#ecfdf5; border-color:#a7f3d0; color:#065f46; font-size:11px; font-weight:800;">
-                                        ✓ Jadwal Utama Aktif
+                                        Jadwal Utama Aktif
                                     </span>
                                 @else
                                     <a href="{{ route('dashboard.driver.index', ['schedule_id' => $sched->id]) }}" class="btn-select-schedule">
                                         <span>Aktifkan Jadwal Ini</span>
-                                        <span>➔</span>
+                                        <span></span>
                                     </a>
                                 @endif
                             </div>
 
                             <div class="agenda-route-row">
-                                <span>📍 {{ $sched->route?->origin?->name ?? 'Pool Dipatiukur' }}</span>
-                                <span style="color:#059669;">➔</span>
-                                <span>🏁 {{ $sched->route?->destination?->name ?? 'Pool Semanggi' }}</span>
+                                <span>{{ $sched->route?->origin?->name ?? 'Pool Dipatiukur' }}</span>
+                                <span style="color:#059669;"></span>
+                                <span>{{ $sched->route?->destination?->name ?? 'Pool Semanggi' }}</span>
                             </div>
 
                             <!-- 3 Highlight Waktu: Standby, Departure, Estimasi Durasi -->
                             <div class="agenda-operational-times-grid">
                                 <div class="agenda-time-box">
                                     <span class="agenda-time-label">
-                                        <span>🅿️</span>
+                                        <span></span>
                                         <span>Waktu Berkumpul (Standby)</span>
                                     </span>
                                     <div class="agenda-time-val standby-highlight">
@@ -233,7 +233,7 @@
 
                                 <div class="agenda-time-box">
                                     <span class="agenda-time-label">
-                                        <span>⏱️</span>
+                                        <span>⏱</span>
                                         <span>Estimasi Total Durasi</span>
                                     </span>
                                     <div class="agenda-time-val duration-highlight">
@@ -247,12 +247,12 @@
 
                             <div class="agenda-card-footer">
                                 <div class="agenda-vehicle-info">
-                                    <span>🚐</span>
+                                    <span></span>
                                     <span>Armada: {{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }} ({{ $sched->vehicle?->type ?? 'Toyota HiAce Premio' }})</span>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <span style="font-weight:700; color:#059669;">
-                                        💺 Sisa {{ $sched->available_seats ?? 8 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
+                                        Sisa {{ $sched->available_seats ?? 8 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
                                     </span>
                                 </div>
                             </div>
@@ -275,7 +275,7 @@
                                         {{ $sched->tripStatusLabel() }}
                                     </span>
                                     <span style="font-size:12px; color:var(--text-muted); font-weight:600;">
-                                        🗓️ Besok, {{ $sched->formattedDepartureDate() }}
+                                        Besok, {{ $sched->formattedDepartureDate() }}
                                     </span>
                                 </div>
                                 <span class="badge-pill" style="background:#eff6ff; border-color:#bfdbfe; color:#1e40af; font-size:11px; font-weight:800;">
@@ -284,16 +284,16 @@
                             </div>
 
                             <div class="agenda-route-row">
-                                <span>📍 {{ $sched->route?->origin?->name ?? 'Bandung (Dipatiukur)' }}</span>
-                                <span style="color:#059669;">➔</span>
-                                <span>🏁 {{ $sched->route?->destination?->name ?? 'Jakarta (Semanggi)' }}</span>
+                                <span>{{ $sched->route?->origin?->name ?? 'Bandung (Dipatiukur)' }}</span>
+                                <span style="color:#059669;"></span>
+                                <span>{{ $sched->route?->destination?->name ?? 'Jakarta (Semanggi)' }}</span>
                             </div>
 
                             <!-- 3 Highlight Waktu: Standby, Departure, Estimasi Durasi -->
                             <div class="agenda-operational-times-grid">
                                 <div class="agenda-time-box">
                                     <span class="agenda-time-label">
-                                        <span>🅿️</span>
+                                        <span></span>
                                         <span>Waktu Berkumpul (Standby)</span>
                                     </span>
                                     <div class="agenda-time-val standby-highlight">
@@ -319,7 +319,7 @@
 
                                 <div class="agenda-time-box">
                                     <span class="agenda-time-label">
-                                        <span>⏱️</span>
+                                        <span>⏱</span>
                                         <span>Estimasi Total Durasi</span>
                                     </span>
                                     <div class="agenda-time-val duration-highlight">
@@ -333,12 +333,12 @@
 
                             <div class="agenda-card-footer">
                                 <div class="agenda-vehicle-info">
-                                    <span>🚐</span>
+                                    <span></span>
                                     <span>Armada: {{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }} ({{ $sched->vehicle?->type ?? 'Toyota HiAce Premio' }})</span>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <span style="font-weight:700; color:#059669;">
-                                        💺 Sisa {{ $sched->available_seats ?? 9 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
+                                        Sisa {{ $sched->available_seats ?? 9 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
                                     </span>
                                 </div>
                             </div>
@@ -361,7 +361,7 @@
                                         {{ $sched->tripStatusLabel() }}
                                     </span>
                                     <span style="font-size:12px; color:var(--text-muted); font-weight:600;">
-                                        🗓️ {{ $sched->formattedDepartureDate() }}
+                                        {{ $sched->formattedDepartureDate() }}
                                     </span>
                                 </div>
                                 <span class="badge-pill" style="background:#f8fafc; border-color:#cbd5e1; color:#475569; font-size:11px; font-weight:700;">
@@ -370,16 +370,16 @@
                             </div>
 
                             <div class="agenda-route-row">
-                                <span>📍 {{ $sched->route?->origin?->name ?? 'Bandung (Dipatiukur)' }}</span>
-                                <span style="color:#059669;">➔</span>
-                                <span>🏁 {{ $sched->route?->destination?->name ?? 'Jakarta (Semanggi)' }}</span>
+                                <span>{{ $sched->route?->origin?->name ?? 'Bandung (Dipatiukur)' }}</span>
+                                <span style="color:#059669;"></span>
+                                <span>{{ $sched->route?->destination?->name ?? 'Jakarta (Semanggi)' }}</span>
                             </div>
 
                             <!-- 3 Highlight Waktu: Standby, Departure, Estimasi Durasi -->
                             <div class="agenda-operational-times-grid">
                                 <div class="agenda-time-box">
                                     <span class="agenda-time-label">
-                                        <span>🅿️</span>
+                                        <span></span>
                                         <span>Waktu Berkumpul (Standby)</span>
                                     </span>
                                     <div class="agenda-time-val standby-highlight">
@@ -405,7 +405,7 @@
 
                                 <div class="agenda-time-box">
                                     <span class="agenda-time-label">
-                                        <span>⏱️</span>
+                                        <span>⏱</span>
                                         <span>Estimasi Total Durasi</span>
                                     </span>
                                     <div class="agenda-time-val duration-highlight">
@@ -419,12 +419,12 @@
 
                             <div class="agenda-card-footer">
                                 <div class="agenda-vehicle-info">
-                                    <span>🚐</span>
+                                    <span></span>
                                     <span>Armada: {{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }} ({{ $sched->vehicle?->type ?? 'Toyota HiAce Premio' }})</span>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:8px;">
                                     <span style="font-weight:700; color:#059669;">
-                                        💺 Sisa {{ $sched->available_seats ?? 10 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
+                                        Sisa {{ $sched->available_seats ?? 10 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
                                     </span>
                                 </div>
                             </div>
@@ -441,7 +441,7 @@
             <div class="schedule-rhythm-guide">
                 <div class="rhythm-guide-title">
                     <h4>
-                        <span>⏱️</span>
+                        <span>⏱</span>
                         <span>Panduan Ritme Waktu & Persiapan Armada Sopir</span>
                     </h4>
                     <span class="badge-pill">Manajemen Waktu Sopir</span>
@@ -451,7 +451,7 @@
                     <!-- Fase 1: H-45 Menit Persiapan Armada -->
                     <div class="rhythm-card stage-prep">
                         <div class="rhythm-time-badge">
-                            <span>🔧</span>
+                            <span></span>
                             <span>{{ $activeSchedule->prepTime() }} (H-45)</span>
                         </div>
                         <h5>Persiapan Armada (Garasi)</h5>
@@ -461,7 +461,7 @@
                     <!-- Fase 2: H-30 Menit Tiba di Pool -->
                     <div class="rhythm-card stage-pool">
                         <div class="rhythm-time-badge">
-                            <span>🅿️</span>
+                            <span></span>
                             <span>{{ $activeSchedule->gatheringTime() }} (H-30)</span>
                         </div>
                         <h5>Tiba di Pool / Titik Awal</h5>
@@ -471,7 +471,7 @@
                     <!-- Fase 3: H-15 Menit Boarding -->
                     <div class="rhythm-card stage-boarding">
                         <div class="rhythm-time-badge">
-                            <span>🧳</span>
+                            <span></span>
                             <span>{{ $activeSchedule->boardingTime() }} (H-15)</span>
                         </div>
                         <h5>Boarding & Muat Bagasi</h5>
@@ -481,7 +481,7 @@
                     <!-- Fase 4: H-0 Menit Meluncur -->
                     <div class="rhythm-card stage-depart">
                         <div class="rhythm-time-badge">
-                            <span>🚀</span>
+                            <span></span>
                             <span>{{ $activeSchedule->formattedDepartureTime() }} (H-0)</span>
                         </div>
                         <h5>Meluncur & Prediksi Ritme</h5>

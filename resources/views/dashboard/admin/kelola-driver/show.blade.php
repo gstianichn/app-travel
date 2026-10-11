@@ -560,7 +560,7 @@
                 ← Daftar Pengemudi
             </a>
             <a href="{{ route('dashboard.admin.kelola-driver.edit', $driver->id) }}" class="btn-action-edit">
-                ✏️ Edit Profil & Dokumen
+                Edit Profil & Dokumen
             </a>
         </div>
     </div>
@@ -568,14 +568,14 @@
     {{-- FLASH NOTIFICATIONS --}}
     @if(session('success'))
         <div class="flash-alert flash-success">
-            <span>✅</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="flash-alert flash-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -602,7 +602,7 @@
                     <h2>{{ $driver->user?->name ?? 'Pengemudi #' . $driver->id }}</h2>
                     <div class="hero-meta-tags">
                         <span class="hero-tag">
-                            🪪 {{ $driver->license_type ?? 'SIM' }} - {{ $driver->license_number }}
+                            {{ $driver->license_type ?? 'SIM' }} - {{ $driver->license_number }}
                         </span>
                         <span class="hero-tag tag-{{ $statusClass }}">
                             ● {{ $driver->statusLabel() }}
@@ -627,7 +627,7 @@
                         }
                     @endphp
                     <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="detail-wa-btn">
-                        💬 Hubungi WhatsApp
+                        Hubungi WhatsApp
                     </a>
                 @endif
             </div>
@@ -670,7 +670,7 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span>🪪</span>
+                        <span></span>
                         <span>Legalitas Dokumen Mengemudi (SIM)</span>
                     </div>
                     <span class="badge-pill {{ $lic['badge_class'] }}">
@@ -686,11 +686,11 @@
                         </div>
                         <div>
                             @if($lic['status'] === 'expired')
-                                <span style="font-size: 11px; font-weight: 700; color: #dc2626;">⛔ Dilarang Jalan</span>
+                                <span style="font-size: 11px; font-weight: 700; color: #dc2626;">Dilarang Jalan</span>
                             @elseif($lic['status'] === 'expiring_soon')
-                                <span style="font-size: 11px; font-weight: 700; color: #d97706;">⚠️ Perpanjang Segera</span>
+                                <span style="font-size: 11px; font-weight: 700; color: #d97706;">Perpanjang Segera</span>
                             @else
-                                <span style="font-size: 11px; font-weight: 700; color: #16a34a;">✓ Kelaikan Terverifikasi</span>
+                                <span style="font-size: 11px; font-weight: 700; color: #16a34a;">Kelaikan Terverifikasi</span>
                             @endif
                         </div>
                     </div>
@@ -715,15 +715,12 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span>🚨</span>
+                        <span></span>
                         <span>Kontak Darurat Keluarga</span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="emergency-box">
-                        <div class="emergency-icon">
-                            📞
-                        </div>
                         <div class="emergency-details">
                             <h4>{{ $driver->emergency_contact_name ?? 'Belum diisi' }}</h4>
                             <p>Hubungan Keluarga: <strong>{{ $driver->emergency_contact_relation ?? 'Keluarga' }}</strong></p>
@@ -735,7 +732,7 @@
                                     }
                                 @endphp
                                 <a href="https://wa.me/{{ $emPhone }}" target="_blank" class="emergency-phone-btn">
-                                    <span>💬 Hubungi Kontak Darurat: {{ $driver->emergency_contact_phone }}</span>
+                                    <span>Hubungi Kontak Darurat: {{ $driver->emergency_contact_phone }}</span>
                                 </a>
                             @endif
                         </div>
@@ -750,7 +747,7 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span>🚦</span>
+                        <span></span>
                         <span>Status Kesiapan Kerja Saat Ini</span>
                     </div>
                     <span class="badge-pill tag-{{ $statusClass }}">
@@ -773,7 +770,7 @@
 
                         <label class="status-radio-option {{ $curr === 'standby' ? 'selected-option' : '' }}">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>🟢</span>
+                                <span></span>
                                 <div>
                                     <div style="font-size: 12px; font-weight: 700; color: #15803d;">Siap Jalan (Standby)</div>
                                     <div style="font-size: 11px; color: #64748b;">Pengemudi siap di pool untuk keberangkatan armada.</div>
@@ -784,7 +781,7 @@
 
                         <label class="status-radio-option {{ $curr === 'on_duty' ? 'selected-option' : '' }}">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>🔵</span>
+                                <span></span>
                                 <div>
                                     <div style="font-size: 12px; font-weight: 700; color: #0369a1;">Sedang Bertugas di Jalan</div>
                                     <div style="font-size: 11px; color: #64748b;">Pengemudi sedang mengemudikan perjalanan aktif.</div>
@@ -795,7 +792,7 @@
 
                         <label class="status-radio-option {{ $curr === 'on_leave' ? 'selected-option' : '' }}">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>🟡</span>
+                                <span></span>
                                 <div>
                                     <div style="font-size: 12px; font-weight: 700; color: #b45309;">Sedang Libur / Cuti</div>
                                     <div style="font-size: 11px; color: #64748b;">Pengemudi sedang izin istirahat atau cuti kerja.</div>
@@ -820,7 +817,7 @@
     <div class="content-card">
         <div class="card-head">
             <div class="card-head-title">
-                <span>🚐</span>
+                <span></span>
                 <span>Riwayat Penugasan: Catatan Rute & Unit Minibus yang Pernah Dikemudikan</span>
             </div>
             <span style="font-size: 11px; font-weight: 700; color: #087f55; background: #e3f5ee; padding: 3px 9px; border-radius: 6px;">
@@ -869,7 +866,7 @@
                                 <td>
                                     <div style="font-weight: 700; color: #087f55; display: flex; align-items: center; gap: 6px;">
                                         <span>{{ $originName }}</span>
-                                        <span>&rarr;</span>
+                                        <span></span>
                                         <span>{{ $destName }}</span>
                                     </div>
                                     <div style="font-size: 10px; color: #94a3b8;">
@@ -882,7 +879,7 @@
                                     @if($vehicle)
                                         <div>
                                             <span class="minibus-badge">
-                                                <span>🚐</span>
+                                                <span></span>
                                                 <span>{{ $vehicle->name ?? 'Minibus' }} ({{ $vehicle->plate_number }})</span>
                                             </span>
                                         </div>
@@ -911,11 +908,11 @@
                                     @endphp
                                     @if(in_array($tripStatus, ['completed', 'selesai']))
                                         <span class="trip-status-badge trip-completed">
-                                            ✓ Selesai Jalan
+                                            Selesai Jalan
                                         </span>
                                     @elseif(in_array($tripStatus, ['cancelled', 'batal']))
                                         <span class="trip-status-badge trip-cancelled">
-                                            ✕ Dibatalkan
+                                            Dibatalkan
                                         </span>
                                     @else
                                         <span class="trip-status-badge trip-scheduled">
@@ -935,7 +932,7 @@
                 @endif
             @else
                 <div style="padding: 40px 20px; text-align: center; color: #82918a;">
-                    <div style="font-size: 36px; margin-bottom: 8px;">🚐</div>
+                    <div style="font-size: 36px; margin-bottom: 8px;"></div>
                     <h4 style="margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #17221d;">Belum Ada Riwayat Penugasan Minibus</h4>
                     <p style="margin: 0; font-size: 12px; color: #76857e;">Pengemudi ini belum pernah ditugaskan membawa unit armada pada jadwal perjalanan travel.</p>
                 </div>

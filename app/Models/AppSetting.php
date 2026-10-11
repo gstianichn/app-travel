@@ -34,4 +34,47 @@ class AppSetting extends Model
     {
         static::where('key', $key)->delete();
     }
+
+    /**
+     * Company name as set by the admin in Pengaturan.
+     */
+    public static function companyName(): string
+    {
+        return (string) (static::get('company_name') ?: 'TravelKu');
+    }
+
+    /**
+     * WhatsApp link to customer service, or null when the admin has not set a number yet.
+     */
+    public static function whatsappUrl(string $message = ''): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) static::get('company_whatsapp', ''));
+
+        if ($digits === '') {
+            return null;
+        }
+
+        if (str_starts_with($digits, '0')) {
+            $digits = '62'.substr($digits, 1);
+        }
+
+        return 'https://wa.me/'.$digits.($message !== '' ? '?text='.rawurlencode($message) : '');
+    }
+
+    /**
+     * Office phone set by the admin, as display text and a tel: link, or null when it is not set.
+     *
+     * @return array{display: string, tel: string}|null
+     */
+    public static function companyPhone(): ?array
+    {
+        $display = trim((string) static::get('company_phone', ''));
+        $digits = preg_replace('/[^\d+]/', '', $display);
+
+        if ($digits === '') {
+            return null;
+        }
+
+        return ['display' => $display, 'tel' => 'tel:'.$digits];
+    }
 }

@@ -64,7 +64,7 @@
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3" stroke-width="2"/></svg>
                                     {{ $activeSchedule->route?->origin?->name ?? 'Bandung (Dipatiukur)' }}
                                 </span>
-                                <span class="cockpit-route-arrow">&rarr;</span>
+                                <span class="cockpit-route-arrow"></span>
                                 <span style="display:inline-flex; align-items:center; gap:4px;">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
                                     {{ $activeSchedule->route?->destination?->name ?? 'Jakarta (Semanggi)' }}
@@ -81,7 +81,7 @@
                         <div class="cockpit-task-meta-grid">
                             <div class="cockpit-meta-box">
                                 <span class="meta-label" style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><polyline points="12 6 12 12 16 14" stroke-width="2"/></svg> Jam Keberangkatan</span>
-                                <div class="meta-val" style="color:#065f46;">{{ $activeSchedule->formattedDepartureTime() }} WIB</div>
+                                <div class="meta-val" style="color:#065f46;">{{ $activeSchedule->formattedDepartureTime() }}</div>
                             </div>
                             <div class="cockpit-meta-box">
                                 <span class="meta-label" style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/></svg> Tanggal Perjalanan</span>
@@ -99,7 +99,7 @@
                             </div>
                             <a href="#section-seatmap" style="font-size:11.5px; font-weight:700; color:#0284c7; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
                                 <span>Lihat Denah Kursi</span>
-                                <span>&rarr;</span>
+                                <span></span>
                             </a>
                         </div>
 
@@ -270,10 +270,12 @@
 
                         <!-- Tombol Bantuan Tambahan -->
                         <div class="cockpit-aux-row">
-                            <a href="tel:081122334455" class="btn-cockpit-aux" title="Telepon Dispatcher Pool" style="display:inline-flex; align-items:center; gap:6px;">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                                <span>Hubungi Dispatcher</span>
-                            </a>
+                            @php $officePhone = \App\Models\AppSetting::companyPhone(); @endphp
+                @if ($officePhone)
+                    <a href="{{ $officePhone['tel'] }}" class="btn-cockpit-aux" style="display:inline-flex; align-items:center; gap:8px;">
+                        <span>Telepon kantor ({{ $officePhone['display'] }})</span>
+                    </a>
+                @endif
                             <a href="#section-manifest" class="btn-cockpit-aux" title="Buka daftar manifes penumpang" style="display:inline-flex; align-items:center; gap:6px;">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                                 <span>Buka Manifes Kabin</span>

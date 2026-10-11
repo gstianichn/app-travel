@@ -382,7 +382,7 @@
 
     @if(session('error'))
         <div class="alert-box error">
-            <span>⚠️ {{ session('error') }}</span>
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
@@ -402,7 +402,6 @@
                      1. PILIH JADWAL KEBERANGKATAN
                 ========================================== --}}
                 <div class="section-head">
-                    <div class="section-head-icon">📅</div>
                     <div class="section-head-text">
                         <h3>1. Jadwal Keberangkatan Travel</h3>
                         <p>Pilih jam jalan dan rute yang diinginkan oleh penumpang loket</p>
@@ -424,7 +423,7 @@
                         @foreach($schedules as $sch)
                             @php
                                 $rLabel = $sch->route 
-                                    ? ($sch->route->origin?->name . ' → ' . $sch->route->destination?->name) 
+                                    ? ($sch->route->origin?->name . ' ke ' . $sch->route->destination?->name) 
                                     : ($sch->travelRoute?->name ?? 'Rute');
                                 $dDate = $sch->departure_date ? $sch->departure_date->format('d/m/Y') : '-';
                                 $dTime = $sch->departure_time ? \Carbon\Carbon::parse($sch->departure_time)->format('H:i') : '-';
@@ -447,7 +446,6 @@
                      2. DENAH KURSI INTERAKTIF
                 ========================================== --}}
                 <div class="section-head">
-                    <div class="section-head-icon">💺</div>
                     <div class="section-head-text">
                         <h3>2. Pilih Kursi dari Denah Visual</h3>
                         <p>Klik pada kursi berwarna hijau (tersedia) untuk memilih kursi penumpang</p>
@@ -493,16 +491,16 @@
                                     </button>
                                 @else
                                     <div style="width: 64px; height: 64px; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #94a3b8;">
-                                        🚪 Pintu Kiri
+                                        Pintu Kiri
                                     </div>
                                 @endif
 
                                 <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">
-                                    🚪 Lorong / Pintu
+                                    Lorong / Pintu
                                 </div>
 
                                 <div class="picker-driver-seat" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
-                                    <span style="font-size: 16px;">🚘</span>
+                                    <span style="font-size: 16px;"></span>
                                     <span>Sopir</span>
                                     <span style="font-size: 8px; opacity: 0.85; font-weight: 800;">(KANAN)</span>
                                 </div>
@@ -574,7 +572,6 @@
                      3. DATA PEMESAN & PENUMPANG
                 ========================================== --}}
                 <div class="section-head">
-                    <div class="section-head-icon">👤</div>
                     <div class="section-head-text">
                         <h3>3. Identitas Pemesan & Penumpang</h3>
                         <p>Kontak WhatsApp aktif untuk pengiriman e-ticket dan koordinasi keberangkatan</p>
@@ -645,7 +642,6 @@
                      4. SALURAN & PEMBAYARAN LOKET
                 ========================================== --}}
                 <div class="section-head">
-                    <div class="section-head-icon">💳</div>
                     <div class="section-head-text">
                         <h3>4. Saluran Pesanan & Pembayaran</h3>
                         <p>Sumber masuknya pemesanan dan status pelunasan pembayaran loket</p>
@@ -658,9 +654,9 @@
                             Saluran Pemesanan <span class="required">*</span>
                         </label>
                         <select name="source" id="source" class="form-select" required>
-                            <option value="walk_in">🏢 Loket / Datang Langsung (Walk-in)</option>
-                            <option value="whatsapp">💬 Pesan via WhatsApp CS</option>
-                            <option value="phone">📞 Pesan via Telepon</option>
+                            <option value="walk_in">Loket / Datang Langsung (Walk-in)</option>
+                            <option value="whatsapp">Pesan via WhatsApp CS</option>
+                            <option value="phone">Pesan via Telepon</option>
                         </select>
                     </div>
 
@@ -669,9 +665,9 @@
                             Metode Pembayaran <span class="required">*</span>
                         </label>
                         <select name="payment_method" id="payment_method" class="form-select" required>
-                            <option value="Cash">💵 Cash / Tunai di Loket</option>
-                            <option value="Transfer Bank">🏦 Transfer Bank Rekening</option>
-                            <option value="QRIS">📱 QRIS Loket / Statis</option>
+                            <option value="Cash">Cash / Tunai di Loket</option>
+                            <option value="Transfer Bank">Transfer Bank Rekening</option>
+                            <option value="QRIS">QRIS Loket / Statis</option>
                         </select>
                     </div>
 
@@ -680,7 +676,7 @@
                             Status Pembayaran <span class="required">*</span>
                         </label>
                         <select name="payment_status" id="payment_status" class="form-select" required>
-                            <option value="paid">✓ Langsung Lunas (Terbitkan Tiket)</option>
+                            <option value="paid">Langsung Lunas (Terbitkan Tiket)</option>
                             <option value="pending">⏳ Bayar Nanti di Loket (Pending)</option>
                         </select>
                     </div>

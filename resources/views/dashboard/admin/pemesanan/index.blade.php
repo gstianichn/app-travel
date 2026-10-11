@@ -549,14 +549,14 @@
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
         <div class="alert-banner alert-success">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert-banner alert-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -569,9 +569,6 @@
                 <div class="stat-box-label">Total Pemesanan</div>
                 <div class="stat-box-num">{{ number_format($totalBookings) }}</div>
             </div>
-            <div class="stat-box-icon total">
-                💺
-            </div>
         </div>
 
         {{-- LUNAS HARI INI --}}
@@ -579,9 +576,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Lunas Hari Ini</div>
                 <div class="stat-box-num" style="color: #15803d;">{{ number_format($todayPaidBookings) }}</div>
-            </div>
-            <div class="stat-box-icon paid">
-                ✓
             </div>
         </div>
 
@@ -601,9 +595,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Tiket Loket & WA</div>
                 <div class="stat-box-num" style="color: #0284c7;">{{ number_format($walkInBookings) }}</div>
-            </div>
-            <div class="stat-box-icon walkin">
-                🏢
             </div>
         </div>
     </div>
@@ -678,7 +669,7 @@
                     @forelse($bookings as $b)
                         @php
                             $routeLabel = $b->schedule?->route 
-                                ? ($b->schedule->route->origin?->name . ' → ' . $b->schedule->route->destination?->name)
+                                ? ($b->schedule->route->origin?->name . ' ke ' . $b->schedule->route->destination?->name)
                                 : ($b->schedule?->travelRoute?->name ?? 'Rute Travel');
                         @endphp
                         <tr>
@@ -702,7 +693,7 @@
                                 <div class="passenger-cell">
                                     <h4>{{ $b->customerName() }}</h4>
                                     <div class="passenger-phone">
-                                        <span>📱 {{ $b->customerPhone() }}</span>
+                                        <span>{{ $b->customerPhone() }}</span>
                                         @if($b->customerPhone() && $b->customerPhone() !== '-')
                                             @php
                                                 $cleanPhone = preg_replace('/[^0-9]/', '', $b->customerPhone());
@@ -727,11 +718,11 @@
                                     <strong style="color: #17221d; font-size: 13px;">{{ $routeLabel }}</strong>
                                 </div>
                                 <div style="font-size: 12px; color: #495750; margin-top: 2px;">
-                                    📅 {{ $b->schedule?->departure_date ? $b->schedule->departure_date->format('d M Y') : '-' }}
+                                    {{ $b->schedule?->departure_date ? $b->schedule->departure_date->format('d M Y') : '-' }}
                                     &bull; Pukul {{ $b->schedule?->departure_time ? \Carbon\Carbon::parse($b->schedule->departure_time)->format('H:i') : '-' }} WIB
                                 </div>
                                 <div style="font-size: 11px; color: #72817a; margin-top: 2px;">
-                                    🚐 {{ $b->schedule?->vehicle?->name ?? 'Minibus' }} ({{ $b->schedule?->vehicle?->plate_number ?? '-' }})
+                                    {{ $b->schedule?->vehicle?->name ?? 'Minibus' }} ({{ $b->schedule?->vehicle?->plate_number ?? '-' }})
                                 </div>
                             </td>
 
@@ -740,7 +731,7 @@
                                 <div class="seat-badge-list">
                                     @forelse($b->passengers as $p)
                                         <span class="seat-pill" title="{{ $p->name }}">
-                                            💺 {{ $p->seat?->seat_number ?? '-' }}
+                                            {{ $p->seat?->seat_number ?? '-' }}
                                         </span>
                                     @empty
                                         <span style="color: #9ca3af; font-size: 12px;">Belum dialokasikan</span>
@@ -771,9 +762,8 @@
                                         href="{{ route('dashboard.admin.pemesanan.show', $b->id) }}"
                                         class="btn-action-icon"
                                         title="Detail E-Ticket & Transaksi"
-                                    >
-                                        👁️
-                                    </a>
+                                    >Detail
+                                                                            </a>
 
                                     {{-- SEAT MAP JADWAL --}}
                                     @if($b->schedule_id)
@@ -781,18 +771,16 @@
                                             href="{{ route('dashboard.admin.pemesanan.seat-map', $b->schedule_id) }}"
                                             class="btn-action-icon"
                                             title="Denah Kursi Visual Jadwal Ini"
-                                        >
-                                            💺
-                                        </a>
+                                        >Kursi
+                                                                                    </a>
 
                                         {{-- MANIFES --}}
                                         <a
                                             href="{{ route('dashboard.admin.pemesanan.manifes', $b->schedule_id) }}"
                                             class="btn-action-icon"
                                             title="Manifes Perjalanan Sopir"
-                                        >
-                                            📋
-                                        </a>
+                                        >Manifes
+                                                                                    </a>
                                     @endif
 
                                     {{-- RESCHEDULE --}}
@@ -801,9 +789,8 @@
                                             href="{{ route('dashboard.admin.pemesanan.reschedule', $b->id) }}"
                                             class="btn-action-icon"
                                             title="Ubah Jadwal (Reschedule) & Geser Kursi"
-                                        >
-                                            🔄
-                                        </a>
+                                        >Ubah jadwal
+                                                                                    </a>
 
                                         {{-- BATALKAN --}}
                                         <form
@@ -818,9 +805,8 @@
                                                 type="submit"
                                                 class="btn-action-icon cancel"
                                                 title="Batalkan Pemesanan"
-                                            >
-                                                ❌
-                                            </button>
+                                            >Batalkan
+                                                                                            </button>
                                         </form>
                                     @endif
                                 </div>
@@ -830,7 +816,6 @@
                         <tr>
                             <td colspan="6">
                                 <div class="empty-state-box">
-                                    <div class="empty-state-icon">💺</div>
                                     <h4 class="empty-state-title">Belum Ada Pemesanan Tiket</h4>
                                     <p class="empty-state-desc">
                                         @if(request()->hasAny(['search', 'status', 'source', 'schedule_id']))

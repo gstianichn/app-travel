@@ -16,7 +16,7 @@
                 </div>
                 <div>
                     <h2 class="font-bold text-slate-800 text-sm">Pencarian Rute & Penjadwalan</h2>
-                    <p class="text-[11px] text-slate-400">Pilih titik asal, tujuan, tanggal, dan jumlah kursi armada</p>
+                    <p class="text-xs text-slate-400">Pilih titik asal, tujuan, tanggal, dan jumlah kursi armada</p>
                 </div>
             </div>
             <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
@@ -118,12 +118,7 @@
                     ({{ request('passengers', 1) }} Kursi)
                 </p>
             </div>
-            @if ($schedules->count() > 0)
-                <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full" style="background:#e3f5ee; color:#087f55;">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    Armada Beroperasi
-                </span>
-            @endif
+
         </div>
 
         @if ($schedules->count() > 0)
@@ -152,11 +147,11 @@
                                 </div>
                                 <h4 class="font-bold text-slate-900 text-base">
                                     {{ $schedule->route?->origin?->name ?? 'Asal' }} 
-                                    <span class="text-emerald-700 mx-1">&rarr;</span> 
+                                    <span class="text-emerald-700 mx-1"></span> 
                                     {{ $schedule->route?->destination?->name ?? 'Tujuan' }}
                                 </h4>
                                 <p class="text-xs text-slate-500">
-                                    Durasi perjalanan: <span class="font-medium text-slate-700">{{ $schedule->route?->duration ?? '2 Jam 45 Menit' }}</span> via Jalan Tol
+                                    Durasi perjalanan: <span class="font-medium text-slate-700">{{ $schedule->route?->duration ?? '-' }}</span>
                                 </p>
                             </div>
 
@@ -165,7 +160,7 @@
                                 <div class="flex items-center gap-4 text-sm">
                                     <div>
                                         <p class="font-bold text-slate-900 text-lg leading-none">{{ $depTime }} <span class="text-xs font-normal text-slate-400">WIB</span></p>
-                                        <p class="text-[11px] text-slate-400 mt-0.5">Keberangkatan</p>
+                                        <p class="text-xs text-slate-400 mt-0.5">Keberangkatan</p>
                                     </div>
                                     <div class="flex-1 flex items-center justify-center">
                                         <div class="w-full h-0.5 bg-slate-200 relative">
@@ -173,15 +168,15 @@
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <p class="font-bold text-slate-700 text-sm leading-none">Pool Tujuan</p>
-                                        <p class="text-[11px] text-slate-400 mt-0.5">Langsung Sampai</p>
+                                        <p class="font-bold text-slate-900 text-lg leading-none">{{ str_replace(' WIB', '', $schedule->estimatedArrivalTime()) }} <span class="text-xs font-normal text-slate-400">WIB</span></p>
+                                        <p class="text-xs text-slate-400 mt-0.5">Perkiraan tiba</p>
                                     </div>
                                 </div>
 
                                 {{-- Fasilitas Armada --}}
                                 <div class="flex flex-wrap gap-1.5 pt-1">
                                     @foreach(array_slice($facilities, 0, 4) as $fac)
-                                        <span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200">
+                                        <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-200">
                                             <svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                                             {{ $fac }}
                                         </span>
@@ -192,7 +187,7 @@
                             {{-- Harga & Tombol Aksi --}}
                             <div class="lg:col-span-3 flex flex-row lg:flex-col items-center lg:items-end justify-between gap-3">
                                 <div class="text-left lg:text-right">
-                                    <p class="text-[11px] text-slate-400">Tarif per Penumpang</p>
+                                    <p class="text-xs text-slate-400">Tarif per Penumpang</p>
                                     <p class="font-extrabold text-xl" style="color:#087f55;">
                                         {{ $schedule->formattedEffectivePrice() }}
                                     </p>
@@ -250,7 +245,7 @@
                         {{-- REKOMENDASI TRANSIT HUB OTOMATIS --}}
                         <div class="max-w-xl mx-auto p-4 mb-6 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-left">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-bold text-[10px] uppercase">Rekomendasi Transit</span>
+                                <span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white font-bold text-xs">Rekomendasi Transit</span>
                                 <h5 class="text-xs font-bold text-emerald-950">Rekomendasi Rute Transit Terdekat via {{ $transitHub->name }}</h5>
                             </div>
                             <p class="text-xs text-emerald-800 mb-3 leading-relaxed">
@@ -259,20 +254,20 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                                 <a href="{{ route('dashboard.user.search', ['origin' => $originLoc->id, 'destination' => $transitHub->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
                                    class="p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-xs transition flex items-center justify-between text-slate-800 font-semibold group">
-                                    <span>1. {{ $originLoc->city }} &rarr; {{ $transitHub->city }}</span>
-                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition inline-flex items-center gap-0.5">Cari Tiket &rarr;</span>
+                                    <span>1. {{ $originLoc->city }} ke {{ $transitHub->city }}</span>
+                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition inline-flex items-center gap-0.5">Cari Tiket</span>
                                 </a>
                                 <a href="{{ route('dashboard.user.search', ['origin' => $transitHub->id, 'destination' => $destLoc->id, 'departure_date' => request('departure_date', date('Y-m-d')), 'passengers' => request('passengers', 1)]) }}"
                                    class="p-2.5 rounded-xl bg-white border border-emerald-200 hover:border-emerald-400 hover:shadow-xs transition flex items-center justify-between text-slate-800 font-semibold group">
-                                    <span>2. {{ $transitHub->city }} &rarr; {{ $destLoc->city }}</span>
-                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition inline-flex items-center gap-0.5">Cari Tiket &rarr;</span>
+                                    <span>2. {{ $transitHub->city }} ke {{ $destLoc->city }}</span>
+                                    <span class="text-emerald-600 group-hover:translate-x-0.5 transition inline-flex items-center gap-0.5">Cari Tiket</span>
                                 </a>
                             </div>
                         </div>
                     @endif
 
                     <div class="max-w-xl mx-auto p-4 rounded-xl bg-slate-50 border border-slate-200 text-left">
-                        <p class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <p class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
                             <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                             Standar Koridor Shuttle Aktif (Jadwal Selalu Tersedia):
                         </p>

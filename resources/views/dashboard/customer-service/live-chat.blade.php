@@ -72,9 +72,9 @@
                 <div class="inbox-urgency-select-wrap">
                     <select id="urgency-filter" class="inbox-urgency-select" onchange="filterChatConversations()">
                         <option value="all">Semua Urgensi Armada</option>
-                        <option value="kritis">🔴 Kritis (&lt; 1 Jam Keberangkatan)</option>
-                        <option value="mendesak">🟡 Mendesak (1 - 3 Jam)</option>
-                        <option value="normal">🟢 Normal (&gt; 3 Jam / Umum)</option>
+                        <option value="kritis">Kritis (&lt; 1 Jam Keberangkatan)</option>
+                        <option value="mendesak">Mendesak (1 - 3 Jam)</option>
+                        <option value="normal">Normal (&gt; 3 Jam / Umum)</option>
                     </select>
                 </div>
             </div>
@@ -101,7 +101,7 @@
                             <span class="conv-online-tag" id="active-user-status">&bull; Online</span>
                         </div>
                         <div class="conv-route-row" id="active-user-route">
-                            <span class="route-pill">Bandung (Pasteur) &rarr; Jakarta (Semanggi)</span>
+                            <span class="route-pill">Bandung (Pasteur) ke Jakarta (Semanggi)</span>
                             <span class="time-meta">&bull; Armada Berangkat: <strong>14:00 WIB</strong></span>
                         </div>
                     </div>
@@ -185,7 +185,7 @@
                 <span class="canned-label">Jawaban Cepat SOP:</span>
                 <div class="canned-chips">
                     <button type="button" class="canned-chip canned-chip-ticket" onclick="openInstantTicketModal()" title="Generator Tiket Instan: Tombol satu klik melampirkan e-tiket resmi PDF/Gambar">
-                        🎫 Generator Tiket Instan (PDF)
+                        Generator Tiket Instan (PDF)
                     </button>
                     <button type="button" class="canned-chip" onclick="applyCannedReply('Halo kak! Armada saat ini sedang proses persiapan di pool dan siap berangkat tepat waktu.')">
                         Status Armada Tepat Waktu
@@ -236,10 +236,10 @@
 
                 <div class="input-text-wrapper" id="input-text-wrapper">
                     <div id="file-preview-pill" class="file-preview-pill" style="display: none;">
-                        <span class="file-pill-icon" id="file-preview-icon">📎</span>
+                        <span class="file-pill-icon" id="file-preview-icon"></span>
                         <div class="file-pill-info">
                             <span id="file-preview-name">foto-tiket.jpg</span>
-                            <span id="file-preview-compression" class="compression-tag-pill">⚡ Kompresi Otomatis: Hemat kuota di jalan</span>
+                            <span id="file-preview-compression" class="compression-tag-pill">Kompresi Otomatis: Hemat kuota di jalan</span>
                         </div>
                         <button type="button" onclick="clearAttachedFile()">&times;</button>
                     </div>
@@ -296,7 +296,7 @@
 
                 <div class="ctx-field-group">
                     <label class="ctx-label">Rute Perjalanan:</label>
-                    <div class="ctx-val font-semibold text-brand-dark" id="ctx-booking-route">Bandung (Pasteur) &rarr; Jakarta (Semanggi)</div>
+                    <div class="ctx-val font-semibold text-brand-dark" id="ctx-booking-route">Bandung (Pasteur) ke Jakarta (Semanggi)</div>
                 </div>
 
                 <div class="ctx-grid-2col">
@@ -341,7 +341,7 @@
                 </div>
 
                 <div class="ctx-driver-block">
-                    <div class="driver-avatar-circle">👨‍✈️</div>
+                    <div class="driver-avatar-circle"></div>
                     <div class="driver-info-main">
                         <span class="driver-role-tag">Sopir Bertugas:</span>
                         <strong class="driver-fullname" id="ctx-driver-name">Pak Suryanto</strong>
@@ -380,7 +380,6 @@
 
                     <!-- Instruksi Penjemputan Spesifik -->
                     <div class="pickup-instruction-callout">
-                        <div class="inst-icon">💡</div>
                         <div class="inst-content">
                             <span class="inst-heading">Instruksi Penjemputan:</span>
                             <span class="inst-body" id="ctx-pickup-instruction">Depan loket tiket 2, samping minimarket Indomaret Point</span>
@@ -439,21 +438,18 @@
                 </div>
                 <div class="quick-action-buttons-list">
                     <button type="button" class="qa-action-btn qa-btn-seat" onclick="openChangeSeatModal()">
-                        <div class="qa-btn-icon">💺</div>
                         <div class="qa-btn-content">
                             <strong>Ubah Kursi</strong>
                             <span>Pindah nomor kursi armada</span>
                         </div>
                     </button>
                     <button type="button" class="qa-action-btn qa-btn-reschedule" onclick="openRescheduleModal()">
-                        <div class="qa-btn-icon">📅</div>
                         <div class="qa-btn-content">
                             <strong>Reschedule</strong>
                             <span>Ganti jam / tanggal tiket</span>
                         </div>
                     </button>
                     <button type="button" class="qa-action-btn qa-btn-cancellation" onclick="openCancellationModal()">
-                        <div class="qa-btn-icon">🚫</div>
                         <div class="qa-btn-content">
                             <strong>Ajukan Pembatalan</strong>
                             <span>Proses pengajuan &amp; refund</span>
@@ -497,7 +493,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge">⚠️</span>
+                <span class="modal-icon-badge"></span>
                 <h3 class="modal-title">Eskalasi Kasus ke Admin Utama</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeEscalateModal()">&times;</button>
@@ -558,7 +554,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge">💺</span>
+                <span class="modal-icon-badge"></span>
                 <h3 class="modal-title">Ubah Kursi Penumpang</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeChangeSeatModal()">&times;</button>
@@ -613,7 +609,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge">📅</span>
+                <span class="modal-icon-badge"></span>
                 <h3 class="modal-title">Reschedule Jadwal Keberangkatan</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeRescheduleModal()">&times;</button>
@@ -626,7 +622,7 @@
                 </div>
                 <div class="sum-row">
                     <span>Rute:</span>
-                    <strong id="modal-reschedule-route">Bandung &rarr; Jakarta</strong>
+                    <strong id="modal-reschedule-route">Bandung ke Jakarta</strong>
                 </div>
                 <div class="sum-row">
                     <span>Jadwal Semula:</span>
@@ -671,7 +667,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge cancel-icon-badge">🚫</span>
+                <span class="modal-icon-badge cancel-icon-badge"></span>
                 <h3 class="modal-title">Ajukan Pembatalan Tiket &amp; Refund</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeCancellationModal()">&times;</button>
@@ -733,7 +729,7 @@
     <div class="cs-modal-card">
         <div class="modal-card-header">
             <div class="modal-title-wrap">
-                <span class="modal-icon-badge" style="background: #fef08a; color: #854d0e;">🎫</span>
+                <span class="modal-icon-badge" style="background: #fef08a; color: #854d0e;"></span>
                 <h3 class="modal-title">Generator Tiket Instan (PDF / Gambar)</h3>
             </div>
             <button type="button" class="modal-close-btn" onclick="closeInstantTicketModal()">&times;</button>
@@ -754,7 +750,7 @@
                 </div>
                 <div class="sum-row" style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px;">
                     <span style="color: var(--text-muted);">Rute Perjalanan:</span>
-                    <span id="modal-ticket-route" style="font-weight: 600;">Bandung &rarr; Jakarta</span>
+                    <span id="modal-ticket-route" style="font-weight: 600;">Bandung ke Jakarta</span>
                 </div>
                 <div class="sum-row" style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px;">
                     <span style="color: var(--text-muted);">Armada &amp; Kursi:</span>
@@ -768,7 +764,7 @@
 
             <div class="modal-card-footer">
                 <button type="button" class="cs-btn cs-btn-secondary" onclick="closeInstantTicketModal()">Batal</button>
-                <button type="button" class="cs-btn cs-btn-secondary" onclick="downloadInstantTicketPdf()">📥 Unduh PDF</button>
+                <button type="button" class="cs-btn cs-btn-secondary" onclick="downloadInstantTicketPdf()">Unduh PDF</button>
                 <button type="button" class="cs-btn cs-btn-amber" onclick="sendInstantTicketFromModal()">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     <span>Kirim E-Tiket ke Chat (PDF)</span>
@@ -2627,7 +2623,7 @@
             id: 1,
             tab: 'unassigned', // unassigned | assigned | resolved
             urgency: 'kritis', // kritis | mendesak | normal
-            urgencyLabel: '🔴 Berangkat 45 Menit Lagi',
+            urgencyLabel: 'Berangkat 45 Menit Lagi',
             bannerTitle: 'Urgensi Kritis: Armada Berangkat 45 Menit Lagi!',
             bannerDesc: 'Toyota HiAce Premio (D 7182 AB) sedang proses boarding di Pool Pasteur. Prioritaskan konfirmasi titik jemput penumpang.',
             bannerClass: 'banner-kritis',
@@ -2641,7 +2637,7 @@
             booking: {
                 code: 'TRV-2026-0925',
                 status: 'Terkonfirmasi',
-                route: 'Bandung (Pasteur) &rarr; Jakarta (Semanggi)',
+                route: 'Bandung (Pasteur) ke Jakarta (Semanggi)',
                 departureDate: 'Jumat, 25 Sep 2026',
                 departureTime: '14:00 WIB',
                 departure: 'Hari Ini, 14:00 WIB',
@@ -2685,7 +2681,7 @@
                         fileSize: '124 KB',
                         pnr: 'TRV-2026-0925',
                         passenger: 'Budi Prasetyo',
-                        route: 'Bandung &rarr; Jakarta',
+                        route: 'Bandung ke Jakarta',
                         seat: '03A'
                     },
                     time: '13:16'
@@ -2696,7 +2692,7 @@
             id: 2,
             tab: 'unassigned',
             urgency: 'kritis',
-            urgencyLabel: '🔴 Berangkat 30 Menit Lagi',
+            urgencyLabel: 'Berangkat 30 Menit Lagi',
             bannerTitle: 'Urgensi Kritis: Penumpang Belum Tiba di Pool!',
             bannerDesc: 'Armada HiAce (B 8911 JKT) rute Jakarta - Bandung berangkat pukul 13:45 WIB. Penumpang terjebak macet di Pancoran.',
             bannerClass: 'banner-kritis',
@@ -2710,7 +2706,7 @@
             booking: {
                 code: 'TRV-2026-0811',
                 status: 'Terkonfirmasi',
-                route: 'Jakarta (Semanggi) &rarr; Bandung (Dipatiukur)',
+                route: 'Jakarta (Semanggi) ke Bandung (Dipatiukur)',
                 departureDate: 'Jumat, 25 Sep 2026',
                 departureTime: '13:45 WIB',
                 departure: 'Hari Ini, 13:45 WIB',
@@ -2747,7 +2743,7 @@
             id: 3,
             tab: 'unassigned',
             urgency: 'mendesak',
-            urgencyLabel: '🟡 Berangkat 2 Jam Lagi',
+            urgencyLabel: 'Berangkat 2 Jam Lagi',
             bannerTitle: 'Urgensi Mendesak: Keberangkatan Pukul 15:30 WIB',
             bannerDesc: 'Armada rute Bandung - Bandara Soekarno Hatta. Penumpang menanyakan kapasitas bagasi koper besar.',
             bannerClass: 'banner-mendesak',
@@ -2761,7 +2757,7 @@
             booking: {
                 code: 'TRV-2026-0774',
                 status: 'Lunas',
-                route: 'Bandung (Pasteur) &rarr; Bandara Soetta (T3)',
+                route: 'Bandung (Pasteur) ke Bandara Soetta (T3)',
                 departureDate: 'Jumat, 25 Sep 2026',
                 departureTime: '15:30 WIB',
                 departure: 'Hari Ini, 15:30 WIB',
@@ -2800,7 +2796,7 @@
             id: 4,
             tab: 'assigned',
             urgency: 'mendesak',
-            urgencyLabel: '🟡 Berangkat 1.5 Jam Lagi',
+            urgencyLabel: 'Berangkat 1.5 Jam Lagi',
             bannerTitle: 'Sedang Ditangani oleh Anda (Aktif)',
             bannerDesc: 'Armada rute Bekasi - Bandung berangkat 14:45 WIB. Penumpang meminta update nomor kontak driver.',
             bannerClass: 'banner-mendesak',
@@ -2814,7 +2810,7 @@
             booking: {
                 code: 'TRV-2026-0612',
                 status: 'Terkonfirmasi',
-                route: 'Bekasi Barat &rarr; Bandung (Dipatiukur)',
+                route: 'Bekasi Barat ke Bandung (Dipatiukur)',
                 departureDate: 'Jumat, 25 Sep 2026',
                 departureTime: '14:45 WIB',
                 departure: 'Hari Ini, 14:45 WIB',
@@ -2854,7 +2850,7 @@
             id: 5,
             tab: 'assigned',
             urgency: 'normal',
-            urgencyLabel: '🟢 Jadwal Besok Pagi',
+            urgencyLabel: 'Jadwal Besok Pagi',
             bannerTitle: 'Sedang Ditangani oleh Anda (Aktif)',
             bannerDesc: 'Pertanyaan seputar tiket jadwal besok pagi pukul 07:00 WIB rute Bandung - Jakarta.',
             bannerClass: 'banner-normal',
@@ -2868,7 +2864,7 @@
             booking: {
                 code: 'TRV-2026-0599',
                 status: 'Menunggu Pembayaran',
-                route: 'Bandung (Dipatiukur) &rarr; Jakarta (Semanggi)',
+                route: 'Bandung (Dipatiukur) ke Jakarta (Semanggi)',
                 departureDate: 'Sabtu, 26 Sep 2026',
                 departureTime: '07:00 WIB',
                 departure: 'Besok, 07:00 WIB',
@@ -2908,7 +2904,7 @@
             id: 6,
             tab: 'resolved',
             urgency: 'normal',
-            urgencyLabel: '🟢 Selesai (CSAT 5★)',
+            urgencyLabel: 'Selesai (CSAT 5)',
             bannerTitle: 'Sesi Chat Telah Selesai (Closed)',
             bannerDesc: 'Tiket telah selesai ditangani dengan sukses. Penumpang memberikan ulasan bintang 5.',
             bannerClass: 'banner-normal',
@@ -2922,7 +2918,7 @@
             booking: {
                 code: 'TRV-2026-0421',
                 status: 'Selesai',
-                route: 'Jakarta (Semanggi) &rarr; Bandung (Pasteur)',
+                route: 'Jakarta (Semanggi) ke Bandung (Pasteur)',
                 departureDate: 'Jumat, 25 Sep 2026',
                 departureTime: '11:00 WIB',
                 departure: 'Telah Berangkat (11:00 WIB)',
@@ -3033,7 +3029,7 @@
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 13px;">
-                    <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
+                    <div style="font-size: 32px; margin-bottom: 8px;"></div>
                     <strong>Tidak ada percakapan</strong>
                     <p style="font-size: 11px; margin-top: 4px;">Tidak ditemukan tiket pada tab ${currentActiveTab.toUpperCase()}</p>
                 </div>
@@ -3065,7 +3061,7 @@
 
                     <div class="item-footer-meta">
                         <span>Tiket: <strong>${chat.booking.code}</strong></span>
-                        <span>${chat.booking.route.split('→')[0].split('&rarr;')[0].trim()}</span>
+                        <span>${chat.booking.route.split(' ke ')[0].split(' ke ')[0].trim()}</span>
                     </div>
                 </div>
             `;
@@ -3223,7 +3219,7 @@
                 return `
                     <div class="chat-bubble-attachment ticket-pdf">
                         <div class="ticket-att-header">
-                            <span class="ticket-att-badge">🎫 E-Tiket Resmi (PDF)</span>
+                            <span class="ticket-att-badge">E-Tiket Resmi (PDF)</span>
                             <span class="ticket-att-size">${att.fileSize || '124 KB'}</span>
                         </div>
                         <div class="ticket-att-body">
@@ -3231,7 +3227,7 @@
                             <div class="ticket-att-sub">${att.route || ''} &bull; Kursi ${att.seat || ''}</div>
                         </div>
                         <button type="button" class="ticket-att-download-btn" onclick="alert('Mengunduh e-tiket resmi ${att.fileName}...')">
-                            📥 Unduh E-Tiket (${att.fileName})
+                            Unduh E-Tiket (${att.fileName})
                         </button>
                     </div>
                 `;
@@ -3242,14 +3238,14 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                             <span>${att.fileName}</span>
                         </div>
-                        <span class="comp-quota-tag">⚡ Kompresi Otomatis: ${att.origSize} ➔ ${att.compSize} (Hemat ${att.quotaSaved} kuota di jalan)</span>
+                        <span class="comp-quota-tag">Kompresi Otomatis: ${att.origSize} ke ${att.compSize} (Hemat ${att.quotaSaved} kuota di jalan)</span>
                     </div>
                 `;
             } else if (att.type === 'document_pdf') {
                 return `
                     <div class="chat-bubble-attachment doc-pdf">
                         <div class="att-pdf-preview-box">
-                            <span style="font-size: 20px;">📄</span>
+                            <span style="font-size: 20px;"></span>
                             <div class="pdf-details">
                                 <strong>${att.fileName}</strong>
                                 <span class="pdf-size">Dokumen PDF &bull; ${att.fileSize}</span>
@@ -3283,7 +3279,7 @@
                         <div class="internal-note-header">
                             <span class="internal-note-badge">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                🔒 Catatan Internal Khusus Antar-CS (Tidak Terlihat Pelanggan)
+                                Catatan Internal Khusus Antar-CS (Tidak Terlihat Pelanggan)
                             </span>
                             <span class="internal-note-meta">${m.author || 'CS'} &bull; ${m.time}</span>
                         </div>
@@ -3389,7 +3385,7 @@
         if (mode === 'internal') {
             if (tabCustomer) tabCustomer.classList.remove('active');
             if (tabInternal) tabInternal.classList.add('active');
-            if (hintText) hintText.innerHTML = '<strong style="color: #854d0e;">🔒 Catatan Internal Antar-CS:</strong> Tidak terlihat oleh penumpang';
+            if (hintText) hintText.innerHTML = '<strong style="color: #854d0e;">Catatan Internal Antar-CS:</strong> Tidak terlihat oleh penumpang';
             if (input) {
                 input.placeholder = 'Tulis catatan kuning khusus antar-CS (misal: "Pelanggan minta jemput duluan karena bawa lansia")...';
                 input.focus();
@@ -3444,7 +3440,7 @@
         }
 
         chat.tab = 'resolved';
-        chat.urgencyLabel = '🟢 Selesai Ditangani';
+        chat.urgencyLabel = 'Selesai Ditangani';
         chat.bannerTitle = 'Sesi Chat Telah Selesai (Closed)';
         chat.bannerClass = 'banner-normal';
         chat.messages.push({
@@ -3580,13 +3576,13 @@
 
         if (pill && nameSpan) {
             nameSpan.innerText = file.name;
-            if (iconSpan) iconSpan.innerText = isPdf ? '📄' : '🖼️';
+            if (iconSpan) iconSpan.innerText = isPdf ? '' : '';
             if (compTag) {
                 if (isPdf) {
-                    compTag.innerText = `📄 Dokumen PDF (${origFormatted})`;
+                    compTag.innerText = `Dokumen PDF (${origFormatted})`;
                     compTag.className = 'compression-tag-pill pill-pdf';
                 } else {
-                    compTag.innerText = `⚡ Kompresi Otomatis: ${origFormatted} ➔ ${compFormatted} (-${quotaSavings} hemat kuota)`;
+                    compTag.innerText = `Kompresi Otomatis: ${origFormatted} ke ${compFormatted} (-${quotaSavings} hemat kuota)`;
                     compTag.className = 'compression-tag-pill';
                 }
             }
@@ -3680,7 +3676,7 @@
         if (container) {
             container.innerHTML = `
                 <div style="text-align: center; margin: auto; color: var(--text-muted);">
-                    <div style="font-size: 40px; margin-bottom: 10px;">💬</div>
+                    <div style="font-size: 40px; margin-bottom: 10px;"></div>
                     <strong>Tidak ada percakapan aktif yang dipilih</strong>
                     <p style="font-size: 12px; margin-top: 4px;">Pilih salah satu pesan dari antrean di sebelah kiri.</p>
                 </div>
@@ -3779,7 +3775,7 @@
 
         chat.messages.push({
             type: 'system',
-            text: `🔄 Kursi penumpang berhasil diubah dari ${oldSeat} ke ${newSeatNo} (${chat.booking.seatType}). Alasan: "${reason}". Dilakukan oleh ${currentCsName}.`
+            text: `Kursi penumpang berhasil diubah dari ${oldSeat} ke ${newSeatNo} (${chat.booking.seatType}). Alasan: "${reason}". Dilakukan oleh ${currentCsName}.`
         });
 
         alert(`Kursi penumpang ${chat.user.name} berhasil diubah ke ${newSeatNo}!`);
@@ -3818,11 +3814,11 @@
         chat.booking.departure = `${newDate}, ${newTime}`;
         chat.booking.countdown = 'Jadwal Baru Terkonfirmasi';
         chat.urgency = 'normal';
-        chat.urgencyLabel = '🟢 Reschedule Terkonfirmasi';
+        chat.urgencyLabel = 'Reschedule Terkonfirmasi';
 
         chat.messages.push({
             type: 'system',
-            text: `📅 Jadwal perjalanan berhasil di-reschedule ke ${newDate} pukul ${newTime}. Alasan: "${reason}". Diproses oleh CS ${currentCsName}.`
+            text: `Jadwal perjalanan berhasil di-reschedule ke ${newDate} pukul ${newTime}. Alasan: "${reason}". Diproses oleh CS ${currentCsName}.`
         });
 
         alert(`Jadwal tiket ${chat.booking.code} berhasil di-reschedule ke ${newDate} (${newTime}).`);
@@ -3862,7 +3858,7 @@
 
         chat.messages.push({
             type: 'system',
-            text: `🚫 Pengajuan pembatalan tiket ${chat.booking.code} telah diteruskan ke Admin Utama & Tim Keuangan. Alasan: "${reason}". Rekening Refund: "${refundAccount}". Catatan CS: "${notes || '-'}"`
+            text: `Pengajuan pembatalan tiket ${chat.booking.code} telah diteruskan ke Admin Utama & Tim Keuangan. Alasan: "${reason}". Rekening Refund: "${refundAccount}". Catatan CS: "${notes || '-'}"`
         });
 
         alert(`Pengajuan pembatalan tiket ${chat.booking.code} berhasil dikirimkan ke Admin & Tim Keuangan untuk diproses refund.`);
@@ -3893,7 +3889,7 @@
 
         chat.messages.push({
             type: 'system',
-            text: `⚠️ [ESKALASI KE ADMIN UTAMA] Kategori: ${cat} | Prioritas: ${sev} | Status: Pending di Admin\n• Akar Masalah: "${rootCause}"\n• Data Pendukung: "${supportingData}"`
+            text: `[ESKALASI KE ADMIN UTAMA] Kategori: ${cat} | Prioritas: ${sev} | Status: Pending di Admin\n• Akar Masalah: "${rootCause}"\n• Data Pendukung: "${supportingData}"`
         });
 
         alert(`Tiket eskalasi booking ${chat.booking.code} berhasil dikirim ke Admin Utama!\nKategori: ${cat}\nPrioritas: ${sev}\nStatus Pelacakan: Pending di Admin`);

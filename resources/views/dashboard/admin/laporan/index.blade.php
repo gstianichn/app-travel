@@ -530,7 +530,7 @@
                 class="btn-export-excel"
                 title="Unduh data tabel ke file Excel / CSV"
             >
-                <span>📥</span>
+                <span></span>
                 <span>Unduh Excel</span>
             </a>
 
@@ -540,7 +540,7 @@
                 class="btn-export-pdf"
                 title="Buka format dokumen siap cetak atau simpan ke PDF"
             >
-                <span>📄</span>
+                <span></span>
                 <span>Cetak / Simpan PDF</span>
             </a>
         </div>
@@ -551,7 +551,6 @@
         <div class="metric-card">
             <div class="metric-header">
                 <span class="metric-title">Pendapatan Kotor</span>
-                <div class="metric-icon-wrap">💰</div>
             </div>
             <div class="metric-val">Rp {{ number_format($grossRevenue ?? 0, 0, ',', '.') }}</div>
             <span class="metric-sub">{{ number_format($totalTicketsSold ?? 0) }} tiket terjual terbayar</span>
@@ -560,7 +559,6 @@
         <div class="metric-card outflow">
             <div class="metric-header">
                 <span class="metric-title">Pengembalian Refund</span>
-                <div class="metric-icon-wrap">💸</div>
             </div>
             <div class="metric-val">- Rp {{ number_format($totalRefundOutflow ?? 0, 0, ',', '.') }}</div>
             <span class="metric-sub">Fee admin ditahan: Rp {{ number_format($totalFeesRetained ?? 0, 0, ',', '.') }}</span>
@@ -569,7 +567,6 @@
         <div class="metric-card net">
             <div class="metric-header">
                 <span class="metric-title">Pendapatan Bersih</span>
-                <div class="metric-icon-wrap">📈</div>
             </div>
             <div class="metric-val">Rp {{ number_format($netRevenue ?? 0, 0, ',', '.') }}</div>
             <span class="metric-sub">Dana riil masuk ke kas perusahaan</span>
@@ -578,7 +575,6 @@
         <div class="metric-card occupancy">
             <div class="metric-header">
                 <span class="metric-title">Keterisian Kursi</span>
-                <div class="metric-icon-wrap">💺</div>
             </div>
             <div class="metric-val">{{ $overallLoadFactor ?? 0 }}%</div>
             <span class="metric-sub">{{ number_format($totalOccupiedAll ?? 0) }} / {{ number_format($totalCapacityAll ?? 0) }} kursi terisi</span>
@@ -614,7 +610,7 @@
 
             <div style="display: flex; gap: 8px;">
                 <button type="submit" class="btn-filter-submit">
-                    <span>🔍</span> Terapkan Filter
+                    <span></span> Terapkan Filter
                 </button>
                 <a href="{{ route('dashboard.admin.laporan.index', ['tab' => $tab]) }}" class="btn-filter-reset">
                     Reset
@@ -638,7 +634,7 @@
             href="{{ route('dashboard.admin.laporan.index', array_merge(request()->query(), ['tab' => 'financial'])) }}"
             class="tab-link {{ $tab === 'financial' ? 'active' : '' }}"
         >
-            <span>💰</span>
+            <span></span>
             <span>Rekonsiliasi Keuangan</span>
         </a>
 
@@ -646,7 +642,7 @@
             href="{{ route('dashboard.admin.laporan.index', array_merge(request()->query(), ['tab' => 'occupancy'])) }}"
             class="tab-link {{ $tab === 'occupancy' ? 'active' : '' }}"
         >
-            <span>💺</span>
+            <span></span>
             <span>Keterisian Kursi (Load Factor)</span>
         </a>
 
@@ -654,7 +650,7 @@
             href="{{ route('dashboard.admin.laporan.index', array_merge(request()->query(), ['tab' => 'manifest'])) }}"
             class="tab-link {{ $tab === 'manifest' ? 'active' : '' }}"
         >
-            <span>📋</span>
+            <span></span>
             <span>Manifes Penumpang</span>
         </a>
 
@@ -662,7 +658,7 @@
             href="{{ route('dashboard.admin.laporan.index', array_merge(request()->query(), ['tab' => 'cancellation'])) }}"
             class="tab-link {{ $tab === 'cancellation' ? 'active' : '' }}"
         >
-            <span>🔄</span>
+            <span></span>
             <span>Rekap Pembatalan & Refund</span>
         </a>
     </div>
@@ -733,7 +729,7 @@
                                     <small style="color: #64748b;">{{ $b->user?->phone ?? '-' }}</small>
                                 </td>
                                 <td>
-                                    {{ $b->schedule?->route?->origin?->city ?? 'Origin' }} → {{ $b->schedule?->route?->destination?->city ?? 'Destination' }}
+                                    {{ $b->schedule?->route?->origin?->city ?? 'Origin' }} ke {{ $b->schedule?->route?->destination?->city ?? 'Destination' }}
                                 </td>
                                 <td>
                                     <span style="display: inline-block; padding: 2px 7px; background: #f1f5f9; border-radius: 4px; font-size: 11px; font-weight: 600;">
@@ -742,7 +738,7 @@
                                 </td>
                                 <td>
                                     <span class="badge-status paid">
-                                        ✓ Lunas
+                                        Lunas
                                     </span>
                                 </td>
                                 <td style="text-align: right; font-weight: 700; color: #0f172a;">
@@ -753,7 +749,6 @@
                             <tr>
                                 <td colspan="9">
                                     <div class="empty-state-wrap">
-                                        <div class="empty-state-icon">💰</div>
                                         <h4 class="empty-state-title">Tidak Ada Transaksi Terbayar</h4>
                                         <p class="empty-state-desc">Tidak ditemukan transaksi tiket lunas pada rentang periode dan filter yang dipilih.</p>
                                     </div>
@@ -830,7 +825,7 @@
                                 </td>
                                 <td>
                                     <div style="font-weight: 600; color: #1e293b;">
-                                        {{ $s->route?->origin?->city ?? 'Origin' }} → {{ $s->route?->destination?->city ?? 'Destination' }}
+                                        {{ $s->route?->origin?->city ?? 'Origin' }} ke {{ $s->route?->destination?->city ?? 'Destination' }}
                                     </div>
                                     <small style="color: #64748b;">{{ $s->route?->origin?->name }}</small>
                                 </td>
@@ -864,7 +859,6 @@
                             <tr>
                                 <td colspan="10">
                                     <div class="empty-state-wrap">
-                                        <div class="empty-state-icon">💺</div>
                                         <h4 class="empty-state-title">Tidak Ada Jadwal Perjalanan</h4>
                                         <p class="empty-state-desc">Tidak ada jadwal perjalanan pada periode dan filter yang Anda pilih.</p>
                                     </div>
@@ -945,10 +939,10 @@
                                     </span>
                                 </td>
                                 <td>
-                                    📱 {{ $p->phone ?? $p->booking?->user?->phone ?? '-' }}
+                                    {{ $p->phone ?? $p->booking?->user?->phone ?? '-' }}
                                 </td>
                                 <td>
-                                    {{ $sch?->route?->origin?->city ?? 'Origin' }} → {{ $sch?->route?->destination?->city ?? 'Destination' }}
+                                    {{ $sch?->route?->origin?->city ?? 'Origin' }} ke {{ $sch?->route?->destination?->city ?? 'Destination' }}
                                 </td>
                                 <td>{{ $sch?->route?->origin?->name ?? '-' }}</td>
                                 <td>{{ $sch?->route?->destination?->name ?? '-' }}</td>
@@ -960,7 +954,6 @@
                             <tr>
                                 <td colspan="11">
                                     <div class="empty-state-wrap">
-                                        <div class="empty-state-icon">📋</div>
                                         <h4 class="empty-state-title">Tidak Ada Data Penumpang</h4>
                                         <p class="empty-state-desc">Tidak ditemukan penumpang yang berangkat pada rentang tanggal dan rute yang dipilih.</p>
                                     </div>
@@ -1052,7 +1045,6 @@
                             <tr>
                                 <td colspan="11">
                                     <div class="empty-state-wrap">
-                                        <div class="empty-state-icon">🔄</div>
                                         <h4 class="empty-state-title">Tidak Ada Riwayat Pembatalan</h4>
                                         <p class="empty-state-desc">Tidak ditemukan permohonan pembatalan tiket pada rentang tanggal dan filter yang dipilih.</p>
                                     </div>

@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Booking;
+use App\Models\Location;
+use App\Models\Route as TravelRoute;
+use App\Models\Schedule;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -22,32 +26,46 @@ test('customer service can access dashboard index with all modular components lo
 
     $response->assertOk();
 
-    // 1. Sidebar & Brand
+    // Sidebar and topbar
     $response->assertSee('TravelKu');
     $response->assertSee('Dashboard');
     $response->assertSee('Logout');
+    $response->assertSee('Customer service');
 
-    // 2. Topbar
-    $response->assertSee('Dashboard Customer Service');
+    // Home built from database numbers, with honest empty states
+    $response->assertSee('Halo, Customer.');
+    $response->assertSee('Cari pesanan');
+    $response->assertSee('Keberangkatan tersisa hari ini');
+    $response->assertSee('Pembayaran belum selesai');
+    $response->assertSee('Refund menunggu admin');
+    $response->assertSee('Tidak ada keberangkatan lagi hari ini.');
+    $response->assertSee('Tidak ada pembayaran tertunda.');
 
-    // 3. Welcome Banner
-    $response->assertSee('Selamat datang,');
-    $response->assertSee('Customer Service Test');
+    // The invented feed, satisfaction score and escalation cases are gone
+    $response->assertDontSee('98.4%');
+    $response->assertDontSee('Pertanyaan pelanggan berhasil ditangani');
+});
 
-    // 4. Statistics
-    $response->assertSee('Pertanyaan Hari Ini');
-    $response->assertSee('Pesanan Hari Ini');
-    $response->assertSee('Pelanggan Aktif');
-    $response->assertSee('Menunggu Respons');
+test('customer service can look up a booking by code or passenger phone', function () {
+    $origin = Location::create(['code' => 'CS-A', 'name' => 'Pool Pasteur (Bandung)', 'city' => 'Bandung', 'is_active' => true]);
+    $destination = Location::create(['code' => 'CS-B', 'name' => 'Tebet (Jakarta)', 'city' => 'Jakarta', 'is_active' => true]);
+    $route = TravelRoute::create(['origin_id' => $origin->id, 'destination_id' => $destination->id, 'price' => 125000, 'duration' => '2 Jam 30 Menit', 'is_active' => true]);
+    $schedule = Schedule::create(['route_id' => $route->id, 'departure_date' => now()->addDay()->toDateString(), 'departure_time' => '08:00', 'available_seats' => 9, 'status' => 'Scheduled']);
+    $passenger = User::create(['name' => 'Dewi Lestari', 'email' => 'dewi.cs@travel.test', 'phone' => '081299990000', 'role' => 'user', 'status' => 'active', 'password' => Hash::make('password')]);
+    Booking::create(['booking_code' => 'TRV-CS-LOOKUP', 'user_id' => $passenger->id, 'schedule_id' => $schedule->id, 'total_passenger' => 1, 'subtotal' => 125000, 'discount' => 0, 'total_price' => 125000, 'status' => 'paid']);
 
-    // 5. Quick Menu
-    $response->assertSee('Menu Cepat');
-    $response->assertSee('Layanan Pelanggan');
-    $response->assertSee('Jadwal Travel');
+    $byCode = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'CS-LOOKUP']));
+    $byCode->assertOk();
+    $byCode->assertSee('TRV-CS-LOOKUP');
+    $byCode->assertSee('Dewi Lestari');
+    $byCode->assertSee('Bandung ke Jakarta');
+    $byCode->assertSee('Lunas');
 
-    // 6. Activity List
-    $response->assertSee('Aktivitas Terbaru');
-    $response->assertSee('Pertanyaan pelanggan berhasil ditangani');
+    $byPhone = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => '081299990000']));
+    $byPhone->assertSee('TRV-CS-LOOKUP');
+
+    $noMatch = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'TIDAK-ADA']));
+    $noMatch->assertSee('Tidak ada pesanan yang cocok');
 });
 
 test('customer service can access live chat queue with 3 tabs and departure urgency features', function () {

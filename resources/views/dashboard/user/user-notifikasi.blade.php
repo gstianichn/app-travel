@@ -9,10 +9,10 @@
     @if(session('success'))
         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between gap-3 shadow-2xs">
             <div class="flex items-center gap-2.5">
-                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">✓</span>
+                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
                 <span>{{ session('success') }}</span>
             </div>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 font-bold">✕</button>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-700 hover:text-emerald-900 font-bold" aria-label="Tutup">&times;</button>
         </div>
     @endif
 
@@ -22,7 +22,7 @@
                 <span class="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs">!</span>
                 <span>{{ session('error') }}</span>
             </div>
-            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 font-bold">✕</button>
+            <button type="button" onclick="this.parentElement.remove()" class="text-rose-700 hover:text-rose-900 font-bold" aria-label="Tutup">&times;</button>
         </div>
     @endif
 
@@ -70,11 +70,11 @@
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Penyampaian Ganda (Dual Delivery)</span>
-                        <span x-show="pushPermission === 'granted'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span class="text-xs font-bold text-slate-200">Penyampaian Ganda (Dual Delivery)</span>
+                        <span x-show="pushPermission === 'granted'" class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                             ● Push HP Aktif
                         </span>
-                        <span x-show="pushPermission !== 'granted'" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        <span x-show="pushPermission !== 'granted'" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                             ● Belum Diaktifkan
                         </span>
                     </div>
@@ -105,10 +105,10 @@
     <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 rounded-3xl border border-slate-200 p-5 shadow-2xs">
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700">Simulasi Event Trigger (Pengujian Langsung)</h4>
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <h4 class="text-xs font-bold text-slate-700">Simulasi Event Trigger (Pengujian Langsung)</h4>
             </div>
-            <span class="text-[11px] text-slate-500">Klik untuk memicu push notification & riwayat</span>
+            <span class="text-xs text-slate-500">Klik untuk memicu push notification & riwayat</span>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -119,10 +119,10 @@
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-50/70 border border-slate-200 hover:border-amber-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-amber-600 mb-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span class="text-[10px] font-bold uppercase bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">15 Menit</span>
+                        <span class="text-xs font-bold bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">15 Menit</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-amber-900 leading-tight">Menunggu Bayar</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Disertai batas waktu bayar</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Disertai batas waktu bayar</p>
                 </button>
             </form>
 
@@ -133,10 +133,10 @@
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-emerald-600 mb-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        <span class="text-[10px] font-bold uppercase bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-800">E-Ticket</span>
+                        <span class="text-xs font-bold bg-emerald-100 px-1.5 py-0.5 rounded text-emerald-800">E-Ticket</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-emerald-900 leading-tight">Pembayaran Sukses</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">E-Ticket QR aktif</p>
+                    <p class="text-xs text-slate-500 mt-0.5">E-Ticket QR aktif</p>
                 </button>
             </form>
 
@@ -147,10 +147,10 @@
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-rose-50/70 border border-slate-200 hover:border-rose-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-rose-600 mb-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        <span class="text-[10px] font-bold uppercase bg-rose-100 px-1.5 py-0.5 rounded text-rose-800">Batal</span>
+                        <span class="text-xs font-bold bg-rose-100 px-1.5 py-0.5 rounded text-rose-800">Batal</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-rose-900 leading-tight">Waktu Habis</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Transaksi dibatalkan</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Transaksi dibatalkan</p>
                 </button>
             </form>
 
@@ -161,10 +161,10 @@
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-blue-600 mb-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span class="text-[10px] font-bold uppercase bg-blue-100 px-1.5 py-0.5 rounded text-blue-800">H-2 Jam</span>
+                        <span class="text-xs font-bold bg-blue-100 px-1.5 py-0.5 rounded text-blue-800">H-2 Jam</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-blue-900 leading-tight">Pengingat Perjalanan</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Rute, jam tiba pool & kursi</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Rute, jam tiba pool & kursi</p>
                 </button>
             </form>
 
@@ -175,10 +175,10 @@
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-indigo-50/70 border border-slate-200 hover:border-indigo-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-indigo-600 mb-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                        <span class="text-[10px] font-bold uppercase bg-indigo-100 px-1.5 py-0.5 rounded text-indigo-800">Hari-H</span>
+                        <span class="text-xs font-bold bg-indigo-100 px-1.5 py-0.5 rounded text-indigo-800">Hari-H</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-indigo-900 leading-tight">Info Pelat Minibus</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Pelat nomor & gate pool</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Pelat nomor & gate pool</p>
                 </button>
             </form>
 
@@ -189,10 +189,10 @@
                 <button type="submit" class="w-full text-left p-3 rounded-2xl bg-white hover:bg-amber-50/70 border border-slate-200 hover:border-amber-300 transition group shadow-2xs">
                     <div class="flex items-center justify-between text-amber-600 mb-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        <span class="text-[10px] font-bold uppercase bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">+20 Mnt</span>
+                        <span class="text-xs font-bold bg-amber-100 px-1.5 py-0.5 rounded text-amber-800">+20 Mnt</span>
                     </div>
                     <p class="text-xs font-bold text-slate-800 group-hover:text-amber-900 leading-tight">Kondisi Jalan / Delay</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">Update macet tol / cuaca</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Update macet tol / cuaca</p>
                 </button>
             </form>
         </div>
@@ -203,7 +203,7 @@
         <a href="{{ route('dashboard.user.user-notifikasi') }}"
            class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 flex-shrink-0 {{ empty($selectedCategory) ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900' }}">
             <span>Semua</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] {{ empty($selectedCategory) ? 'bg-slate-100 text-slate-700' : 'bg-slate-200 text-slate-600' }}">
+            <span class="px-1.5 py-0.2 rounded-full text-xs {{ empty($selectedCategory) ? 'bg-slate-100 text-slate-700' : 'bg-slate-200 text-slate-600' }}">
                 {{ $notifications->total() }}
             </span>
         </a>
@@ -213,7 +213,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
             <span>Status Transaksi</span>
             @if($countTransaksi > 0)
-                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-700">{{ $countTransaksi }}</span>
+                <span class="px-1.5 py-0.2 rounded-full text-xs bg-blue-100 text-blue-700">{{ $countTransaksi }}</span>
             @endif
         </a>
 
@@ -222,7 +222,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span>Pengingat (H-2 Jam)</span>
             @if($countPengingat > 0)
-                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-700">{{ $countPengingat }}</span>
+                <span class="px-1.5 py-0.2 rounded-full text-xs bg-amber-100 text-amber-700">{{ $countPengingat }}</span>
             @endif
         </a>
 
@@ -231,7 +231,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
             <span>Info Operasional</span>
             @if($countOperasional > 0)
-                <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 text-indigo-700">{{ $countOperasional }}</span>
+                <span class="px-1.5 py-0.2 rounded-full text-xs bg-indigo-100 text-indigo-700">{{ $countOperasional }}</span>
             @endif
         </a>
     </div>
@@ -331,10 +331,10 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-3">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider {{ $theme['badge'] }}">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold {{ $theme['badge'] }}">
                                     {{ $theme['badge_text'] }}
                                 </span>
-                                <span class="text-[11px] text-slate-400 font-medium">
+                                <span class="text-xs text-slate-400 font-medium">
                                     {{ $notif->created_at->diffForHumans() }} ({{ $notif->created_at->format('H:i') }} WIB)
                                 </span>
                             </div>
@@ -365,7 +365,7 @@
 
                         <!-- Highlight Meta Data jika ada -->
                         @if(!empty($data['meta']))
-                            <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
+                            <div class="mt-3 flex flex-wrap gap-2 text-xs">
                                 @if(!empty($data['meta']['route']))
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 font-semibold">
                                         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19L19 4M4 4l15 15"/></svg>
@@ -412,7 +412,7 @@
 
                         <!-- ===== DEEP LINKING: TOMBOL NAVIGASI LANGSUNG ===== -->
                         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
-                            <span class="text-[11px] text-slate-400">
+                            <span class="text-xs text-slate-400">
                                 Ketuk tombol untuk langsung membuka layar terkait:
                             </span>
                             <a href="{{ $deepLink }}"
@@ -436,7 +436,7 @@
                     <p class="text-slate-500 mt-1">Belum ada riwayat pemberitahuan untuk kategori ini.</p>
                 </div>
                 <div class="pt-2">
-                    <p class="text-[11px] text-slate-400">Gunakan tombol <strong>Simulasi Event Trigger</strong> di atas untuk mencoba pengiriman ganda dan deep linking.</p>
+                    <p class="text-xs text-slate-400">Gunakan tombol <strong>Simulasi Event Trigger</strong> di atas untuk mencoba pengiriman ganda dan deep linking.</p>
                 </div>
             </div>
         @endforelse

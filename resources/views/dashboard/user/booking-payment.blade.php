@@ -61,24 +61,24 @@
     <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto text-xs font-semibold">
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
+                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
                 Pilih Kursi
             </span>
             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
+                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs"></span>
                 Data & Metode Bayar
             </span>
             <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold" style="background:#087f55;">
-                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">3</span>
+                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">3</span>
                 Bayar Tiket (Midtrans)
             </span>
         </div>
 
         <div class="flex items-center gap-2">
             <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                 Menunggu Pembayaran
             </span>
         </div>
@@ -88,7 +88,7 @@
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Kode Booking Transaksi</span>
+                <span class="text-xs font-bold text-slate-400">Kode Booking Transaksi</span>
                 <div class="flex items-center gap-2 mt-0.5">
                     <h2 class="text-xl font-mono font-bold text-slate-900">{{ $booking->booking_code }}</h2>
                     <button type="button" @click="copyText('{{ $booking->booking_code }}', 'Kode booking berhasil disalin!')"
@@ -109,7 +109,7 @@
                 </span>
                 <div class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-950">
                     <span class="text-xs font-medium">Sisa Waktu:</span>
-                    <span class="font-mono text-xl font-extrabold tracking-wider text-amber-700" x-text="formatTimer(remainingSeconds)"></span>
+                    <span class="font-mono text-xl font-extrabold text-amber-700" x-text="formatTimer(remainingSeconds)"></span>
                 </div>
             </div>
         </div>
@@ -154,13 +154,13 @@
                 @elseif($isBsi)
                     <div class="w-12 h-12 rounded-2xl bg-emerald-700 text-white font-black text-xs flex items-center justify-center shadow-xs">BSI</div>
                 @elseif($isSeabank)
-                    <div class="w-12 h-12 rounded-2xl bg-orange-600 text-white font-black text-[10px] tracking-tight flex items-center justify-center shadow-xs">SEABANK</div>
+                    <div class="w-12 h-12 rounded-2xl bg-orange-600 text-white font-black text-xs tracking-tight flex items-center justify-center shadow-xs">SEABANK</div>
                 @elseif($isQris)
                     <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white font-black text-sm flex items-center justify-center shadow-xs">QRIS</div>
                 @elseif($isGopay)
                     <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white font-black text-xs flex items-center justify-center shadow-xs">GOPAY</div>
                 @elseif($isShopeepay)
-                    <div class="w-12 h-12 rounded-2xl bg-orange-500 text-white font-black text-[10px] flex items-center justify-center shadow-xs">SHOPEE</div>
+                    <div class="w-12 h-12 rounded-2xl bg-orange-500 text-white font-black text-xs flex items-center justify-center shadow-xs">SHOPEE</div>
                 @else
                     <div class="w-12 h-12 rounded-2xl bg-emerald-700 text-white font-black text-sm flex items-center justify-center shadow-xs">VA</div>
                 @endif
@@ -185,11 +185,11 @@
                 <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <span class="text-xs text-slate-400 font-medium">Nomor Virtual Account (VA):</span>
-                        <p class="font-mono text-2xl sm:text-3xl font-black text-slate-900 tracking-wider mt-0.5">
+                        <p class="font-mono text-2xl sm:text-3xl font-black text-slate-900 mt-0.5">
                             {{ $payment->account_number }}
                         </p>
                         <p class="text-xs text-slate-500 mt-1">
-                            Nama Penerima: <strong class="text-slate-800">{{ $payment->account_name ?: 'PT FAST TRAVEL INDONESIA' }}</strong>
+                            Nama Penerima: <strong class="text-slate-800">{{ $payment->account_name ?: \App\Models\AppSetting::companyName() }}</strong>
                         </p>
                     </div>
                     <div>
@@ -213,7 +213,7 @@
                         </div>
                         <ol class="list-decimal list-inside text-xs text-orange-900 space-y-1 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>SeaBank</strong> di smartphone Anda.</li>
-                            <li>Pilih menu <strong>Transfer</strong> &rarr; <strong>Virtual Account</strong> atau <strong>Bank Lain</strong>.</li>
+                            <li>Pilih menu <strong>Transfer</strong> &gt; <strong>Virtual Account</strong> atau <strong>Bank Lain</strong>.</li>
                             <li>Pilih Bank Penerima: <strong>Bank Permata</strong> (Kode Bank: <strong>013</strong>).</li>
                             <li>Masukkan Nomor Virtual Account: <strong class="font-mono text-orange-950">{{ $payment->account_number }}</strong>.</li>
                             <li>Pilih metode transfer <strong>BI-FAST</strong> (bebas biaya admin).</li>
@@ -231,10 +231,10 @@
                         </div>
                         <ol class="list-decimal list-inside text-xs text-emerald-900 space-y-1 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>BSI Mobile</strong>.</li>
-                            <li>Pilih menu <strong>Transfer</strong> &rarr; <strong>Transfer Antar Bank / Virtual Account</strong>.</li>
+                            <li>Pilih menu <strong>Transfer</strong> &gt; <strong>Transfer Antar Bank / Virtual Account</strong>.</li>
                             <li>Pilih Bank Penerima: <strong>Bank Permata Syariah</strong> (Kode: 013).</li>
                             <li>Masukkan Nomor VA: <strong class="font-mono text-emerald-950">{{ $payment->account_number }}</strong>.</li>
-                            <li>Pastikan nama penerima <strong>PT FAST TRAVEL INDONESIA</strong> dan nominal sesuai, lalu konfirmasi dengan PIN.</li>
+                            <li>Pastikan nama penerima <strong>{{ \App\Models\AppSetting::companyName() }}</strong> dan nominal sesuai, lalu konfirmasi dengan PIN.</li>
                         </ol>
                     </div>
                 @endif
@@ -245,9 +245,9 @@
                         <p class="font-bold text-slate-800 text-sm">Cara Bayar via BCA Mobile / myBCA / ATM BCA:</p>
                         <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>m-BCA</strong> atau ATM BCA terdekat.</li>
-                            <li>Pilih menu <strong>m-Transfer</strong> &rarr; <strong>BCA Virtual Account</strong>.</li>
+                            <li>Pilih menu <strong>m-Transfer</strong> &gt; <strong>BCA Virtual Account</strong>.</li>
                             <li>Masukkan nomor Virtual Account: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
-                            <li>Pastikan nama penerima <strong>PT FAST TRAVEL INDONESIA</strong> dan nominal tagihan sesuai.</li>
+                            <li>Pastikan nama penerima <strong>{{ \App\Models\AppSetting::companyName() }}</strong> dan nominal tagihan sesuai.</li>
                             <li>Konfirmasi dan masukkan PIN m-BCA Anda. Transaksi selesai & tiket langsung terbit!</li>
                         </ol>
                     </div>
@@ -256,7 +256,7 @@
                         <p class="font-bold text-slate-800 text-sm">Cara Bayar via BNI Mobile Banking / ATM BNI:</p>
                         <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>BNI Mobile Banking</strong>.</li>
-                            <li>Pilih menu <strong>Pembayaran</strong> &rarr; <strong>Virtual Account Billing</strong>.</li>
+                            <li>Pilih menu <strong>Pembayaran</strong> &gt; <strong>Virtual Account Billing</strong>.</li>
                             <li>Input nomor Virtual Account: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
                             <li>Periksa nominal dan nama penerima, lalu masukkan password transaksi Anda.</li>
                         </ol>
@@ -266,7 +266,7 @@
                         <p class="font-bold text-slate-800 text-sm">Cara Bayar via BRImo (BRI Virtual Account / BRIVA):</p>
                         <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                             <li>Buka aplikasi <strong>BRImo</strong> di HP Anda.</li>
-                            <li>Pilih menu <strong>Tagihan</strong> &rarr; <strong>BRIVA</strong>.</li>
+                            <li>Pilih menu <strong>Tagihan</strong> &gt; <strong>BRIVA</strong>.</li>
                             <li>Pilih <strong>Pembayaran Baru</strong> dan masukkan nomor BRIVA: <strong class="text-slate-800 font-mono">{{ $payment->account_number }}</strong>.</li>
                             <li>Periksa rincian pembayaran, pilih sumber dana, lalu masukkan PIN BRImo Anda.</li>
                         </ol>
@@ -283,26 +283,26 @@
                     <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <span class="text-xs text-slate-400 font-medium">Kode Perusahaan (Biller Code):</span>
                         <div class="flex items-center justify-between">
-                            <span class="font-mono text-xl sm:text-2xl font-black text-slate-900 tracking-wider">{{ $billerCode }}</span>
+                            <span class="font-mono text-xl sm:text-2xl font-black text-slate-900">{{ $billerCode }}</span>
                             <button type="button" @click="copyText('{{ $billerCode }}', 'Kode Perusahaan disalin!')"
                                     class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
                                 Salin
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500">Nama Biller: <strong>Midtrans / Fast Travel</strong></p>
+                        <p class="text-xs text-slate-500">Nama Biller: <strong>Midtrans / {{ \App\Models\AppSetting::companyName() }}</strong></p>
                     </div>
 
                     {{-- Nomor Tagihan (Bill Key) --}}
                     <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
                         <span class="text-xs text-slate-400 font-medium">Nomor Tagihan (Bill Key):</span>
                         <div class="flex items-center justify-between">
-                            <span class="font-mono text-xl sm:text-2xl font-black text-slate-900 tracking-wider">{{ $billKey }}</span>
+                            <span class="font-mono text-xl sm:text-2xl font-black text-slate-900">{{ $billKey }}</span>
                             <button type="button" @click="copyText('{{ $billKey }}', 'Nomor Tagihan (Bill Key) disalin!')"
                                     class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition shadow-2xs">
                                 Salin
                             </button>
                         </div>
-                        <p class="text-[11px] text-slate-500">Penerima: <strong>PT FAST TRAVEL INDONESIA</strong></p>
+                        <p class="text-xs text-slate-500">Penerima: <strong>{{ \App\Models\AppSetting::companyName() }}</strong></p>
                     </div>
                 </div>
 
@@ -311,7 +311,7 @@
                     <p class="font-bold text-slate-800 text-sm">Cara Bayar via Livin' by Mandiri (Kuning):</p>
                     <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1 leading-relaxed">
                         <li>Buka aplikasi <strong>Livin' by Mandiri</strong>.</li>
-                        <li>Pilih menu <strong>Bayar</strong> &rarr; cari penyedia jasa <strong>Midtrans (70012)</strong>.</li>
+                        <li>Pilih menu <strong>Bayar</strong> &gt; cari penyedia jasa <strong>Midtrans (70012)</strong>.</li>
                         <li>Masukkan <strong>Nomor Tagihan / Bill Key: <span class="font-mono font-bold text-slate-800">{{ $billKey }}</span></strong>.</li>
                         <li>Pastikan jumlah pembayaran <strong>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</strong> sesuai.</li>
                         <li>Lanjutkan dan masukkan PIN Livin' Anda. Selesai!</li>
@@ -324,7 +324,7 @@
         @if($isQris)
             <div class="p-6 text-center space-y-6">
                 <div class="max-w-sm mx-auto space-y-4">
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold uppercase tracking-wider">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
                         <span>QRIS Standar Pembayaran Nasional</span>
                     </div>
 
@@ -336,8 +336,8 @@
                     {{-- QRIS CARD CONTAINER --}}
                     <div class="bg-white p-6 rounded-3xl border-2 border-slate-200 shadow-md mx-auto flex flex-col items-center justify-center relative">
                         <div class="mb-3 flex items-center justify-center gap-1">
-                            <span class="text-xl font-black text-rose-600 tracking-wider">QRIS</span>
-                            <span class="text-[10px] text-slate-400 font-bold">Universal</span>
+                            <span class="text-xl font-black text-rose-600">QRIS</span>
+                            <span class="text-xs text-slate-400 font-bold">Universal</span>
                         </div>
 
                         {{-- QR Visual (Image / SVG) --}}
@@ -358,15 +358,12 @@
                                         <rect x="19" y="14" width="3" height="3" fill="currentColor"/>
                                         <rect x="14" y="19" width="8" height="3" fill="currentColor"/>
                                     </svg>
-                                    <span class="text-[9px] font-mono mt-1 text-slate-300">Fast Travel QRIS ID</span>
+                                    <span class="text-xs mt-1 text-slate-300">QR simulasi, tidak bisa dipindai</span>
                                 </div>
                             @endif
                         </div>
 
-                        <div class="mt-4 text-center">
-                            <p class="text-xs font-bold text-slate-800">PT FAST TRAVEL INDONESIA</p>
-                            <p class="text-[10px] text-slate-400 font-mono mt-0.5">NMID: ID102026090421 &bull; Acquirer: Midtrans</p>
-                        </div>
+                        <p class="mt-4 text-center text-xs font-bold text-slate-800">{{ \App\Models\AppSetting::companyName() }}</p>
                     </div>
 
                     {{-- Actions: Salin String & Download --}}
@@ -376,17 +373,19 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                             Salin Kode QR
                         </button>
-                        <button type="button" @click="alert('Gambar kode QRIS berhasil diunduh ke galeri perangkat Anda.')"
+                        @if ($qrUrl)
+                        <a href="{{ $qrUrl }}" download="qris-{{ $booking->booking_code }}.png" target="_blank" rel="noopener"
                                 class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Unduh Gambar QRIS
-                        </button>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Unduh gambar QRIS
+                        </a>
+                        @endif
                     </div>
 
                     {{-- Supported E-wallet Badges --}}
                     <div class="pt-3 border-t border-slate-100">
-                        <p class="text-[11px] text-slate-400 font-medium mb-2">Didukung oleh seluruh aplikasi pembayaran:</p>
-                        <div class="flex flex-wrap items-center justify-center gap-1.5 text-[10px] font-bold text-slate-600">
+                        <p class="text-xs text-slate-400 font-medium mb-2">Didukung oleh seluruh aplikasi pembayaran:</p>
+                        <div class="flex flex-wrap items-center justify-center gap-1.5 text-xs font-bold text-slate-600">
                             <span class="px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">GoPay</span>
                             <span class="px-2 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-100">OVO</span>
                             <span class="px-2 py-1 rounded-md bg-sky-50 text-sky-700 border border-sky-100">DANA</span>
@@ -424,7 +423,7 @@
                         @endif
                     </div>
 
-                    <p class="text-[11px] text-slate-400">
+                    <p class="text-xs text-slate-400">
                         Setelah pembayaran diverifikasi di aplikasi e-wallet, layar ini akan otomatis menerbitkan E-Ticket QR Anda.
                     </p>
                 </div>
@@ -442,7 +441,7 @@
             <div class="space-y-1">
                 <div class="flex items-center gap-2">
                     <h4 class="font-bold text-slate-900 text-base">Verifikasi Otomatis via Midtrans Webhook</h4>
-                    <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold" x-text="pollCount > 0 ? 'Live Syncing...' : 'Siap'"></span>
+                    <span class="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold" x-text="pollCount > 0 ? 'Live Syncing...' : 'Siap'"></span>
                 </div>
                 <p class="text-xs text-slate-500 leading-relaxed">
                     Sistem mendeteksi webhook Midtrans secara otomatis. Ketika Anda mentransfer ke Virtual Account atau men-scan QRIS di atas, sistem akan mengubah status menjadi <strong>Confirmed</strong> dan menerbitkan E-Ticket QR.
@@ -501,7 +500,7 @@
                                        class="text-emerald-600 focus:ring-emerald-500">
                                 <div>
                                     <p class="text-xs font-bold text-slate-900">{{ $ch['name'] }}</p>
-                                    <span class="text-[10px] text-slate-400">{{ $ch['badge'] }}</span>
+                                    <span class="text-xs text-slate-400">{{ $ch['badge'] }}</span>
                                 </div>
                             </div>
                         </label>

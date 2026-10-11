@@ -286,7 +286,7 @@
         </div>
         <div style="display: flex; gap: 8px;">
             <button type="button" class="btn-print" onclick="window.print()">
-                <span>🖨️</span> Cetak / Simpan sebagai PDF
+                <span></span> Cetak / Simpan sebagai PDF
             </button>
             <button type="button" class="btn-close-print" onclick="window.close()">
                 Tutup Jendela
@@ -300,9 +300,6 @@
         {{-- KOP SURAT RESMI --}}
         <div class="kop-surat">
             <div class="company-identity">
-                <div class="company-logo-badge">
-                    🚍
-                </div>
                 <div class="company-name">
                     <h1>TRAVEL TRANS UTAMA</h1>
                     <p>Layanan Shuttle Antarkota & Minibus Eksekutif Modern</p>

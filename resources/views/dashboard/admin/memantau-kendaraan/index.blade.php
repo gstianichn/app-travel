@@ -741,14 +741,14 @@
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
         <div class="alert-banner alert-success">
-            <span>✓</span>
+            <span></span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert-banner alert-error">
-            <span>⚠️</span>
+            <span></span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -761,9 +761,6 @@
                 <div class="stat-box-label">Total Unit Armada</div>
                 <div class="stat-box-num">{{ number_format($totalVehicles) }}</div>
             </div>
-            <div class="stat-box-icon total">
-                🚐
-            </div>
         </div>
 
         {{-- SIAP JALAN --}}
@@ -771,9 +768,6 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Siap Jalan (Standby)</div>
                 <div class="stat-box-num" style="color: #15803d;">{{ number_format($readyVehicles) }}</div>
-            </div>
-            <div class="stat-box-icon ready">
-                🟢
             </div>
         </div>
 
@@ -783,9 +777,6 @@
                 <div class="stat-box-label">Sedang Beroperasi</div>
                 <div class="stat-box-num" style="color: #0284c7;">{{ number_format($operatingVehicles) }}</div>
             </div>
-            <div class="stat-box-icon operating">
-                🛣️
-            </div>
         </div>
 
         {{-- MASUK BENGKEL --}}
@@ -794,9 +785,6 @@
                 <div class="stat-box-label">Masuk Bengkel (Servis)</div>
                 <div class="stat-box-num" style="color: #b91c1c;">{{ number_format($maintenanceVehicles) }}</div>
             </div>
-            <div class="stat-box-icon maintenance">
-                🔧
-            </div>
         </div>
     </div>
 
@@ -804,15 +792,13 @@
     @if($legalityAlertCount > 0)
         <div class="legality-warning-card">
             <div class="warning-text">
-                <div class="warning-icon">⚠️</div>
                 <div>
                     <strong>Perhatian Dokumen Kelaikan:</strong> Terdapat <strong>{{ $legalityAlertCount }} unit armada</strong> dengan uji KIR atau Pajak STNK yang telah kedaluwarsa atau jatuh tempo dalam 30 hari ke depan.
                 </div>
             </div>
             <div class="warning-action">
                 <a href="{{ route('dashboard.admin.memantau-kendaraan.index', ['legality' => 'expired']) }}">
-                    Tampilkan Unit Kritis &rarr;
-                </a>
+                    Tampilkan Unit Kritis</a>
             </div>
         </div>
     @endif
@@ -907,9 +893,7 @@
                                     @if($vehicle->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($vehicle->photo))
                                         <img src="{{ asset('storage/' . $vehicle->photo) }}" alt="{{ $vehicle->name }}" class="vehicle-thumb-img">
                                     @else
-                                        <div class="vehicle-thumb-fallback">
-                                            🚐
-                                        </div>
+                                        <div class="vehicle-thumb-fallback">Belum ada foto</div>
                                     @endif
 
                                     <div class="unit-meta">
@@ -927,7 +911,7 @@
                                 <span class="type-badge">{{ $vehicle->type }}</span>
                                 <div>
                                     <span class="capacity-tag">
-                                        💺 {{ $vehicle->capacity }} Total Kursi
+                                        {{ $vehicle->capacity }} Total Kursi
                                     </span>
                                 </div>
                             </td>
@@ -969,7 +953,7 @@
                                         class="btn-quick-status"
                                         onclick="openStatusModal('{{ $vehicle->id }}', '{{ $vehicle->plate_number }}', '{{ strtolower($vehicle->status) }}')"
                                     >
-                                        ⚙️ Ganti Status
+                                        Ganti Status
                                     </button>
                                 </div>
                             </td>
@@ -982,18 +966,16 @@
                                         href="{{ route('dashboard.admin.memantau-kendaraan.show', $vehicle->id) }}"
                                         class="btn-action-icon"
                                         title="Detail Unit & Riwayat Jadwal"
-                                    >
-                                        👁️
-                                    </a>
+                                    >Detail
+                                                                            </a>
 
                                     {{-- EDIT --}}
                                     <a
                                         href="{{ route('dashboard.admin.memantau-kendaraan.edit', $vehicle->id) }}"
                                         class="btn-action-icon"
                                         title="Edit Informasi Armada"
-                                    >
-                                        ✏️
-                                    </a>
+                                    >Ubah
+                                                                            </a>
 
                                     {{-- DELETE --}}
                                     <form
@@ -1008,9 +990,8 @@
                                             type="submit"
                                             class="btn-action-icon delete"
                                             title="Hapus Unit Armada"
-                                        >
-                                            🗑️
-                                        </button>
+                                        >Hapus
+                                                                                    </button>
                                     </form>
                                 </div>
                             </td>
@@ -1019,7 +1000,6 @@
                         <tr>
                             <td colspan="6">
                                 <div class="empty-state-box">
-                                    <div class="empty-state-icon">🚐</div>
                                     <h4 class="empty-state-title">Tidak Ada Data Armada Kendaraan</h4>
                                     <p class="empty-state-desc">
                                         @if(request()->hasAny(['search', 'status', 'type', 'legality']))
@@ -1074,9 +1054,9 @@
             <div class="filter-group">
                 <label class="filter-label" for="modal_status">Pilih Status Baru</label>
                 <select name="status" id="modal_status" class="filter-select" style="width: 100%;">
-                    <option value="siap_jalan">🟢 Siap Jalan (Standby di Pool / Prima)</option>
-                    <option value="beroperasi">🔵 Sedang Beroperasi (Aktif Mengangkut Penumpang)</option>
-                    <option value="maintenance">🔴 Masuk Bengkel (Servis / Perbaikan / Rusak)</option>
+                    <option value="siap_jalan">Siap Jalan (Standby di Pool / Prima)</option>
+                    <option value="beroperasi">Sedang Beroperasi (Aktif Mengangkut Penumpang)</option>
+                    <option value="maintenance">Masuk Bengkel (Servis / Perbaikan / Rusak)</option>
                 </select>
             </div>
 

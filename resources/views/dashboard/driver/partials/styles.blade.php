@@ -41,7 +41,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-family: 'Overpass', system-ui, -apple-system, sans-serif;
             background: var(--brand-bg);
             color: var(--text-main);
             min-height: 100vh;
