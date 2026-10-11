@@ -1022,8 +1022,14 @@
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="page-title">
-                <h1>
-                    <span></span>
+                <h1 style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                        <rect width="5" height="5" x="3" y="3" rx="1" />
+                        <rect width="5" height="5" x="16" y="3" rx="1" />
+                        <rect width="5" height="5" x="3" y="16" rx="1" />
+                        <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
+                        <path d="M21 21v.01" />
+                    </svg>
                     <span>Validasi Tiket & Boarding Pass</span>
                 </h1>
                 <p>Verifikasi instan QR code, input fallback kode booking, dan status boarding penumpang kabin.</p>
@@ -1032,13 +1038,19 @@
             <div class="topbar-right">
                 <!-- SCHEDULE SELECTOR -->
                 <form method="GET" action="{{ route('dashboard.admin-biasa.validasi-tiket') }}" id="scheduleSelectForm">
-                    <div class="trip-select-box">
+                    <div class="trip-select-box" style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                            <rect x="2" y="5" width="20" height="13" rx="2" />
+                            <circle cx="7" cy="18" r="2" />
+                            <circle cx="17" cy="18" r="2" />
+                            <path d="M2 10h20" />
+                        </svg>
                         <span>Armada Trip:</span>
                         <select name="schedule_id" onchange="document.getElementById('scheduleSelectForm').submit()">
                             @foreach($scheduleList as $sched)
                                 @php
                                     $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
-                                    $starTag = $bCount > 0 ? " • {$bCount} Penumpang" : "";
+                                    $starTag = $bCount > 0 ? " • ({$bCount} Penumpang)" : "";
                                     $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
                                     $timeText = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') . ' WIB — ' : '';
                                     $routeName = $sched->route_name ?? ($sched->route?->origin?->name . ' ke ' . $sched->route?->destination?->name);
@@ -1075,10 +1087,29 @@
                     <h2 style="font-size: 20px; font-weight: 800; margin-top: 8px;">
                         {{ $selectedSchedule->route_name }}
                     </h2>
-                    <div class="trip-meta" style="margin-top: 6px; font-size: 13px; opacity: 0.9;">
-                        <span>Unit: <strong>{{ $selectedSchedule->plate_number }}</strong> ({{ $selectedSchedule->vehicle_name }})</span>
-                        <span>Sopir: <strong>{{ $selectedSchedule->driver_name }}</strong></span>
-                        <span>⏰ Berangkat: <strong>{{ $formattedDepartureTime }}</strong></span>
+                    <div class="trip-meta" style="margin-top: 6px; font-size: 13px; opacity: 0.9; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="5" width="20" height="13" rx="2" />
+                                <circle cx="7" cy="18" r="2" />
+                                <circle cx="17" cy="18" r="2" />
+                            </svg>
+                            Unit: <strong>{{ $selectedSchedule->plate_number }}</strong> ({{ $selectedSchedule->vehicle_name }})
+                        </span>
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            Sopir: <strong>{{ $selectedSchedule->driver_name }}</strong>
+                        </span>
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            Berangkat: <strong>{{ $formattedDepartureTime }}</strong>
+                        </span>
                     </div>
                 </div>
 
@@ -1115,8 +1146,14 @@
                 <div class="panel-card">
 
                     <div class="panel-header">
-                        <h3>
-                            <span></span>
+                        <h3 style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                                <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+                                <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+                                <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+                                <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+                                <rect x="7" y="7" width="10" height="10" rx="1" />
+                            </svg>
                             <span>Pemindai QR & Validasi Manual</span>
                         </h3>
                         <span style="font-size: 11px; font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 6px;">
@@ -1147,18 +1184,30 @@
 
                         <!-- 2. KONTROL KAMERA: TOGGLE KAMERA & TOMBOL FLASHLIGHT / LAMPU KILAT -->
                         <div class="camera-controls-bar">
-                            <button type="button" class="btn-camera-action" id="btnToggleCamera" onclick="toggleCamera()">
-                                <span id="cameraBtnIcon"></span>
+                            <button type="button" class="btn-camera-action" id="btnToggleCamera" onclick="toggleCamera()" style="display: inline-flex; align-items: center; gap: 5px;">
+                                <span id="cameraBtnIcon">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m22 8-6 4 6 4V8Z" />
+                                        <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+                                    </svg>
+                                </span>
                                 <span id="cameraBtnText">Mulai Kamera</span>
                             </button>
 
-                            <button type="button" class="btn-camera-action" id="btnToggleTorch" onclick="toggleFlashlight()">
-                                <span></span>
+                            <button type="button" class="btn-camera-action" id="btnToggleTorch" onclick="toggleFlashlight()" style="display: inline-flex; align-items: center; gap: 5px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                </svg>
                                 <span id="torchBtnText">Lampu Kilat (Off)</span>
                             </button>
 
-                            <button type="button" class="btn-camera-action" onclick="switchCamera()">
-                                <span></span>
+                            <button type="button" class="btn-camera-action" onclick="switchCamera()" style="display: inline-flex; align-items: center; gap: 5px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" />
+                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                    <path d="M8 16H3v5" />
+                                </svg>
                                 <span>Balik Kamera</span>
                             </button>
                         </div>
@@ -1180,9 +1229,11 @@
                                     autocomplete="off"
                                     onkeydown="if(event.key==='Enter'){ handleManualSubmit(); }"
                                 >
-                                <button type="button" class="btn-validate-manual" onclick="handleManualSubmit()">
+                                <button type="button" class="btn-validate-manual" onclick="handleManualSubmit()" style="display: inline-flex; align-items: center; gap: 5px;">
                                     <span>Periksa</span>
-                                    <span></span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="9 18 15 12 9 6" />
+                                    </svg>
                                 </button>
                             </div>
 
@@ -1190,32 +1241,67 @@
                             <div class="simulation-chips">
                                 <span class="chips-title">Simulasi Kasus Cepat (1-Klik):</span>
                                 <div class="chips-list">
-                                    <button type="button" class="chip-btn" onclick="runSimulatedCode('TKV-8920-JKT')">
-                                        Siti (1B - Sukses)
+                                    <button type="button" class="chip-btn" onclick="runSimulatedCode('TKV-8920-JKT')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                        </svg>
+                                        <span>Siti (1B - Sukses)</span>
                                     </button>
-                                    <button type="button" class="chip-btn" onclick="runSimulatedCode('TKV-9344-JKT')">
-                                        Andi (3A - Sukses)
+                                    <button type="button" class="chip-btn" onclick="runSimulatedCode('TKV-9344-JKT')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                                        </svg>
+                                        <span>Andi (3A - Sukses)</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-ALREADY-SCAN')">
-                                        Sudah Di-Scan
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-ALREADY-SCAN')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                                            <line x1="12" x2="12" y1="9" y2="13" />
+                                            <line x1="12" x2="12.01" y1="17" y2="17" />
+                                        </svg>
+                                        <span>Sudah Di-Scan</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-WRONG-TIME')">
-                                        Salah Jam
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-WRONG-TIME')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg>
+                                        <span>Salah Jam</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-UNPAID-123')">
-                                        Belum Lunas
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-UNPAID-123')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" x2="12" y1="8" y2="12" />
+                                            <line x1="12" x2="12.01" y1="16" y2="16" />
+                                        </svg>
+                                        <span>Belum Lunas</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-CANCELLED')">
-                                        Tiket Batal
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-CANCELLED')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="15" x2="9" y1="9" y2="15" />
+                                            <line x1="9" x2="15" y1="9" y2="15" />
+                                        </svg>
+                                        <span>Tiket Batal</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-REFUNDED')">
-                                        Di-Refund
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-REFUNDED')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                        </svg>
+                                        <span>Di-Refund</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-EXPIRED')">
-                                        Kadaluwarsa
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-EXPIRED')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg>
+                                        <span>Kadaluwarsa</span>
                                     </button>
-                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-DEPARTED')">
-                                        Sudah Berangkat
+                                    <button type="button" class="chip-btn fail" onclick="runSimulatedCode('TKV-DEPARTED')" style="display: inline-flex; align-items: center; gap: 4px;">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="m22 2-7 20-4-9-9-4Z" />
+                                        </svg>
+                                        <span>Sudah Berangkat</span>
                                     </button>
                                 </div>
                             </div>
@@ -1228,7 +1314,9 @@
                             <div id="feedbackSuccessBox" style="display: none;">
                                 <div class="fb-header">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="font-size: 20px;"></span>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #047857;">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
                                         <span>TIKET VALID & TERVERIFIKASI</span>
                                     </div>
                                     <span class="fb-badge fb-badge-success">BOARDED</span>
@@ -1253,8 +1341,11 @@
                                     </div>
                                 </div>
 
-                                <button type="button" class="fb-btn-dismiss btn-success-action" onclick="dismissFeedback()">
-                                    Penumpang Siap Masuk Kabin (Lanjut Scan Berikutnya)
+                                <button type="button" class="fb-btn-dismiss btn-success-action" onclick="dismissFeedback()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    <span>Penumpang Siap Masuk Kabin (Lanjut Scan Berikutnya)</span>
                                 </button>
                             </div>
 
@@ -1262,7 +1353,10 @@
                             <div id="feedbackFailedBox" style="display: none;">
                                 <div class="fb-header">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="font-size: 20px;"></span>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #dc2626;">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="4.93" x2="19.07" y1="4.93" y2="19.07" />
+                                        </svg>
                                         <span id="fbErrorTitle">TIKET DITOLAK</span>
                                     </div>
                                     <span class="fb-badge fb-badge-danger">GAGAL</span>
@@ -1272,8 +1366,12 @@
                                     Alasan penolakan spesifik.
                                 </div>
 
-                                <button type="button" class="fb-btn-dismiss btn-danger-action" onclick="dismissFeedback()">
-                                    Tutup Peringatan & Cek Kembali
+                                <button type="button" class="fb-btn-dismiss btn-danger-action" onclick="dismissFeedback()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                    <span>Tutup Peringatan & Cek Kembali</span>
                                 </button>
                             </div>
 
@@ -1289,8 +1387,13 @@
                 <div class="panel-card">
 
                     <div class="panel-header">
-                        <h3>
-                            <span></span>
+                        <h3 style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                                <path d="M9 12h6" />
+                                <path d="M9 16h6" />
+                            </svg>
                             <span>Daftar Centang Penumpang (Checklist)</span>
                         </h3>
                         <div style="font-size: 12px; color: var(--text-light);">
@@ -1301,7 +1404,12 @@
                     <!-- TOOLBAR: SEARCH & TABS FILTER -->
                     <div class="checklist-toolbar">
                         <div class="search-box">
-                            <span class="search-icon"></span>
+                            <span class="search-icon">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
                             <input
                                 type="text"
                                 id="checklistSearchInput"
@@ -1364,9 +1472,21 @@
                                             <div class="passenger-info">
                                                 <strong id="passengerName-{{ $p->id }}">{{ $p->name }}</strong>
                                                 <span>
-                                                    <span>{{ $p->phone }}</span>
+                                                    <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                                        </svg>
+                                                        {{ $p->phone }}
+                                                    </span>
                                                     @if($p->special_request && $p->special_request !== '-')
-                                                        <span>• {{ $p->special_request }}</span>
+                                                        <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                                            • 
+                                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path d="M12 20h9" />
+                                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                                            </svg>
+                                                            {{ $p->special_request }}
+                                                        </span>
                                                     @endif
                                                 </span>
                                             </div>
@@ -1383,19 +1503,27 @@
 
                                         <td style="text-align: center;" id="statusCell-{{ $p->id }}">
                                             @if($p->boarding_status === 'boarded')
-                                                <span class="status-pill status-boarded">
-                                                    Boarded
+                                                <span class="status-pill status-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="20 6 9 17 4 12" />
+                                                    </svg>
+                                                    <span>Boarded</span>
                                                 </span>
                                                 <small style="display: block; font-size: 10px; color: #047857; margin-top: 2px;" id="timeCell-{{ $p->id }}">
                                                     {{ $p->boarded_at ?: 'Terkonfirmasi' }}
                                                 </small>
                                             @elseif($p->boarding_status === 'no_show')
-                                                <span class="status-pill status-no-show">
-                                                    No-Show
+                                                <span class="status-pill status-no-show" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                                    </svg>
+                                                    <span>No-Show</span>
                                                 </span>
                                             @else
-                                                <span class="status-pill status-belum-hadir">
-                                                    Belum Hadir
+                                                <span class="status-pill status-belum-hadir" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                                    <span style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; display: inline-block;"></span>
+                                                    <span>Belum Hadir</span>
                                                 </span>
                                             @endif
                                         </td>
@@ -1438,8 +1566,10 @@
             ========================================== -->
             <div class="panel-card" style="margin-top: 24px;">
                 <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3>
-                        <span></span>
+                    <h3 style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
                         <span>Riwayat Validasi E-Ticket Terkini (Semua Jadwal)</span>
                     </h3>
                     <span style="font-size: 12px; color: var(--text-light);">
@@ -1472,8 +1602,12 @@
                                 @endphp
                                 <tr>
                                     <td>
-                                        <div style="font-weight: 700; color: #047857; font-size: 13px;">
-                                            {{ $timeStr }}
+                                        <div style="font-weight: 700; color: #047857; font-size: 13px; display: flex; align-items: center; gap: 4px;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span>{{ $timeStr }}</span>
                                         </div>
                                         <small style="color: var(--text-light); font-size: 11px;">
                                             {{ $rt->boarded_at ? \Carbon\Carbon::parse($rt->boarded_at)->diffForHumans() : 'Hari ini' }}
@@ -1500,16 +1634,23 @@
                                         </small>
                                     </td>
                                     <td style="text-align: center;">
-                                        <span class="status-pill status-boarded">
-                                            Boarded
+                                        <span class="status-pill status-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                            <span>Boarded</span>
                                         </span>
                                     </td>
                                     <td style="text-align: right;">
                                         @if($schedId)
                                             <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}?schedule_id={{ $schedId }}"
                                                class="btn-camera-action"
-                                               style="display: inline-block; padding: 6px 12px; font-size: 11px; text-decoration: none; text-align: center;">
-                                                Lihat Manifes</a>
+                                               style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; font-size: 11px; text-decoration: none; text-align: center;">
+                                                <span>Lihat Manifes</span>
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="9 18 15 12 9 6" />
+                                                </svg>
+                                            </a>
                                         @else
                                             <span style="color: var(--text-light); font-size: 12px;">-</span>
                                         @endif
@@ -1535,7 +1676,12 @@
 
 <!-- TOAST NOTIFICATION -->
 <div id="toastNotification" class="toast-notify">
-    <span id="toastIcon"></span>
+    <span id="toastIcon" style="display: inline-flex; align-items: center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+    </span>
     <span id="toastMessage">Pesan pemberitahuan</span>
 </div>
 
@@ -1639,7 +1785,7 @@
             // Stop Camera
             stopCameraStream();
             btnText.innerText = 'Mulai Kamera';
-            btnIcon.innerText = '';
+            btnIcon.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>';
             statusText.innerText = 'Kamera Dihentikan (Mode Manual Aktif)';
         } else {
             // Start Camera
@@ -1658,7 +1804,7 @@
                 videoTrack = cameraStream.getVideoTracks()[0];
 
                 btnText.innerText = 'Hentikan Kamera';
-                btnIcon.innerText = '⏹';
+                btnIcon.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>';
                 statusText.innerText = 'Kamera Aktif • Arahkan QR E-Ticket Penumpang';
                 showToast('Kamera pemindai QR aktif.', 'info');
 
@@ -1817,7 +1963,8 @@
             feedbackCard.classList.add('active');
 
             if (response.ok && data.success) {
-                // HASIL VALIDASI: SUKSES                 playSuccessSound();
+                // HASIL VALIDASI: SUKSES
+                playSuccessSound();
 
                 feedbackCard.classList.add('feedback-success');
                 successBox.style.display = 'block';
@@ -1828,7 +1975,7 @@
                 document.getElementById('fbBookingCode').innerText = data.booking_code;
                 document.getElementById('fbBoardedAt').innerText = data.boarded_at;
 
-                showToast('' + data.message, 'success');
+                showToast(data.message, 'success');
 
                 // Otomatis ubah status penumpang di daftar checklist tabel
                 if (data.passenger_id) {
@@ -1842,7 +1989,8 @@
                 document.getElementById('manualCodeInput').value = '';
 
             } else {
-                // HASIL VALIDASI: GAGAL                 playErrorSound();
+                // HASIL VALIDASI: GAGAL
+                playErrorSound();
 
                 feedbackCard.classList.add('feedback-danger');
                 successBox.style.display = 'none';
@@ -1851,7 +1999,7 @@
                 document.getElementById('fbErrorTitle').innerText = data.title || 'TIKET DITOLAK';
                 document.getElementById('fbErrorMessage').innerText = data.message || 'Tiket tidak memenuhi syarat boarding.';
 
-                showToast('' + (data.title || 'Validasi Gagal'), 'danger');
+                showToast(data.title || 'Validasi Gagal', 'danger');
             }
 
         } catch (err) {
@@ -1888,7 +2036,10 @@
         const statusCell = document.getElementById(`statusCell-${passengerId}`);
         if (statusCell) {
             statusCell.innerHTML = `
-                <span class="status-pill status-boarded">Boarded</span>
+                <span class="status-pill status-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    <span>Boarded</span>
+                </span>
                 <small style="display: block; font-size: 10px; color: #047857; margin-top: 2px;">${timeStr || 'Baru Saja'}</small>
             `;
         }
@@ -1940,15 +2091,28 @@
                 if (newStatus === 'boarded') {
                     playSuccessSound();
                     statusCell.innerHTML = `
-                        <span class="status-pill status-boarded">Boarded</span>
+                        <span class="status-pill status-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                            <span>Boarded</span>
+                        </span>
                         <small style="display: block; font-size: 10px; color: #047857; margin-top: 2px;">${data.boarded_at || 'Baru Saja'}</small>
                     `;
                     showToast('Penumpang ' + document.getElementById(`passengerName-${passengerId}`).innerText + ' diubah menjadi Boarded', 'success');
                 } else if (newStatus === 'no_show') {
-                    statusCell.innerHTML = `<span class="status-pill status-no-show">No-Show</span>`;
+                    statusCell.innerHTML = `
+                        <span class="status-pill status-no-show" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            <span>No-Show</span>
+                        </span>
+                    `;
                     showToast('Status penumpang diubah menjadi No-Show', 'info');
                 } else {
-                    statusCell.innerHTML = `<span class="status-pill status-belum-hadir">Belum Hadir</span>`;
+                    statusCell.innerHTML = `
+                        <span class="status-pill status-belum-hadir" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                            <span style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; display: inline-block;"></span>
+                            <span>Belum Hadir</span>
+                        </span>
+                    `;
                     showToast('Status penumpang dikembalikan ke Belum Hadir', 'info');
                 }
 
@@ -2033,13 +2197,13 @@
 
         if (type === 'success') {
             toast.style.background = '#087f55';
-            icon.innerText = '';
+            icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>';
         } else if (type === 'danger') {
             toast.style.background = '#dc2626';
-            icon.innerText = '';
+            icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" x2="12" y1="9" y2="13" /><line x1="12" x2="12.01" y1="17" y2="17" /></svg>';
         } else {
             toast.style.background = '#1e293b';
-            icon.innerText = 'ℹ';
+            icon.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="16" y2="12" /><line x1="12" x2="12.01" y1="8" y2="8" /></svg>';
         }
 
         text.innerText = msg;

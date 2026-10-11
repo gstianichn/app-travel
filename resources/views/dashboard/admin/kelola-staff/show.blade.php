@@ -384,6 +384,9 @@
         padding: 4px 9px;
         border-radius: 6px;
         white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .perm-state-badge.granted {
@@ -428,6 +431,9 @@
         margin: 0 0 3px;
         font-size: 13px;
         font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .banner-text p {
@@ -453,6 +459,9 @@
     }
 
     .btn-toggle-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         padding: 9px 16px;
         border-radius: 9px;
         border: none;
@@ -567,10 +576,12 @@
 
         <div class="detail-top-actions">
             <a href="{{ route('dashboard.admin.kelola-staff.index') }}" class="btn-action-back">
-                ← Daftar Staf
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>Daftar Staf</span>
             </a>
             <a href="{{ route('dashboard.admin.kelola-staff.edit', $staff->id) }}" class="btn-action-edit">
-                Edit Profil & Wewenang
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                <span>Edit Profil & Wewenang</span>
             </a>
         </div>
     </div>
@@ -578,14 +589,14 @@
     {{-- FLASH MESSAGES --}}
     @if(session('success'))
         <div class="flash-alert flash-success">
-            <span></span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
         <div class="flash-alert flash-error">
-            <span></span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -603,18 +614,22 @@
                     <h2>{{ $staff->name }}</h2>
                     <div class="hero-meta-tags">
                         <span class="hero-tag">
-                            {{ $staff->position ?? 'Staf Loket' }}
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span>{{ $staff->position ?? 'Staf Loket' }}</span>
                         </span>
                         <span class="hero-tag">
-                            {{ $staff->branch ?? 'Cabang Belum Ditentukan' }}
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            <span>{{ $staff->branch ?? 'Cabang Belum Ditentukan' }}</span>
                         </span>
                         @if($staff->status === 'active')
                             <span class="hero-tag tag-status-active">
-                                Aktif Bekerja
+                                <svg width="10" height="10" viewBox="0 0 8 8" fill="currentColor"><circle cx="4" cy="4" r="3.5"/></svg>
+                                <span>Aktif Bekerja</span>
                             </span>
                         @else
                             <span class="hero-tag tag-status-inactive">
-                                Berhenti Bekerja / Nonaktif
+                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
+                                <span>Berhenti Bekerja / Nonaktif</span>
                             </span>
                         @endif
                     </div>
@@ -639,7 +654,8 @@
                         }
                     @endphp
                     <a href="https://wa.me/{{ $cleanPhone }}" target="_blank" class="detail-wa-btn">
-                        Hubungi WhatsApp
+                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        <span>Hubungi WhatsApp</span>
                     </a>
                 @endif
             </div>
@@ -666,7 +682,7 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span></span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2"/></svg>
                         <span>Matriks Hak Akses (Role & Permission)</span>
                     </div>
                     @php
@@ -702,15 +718,18 @@
                                 <div>
                                     @if($isGranted)
                                         <span class="perm-state-badge granted">
-                                            Diberikan
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            <span>Diberikan</span>
                                         </span>
                                     @elseif($isRestricted)
                                         <span class="perm-state-badge restricted-locked">
-                                            Dibatasi
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2"/></svg>
+                                            <span>Dibatasi</span>
                                         </span>
                                     @else
                                         <span class="perm-state-badge denied">
-                                            Tidak Aktif
+                                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            <span>Tidak Aktif</span>
                                         </span>
                                     @endif
                                 </div>
@@ -720,7 +739,8 @@
 
                     <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed #e2eae6; display: flex; justify-content: flex-end;">
                         <a href="{{ route('dashboard.admin.kelola-staff.edit', $staff->id) }}" class="btn-action-edit" style="font-size: 11px; padding: 7px 14px;">
-                            Sesuaikan Hak Akses Staf
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                            <span>Sesuaikan Hak Akses Staf</span>
                         </a>
                     </div>
                 </div>
@@ -734,12 +754,15 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span></span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                         <span>Lokasi Operasional & Penempatan</span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="branch-highlight-box">
+                        <div class="branch-icon-large">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
                         <div class="branch-info">
                             <h4>{{ $staff->branch ?? 'Belum Ditentukan' }}</h4>
                             <p>Penugasan aktif staf untuk operasional layanan loket, verifikasi penumpang, dan keberangkatan travel.</p>
@@ -752,7 +775,7 @@
             <div class="content-card">
                 <div class="card-head">
                     <div class="card-head-title">
-                        <span></span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/></svg>
                         <span>Kontrol Status Kepegawaian</span>
                     </div>
                 </div>
@@ -761,7 +784,10 @@
                     @if($staff->status === 'active')
                         <div class="status-action-banner active-banner">
                             <div class="banner-text">
-                                <h4>Staf Aktif Bekerja</h4>
+                                <h4>
+                                    <svg width="10" height="10" viewBox="0 0 8 8" fill="#10b981"><circle cx="4" cy="4" r="3.5"/></svg>
+                                    <span>Staf Aktif Bekerja</span>
+                                </h4>
                                 <p>Akun aktif dan memiliki akses operasional loket di {{ $staff->branch }}.</p>
                             </div>
                             <form
@@ -772,14 +798,18 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn-toggle-status btn-toggle-deactivate">
-                                    Nonaktifkan (Berhenti)
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
+                                    <span>Nonaktifkan (Berhenti)</span>
                                 </button>
                             </form>
                         </div>
                     @else
                         <div class="status-action-banner inactive-banner">
                             <div class="banner-text">
-                                <h4>Berhenti Bekerja / Nonaktif</h4>
+                                <h4>
+                                    <svg width="14" height="14" fill="none" stroke="#ef4444" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
+                                    <span>Berhenti Bekerja / Nonaktif</span>
+                                </h4>
                                 <p>Akses akun diblokir karena staf sudah berhenti. Klik tombol berikut untuk mengaktifkan kembali.</p>
                             </div>
                             <form
@@ -790,7 +820,8 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn-toggle-status btn-toggle-activate">
-                                    Aktifkan Kembali
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    <span>Aktifkan Kembali</span>
                                 </button>
                             </form>
                         </div>
@@ -799,7 +830,7 @@
                     {{-- RESET PASSWORD MANUAL FORM --}}
                     <div class="reset-pwd-form">
                         <div style="font-size: 12px; font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 6px;">
-                            <span></span>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                             <span>Reset Kata Sandi Manual Staf</span>
                         </div>
                         <p style="margin: 0; font-size: 11px; color: #6b7280;">
@@ -839,8 +870,9 @@
                         >
                             @csrf
                             @method('DELETE')
-                            <button type="submit" style="background: none; border: none; color: #dc2626; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 8px;">
-                                Hapus Akun Staf
+                            <button type="submit" style="background: none; border: none; color: #dc2626; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                <span>Hapus Akun Staf</span>
                             </button>
                         </form>
                     </div>
