@@ -17,7 +17,6 @@ class SearchController extends Controller
             'origin',
             'destination',
             'departure_date',
-            'passengers',
         ]);
 
         $schedules = collect();
@@ -44,13 +43,6 @@ class SearchController extends Controller
                     'required',
                     'date',
                     'after_or_equal:today',
-                ],
-
-                'passengers' => [
-                    'required',
-                    'integer',
-                    'min:1',
-                    'max:10',
                 ],
             ]);
 
@@ -103,11 +95,7 @@ class SearchController extends Controller
                     'departure_date',
                     $validated['departure_date']
                 )
-                ->where(
-                    'available_seats',
-                    '>=',
-                    $validated['passengers']
-                )
+                ->where('available_seats', '>=', 1)
                 ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
                 // Departures that already left today cannot be booked any more.
                 ->when(

@@ -222,8 +222,6 @@ class UserDashboardController extends Controller
     {
         $schedule->load(['route.origin', 'route.destination', 'vehicle', 'driver.user']);
 
-        $passengers = max(1, min(10, (int) $request->query('passengers', 1)));
-
         // Pastikan kursi armada terbuat
         if ($schedule->vehicle) {
             $schedule->vehicle->ensureSeatsExist();
@@ -235,6 +233,9 @@ class UserDashboardController extends Controller
         // Ambil data denah kursi dengan status terkini (Available, Selected, Locked, Occupied)
         $occupancyMap = $this->buildSeatOccupancyMap($schedule);
 
+        // $passengers tidak lagi berasal dari query string; nilai ini hanya dipakai blade untuk kompatibilitas partial
+        $passengers = $schedule->available_seats;
+
         return view('dashboard.user.booking-seat', compact('schedule', 'occupancyMap', 'passengers'));
     }
 
@@ -245,14 +246,15 @@ class UserDashboardController extends Controller
     {
         $validated = $request->validate([
             'schedule_id' => ['required', 'integer', 'exists:schedules,id'],
-            'passengers' => ['required', 'integer', 'min:1', 'max:10'],
-            'seat_ids' => ['required', 'array', 'size:'.$request->input('passengers', 1)],
+            'seat_ids' => ['required', 'array', 'min:1', 'max:10'],
             'seat_ids.*' => ['required', 'integer', 'exists:seats,id'],
         ]);
 
         $seatIds = $validated['seat_ids'];
+        // Jumlah penumpang = jumlah kursi yang dipilih pengguna secara langsung
+        $passengersCount = count($seatIds);
 
-        return DB::transaction(function () use ($validated, $seatIds) {
+        return DB::transaction(function () use ($validated, $seatIds, $passengersCount) {
             // 1. Pessimistic lock pada baris schedule
             $schedule = Schedule::where('id', $validated['schedule_id'])
                 ->with('vehicle')
@@ -306,7 +308,7 @@ class UserDashboardController extends Controller
 
             $bookingCode = 'TRV-'.Carbon::now()->format('Ymd').'-'.strtoupper(Str::random(5));
             $unitPrice = $schedule->effectivePrice();
-            $totalPassenger = count($seatIds);
+            $totalPassenger = $passengersCount;
             $subtotal = $unitPrice * $totalPassenger;
 
             $booking = Booking::create([

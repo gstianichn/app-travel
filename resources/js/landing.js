@@ -211,3 +211,21 @@ document.fonts?.ready.then(() => {
 
 layoutRoutes();
 render();
+
+/* ---------- Auto-scroll to results after search form navigation ----------
+ * When the search form appends #hasil to the URL and the browser navigates
+ * to the results page, scroll smoothly to the results section on load.
+ */
+if (window.location.hash === '#hasil') {
+    const resultsSection = document.getElementById('hasil');
+
+    if (resultsSection) {
+        // Use requestAnimationFrame to ensure the layout is settled before scrolling.
+        requestAnimationFrame(() => {
+            resultsSection.scrollIntoView({
+                behavior: prefersReducedMotion.matches ? 'auto' : 'smooth',
+                block: 'start',
+            });
+        });
+    }
+}

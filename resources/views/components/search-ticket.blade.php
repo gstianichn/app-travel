@@ -1,13 +1,12 @@
 {{--
     Search form shaped like a ticket. Used on the landing page and the search page.
-    Expects: $locations, $heading, optional $action (defaults to the public search) and $selected = ['origin', 'destination', 'departure_date', 'passengers'].
+    Expects: $locations, $heading, optional $action (defaults to the public search) and $selected = ['origin', 'destination', 'departure_date'].
 --}}
 @php
     $selected = array_merge([
-        'origin' => null,
-        'destination' => null,
+        'origin'         => null,
+        'destination'    => null,
         'departure_date' => null,
-        'passengers' => 1,
     ], $selected ?? []);
 @endphp
 
@@ -58,15 +57,6 @@
                             <button type="button" data-date-offset="1">Besok</button>
                         </div>
                     </div>
-
-                    <div class="lp-field">
-                        <label for="passengers">Penumpang</label>
-                        <select name="passengers" id="passengers" required>
-                            @for ($passenger = 1; $passenger <= 10; $passenger++)
-                                <option value="{{ $passenger }}" @selected((int) $selected['passengers'] === $passenger)>{{ $passenger }} orang</option>
-                            @endfor
-                        </select>
-                    </div>
                 </div>
 
                 <p class="lp-ticket-status" role="status" aria-live="polite" data-ticket-status></p>
@@ -81,10 +71,6 @@
                     <div>
                         <dt>Tanggal</dt>
                         <dd class="is-empty" data-summary="date">Belum dipilih</dd>
-                    </div>
-                    <div>
-                        <dt>Penumpang</dt>
-                        <dd data-summary="passengers">1 orang</dd>
                     </div>
                 </dl>
                 <button type="submit" class="lp-btn lp-btn--primary" data-ticket-submit @disabled($locations->isEmpty())>Lihat jadwal</button>
