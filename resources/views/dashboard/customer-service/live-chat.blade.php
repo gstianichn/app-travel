@@ -115,7 +115,8 @@
                             onclick="toggleContextSidebar()"
                             title="Buka / Sembunyikan Panel Melihat Konteks Booking">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <span>Konteks Booking</span>
+                        <span class="btn-lbl-full">Konteks Booking</span>
+                        <span class="btn-lbl-short">Konteks</span>
                     </button>
 
                     <!-- Tombol Ambil Percakapan (Hanya Tampil Jika Status Unassigned) -->
@@ -123,26 +124,32 @@
                             class="cs-btn cs-btn-primary"
                             id="btn-claim-chat"
                             onclick="claimActiveChat()"
-                            style="display: none;">
+                            style="display: none;"
+                            title="Ambil Percakapan">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
-                        <span>Ambil Percakapan</span>
+                        <span class="btn-lbl-full">Ambil Percakapan</span>
+                        <span class="btn-lbl-short">Ambil</span>
                     </button>
 
                     <!-- Tombol Selesaikan Sesi (Tampil Jika Status Assigned to Me) -->
                     <button type="button"
                             class="cs-btn cs-btn-outline-success"
                             id="btn-resolve-chat"
-                            onclick="resolveActiveChat()">
+                            onclick="resolveActiveChat()"
+                            title="Tandai Selesai">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Tandai Selesai</span>
+                        <span class="btn-lbl-full">Tandai Selesai</span>
+                        <span class="btn-lbl-short">Selesai</span>
                     </button>
 
                     <!-- Tombol Eskalasi ke Admin Utama (PRD 4.5 & 40) -->
                     <button type="button"
                             class="cs-btn cs-btn-outline-danger"
-                            onclick="openEscalateModal()">
+                            onclick="openEscalateModal()"
+                            title="Eskalasi ke Admin Utama">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        <span>Eskalasi ke Admin</span>
+                        <span class="btn-lbl-full">Eskalasi ke Admin</span>
+                        <span class="btn-lbl-short">Eskalasi</span>
                     </button>
                 </div>
             </div>
@@ -341,7 +348,9 @@
                 </div>
 
                 <div class="ctx-driver-block">
-                    <div class="driver-avatar-circle"></div>
+                    <div class="driver-avatar-circle" title="Sopir Bertugas">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
                     <div class="driver-info-main">
                         <span class="driver-role-tag">Sopir Bertugas:</span>
                         <strong class="driver-fullname" id="ctx-driver-name">Pak Suryanto</strong>
@@ -783,7 +792,7 @@
     .cs-chat-page-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 10px;
         width: 100%;
     }
 
@@ -793,15 +802,15 @@
         justify-content: space-between;
         background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 18px 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border-radius: var(--radius-md);
+        padding: 8px 16px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
         flex-wrap: wrap;
-        gap: 14px;
+        gap: 8px;
     }
 
     .hub-title {
-        font-size: 20px;
+        font-size: 15px;
         font-weight: 800;
         color: var(--text);
         letter-spacing: -0.2px;
@@ -809,45 +818,45 @@
     }
 
     .hub-subtitle {
-        font-size: 13px;
+        font-size: 11px;
         color: var(--text-secondary);
-        margin-top: 3px;
+        margin-top: 1px;
     }
 
     .hub-header-badges {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
     }
 
     .hub-kpi-pill {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         background: var(--page);
         border: 1px solid var(--border);
-        padding: 6px 14px;
-        border-radius: 30px;
-        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
         color: var(--text-secondary);
     }
 
     .kpi-critical-dot {
-        width: 8px;
-        height: 8px;
+        width: 7px;
+        height: 7px;
         border-radius: 50%;
         background: #dc2626;
         animation: pulse 1.8s infinite;
     }
 
-    /* Grid 3-Panel Chat */
+    /* Grid 3-Panel Chat: Smart Proportional Layout */
     .livechat-container {
         display: grid;
-        grid-template-columns: 360px 1fr 340px;
-        gap: 20px;
-        height: calc(100vh - 240px);
-        min-height: 620px;
+        grid-template-columns: 265px minmax(360px, 1fr) 280px;
+        gap: 12px;
+        height: calc(100vh - 180px);
+        min-height: 540px;
     }
 
     /* ============================================================
@@ -861,6 +870,7 @@
         flex-direction: column;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        min-width: 0;
     }
 
     /* 3 Tabs Sesuai Permintaan */
@@ -870,24 +880,30 @@
         background: var(--page);
         border-bottom: 1px solid var(--border);
         padding: 4px;
-        gap: 4px;
+        gap: 3px;
     }
 
     .inbox-tab-btn {
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 3px;
-        padding: 9px 4px;
-        border-radius: var(--radius-md);
+        gap: 4px;
+        padding: 7px 3px;
+        border-radius: var(--radius-sm);
         border: none;
         background: transparent;
         color: var(--text-secondary);
         font-size: 11px;
         font-weight: 700;
-        transition: 0.2s ease;
+        transition: 0.15s ease;
         cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .inbox-tab-btn span:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .inbox-tab-btn:hover {
@@ -995,6 +1011,7 @@
 
     .chat-item-card.active {
         border-color: var(--brand);
+        border-left: 3px solid var(--brand);
         background: var(--brand-soft);
         box-shadow: 0 3px 10px rgba(8, 127, 85, 0.10);
     }
@@ -1096,28 +1113,35 @@
         flex-direction: column;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        min-width: 0;
+        position: relative;
     }
 
     .conversation-topbar {
-        padding: 14px 20px;
+        padding: 8px 12px;
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
         justify-content: space-between;
         background: var(--surface);
-        gap: 12px;
+        gap: 8px 10px;
+        flex-shrink: 0;
         flex-wrap: wrap;
+        min-height: 52px;
     }
 
     .conv-user-meta {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
+        min-width: 170px;
+        flex: 1 1 auto;
+        overflow: hidden;
     }
 
     .conv-avatar {
-        width: 44px;
-        height: 44px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         background: var(--brand);
         color: white;
@@ -1125,48 +1149,108 @@
         align-items: center;
         justify-content: center;
         font-weight: 800;
-        font-size: 15px;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .conv-details {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
     }
 
     .conv-name-row {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .conv-user-name {
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 800;
         color: var(--text);
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .conv-online-tag {
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
         color: #16a34a;
+        flex-shrink: 0;
     }
 
     .conv-route-row {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 11px;
+        gap: 5px;
+        font-size: 10.5px;
         color: var(--text-secondary);
-        margin-top: 2px;
+        margin-top: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .route-pill {
         background: var(--brand-light);
         color: var(--brand-dark);
         font-weight: 700;
-        padding: 1px 7px;
-        border-radius: 4px;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    .time-meta {
+        font-size: 10px;
+        color: var(--text-muted);
+        white-space: nowrap;
     }
 
     .conv-top-actions {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 5px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    .conv-top-actions .cs-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 6px;
+        white-space: nowrap;
+        gap: 4px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-lbl-short {
+        display: none;
+    }
+
+    .btn-lbl-full {
+        display: inline;
+    }
+
+    @media (max-width: 1400px) {
+        .btn-lbl-full {
+            display: none;
+        }
+        .btn-lbl-short {
+            display: inline;
+        }
+        .conv-top-actions .cs-btn {
+            padding: 4px 7px;
+            font-size: 10.5px;
+        }
     }
 
     .cs-btn-outline-success {
@@ -1191,12 +1275,30 @@
 
     /* Urgency Banner */
     .conv-urgency-banner {
-        padding: 10px 18px;
+        padding: 6px 12px;
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-size: 12px;
+        gap: 8px;
+        font-size: 11px;
         border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .conv-urgency-banner .urgency-icon {
+        flex-shrink: 0;
+    }
+
+    .conv-urgency-banner .urgency-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+    }
+
+    .urgency-text strong {
+        display: inline;
+        font-weight: 700;
+        margin-right: 4px;
     }
 
     .banner-kritis {
@@ -1217,20 +1319,16 @@
         border-color: #bbf7d0;
     }
 
-    .urgency-text strong {
-        display: block;
-        font-weight: 700;
-    }
-
     /* Messages Scroll Area */
     .conv-messages-scroll {
-        flex: 1;
-        padding: 20px;
+        flex: 1 1 auto;
+        min-height: 0;
+        padding: 12px 14px;
         overflow-y: auto;
         background: #f9fbfb;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 10px;
     }
 
     .chat-bubble-wrapper {
@@ -1303,39 +1401,44 @@
 
     /* Canned Replies Bar */
     .canned-responses-bar {
-        padding: 8px 18px;
+        padding: 4px 10px;
         background: var(--surface);
         border-top: 1px solid var(--border-subtle);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         overflow-x: auto;
+        flex-shrink: 0;
     }
 
     .canned-label {
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 700;
         color: var(--text-muted);
         white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .canned-chips {
         display: flex;
-        gap: 6px;
+        gap: 4px;
         overflow-x: auto;
+        flex: 1;
+        scrollbar-width: none;
     }
 
     .canned-chip {
         background: var(--page);
         border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 4px 10px;
-        font-size: 11px;
+        border-radius: 12px;
+        padding: 2px 7px;
+        font-size: 10.5px;
         font-weight: 600;
         color: var(--text-secondary);
         white-space: nowrap;
         cursor: pointer;
-        transition: 0.2s ease;
+        transition: 0.15s ease;
+        flex-shrink: 0;
     }
 
     .canned-chip:hover {
@@ -1346,24 +1449,27 @@
 
     /* Input Form */
     .conv-input-form {
-        padding: 14px 18px;
+        padding: 6px 10px;
         border-top: 1px solid var(--border);
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
         background: var(--surface);
+        flex-shrink: 0;
     }
 
     .attach-btn {
-        width: 38px;
-        height: 38px;
+        width: 30px;
+        height: 30px;
         border-radius: var(--radius-sm);
         border: 1px solid var(--border);
         display: flex;
         align-items: center;
         justify-content: center;
+        background: var(--page);
         color: var(--text-secondary);
         cursor: pointer;
+        flex-shrink: 0;
         transition: 0.2s ease;
     }
 
@@ -1433,10 +1539,11 @@
         border-radius: var(--radius-lg);
         display: flex;
         flex-direction: column;
-        padding: 18px;
-        gap: 14px;
+        padding: 10px 12px;
+        gap: 8px;
         overflow-y: auto;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        min-width: 0;
     }
 
     .context-sidebar-header {
@@ -2175,19 +2282,20 @@
 
     /* Search in Chat (PRD 4.5) */
     .conv-search-bar {
-        padding: 8px 18px;
+        padding: 4px 10px;
         background: #f8fafc;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--border-subtle);
+        flex-shrink: 0;
     }
 
     .conv-search-input-box {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
-        padding: 6px 12px;
+        padding: 3px 8px;
         transition: 0.15s ease;
     }
 
@@ -2205,18 +2313,18 @@
         border: none;
         outline: none;
         width: 100%;
-        font-size: 12px;
+        font-size: 11px;
         font-family: inherit;
         background: transparent;
         color: var(--text);
     }
 
     .conv-search-counter {
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
         color: var(--brand-dark);
         background: var(--brand-light);
-        padding: 2px 8px;
+        padding: 1px 6px;
         border-radius: 99px;
         white-space: nowrap;
     }
@@ -2226,7 +2334,7 @@
         border: none;
         color: var(--text-muted);
         cursor: pointer;
-        font-size: 16px;
+        font-size: 14px;
         line-height: 1;
         padding: 0 2px;
     }
@@ -2248,23 +2356,26 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 6px 18px 4px;
+        padding: 3px 10px;
         background: var(--surface);
-        border-top: 1px solid var(--border);
+        border-top: 1px solid var(--border-subtle);
+        gap: 6px;
+        flex-shrink: 0;
     }
 
     .mode-tabs-group {
         display: flex;
-        gap: 6px;
+        gap: 4px;
+        flex-shrink: 0;
     }
 
     .mode-tab-btn {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
+        gap: 4px;
+        padding: 2px 8px;
         border-radius: var(--radius-sm);
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
         cursor: pointer;
         border: 1px solid var(--border);
@@ -2272,6 +2383,8 @@
         color: var(--text-secondary);
         transition: 0.15s ease;
         font-family: inherit;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .mode-tab-btn:hover {
@@ -2292,9 +2405,12 @@
     }
 
     .mode-hint-text {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--text-muted);
         font-style: italic;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* Catatan Internal Khusus Antar-CS (Kuning - PRD 4.5) */
@@ -2558,13 +2674,7 @@
     /* Responsive */
     @media (max-width: 1280px) {
         .livechat-container {
-            grid-template-columns: 320px 1fr 280px;
-        }
-    }
-
-    @media (max-width: 1080px) {
-        .livechat-container {
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 265px 1fr;
         }
         .chat-context-sidebar {
             display: none;
@@ -2572,7 +2682,7 @@
             top: 70px;
             right: 0;
             bottom: 0;
-            width: 380px;
+            width: 320px;
             max-width: 90vw;
             z-index: 1050;
             background: var(--surface);
@@ -2600,10 +2710,10 @@
             height: auto;
         }
         .chat-sidebar-inbox {
-            height: 380px;
+            height: 340px;
         }
         .chat-main-conversation {
-            height: 550px;
+            height: 520px;
         }
     }
 </style>
@@ -3029,7 +3139,11 @@
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 13px;">
-                    <div style="font-size: 32px; margin-bottom: 8px;"></div>
+                    <div style="display: flex; justify-content: center; margin-bottom: 8px;">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--text-muted); opacity: 0.7;">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
                     <strong>Tidak ada percakapan</strong>
                     <p style="font-size: 11px; margin-top: 4px;">Tidak ditemukan tiket pada tab ${currentActiveTab.toUpperCase()}</p>
                 </div>
@@ -3061,7 +3175,7 @@
 
                     <div class="item-footer-meta">
                         <span>Tiket: <strong>${chat.booking.code}</strong></span>
-                        <span>${chat.booking.route.split(' ke ')[0].split(' ke ')[0].trim()}</span>
+                        <span>${chat.booking.route.split(' ke ')[0].trim()}</span>
                     </div>
                 </div>
             `;
@@ -3245,7 +3359,7 @@
                 return `
                     <div class="chat-bubble-attachment doc-pdf">
                         <div class="att-pdf-preview-box">
-                            <span style="font-size: 20px;"></span>
+                            <span style="font-size: 20px;">📄</span>
                             <div class="pdf-details">
                                 <strong>${att.fileName}</strong>
                                 <span class="pdf-size">Dokumen PDF &bull; ${att.fileSize}</span>
@@ -3676,8 +3790,12 @@
         if (container) {
             container.innerHTML = `
                 <div style="text-align: center; margin: auto; color: var(--text-muted);">
-                    <div style="font-size: 40px; margin-bottom: 10px;"></div>
-                    <strong>Tidak ada percakapan aktif yang dipilih</strong>
+                    <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color: var(--brand); opacity: 0.6;">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <strong style="color: var(--text);">Tidak ada percakapan aktif yang dipilih</strong>
                     <p style="font-size: 12px; margin-top: 4px;">Pilih salah satu pesan dari antrean di sebelah kiri.</p>
                 </div>
             `;
@@ -3902,7 +4020,7 @@
         const sidebar = document.getElementById('booking-context');
         if (sidebar) {
             sidebar.classList.toggle('active-drawer');
-            if (window.innerWidth > 1080) {
+            if (window.innerWidth > 1280) {
                 sidebar.style.display = (sidebar.style.display === 'none') ? 'flex' : '';
             }
         }
@@ -3913,7 +4031,7 @@
         const sidebar = document.getElementById('booking-context');
         if (sidebar) {
             sidebar.classList.add('active-drawer');
-            if (window.innerWidth <= 1080) {
+            if (window.innerWidth <= 1280) {
                 sidebar.style.display = 'flex';
             }
             sidebar.scrollIntoView({ behavior: 'smooth' });

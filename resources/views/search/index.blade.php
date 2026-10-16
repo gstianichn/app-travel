@@ -108,7 +108,7 @@
                 <ol class="sr-trips">
                     @foreach ($schedules as $schedule)
                         @php
-                            $seatUrl = route('dashboard.user.booking.pilih-kursi', ['schedule' => $schedule->id]);
+                            $seatUrl = route('dashboard.user.booking.pilih-kursi', array_filter(['schedule' => $schedule->id, 'passengers' => request('passengers')]));
                             $isLowOnSeats = $schedule->available_seats <= 3;
                         @endphp
                         <li class="sr-trip">

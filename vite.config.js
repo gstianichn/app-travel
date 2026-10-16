@@ -16,6 +16,7 @@ export default defineConfig({
                 'resources/css/dashboard-user.css',
                 'resources/js/dashboard-user.js',
                 'resources/css/dashboard-staff.css',
+                'resources/js/admin-panel.js',
             ],
             refresh: true,
             fonts: [

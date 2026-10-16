@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Kelola Refund & Pembatalan Tiket - Admin Utama')
 
@@ -794,7 +794,7 @@
 
     {{-- FILTER BAR --}}
     <div class="filter-card">
-        <form method="GET" action="{{ route('dashboard.admin.refund.index') }}" class="filter-form">
+        <form method="GET" action="{{ route('dashboard.admin.refund.index') }}" class="filter-form admin-filter-form">
             <div class="form-group" style="flex: 2;">
                 <label class="form-label" for="search">Cari Permohonan</label>
                 <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-input" placeholder="Kode booking, nama penumpang, bank, no. rekening...">

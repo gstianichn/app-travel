@@ -57,12 +57,20 @@ class CustomerServiceDashboardController extends Controller
      */
     private function searchBookings(string $query): Collection
     {
-        $like = '%'.$query.'%';
+        $cleanQuery = trim($query);
+        if ($cleanQuery === '') {
+            return collect();
+        }
+
+        $like = '%'.$cleanQuery.'%';
 
         return Booking::query()
             ->with(['user', 'ticket', 'passengers.seat', 'schedule.route.origin', 'schedule.route.destination', 'schedule.vehicle'])
             ->where(function (Builder $builder) use ($like) {
                 $builder->where('booking_code', 'like', $like)
+                    ->orWhere('contact_name', 'like', $like)
+                    ->orWhere('contact_phone', 'like', $like)
+                    ->orWhere('contact_email', 'like', $like)
                     ->orWhereHas('ticket', fn (Builder $ticket) => $ticket->where('ticket_number', 'like', $like))
                     ->orWhereHas('user', fn (Builder $user) => $user->where('name', 'like', $like)
                         ->orWhere('email', 'like', $like)
@@ -71,7 +79,7 @@ class CustomerServiceDashboardController extends Controller
                         ->orWhere('phone', 'like', $like));
             })
             ->latest()
-            ->take(10)
+            ->take(20)
             ->get();
     }
 

@@ -1624,6 +1624,9 @@ class AdminDashboardController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('booking_code', 'like', "%{$search}%")
+                    ->orWhere('contact_name', 'like', "%{$search}%")
+                    ->orWhere('contact_phone', 'like', "%{$search}%")
+                    ->orWhere('contact_email', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($u) use ($search) {
                         $u->where('name', 'like', "%{$search}%")
                             ->orWhere('phone', 'like', "%{$search}%");

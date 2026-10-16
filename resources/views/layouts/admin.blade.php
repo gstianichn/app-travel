@@ -83,25 +83,25 @@
         ========================================== */
 
         .admin-logo {
-            height: 82px;
+            height: 68px;
             display: flex;
             align-items: center;
-            padding: 0 22px;
+            padding: 0 18px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.14);
             text-decoration: none;
             color: white;
         }
 
         .admin-logo-icon {
-            width: 44px;
-            height: 44px;
+            width: 38px;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 13px;
+            border-radius: 11px;
             background: rgba(255, 255, 255, 0.18);
-            font-size: 22px;
-            margin-right: 12px;
+            font-size: 20px;
+            margin-right: 11px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             transition: transform 0.2s ease;
         }
@@ -132,8 +132,9 @@
 
         .admin-menu {
             flex: 1;
-            padding: 22px 14px;
+            padding: 12px 10px;
             overflow-y: auto;
+            scroll-behavior: smooth;
         }
 
         .admin-menu::-webkit-scrollbar {
@@ -145,28 +146,28 @@
         }
 
         .admin-menu-title {
-            padding: 0 12px;
-            margin-bottom: 9px;
+            padding: 0 10px;
+            margin-bottom: 6px;
             color: rgba(255, 255, 255, 0.55);
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
+            letter-spacing: 1.1px;
         }
 
         .admin-menu-section {
-            margin-top: 24px;
+            margin-top: 14px;
         }
 
         .admin-menu-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-height: 44px;
-            padding: 10px 13px;
-            margin-bottom: 4px;
-            border-radius: 11px;
-            color: rgba(255, 255, 255, 0.82);
+            gap: 10px;
+            min-height: 38px;
+            padding: 8px 11px;
+            margin-bottom: 2px;
+            border-radius: 9px;
+            color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
             font-size: 13px;
             font-weight: 500;
@@ -188,12 +189,12 @@
         }
 
         .admin-menu-icon {
-            width: 22px;
-            min-width: 22px;
+            width: 20px;
+            min-width: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         /* =========================================
@@ -201,7 +202,7 @@
         ========================================== */
 
         .admin-sidebar-bottom {
-            padding: 15px;
+            padding: 10px 12px;
             border-top: 1px solid rgba(255,255,255,.12);
         }
 
@@ -209,10 +210,11 @@
             width: 100%;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 13px;
+            gap: 10px;
+            padding: 9px 12px;
+            min-height: 38px;
             border: 1px solid rgba(255,255,255,.10);
-            border-radius: 11px;
+            border-radius: 9px;
             background: rgba(0,0,0,.10);
             color: rgba(255,255,255,.72);
             font-size: 13px;
@@ -418,12 +420,186 @@
 
         }
 
+        /* =========================================
+           SIDEBAR TOGGLE & TRANSITION ENHANCEMENTS
+        ========================================== */
+        .sidebar-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid #e2eae6;
+            background: #ffffff;
+            color: #17221d;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: #e3f5ee;
+            color: #087f55;
+            border-color: #a3d9c3;
+            transform: scale(1.05);
+        }
+
+        .admin-sidebar {
+            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .admin-main {
+            transition: margin-left 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* Desktop Collapsed */
+        .sidebar-collapsed {
+            transform: translateX(-260px) !important;
+        }
+
+        .sidebar-collapsed-main {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+
+        /* Mobile Drawer Slide */
+        .admin-sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(2px);
+            z-index: 99;
+            transition: opacity 0.3s ease;
+        }
+
+        .admin-sidebar-backdrop.active {
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.2);
+            }
+            .admin-sidebar.sidebar-mobile-open {
+                transform: translateX(0) !important;
+            }
+            .admin-main {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+
+        /* =========================================
+           GLOBAL MODAL STYLES (CUSTOM-MODAL & MODAL-BACKDROP)
+        ========================================== */
+        .custom-modal, .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .custom-modal.show, .modal-backdrop.show, .modal-backdrop.modal-visible, .custom-modal.modal-visible {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        .modal-dialog {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 540px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            transform: translateY(14px) scale(0.96);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .custom-modal.show .modal-dialog,
+        .modal-backdrop.show .modal-dialog,
+        .modal-visible .modal-dialog {
+            transform: translateY(0) scale(1) !important;
+        }
+
+        .modal-dialog-header, .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-dialog-header h3, .modal-header h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .btn-close-modal, .modal-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-close-modal:hover, .modal-close-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        .modal-dialog-body {
+            padding: 20px 24px;
+        }
+
+        .modal-dialog-footer, .modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
     </style>
 
     @stack('styles')
     @fonts('overpass')
     {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
     @vite(['resources/css/dashboard-staff.css'])
+    {{-- Admin Panel enhancements (live search, auto-filter, sidebar animation) --}}
+    @vite(['resources/js/admin-panel.js'])
 </head>
 
 
@@ -432,9 +608,8 @@
 <div class="admin-dashboard">
 
 
-    {{-- =========================================
-         SIDEBAR
-    ========================================== --}}
+    {{-- BACKDROP UNTUK MOBILE SLIDE --}}
+    <div class="admin-sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <aside class="admin-sidebar">
 
@@ -463,7 +638,7 @@
 
         {{-- MENU --}}
 
-        <nav class="admin-menu">
+        <nav class="admin-menu" id="admin-menu">
             <div class="admin-menu-title">
                 Menu Utama
             </div>
@@ -673,6 +848,18 @@
             </div>
         </nav>
 
+        <script>
+            (function() {
+                try {
+                    var m = document.getElementById('admin-menu');
+                    var s = sessionStorage.getItem('admin_sidebar_scroll');
+                    if (m && s !== null) {
+                        m.scrollTop = parseInt(s, 10);
+                    }
+                } catch(e) {}
+            })();
+        </script>
+
         {{-- LOGOUT --}}
 
         <div class="admin-sidebar-bottom">
@@ -709,16 +896,25 @@
         {{-- TOPBAR --}}
 
         <header class="admin-topbar">
-            <div class="admin-page-title">
-                <h2>
-                    @yield('page-title', 'Dashboard Admin Utama')
-                </h2>
-                <p>
-                    @yield(
-                        'page-subtitle',
-                        'Kelola sistem Travel dengan mudah dan terintegrasi.'
-                    )
-                </p>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Sidebar" title="Buka/Tutup Sidebar (Slide)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="admin-page-title">
+                    <h2>
+                        @yield('page-title', 'Dashboard Admin Utama')
+                    </h2>
+                    <p>
+                        @yield(
+                            'page-subtitle',
+                            'Kelola sistem Travel dengan mudah dan terintegrasi.'
+                        )
+                    </p>
+                </div>
             </div>
 
             {{-- PROFILE --}}

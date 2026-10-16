@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Laporan & Rekonsiliasi Pembukuan - Admin Utama')
 
@@ -583,7 +583,7 @@
 
     {{-- FILTER BAR --}}
     <div class="filter-card">
-        <form method="GET" action="{{ route('dashboard.admin.laporan.index') }}" class="filter-form">
+        <form method="GET" action="{{ route('dashboard.admin.laporan.index') }}" class="filter-form admin-filter-form">
             <input type="hidden" name="tab" value="{{ $tab }}">
 
             <div class="form-group" style="flex: 2;">

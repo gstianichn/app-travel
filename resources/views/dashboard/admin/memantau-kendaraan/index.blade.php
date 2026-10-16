@@ -265,24 +265,8 @@
 
     .filter-buttons {
         display: flex;
+        align-items: flex-end;
         gap: 8px;
-    }
-
-    .btn-filter-submit {
-        height: 42px;
-        padding: 0 18px;
-        background: #087f55;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-
-    .btn-filter-submit:hover {
-        background: #066b47;
     }
 
     .btn-filter-reset {
@@ -298,6 +282,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        white-space: nowrap;
         transition: background 0.2s ease;
     }
 
@@ -805,7 +790,7 @@
 
     {{-- FILTER & SEARCH --}}
     <div class="filter-card">
-        <form action="{{ route('dashboard.admin.memantau-kendaraan.index') }}" method="GET" class="filter-form">
+        <form action="{{ route('dashboard.admin.memantau-kendaraan.index') }}" method="GET" class="filter-form admin-filter-form">
             {{-- SEARCH --}}
             <div class="filter-group">
                 <label class="filter-label" for="search">Cari Unit / Pelat</label>
@@ -854,14 +839,9 @@
 
             {{-- BUTTONS --}}
             <div class="filter-buttons">
-                <button type="submit" class="btn-filter-submit">
-                    Terapkan
-                </button>
-                @if(request()->hasAny(['search', 'status', 'type', 'legality']))
-                    <a href="{{ route('dashboard.admin.memantau-kendaraan.index') }}" class="btn-filter-reset">
-                        Reset
-                    </a>
-                @endif
+                <a href="{{ route('dashboard.admin.memantau-kendaraan.index') }}" class="btn-filter-reset">
+                    ↺ Reset
+                </a>
             </div>
         </form>
     </div>
@@ -966,16 +946,18 @@
                                         href="{{ route('dashboard.admin.memantau-kendaraan.show', $vehicle->id) }}"
                                         class="btn-action-icon"
                                         title="Detail Unit & Riwayat Jadwal"
-                                    >Detail
-                                                                            </a>
+                                    >
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </a>
 
                                     {{-- EDIT --}}
                                     <a
                                         href="{{ route('dashboard.admin.memantau-kendaraan.edit', $vehicle->id) }}"
                                         class="btn-action-icon"
                                         title="Edit Informasi Armada"
-                                    >Ubah
-                                                                            </a>
+                                    >
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                    </a>
 
                                     {{-- DELETE --}}
                                     <form
@@ -990,8 +972,9 @@
                                             type="submit"
                                             class="btn-action-icon delete"
                                             title="Hapus Unit Armada"
-                                        >Hapus
-                                                                                    </button>
+                                        >
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
                                     </form>
                                 </div>
                             </td>

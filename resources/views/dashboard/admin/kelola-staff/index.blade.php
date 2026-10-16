@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Kelola Staff')
 
@@ -832,7 +832,7 @@
          FILTER & PENCARIAN
     ========================================== --}}
     <div class="filter-card">
-        <form action="{{ route('dashboard.admin.kelola-staff.index') }}" method="GET" class="filter-form-grid">
+        <form action="{{ route('dashboard.admin.kelola-staff.index') }}" method="GET" class="filter-form-grid admin-filter-form">
 
             <div class="filter-input-wrap">
                 <span class="input-icon">

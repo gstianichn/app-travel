@@ -141,7 +141,7 @@
                     <span x-text="selectedSeats.length > 0
                         ? 'Tahan ' + selectedSeats.length + ' kursi dan isi data'
                         : 'Pilih minimal 1 kursi'"
-                    >Pilih minimal 1 kursi</span>
+                    >Tahan kursi dan isi data</span>
                 </button>
                 <p class="text-sm text-slate-600">Kursinya kami tahan 15 menit untuk kamu, jadi tidak bisa diambil penumpang lain selama kamu mengisi data dan membayar.</p>
             </form>

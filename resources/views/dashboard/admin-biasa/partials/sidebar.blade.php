@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <nav class="menu" aria-label="Menu staf pool">
+    <nav class="menu" id="staff-menu" aria-label="Menu staf pool">
         <div class="menu-title">Menu Utama</div>
         @foreach ($staffMenu as $item)
             @php $isActive = request()->routeIs($item['route']); @endphp
@@ -31,6 +31,23 @@
             </a>
         @endforeach
     </nav>
+
+    <script>
+        (function() {
+            try {
+                var m = document.getElementById('staff-menu');
+                var s = sessionStorage.getItem('staff_sidebar_scroll');
+                if (m && s !== null) {
+                    m.scrollTop = parseInt(s, 10);
+                }
+                if (m) {
+                    m.addEventListener('scroll', function() {
+                        sessionStorage.setItem('staff_sidebar_scroll', m.scrollTop);
+                    }, { passive: true });
+                }
+            } catch(e) {}
+        })();
+    </script>
 
     <div class="sidebar-bottom">
         <form method="POST" action="{{ route('logout') }}">

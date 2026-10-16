@@ -136,4 +136,21 @@ if (ticket) {
             bringTicketIntoView(origin);
         });
     });
+
+    // Auto slide ke hasil pencarian jadwal travel
+    const slideToResults = () => {
+        const hasil = document.getElementById('hasil');
+        if (hasil && (window.location.search.includes('origin=') || window.location.hash === '#hasil')) {
+            setTimeout(() => {
+                hasil.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 250);
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', slideToResults);
+    } else {
+        slideToResults();
+    }
 }
+

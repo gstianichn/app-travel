@@ -616,7 +616,7 @@
 
     {{-- FILTER FORM --}}
     <div class="filter-card">
-        <form action="{{ route('dashboard.admin.rute.jadwal') }}" method="GET" class="filter-form">
+        <form action="{{ route('dashboard.admin.rute.jadwal') }}" method="GET" class="filter-form admin-filter-form">
             <div class="filter-group">
                 <label class="filter-label" for="date">Tanggal Keberangkatan</label>
                 <input type="date" name="date" id="date" class="filter-input" value="{{ request('date', now()->toDateString()) }}">
