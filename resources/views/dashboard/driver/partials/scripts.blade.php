@@ -287,10 +287,15 @@
     }
 
     // Toggle Mobile Sidebar Drawer
-    function toggleSidebar() {
+    function toggleSidebar(forceState) {
         const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            sidebar.classList.toggle('mobile-open');
+        const overlay = document.getElementById('driver-sidebar-overlay');
+        if (typeof forceState === 'boolean') {
+            if (sidebar) sidebar.classList.toggle('mobile-open', forceState);
+            if (overlay) overlay.classList.toggle('active', forceState);
+        } else {
+            if (sidebar) sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('active');
         }
     }
 

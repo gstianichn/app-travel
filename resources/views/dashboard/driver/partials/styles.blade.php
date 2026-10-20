@@ -49,9 +49,52 @@
         }
 
         /* LAYOUT SHELL */
-        .driver-shell {
+        .driver-shell,
+        .driver-app-layout {
             display: flex;
             min-height: 100vh;
+            background: var(--page, #F6F4EC);
+        }
+
+        .driver-main-wrapper {
+            margin-left: 270px;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--page, #F6F4EC);
+        }
+
+        .driver-main-content {
+            flex: 1;
+            padding: clamp(24px, 3vw, 40px);
+            min-width: 0;
+        }
+
+        /* TOPBAR UNIFIED */
+        .topbar {
+            height: 74px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: var(--lp-card, #FFFDF8);
+            border-bottom: 1px solid var(--lp-line, #DEDAC9);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 95;
+            display: none;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active {
+            display: block;
         }
 
         /* SIDEBAR (Desktop) */
@@ -67,7 +110,7 @@
             flex-direction: column;
             z-index: 100;
             box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-            transition: all 0.25s ease;
+            transition: transform 0.25s ease;
         }
 
         .brand-zone {
@@ -81,12 +124,13 @@
         .brand-logo-icon {
             width: 42px;
             height: 42px;
-            background: linear-gradient(135deg, #10b981, #047857);
+            background: #ffffff;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            padding: 5px;
+            box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
@@ -3527,9 +3571,14 @@
             .sidebar.mobile-open {
                 transform: translateX(0);
             }
+            .driver-main-wrapper,
             .main-canvas {
-                margin-left: 0;
+                margin-left: 0 !important;
                 padding: 16px;
+            }
+            .topbar {
+                padding: 0 16px;
+                height: 64px;
             }
             .schedule-hero-header {
                 flex-direction: column;

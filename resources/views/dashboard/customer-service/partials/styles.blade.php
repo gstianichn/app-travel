@@ -143,9 +143,10 @@
         align-items: center;
         justify-content: center;
         border-radius: 13px;
-        background: rgba(255, 255, 255, 0.15);
-        color: white;
-        font-size: 21px;
+        background: #ffffff;
+        padding: 5px;
+        box-sizing: border-box;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     }
 
     .brand-text {

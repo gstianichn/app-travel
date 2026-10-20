@@ -30,9 +30,7 @@
             <!-- Logo -->
             <a href="#" class="flex items-center gap-3">
 
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-lg font-bold text-surface shadow-sm">
-                    T
-                </div>
+                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" class="h-10 w-10 object-contain">
 
                 <div>
                     <h1 class="text-base font-bold leading-tight text-brand-dark">
