@@ -155,14 +155,149 @@
         });
     }
 
-    // 3. SEAT MAP INFO POPUP
-    function showSeatInfo(seatNumber, passengerName, statusClass) {
-        let statusText = 'Kosong';
-        if (statusClass === 'boarded') statusText = 'Sudah Naik (Boarded)';
-        else if (statusClass === 'pending') statusText = 'Dipesan (Belum Naik)';
+    // 3. SEAT MAP DRIVER INSPECTOR & HIGHLIGHT
+    function selectDriverSeat(btn) {
+        if (!btn || !btn.dataset.seat) return;
 
-        alert(`Nomor Kursi: ${seatNumber}\nPenumpang: ${passengerName}\nStatus: ${statusText}`);
+        let data = {};
+        try {
+            data = JSON.parse(btn.dataset.seat);
+        } catch(e) {
+            console.error("Invalid seat data", e);
+            return;
+        }
+
+        // Highlight active seat button
+        document.querySelectorAll('.seat-btn-driver').forEach(b => {
+            b.style.outline = 'none';
+            b.style.boxShadow = '';
+        });
+        btn.style.outline = '3px solid #065f46';
+        btn.style.boxShadow = '0 0 0 4px rgba(6, 95, 70, 0.2)';
+
+        const inspectTitle = document.getElementById('inspectSeatTitle');
+        const inspectBadge = document.getElementById('inspectSeatBadge');
+        const contentDefault = document.getElementById('inspectContentDefault');
+        const contentDetails = document.getElementById('inspectContentDetails');
+
+        if (inspectTitle) inspectTitle.textContent = `Kursi ${data.seatNumber}`;
+
+        if (data.isAvailable) {
+            if (inspectBadge) {
+                inspectBadge.className = 'ds-badge ds-badge--muted';
+                inspectBadge.textContent = 'Kosong';
+            }
+            if (contentDefault) {
+                contentDefault.style.display = 'block';
+                contentDefault.innerHTML = `
+                    <div style="font-size: 32px; margin-bottom: 8px;">💺</div>
+                    <p class="font-bold text-slate-700 m-0 text-sm">Kursi ${data.seatNumber} Masih Kosong</p>
+                    <p class="text-xs text-slate-500 mt-1 m-0">Belum ada pemesanan tiket untuk kursi ini pada jadwal aktif.</p>
+                `;
+            }
+            if (contentDetails) contentDetails.style.display = 'none';
+            return;
+        }
+
+        // Ada penumpang terisi
+        if (contentDefault) contentDefault.style.display = 'none';
+        if (contentDetails) contentDetails.style.display = 'block';
+
+        if (inspectBadge) {
+            if (data.isBoarded) {
+                inspectBadge.className = 'ds-badge ds-badge--ok';
+                inspectBadge.textContent = 'Sudah Naik (Boarded)';
+            } else {
+                inspectBadge.className = 'ds-badge ds-badge--warn';
+                inspectBadge.textContent = 'Belum Naik (Menunggu)';
+            }
+        }
+
+        const nameEl = document.getElementById('inspectPassengerName');
+        const codeEl = document.getElementById('inspectTicketCode');
+        const pickupEl = document.getElementById('inspectPickup');
+        const dropoffEl = document.getElementById('inspectDropoff');
+        const paymentEl = document.getElementById('inspectPayment');
+        const baggageEl = document.getElementById('inspectBaggage');
+
+        if (nameEl) nameEl.textContent = data.passengerName;
+        if (codeEl) codeEl.textContent = `Kode Booking: ${data.bookingCode}`;
+        if (pickupEl) pickupEl.textContent = data.pickup;
+        if (dropoffEl) dropoffEl.textContent = data.dropoff;
+        if (paymentEl) {
+            paymentEl.textContent = data.payment;
+            paymentEl.style.color = data.isPaid ? '#059669' : '#b45309';
+        }
+        if (baggageEl) baggageEl.textContent = data.baggage;
+
+        // WA & Phone
+        const waBtn = document.getElementById('inspectWaBtn');
+        const telBtn = document.getElementById('inspectTelBtn');
+        const contactWrap = document.getElementById('inspectContactBtns');
+
+        if (data.phone && data.phone !== '-') {
+            if (contactWrap) contactWrap.style.display = 'flex';
+            if (waBtn) waBtn.href = `https://wa.me/${data.waPhone}?text=${encodeURIComponent('Halo ' + data.passengerName + ', saya pengemudi TravelKu untuk perjalanan Anda (Kursi ' + data.seatNumber + ').')}`;
+            if (telBtn) telBtn.href = `tel:${data.phone}`;
+        } else {
+            if (contactWrap) contactWrap.style.display = 'none';
+        }
+
+        // Action Form
+        const checkinForm = document.getElementById('inspectCheckinForm');
+        const statusInput = document.getElementById('inspectFormStatus');
+        const markPaidInput = document.getElementById('inspectFormMarkPaid');
+        const submitBtn = document.getElementById('inspectSubmitBtn');
+        const actionWrap = document.getElementById('inspectActionContainer');
+
+        if (data.checkinUrl) {
+            if (actionWrap) actionWrap.style.display = 'block';
+            if (checkinForm) checkinForm.action = data.checkinUrl;
+
+            if (data.isBoarded) {
+                if (statusInput) statusInput.value = 'belum_hadir';
+                if (markPaidInput) markPaidInput.value = '0';
+                if (submitBtn) {
+                    submitBtn.className = 'ds-btn ds-btn--secondary';
+                    submitBtn.innerHTML = '<span>↩ Batalkan Absensi</span>';
+                }
+            } else {
+                if (statusInput) statusInput.value = 'boarded';
+                if (markPaidInput) markPaidInput.value = data.isPaid ? '0' : '1';
+                if (submitBtn) {
+                    submitBtn.className = 'ds-btn ds-btn--primary';
+                    submitBtn.innerHTML = data.isPaid
+                        ? '<span>✓ Check-in / Naik Kabin</span>'
+                        : '<span>💵 Terima COD & Check-in</span>';
+                }
+            }
+        } else {
+            if (actionWrap) actionWrap.style.display = 'none';
+        }
     }
+
+    function showSeatInfo(seatNumber, passengerName, statusClass) {
+        // Fallback backward compatibility
+        const targetBtn = Array.from(document.querySelectorAll('.seat-btn-driver')).find(b => {
+            try {
+                const d = JSON.parse(b.dataset.seat);
+                return d.seatNumber == seatNumber;
+            } catch(e) { return false; }
+        });
+        if (targetBtn) {
+            selectDriverSeat(targetBtn);
+        } else {
+            alert(`Nomor Kursi: ${seatNumber}\nPenumpang: ${passengerName}`);
+        }
+    }
+
+    // Auto-select first occupied seat on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const firstOccupiedSeat = document.querySelector('.seat-btn-driver');
+        if (firstOccupiedSeat) {
+            selectDriverSeat(firstOccupiedSeat);
+        }
+    });
 
     // 4. MODALS CONTROL
     function openIncidentModal() {
@@ -299,9 +434,39 @@
         }
     }
 
-    // Start GPS & Slider on load
+    // 7. PRESERVE SCROLL POSITION ON ACTION/FORM SUBMISSIONS
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', () => {
+            sessionStorage.setItem('driver_dashboard_scroll_pos', window.scrollY);
+        });
+    });
+
+    // In-page smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href').substring(1);
+            if (!targetId) return;
+            const targetEl = document.getElementById(targetId);
+            if (targetEl) {
+                e.preventDefault();
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                history.pushState(null, null, '#' + targetId);
+            }
+        });
+    });
+
+    // Start GPS, Slider & Restore scroll position on load
     document.addEventListener('DOMContentLoaded', () => {
         initGeolocation();
         initStatusSlider();
+
+        const savedPos = sessionStorage.getItem('driver_dashboard_scroll_pos');
+        if (savedPos !== null) {
+            window.scrollTo({
+                top: parseInt(savedPos, 10),
+                behavior: 'instant'
+            });
+            sessionStorage.removeItem('driver_dashboard_scroll_pos');
+        }
     });
 </script>

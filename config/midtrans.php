@@ -18,6 +18,9 @@ return [
     'is_sanitized' => (bool) env('MIDTRANS_IS_SANITIZED', true),
     'is_3ds' => (bool) env('MIDTRANS_IS_3DS', true),
 
+    // Izinkan webhook tanpa signature hanya untuk simulator di luar production.
+    'allow_unsigned_webhook' => (bool) env('MIDTRANS_ALLOW_UNSIGNED_WEBHOOK', false),
+
     // API endpoints
     'core_api_url' => env('MIDTRANS_IS_PRODUCTION', false)
         ? 'https://api.midtrans.com/v2'

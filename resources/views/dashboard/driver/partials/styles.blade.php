@@ -365,10 +365,28 @@
 
         /* MAIN CONTENT AREA */
         .main-canvas {
-            margin-left: 270px;
+            margin-left: 0px;
             flex: 1;
             min-width: 0;
             padding: 24px 32px 60px;
+        }
+
+        /* IN-PAGE ANCHOR NAVIGATION & SCROLL OFFSET */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .ds-panel,
+        .card-panel,
+        #section-jadwal,
+        #section-armada,
+        #section-manifest,
+        #section-pintasan,
+        #perjalanan-aktif,
+        #armada-unit,
+        #manifes-penumpang,
+        #modul-driver {
+            scroll-margin-top: 90px;
         }
 
         /* EMERGENCY TOP BANNER */

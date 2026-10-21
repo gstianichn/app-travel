@@ -785,12 +785,18 @@ class UserDashboardController extends Controller
     {
         $payload = $request->all();
         $orderId = $payload['order_id'] ?? $payload['external_id'] ?? null;
-        $transactionStatus = strtolower($payload['transaction_status'] ?? $payload['status'] ?? 'settlement');
-        $fraudStatus = strtolower($payload['fraud_status'] ?? 'accept');
+        $rawStatus = $payload['transaction_status'] ?? $payload['status'] ?? null;
+        $fraudStatus = strtolower((string) ($payload['fraud_status'] ?? 'accept'));
 
         if (! $orderId) {
             return response()->json(['status' => 'error', 'message' => 'Missing order_id'], 400);
         }
+
+        if (! is_string($rawStatus) || trim($rawStatus) === '') {
+            return response()->json(['status' => 'error', 'message' => 'Missing transaction_status'], 400);
+        }
+
+        $transactionStatus = strtolower($rawStatus);
 
         $payment = Payment::where('order_id', $orderId)->first();
         if (! $payment) {
@@ -802,13 +808,23 @@ class UserDashboardController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Associated booking not found'], 404);
         }
 
-        // Verifikasi keaslian signature Midtrans jika server key disetel
+        // Webhook wajib bertanda tangan saat server key tersedia (kecuali simulator lokal).
         $midtransService = app(MidtransService::class);
-        if (isset($payload['signature_key']) && ! empty($midtransService->getServerKey())) {
-            if (! $midtransService->verifySignature($payload)) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
-            }
+        if ($midtransService->requiresWebhookSignature() && ! $midtransService->verifySignature($payload)) {
+            Log::warning('Payment webhook ditolak: signature tidak valid', [
+                'order_id' => $orderId,
+                'signature_present' => isset($payload['signature_key']),
+            ]);
+
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
         }
+
+        Log::info('Payment webhook diterima', [
+            'order_id' => $orderId,
+            'transaction_status' => $transactionStatus,
+            'fraud_status' => $fraudStatus,
+            'gateway_provider' => $payment->gateway_provider,
+        ]);
 
         // Tentukan label metode pembayaran dari webhook
         $paymentType = $payload['payment_type'] ?? null;
@@ -825,7 +841,28 @@ class UserDashboardController extends Controller
             $resolvedMethod = 'ShopeePay';
         }
 
-        if (in_array($transactionStatus, ['settlement', 'paid', 'success']) || ($transactionStatus === 'capture' && $fraudStatus === 'accept')) {
+        if (in_array($transactionStatus, ['settlement', 'paid', 'success'], true) || ($transactionStatus === 'capture' && $fraudStatus === 'accept')) {
+            $grossAmount = $payload['gross_amount'] ?? null;
+
+            if ($grossAmount === null || ! is_numeric($grossAmount)) {
+                Log::warning('Payment webhook ditolak: gross_amount tidak ada', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                ]);
+
+                return response()->json(['status' => 'error', 'message' => 'Missing gross_amount'], 400);
+            }
+
+            if (abs((float) $grossAmount - (float) $booking->total_price) > 0.01) {
+                Log::warning('Payment webhook ditolak: nominal tidak cocok', [
+                    'order_id' => $orderId,
+                    'gross_amount' => $grossAmount,
+                    'booking_total' => $booking->total_price,
+                ]);
+
+                return response()->json(['status' => 'error', 'message' => 'Gross amount mismatch'], 422);
+            }
+
             $this->confirmAndIssueTicket($booking, $resolvedMethod, $payload);
 
             return response()->json([
@@ -835,18 +872,47 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        if (in_array($transactionStatus, ['expire', 'expired', 'cancel', 'cancelled', 'deny', 'failed'])) {
-            $booking->update(['status' => 'cancelled']);
-            $payment->update([
-                'status' => 'expired',
-                'gateway_status' => $transactionStatus,
-                'raw_response' => $payload,
-            ]);
-            $booking->schedule?->recalculateAvailableSeats();
+        if (in_array($transactionStatus, ['expire', 'expired', 'cancel', 'cancelled', 'deny', 'failed'], true)) {
+            $paymentStatus = match ($transactionStatus) {
+                'expire', 'expired' => 'expired',
+                'cancel', 'cancelled' => 'cancelled',
+                default => 'failed',
+            };
 
-            // Event Trigger: Transaksi Dibatalkan karena waktu habis
-            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
-            $booking->user?->notify(new BookingStatusNotification($booking, 'expired'));
+            $cancelled = DB::transaction(function () use ($booking, $payment, $transactionStatus, $paymentStatus, $payload) {
+                $lockedBooking = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+                if (! $lockedBooking || $lockedBooking->isPaid()) {
+                    return false;
+                }
+
+                $lockedBooking->update(['status' => 'cancelled']);
+                $payment->update([
+                    'status' => $paymentStatus,
+                    'gateway_status' => $transactionStatus,
+                    'raw_response' => $payload,
+                ]);
+                $lockedBooking->schedule?->recalculateAvailableSeats();
+
+                // Event Trigger: Transaksi Dibatalkan karena waktu habis
+                $lockedBooking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
+                $lockedBooking->user?->notify(new BookingStatusNotification($lockedBooking, 'expired'));
+
+                return true;
+            });
+
+            if (! $cancelled) {
+                Log::warning('Payment webhook diabaikan: booking sudah lunas', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                    'booking_status' => $booking->fresh()?->status,
+                ]);
+
+                return response()->json([
+                    'status' => 'ignored',
+                    'message' => 'Booking already paid; cancellation ignored.',
+                ]);
+            }
 
             return response()->json([
                 'status' => 'cancelled',
@@ -854,8 +920,40 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        if ($transactionStatus === 'pending') {
+        if (in_array($transactionStatus, ['refund', 'partial_refund', 'chargeback', 'partial_chargeback'], true)) {
             $payment->update([
+                'status' => $transactionStatus,
+                'gateway_status' => $transactionStatus,
+                'raw_response' => $payload,
+            ]);
+
+            Log::warning('Payment webhook: refund/chargeback diterima', [
+                'order_id' => $orderId,
+                'transaction_status' => $transactionStatus,
+                'booking_code' => $booking->booking_code,
+            ]);
+
+            return response()->json([
+                'status' => 'refunded',
+                'message' => 'Refund/chargeback recorded.',
+            ]);
+        }
+
+        if ($transactionStatus === 'pending') {
+            if ($booking->isPaid()) {
+                Log::warning('Payment webhook diabaikan: booking sudah lunas', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                ]);
+
+                return response()->json([
+                    'status' => 'ignored',
+                    'message' => 'Booking already paid; pending status ignored.',
+                ]);
+            }
+
+            $payment->update([
+                'status' => 'pending',
                 'gateway_status' => 'pending',
                 'raw_response' => $payload,
             ]);
@@ -865,6 +963,11 @@ class UserDashboardController extends Controller
                 'message' => 'Payment status is pending.',
             ]);
         }
+
+        Log::info('Payment webhook diabaikan: status tidak dikenal', [
+            'order_id' => $orderId,
+            'transaction_status' => $transactionStatus,
+        ]);
 
         return response()->json(['status' => 'ignored']);
     }
@@ -1927,17 +2030,26 @@ class UserDashboardController extends Controller
      */
     protected function confirmAndIssueTicket(Booking $booking, string $paymentMethod = 'Virtual Account BCA', array $rawPayload = []): void
     {
-        // Webhook, polling and the status check can all land here; issue the ticket and email only once.
-        if ($booking->fresh()?->isPaid() && $booking->ticket()->exists()) {
-            return;
-        }
+        $ticket = null;
+        $issuedBooking = null;
 
-        DB::transaction(function () use ($booking, $paymentMethod, $rawPayload) {
-            $booking->update([
+        DB::transaction(function () use ($booking, $paymentMethod, $rawPayload, &$ticket, &$issuedBooking) {
+            $lockedBooking = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+            if (! $lockedBooking) {
+                return;
+            }
+
+            // Webhook, polling and the status check can all land here; issue the ticket and email only once.
+            if ($lockedBooking->isPaid() && $lockedBooking->ticket()->exists()) {
+                return;
+            }
+
+            $lockedBooking->update([
                 'status' => 'confirmed',
             ]);
 
-            $payment = Payment::firstOrNew(['booking_id' => $booking->id]);
+            $payment = Payment::firstOrNew(['booking_id' => $lockedBooking->id]);
             $payment->payment_method = $paymentMethod;
             $payment->status = 'paid';
             $payment->paid_at = Carbon::now();
@@ -1948,24 +2060,28 @@ class UserDashboardController extends Controller
             // Terbitkan E-Ticket Boarding Pass
             $ticketNumber = 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(Str::random(5));
             $ticket = Ticket::updateOrCreate(
-                ['booking_id' => $booking->id],
+                ['booking_id' => $lockedBooking->id],
                 [
                     'ticket_number' => $ticketNumber,
-                    'qr_code' => 'QR-'.$booking->booking_code,
+                    'qr_code' => 'QR-'.$lockedBooking->booking_code,
                     'status' => 'active',
                 ]
             );
 
             // Perbarui sisa kursi
-            $booking->schedule?->recalculateAvailableSeats();
+            $lockedBooking->schedule?->recalculateAvailableSeats();
 
             // Event Trigger: Pembayaran Sukses & Terbit E-Ticket
-            $booking->setRelation('ticket', $ticket);
-            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user', 'ticket']);
-            $booking->user?->notify(new BookingStatusNotification($booking, 'confirmed'));
+            $lockedBooking->setRelation('ticket', $ticket);
+            $lockedBooking->load(['schedule.route.origin', 'schedule.route.destination', 'user', 'ticket']);
+            $lockedBooking->user?->notify(new BookingStatusNotification($lockedBooking, 'confirmed'));
+
+            $issuedBooking = $lockedBooking;
         });
 
-        $this->sendTicketEmail($booking);
+        if ($ticket?->wasRecentlyCreated && $issuedBooking) {
+            $this->sendTicketEmail($issuedBooking);
+        }
     }
 
     /**

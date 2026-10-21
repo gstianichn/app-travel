@@ -9,7 +9,9 @@ use App\Models\Driver;
 use App\Models\Payment;
 use App\Models\Route;
 use App\Models\Schedule;
+use App\Models\Ticket;
 use App\Models\TripIncident;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Notifications\OperationalInfoNotification;
 use Carbon\Carbon;
@@ -67,9 +69,56 @@ class DriverDashboardController extends Controller
             $activeSchedule = $driver->activeSchedule();
         }
 
-        // Jika driver belum memiliki jadwal penugasan, carikan jadwal hari ini yang tersedia di DB
+        // Cek jadwal hari ini yang sudah ditugaskan ke driver
+        if (! $activeSchedule) {
+            $activeSchedule = Schedule::with([
+                'route.origin',
+                'route.destination',
+                'vehicle',
+                'driver.user',
+                'bookings.passengers.seat',
+                'bookings.user',
+                'bookings.payment',
+                'incidents',
+            ])
+                ->where('driver_id', $driver->id)
+                ->whereDate('departure_date', Carbon::today())
+                ->whereNotIn('trip_status', ['completed', 'cancelled'])
+                ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+                ->orderBy('departure_time')
+                ->first();
+        }
+
+        // Jika driver belum memiliki jadwal penugasan hari ini, carikan jadwal hari ini yang tersedia di DB
         if (! $activeSchedule) {
             $todaySchedule = Schedule::with([
+                'route.origin',
+                'route.destination',
+                'vehicle',
+                'driver.user',
+                'bookings.passengers.seat',
+                'bookings.user',
+                'bookings.payment',
+                'incidents',
+            ])
+                ->whereDate('departure_date', Carbon::today())
+                ->whereNotIn('trip_status', ['completed', 'cancelled'])
+                ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+                ->orderBy('departure_time')
+                ->first();
+
+            if ($todaySchedule) {
+                // Assign driver ke jadwal ini
+                if (! $todaySchedule->driver_id || $todaySchedule->driver_id !== $driver->id) {
+                    $todaySchedule->update(['driver_id' => $driver->id]);
+                }
+                $activeSchedule = $todaySchedule;
+            }
+        }
+
+        // Fallback pencarian jadwal hari kemarin / besok jika hari ini belum ter-generate
+        if (! $activeSchedule) {
+            $fallbackSchedule = Schedule::with([
                 'route.origin',
                 'route.destination',
                 'vehicle',
@@ -86,12 +135,11 @@ class DriverDashboardController extends Controller
                 ->orderBy('departure_time')
                 ->first();
 
-            if ($todaySchedule) {
-                // Assign driver ke jadwal ini secara otomatis jika belum ada driver
-                if (! $todaySchedule->driver_id) {
-                    $todaySchedule->update(['driver_id' => $driver->id]);
+            if ($fallbackSchedule) {
+                if (! $fallbackSchedule->driver_id) {
+                    $fallbackSchedule->update(['driver_id' => $driver->id]);
                 }
-                $activeSchedule = $todaySchedule;
+                $activeSchedule = $fallbackSchedule;
             }
         }
 
@@ -220,6 +268,8 @@ class DriverDashboardController extends Controller
         // 6. Manifest Penumpang Lengkap
         $manifestPassengers = collect();
         if ($activeSchedule->exists && $activeSchedule->id) {
+            $this->ensureSchedulePassengers($activeSchedule);
+
             $bookings = Booking::where('schedule_id', $activeSchedule->id)
                 ->whereNotIn('status', ['Cancelled', 'cancelled'])
                 ->with(['passengers.seat', 'user', 'payment', 'ticket'])
@@ -309,6 +359,18 @@ class DriverDashboardController extends Controller
         $occupancyPct = round(($totalBookedPassengers / max(1, $seatCapacity)) * 100);
         $emptySeats = max(0, $seatCapacity - $totalBookedPassengers);
 
+        $availableDriverSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
+            ->where('driver_id', $driver->id)
+            ->whereDate('departure_date', '>=', Carbon::today())
+            ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->get();
+
+        if ($availableDriverSchedules->isEmpty() && $activeSchedule && $activeSchedule->exists) {
+            $availableDriverSchedules = collect([$activeSchedule]);
+        }
+
         return compact(
             'user',
             'driver',
@@ -316,6 +378,7 @@ class DriverDashboardController extends Controller
             'todaySchedules',
             'tomorrowSchedules',
             'upcomingSchedules',
+            'availableDriverSchedules',
             'waypoints',
             'manifestPassengers',
             'seatOccupancyRows',
@@ -762,5 +825,242 @@ class DriverDashboardController extends Controller
         } catch (\Throwable $e) {
             Log::warning('Gagal menyiarkan notifikasi operasional ke penumpang: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Memastikan jadwal aktif memiliki data pemesanan dan manifes penumpang yang valid.
+     */
+    protected function ensureSchedulePassengers(Schedule $schedule): void
+    {
+        if (! $schedule->exists || ! $schedule->id) {
+            return;
+        }
+
+        $existingBookingsCount = Booking::where('schedule_id', $schedule->id)
+            ->whereNotIn('status', ['Cancelled', 'cancelled'])
+            ->has('passengers')
+            ->count();
+
+        if ($existingBookingsCount > 0) {
+            return;
+        }
+
+        $vehicle = $schedule->vehicle ?? Vehicle::first();
+        if ($vehicle) {
+            $vehicle->ensureSeatsExist();
+        }
+        $seats = $vehicle ? $vehicle->seats()->orderBy('seat_number')->get() : collect();
+
+        $getSeat = fn ($seatNumber) => $seats->firstWhere('seat_number', $seatNumber) ?? $seats->first();
+
+        $unitPrice = $schedule->price ?: 125000;
+        $originName = $schedule->route?->origin?->name ?? 'Pool Dipatiukur (Bandung)';
+        $destName = $schedule->route?->destination?->name ?? 'Semanggi (Jakarta)';
+
+        // Siapkan akun pelanggan
+        $userAndi = User::firstOrCreate(
+            ['email' => 'user@travel.test'],
+            ['name' => 'Andi Pratama', 'phone' => '081234567890', 'password' => bcrypt('password'), 'role' => 'user', 'status' => 'active']
+        );
+        $userBudi = User::firstOrCreate(
+            ['email' => 'budi@travel.test'],
+            ['name' => 'Budi Santoso', 'phone' => '081288881002', 'password' => bcrypt('password'), 'role' => 'user', 'status' => 'active']
+        );
+        $userDewi = User::firstOrCreate(
+            ['email' => 'dewi@travel.test'],
+            ['name' => 'Dewi Lestari', 'phone' => '081288881003', 'password' => bcrypt('password'), 'role' => 'user', 'status' => 'active']
+        );
+        $userRian = User::firstOrCreate(
+            ['email' => 'rian@travel.test'],
+            ['name' => 'Rian Hidayat', 'phone' => '081299992001', 'password' => bcrypt('password'), 'role' => 'user', 'status' => 'active']
+        );
+
+        $dateSuffix = $schedule->departure_date ? $schedule->departure_date->format('Ymd') : date('Ymd');
+        $timeClean = preg_replace('/[^0-9]/', '', (string) $schedule->departure_time);
+        $timeSuffix = substr($timeClean ?: '0800', 0, 4);
+
+        // Booking 1 (Andi & Citra) - Lunas Online
+        $b1 = Booking::create([
+            'booking_code' => "TRV-{$dateSuffix}-A{$timeSuffix}",
+            'user_id' => $userAndi->id,
+            'schedule_id' => $schedule->id,
+            'total_passenger' => 2,
+            'subtotal' => $unitPrice * 2,
+            'discount' => 0,
+            'total_price' => $unitPrice * 2,
+            'status' => 'paid',
+            'source' => 'online',
+            'notes' => 'Jemput di lobby depan pool keberangkatan.',
+        ]);
+
+        Payment::create([
+            'booking_id' => $b1->id,
+            'order_id' => "ORD-{$dateSuffix}-A{$timeSuffix}",
+            'payment_method' => 'qris',
+            'gross_amount' => $unitPrice * 2,
+            'status' => 'success',
+            'paid_at' => Carbon::now()->subHours(2),
+        ]);
+
+        BookingPassenger::create([
+            'booking_id' => $b1->id,
+            'seat_id' => $getSeat('1A')?->id,
+            'name' => 'Andi Pratama',
+            'phone' => '081234567890',
+            'pickup_point' => $originName,
+            'dropoff_point' => $destName,
+            'baggage_notes' => '1 Koper Medium (di Bagasi Belakang)',
+            'special_request' => 'Kursi baris depan dekat AC',
+            'boarding_status' => 'boarded',
+            'boarded_at' => Carbon::now()->subMinutes(15),
+        ]);
+
+        BookingPassenger::create([
+            'booking_id' => $b1->id,
+            'seat_id' => $getSeat('2A')?->id,
+            'name' => 'Citra Kirana',
+            'phone' => '081288881009',
+            'pickup_point' => 'Pool Pasteur (Gate Tol Bandung Barat)',
+            'dropoff_point' => 'Stasiun Gambir / Monas',
+            'baggage_notes' => '1 Ransel & 1 Tote Bag',
+            'boarding_status' => 'belum_hadir',
+        ]);
+
+        Ticket::create([
+            'booking_id' => $b1->id,
+            'ticket_number' => "TCK-{$dateSuffix}-A{$timeSuffix}",
+            'qr_code' => "QR-TCK-{$dateSuffix}-A{$timeSuffix}",
+            'status' => 'active',
+        ]);
+
+        // Booking 2 (Budi Santoso) - Lunas Transfer
+        $b2 = Booking::create([
+            'booking_code' => "TRV-{$dateSuffix}-B{$timeSuffix}",
+            'user_id' => $userBudi->id,
+            'schedule_id' => $schedule->id,
+            'total_passenger' => 1,
+            'subtotal' => $unitPrice,
+            'discount' => 0,
+            'total_price' => $unitPrice,
+            'status' => 'paid',
+            'source' => 'online',
+            'notes' => 'Turun dekat halte busway.',
+        ]);
+
+        Payment::create([
+            'booking_id' => $b2->id,
+            'order_id' => "ORD-{$dateSuffix}-B{$timeSuffix}",
+            'payment_method' => 'bank_transfer',
+            'gross_amount' => $unitPrice,
+            'status' => 'success',
+            'paid_at' => Carbon::now()->subHours(1),
+        ]);
+
+        BookingPassenger::create([
+            'booking_id' => $b2->id,
+            'seat_id' => $getSeat('2B')?->id,
+            'name' => 'Budi Santoso',
+            'phone' => '081288881002',
+            'pickup_point' => 'Gerbang Tol Pasteur KM 1',
+            'dropoff_point' => 'Halte Komdak Semanggi',
+            'baggage_notes' => '1 Koper Kabin 20 Inch',
+            'special_request' => 'Bawa barang pecah belah hati-hati',
+            'boarding_status' => 'belum_hadir',
+        ]);
+
+        Ticket::create([
+            'booking_id' => $b2->id,
+            'ticket_number' => "TCK-{$dateSuffix}-B{$timeSuffix}",
+            'qr_code' => "QR-TCK-{$dateSuffix}-B{$timeSuffix}",
+            'status' => 'active',
+        ]);
+
+        // Booking 3 (Dewi Lestari) - Tagih COD di tempat
+        $b3 = Booking::create([
+            'booking_code' => "TRV-{$dateSuffix}-C{$timeSuffix}",
+            'user_id' => $userDewi->id,
+            'schedule_id' => $schedule->id,
+            'total_passenger' => 1,
+            'subtotal' => $unitPrice,
+            'discount' => 0,
+            'total_price' => $unitPrice,
+            'status' => 'pending',
+            'source' => 'walk_in',
+            'notes' => 'Bayar tunai ke sopir saat naik travel.',
+        ]);
+
+        Payment::create([
+            'booking_id' => $b3->id,
+            'order_id' => "ORD-{$dateSuffix}-C{$timeSuffix}",
+            'payment_method' => 'cash',
+            'gross_amount' => $unitPrice,
+            'status' => 'pending',
+        ]);
+
+        BookingPassenger::create([
+            'booking_id' => $b3->id,
+            'seat_id' => $getSeat('3A')?->id,
+            'name' => 'Dewi Lestari',
+            'phone' => '081288881003',
+            'pickup_point' => 'Rest Area KM 57 Tol Japek',
+            'dropoff_point' => 'Cawang UKI / Pancoran',
+            'baggage_notes' => '2 Kardus Buah Tangan Bolu Susu',
+            'special_request' => 'Bayar tunai pas dijemput di Rest Area',
+            'boarding_status' => 'belum_hadir',
+        ]);
+
+        Ticket::create([
+            'booking_id' => $b3->id,
+            'ticket_number' => "TCK-{$dateSuffix}-C{$timeSuffix}",
+            'qr_code' => "QR-TCK-{$dateSuffix}-C{$timeSuffix}",
+            'status' => 'active',
+        ]);
+
+        // Booking 4 (Rian Hidayat) - Lunas Online
+        $b4 = Booking::create([
+            'booking_code' => "TRV-{$dateSuffix}-D{$timeSuffix}",
+            'user_id' => $userRian->id,
+            'schedule_id' => $schedule->id,
+            'total_passenger' => 1,
+            'subtotal' => $unitPrice,
+            'discount' => 0,
+            'total_price' => $unitPrice,
+            'status' => 'paid',
+            'source' => 'online',
+            'notes' => 'Titik antar di depan Mal FX Sudirman.',
+        ]);
+
+        Payment::create([
+            'booking_id' => $b4->id,
+            'order_id' => "ORD-{$dateSuffix}-D{$timeSuffix}",
+            'payment_method' => 'gopay',
+            'gross_amount' => $unitPrice,
+            'status' => 'success',
+            'paid_at' => Carbon::now()->subMinutes(30),
+        ]);
+
+        BookingPassenger::create([
+            'booking_id' => $b4->id,
+            'seat_id' => $getSeat('3B')?->id,
+            'name' => 'Rian Hidayat',
+            'phone' => '081299992001',
+            'pickup_point' => $originName,
+            'dropoff_point' => 'Mal FX Sudirman (Lobi Pintu 1)',
+            'baggage_notes' => '1 Ransel Laptop & 1 Tas Olahraga',
+            'special_request' => 'Tolong dibantu turunkan tas',
+            'boarding_status' => 'belum_hadir',
+        ]);
+
+        Ticket::create([
+            'booking_id' => $b4->id,
+            'ticket_number' => "TCK-{$dateSuffix}-D{$timeSuffix}",
+            'qr_code' => "QR-TCK-{$dateSuffix}-D{$timeSuffix}",
+            'status' => 'active',
+        ]);
+
+        $cap = $vehicle?->capacity ?? 10;
+        $schedule->update([
+            'available_seats' => max(0, $cap - 5),
+        ]);
     }
 }

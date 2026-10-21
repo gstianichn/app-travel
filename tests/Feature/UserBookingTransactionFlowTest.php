@@ -291,6 +291,7 @@ test('subflow 4: payment gateway webhook automatically verifies payment and upda
         'order_id' => 'INV-WEBHOOK-999',
         'transaction_status' => 'settlement',
         'payment_type' => 'Virtual Account BCA',
+        'gross_amount' => '125000.00',
     ]);
 
     $webhookResponse->assertOk();

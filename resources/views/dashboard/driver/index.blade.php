@@ -75,7 +75,7 @@
     {{-- 3. GRID 2 KOLOM: PERJALANAN AKTIF & ARMADA DITUGASKAN --}}
     <div class="ds-grid-2">
         <!-- Panel 1: Detail Perjalanan & Navigasi Rute Aktif -->
-        <section class="ds-panel" aria-labelledby="perjalanan-aktif">
+        <section class="ds-panel" id="section-jadwal" aria-labelledby="perjalanan-aktif">
             <div class="ds-panel-head">
                 <div>
                     <h2 id="perjalanan-aktif">Ringkasan Operasional Harian Berjalan</h2>
@@ -134,7 +134,7 @@
         </section>
 
         <!-- Panel 2: Detail Armada Ditugaskan -->
-        <section class="ds-panel" aria-labelledby="armada-unit">
+        <section class="ds-panel" id="section-armada" aria-labelledby="armada-unit">
             <div class="ds-panel-head">
                 <div>
                     <h2 id="armada-unit">Persiapan Armada</h2>
@@ -188,7 +188,7 @@
     </div>
 
     {{-- 4. PANEL MANIFES PENUMPANG JADWAL AKTIF --}}
-    <section class="ds-panel" aria-labelledby="manifes-penumpang">
+    <section class="ds-panel" id="section-manifest" aria-labelledby="manifes-penumpang">
         <div class="ds-panel-head">
             <div>
                 <h2 id="manifes-penumpang">Manifes Penumpang Hari Ini</h2>
@@ -271,7 +271,7 @@
     </section>
 
     {{-- 5. PANEL PINTASAN MODUL FITUR OPERASIONAL DRIVER --}}
-    <section class="ds-panel" aria-labelledby="modul-driver">
+    <section class="ds-panel" id="section-pintasan" aria-labelledby="modul-driver">
         <div class="ds-panel-head">
             <div>
                 <h2 id="modul-driver">Akses Seluruh Fitur Pengemudi Per-Halaman</h2>
@@ -279,17 +279,17 @@
             </div>
         </div>
         <div class="ds-panel-body" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;">
-            <a href="{{ route('dashboard.driver.jadwal') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
+            <a href="#section-jadwal" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
                 <div style="font-size: 22px;">📅</div>
                 <strong style="color: var(--lp-forest); font-size: 14px;">Jadwal Perjalanan</strong>
                 <span style="font-size: 12px; color: var(--lp-muted);">Kalender tugas hari ini, besok & mendatang</span>
             </a>
-            <a href="{{ route('dashboard.driver.kendaraan') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
+            <a href="#section-armada" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
                 <div style="font-size: 22px;">🚐</div>
                 <strong style="color: var(--lp-forest); font-size: 14px;">Kendaraan Ditugaskan</strong>
                 <span style="font-size: 12px; color: var(--lp-muted);">Spesifikasi HiAce, dokumen STNK & KIR</span>
             </a>
-            <a href="{{ route('dashboard.driver.penumpang') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
+            <a href="#section-manifest" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
                 <div style="font-size: 22px;">👥</div>
                 <strong style="color: var(--lp-forest); font-size: 14px;">Daftar Penumpang</strong>
                 <span style="font-size: 12px; color: var(--lp-muted);">Manifes absensi & tagihan tunai / COD</span>
@@ -304,21 +304,21 @@
                 <strong style="color: var(--lp-forest); font-size: 14px;">Rute & Titik Singgah</strong>
                 <span style="font-size: 12px; color: var(--lp-muted);">Peta jalur, waypoint & estimasi waktu</span>
             </a>
-            <a href="{{ route('dashboard.driver.ubah-status') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
+            <a href="#section-jadwal" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
                 <div style="font-size: 22px;">⚡</div>
                 <strong style="color: var(--lp-forest); font-size: 14px;">Status Perjalanan</strong>
                 <span style="font-size: 12px; color: var(--lp-muted);">Update tahapan persiapan s/d selesai</span>
             </a>
-            <a href="{{ route('dashboard.driver.lapor-masalah') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
+            <button type="button" onclick="openIncidentModal()" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-align: left; cursor: pointer; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s; font-family: inherit;">
                 <div style="font-size: 22px;">⚠️</div>
                 <strong style="color: var(--lp-forest); font-size: 14px;">Lapor Masalah</strong>
                 <span style="font-size: 12px; color: var(--lp-muted);">Laporan kendala armada / lalu lintas</span>
-            </a>
-            <a href="{{ route('dashboard.driver.emergency') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
+            </button>
+            <button type="button" onclick="openSosModal()" style="padding: 16px; border-radius: 12px; border: 1px solid #fecaca; background: #fef2f2; text-align: left; cursor: pointer; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s; font-family: inherit;">
                 <div style="font-size: 22px;">🚨</div>
-                <strong style="color: var(--lp-forest); font-size: 14px;">Emergency SOS</strong>
-                <span style="font-size: 12px; color: var(--lp-muted);">Pusat bantuan darurat lapangan & kontak</span>
-            </a>
+                <strong style="color: #991b1b; font-size: 14px;">Emergency SOS</strong>
+                <span style="font-size: 12px; color: #b91c1c;">Pusat bantuan darurat lapangan & kontak</span>
+            </button>
             <a href="{{ route('dashboard.driver.riwayat') }}" style="padding: 16px; border-radius: 12px; border: 1px solid var(--lp-line); background: var(--lp-card); text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 6px; transition: border-color 0.2s, transform 0.15s;">
                 <div style="font-size: 22px;">📋</div>
                 <strong style="color: var(--lp-forest); font-size: 14px;">Riwayat Ritase</strong>
