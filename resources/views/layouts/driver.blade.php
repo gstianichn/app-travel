@@ -28,7 +28,7 @@
 
 <body data-staff="driver" class="driver-body">
 
-<div class="driver-app-layout">
+<div class="dashboard-wrapper driver-app-layout">
 
     {{-- Backdrop untuk Tampilan Mobile saat Sidebar Aktif --}}
     <div id="driver-sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -37,7 +37,7 @@
     @include('dashboard.driver.partials.sidebar')
 
     {{-- Wrapper Utama Konten (Header + Main Content) --}}
-    <div class="driver-main-wrapper">
+    <div class="main-content driver-main-wrapper">
 
         {{-- Topbar Header Driver --}}
         @include('dashboard.driver.partials.topbar')
@@ -63,7 +63,7 @@
         @if (session('error'))
             <div class="toast-banner error" style="margin: 20px 32px 0;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
                         <line x1="12" y1="9" x2="12" y2="13"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -80,9 +80,15 @@
         @endif
 
         {{-- Dynamic Content Area --}}
-        <main class="driver-main-content main-canvas" id="section-dashboard">
+        <main class="content driver-main-content main-canvas" id="section-dashboard">
             @yield('content')
         </main>
+
+        {{-- Footer Driver Minimalis --}}
+        <footer style="margin-top: auto; padding: 20px 32px; font-size: 12px; color: var(--lp-muted); border-top: 1px solid var(--lp-line); display: flex; justify-content: space-between; align-items: center;">
+            <span>&copy; {{ date('Y') }} TravelKu &bull; Driver Operasional</span>
+            <span>TravelKu Staff Suite</span>
+        </footer>
 
     </div>
 

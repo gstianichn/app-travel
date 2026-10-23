@@ -108,7 +108,15 @@ class SearchController extends Controller
                         ->where('destination_id', $validated['destination']);
                 })
                 ->orderBy('departure_time')
-                ->get();
+                ->get()
+                ->filter(function (Schedule $schedule) {
+                    if ($schedule->departureCarbon()->isToday()) {
+                        return $schedule->departureCarbon()->isFuture();
+                    }
+
+                    return true;
+                })
+                ->values();
         } else {
             $transitHub = null;
         }

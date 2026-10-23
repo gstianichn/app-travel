@@ -7,12 +7,14 @@
         'origin'         => null,
         'destination'    => null,
         'departure_date' => null,
+        'passengers'     => 1,
     ], $selected ?? []);
 @endphp
 
 <section class="lp-search" id="cari" aria-labelledby="cari-title">
     <div class="container">
         <form class="lp-ticket" action="{{ $action ?? route('search') }}" method="GET" data-ticket>
+            <input type="hidden" name="passengers" value="{{ $selected['passengers'] ?? 1 }}">
             <div class="lp-ticket-main">
                 <h2 id="cari-title">{{ $heading }}</h2>
 

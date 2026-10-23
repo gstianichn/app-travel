@@ -114,6 +114,22 @@ test('subflow 1: user can search schedules matching origin, destination, and act
     $response->assertSee('Pilih kursi');
 });
 
+test('subflow 1: user can search schedules without explicit passengers parameter and it defaults to 1', function () {
+    $this->travelTo(Carbon::today()->setTime(8, 0));
+
+    $response = $this->actingAs($this->user)->get(route('dashboard.user.search', [
+        'origin' => $this->origin->id,
+        'destination' => $this->destination->id,
+        'departure_date' => Carbon::today()->toDateString(),
+    ]));
+
+    $response->assertOk();
+    $response->assertSessionHasNoErrors();
+    $response->assertSee('Toyota HiAce Premio');
+    $response->assertSee('14:30');
+    $response->assertSee('Pilih kursi');
+});
+
 test('subflow 2: user can view seat map and lock seats with 15-minute temporary reservation', function () {
     // 1. View seat map
     $response = $this->actingAs($this->user)->get(route('dashboard.user.booking.pilih-kursi', [
@@ -391,7 +407,7 @@ test('flow b: user can cancel booking and submit refund when within cut-off time
     $refundResponse->assertRedirect();
 
     $booking->refresh();
-    expect($booking->status)->toBe('cancelled');
+    expect($booking->status)->toBe('refund_pending');
 
     // Check refund record
     $refund = Refund::where('booking_id', $booking->id)->first();
@@ -400,7 +416,23 @@ test('flow b: user can cancel booking and submit refund when within cut-off time
     expect((float) $refund->amount)->toBe(93750.0); // 75% of 125,000
     expect($refund->status)->toBe('Diajukan');
 
-    // Seat freed back to public inventory!
+    // Seat remains held until admin ACCs
+    $futureSchedule->refresh();
+    expect($futureSchedule->available_seats)->toBe(9);
+
+    // Admin approves refund
+    $admin = User::firstOrCreate(
+        ['email' => 'admin.flowb@travel.test'],
+        ['name' => 'Admin Flow B', 'role' => 'admin_utama', 'status' => 'active', 'password' => Hash::make('password')]
+    );
+    $this->actingAs($admin)->patch(route('dashboard.admin.refund.approve', $refund), [
+        'cancellation_fee' => 31250,
+        'admin_note' => 'ACC admin',
+    ]);
+
+    // Now booking is cancelled and seat freed back to public inventory!
+    $booking->refresh();
+    expect($booking->status)->toBe('Cancelled');
     $futureSchedule->refresh();
     expect($futureSchedule->available_seats)->toBe(10);
 });

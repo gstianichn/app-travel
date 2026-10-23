@@ -63,14 +63,18 @@ class BookingAccess
 
         session()->forget(self::SESSION_KEY);
 
-        if ($ids === []) {
-            return 0;
+        $query = Booking::query()->whereNull('user_id');
+
+        if ($ids !== []) {
+            $query->where(function ($q) use ($ids, $user) {
+                $q->whereIn('id', $ids)
+                    ->orWhere('contact_email', $user->email);
+            });
+        } else {
+            $query->where('contact_email', $user->email);
         }
 
-        return Booking::query()
-            ->whereNull('user_id')
-            ->whereIn('id', $ids)
-            ->update(['user_id' => $user->id]);
+        return $query->update(['user_id' => $user->id]);
     }
 
     /**

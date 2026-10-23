@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\BookingAccess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,10 +18,14 @@ class UserLoginController extends Controller
     public function create(Request $request): View
     {
         // Pages such as search results send ?redirect= so the passenger lands back where they were.
-        $redirect = $request->query('redirect');
+        $redirect = $request->query('redirect') ?? $request->input('redirect');
 
-        if (is_string($redirect) && Str::startsWith($redirect, url('/'))) {
-            $request->session()->put('url.intended', $redirect);
+        if (is_string($redirect) && ! empty($redirect)) {
+            if (Str::startsWith($redirect, '/') && ! Str::startsWith($redirect, '//')) {
+                $request->session()->put('url.intended', url($redirect));
+            } elseif (Str::startsWith($redirect, url('/'))) {
+                $request->session()->put('url.intended', $redirect);
+            }
         }
 
         return view('auth.user-login');
@@ -42,6 +47,16 @@ class UserLoginController extends Controller
                 'string',
             ],
         ]);
+
+        $user = User::where('email', $credentials['email'])->first();
+
+        if ($user && in_array($user->status, ['inactive', 'blocked'], true)) {
+            return back()
+                ->withErrors([
+                    'email' => 'akun anda diblokir karena suatu kesalahan',
+                ])
+                ->onlyInput('email');
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -66,6 +81,15 @@ class UserLoginController extends Controller
 
             // A booking started before logging in now belongs to this account.
             $bookingAccess->claimFor($request->user());
+
+            $redirect = $request->input('redirect');
+            if (is_string($redirect) && ! empty($redirect)) {
+                if (Str::startsWith($redirect, '/') && ! Str::startsWith($redirect, '//')) {
+                    $request->session()->put('url.intended', url($redirect));
+                } elseif (Str::startsWith($redirect, url('/'))) {
+                    $request->session()->put('url.intended', $redirect);
+                }
+            }
 
             return redirect()->intended(route('dashboard.user.index'));
         }

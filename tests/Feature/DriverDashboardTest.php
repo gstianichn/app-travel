@@ -92,7 +92,8 @@ beforeEach(function () {
         'status' => 'confirmed',
     ]);
 
-    $seat = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first()
+        ?? Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $this->passenger = BookingPassenger::create([
         'booking_id' => $this->booking->id,

@@ -64,10 +64,7 @@ class Vehicle extends Model
         return [
             'Toyota HiAce Premio',
             'Toyota HiAce Commuter',
-            'Isuzu Elf Short',
-            'Isuzu Elf Long',
             'Mercedes-Benz Sprinter',
-            'Mitsubishi Colt L300',
         ];
     }
 
@@ -285,57 +282,60 @@ class Vehicle extends Model
      * Memastikan data kursi (Seat) untuk unit armada ini telah terdaftar di database.
      * Jika belum ada, sistem akan membuat denah kursi realistis sesuai kapasitas unit.
      */
-    public function ensureSeatsExist(): void
+    public function ensureSeatsExist(bool $forceRecreate = false): void
     {
         $existingCount = $this->seats()->count();
-        if ($existingCount >= ($this->capacity ?? 10) && $existingCount > 0) {
+        if (! $forceRecreate && $existingCount >= ($this->capacity ?? 10) && $existingCount > 0) {
             return;
         }
 
-        $capacity = max(4, $this->capacity ?? 10);
+        $capacity = (int) ($this->capacity ?? 10);
         $this->seats()->delete();
 
-        // Row 1: Kursi 1A di samping kiri driver (Standar Kemudi Kanan Indonesia)
-        Seat::create([
-            'vehicle_id' => $this->id,
-            'seat_number' => '1A',
-            'seat_row' => '1',
-            'seat_column' => 1,
-            'status' => 'Available',
-        ]);
+        if ($capacity >= 14) {
+            // HiAce Commuter 14 Seats (Sesuai Foto Denah Asli)
+            // Row 1: Kursi 1 (kiri), Driver di kanan
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '1', 'seat_row' => '1', 'seat_column' => 1, 'status' => 'Available']);
 
-        $created = 1;
-        $currentRow = 2;
-        $letters = ['A', 'B', 'C', 'D'];
+            // Row 2: Kursi 4 (kiri), Kursi 3 (tengah), Kursi 2 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '4', 'seat_row' => '2', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '3', 'seat_row' => '2', 'seat_column' => 2, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '2', 'seat_row' => '2', 'seat_column' => 4, 'status' => 'Available']);
 
-        while ($created < $capacity) {
-            $seatsInThisRow = 2;
-            if ($capacity > 10 && $capacity <= 15) {
-                $seatsInThisRow = 3;
-            } elseif ($capacity > 15) {
-                $seatsInThisRow = 4;
-            }
+            // Row 3: Kursi 7 (kiri), Lorong, Kursi 6 (tengah), Kursi 5 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '7', 'seat_row' => '3', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '6', 'seat_row' => '3', 'seat_column' => 3, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '5', 'seat_row' => '3', 'seat_column' => 4, 'status' => 'Available']);
 
-            $remaining = $capacity - $created;
-            if ($remaining <= 4) {
-                $seatsInThisRow = $remaining;
-            }
+            // Row 4: Kursi 10 (kiri), Lorong, Kursi 9 (tengah), Kursi 8 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '10', 'seat_row' => '4', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '9', 'seat_row' => '4', 'seat_column' => 3, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '8', 'seat_row' => '4', 'seat_column' => 4, 'status' => 'Available']);
 
-            for ($col = 0; $col < $seatsInThisRow && $created < $capacity; $col++) {
-                $seatNumber = $currentRow.$letters[$col];
-                // Kolom realistis: jika 2 kursi per baris, kursi A di kiri (col 1) dan kursi B di kanan belakang supir (col 3)
-                $colIndex = ($seatsInThisRow === 2 && $col === 1) ? 3 : ($col + 1);
+            // Row 5: Kursi 14 (kiri), Kursi 13, Kursi 12, Kursi 11 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '14', 'seat_row' => '5', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '13', 'seat_row' => '5', 'seat_column' => 2, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '12', 'seat_row' => '5', 'seat_column' => 3, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '11', 'seat_row' => '5', 'seat_column' => 4, 'status' => 'Available']);
+        } else {
+            // HiAce Premio 10 Seats Full Bagasi (Sesuai Foto Denah Asli)
+            // Row 1: Kursi 1 (kiri), Driver di kanan
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '1', 'seat_row' => '1', 'seat_column' => 1, 'status' => 'Available']);
 
-                Seat::create([
-                    'vehicle_id' => $this->id,
-                    'seat_number' => $seatNumber,
-                    'seat_row' => (string) $currentRow,
-                    'seat_column' => $colIndex,
-                    'status' => 'Available',
-                ]);
-                $created++;
-            }
-            $currentRow++;
+            // Row 2: Kursi 4 (kiri), Kursi 3 (tengah), Kursi 2 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '4', 'seat_row' => '2', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '3', 'seat_row' => '2', 'seat_column' => 2, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '2', 'seat_row' => '2', 'seat_column' => 4, 'status' => 'Available']);
+
+            // Row 3: Kursi 7 (kiri), Lorong, Kursi 6 (tengah), Kursi 5 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '7', 'seat_row' => '3', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '6', 'seat_row' => '3', 'seat_column' => 3, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '5', 'seat_row' => '3', 'seat_column' => 4, 'status' => 'Available']);
+
+            // Row 4: Kursi 10 (kiri), Lorong, Kursi 9 (tengah), Kursi 8 (kanan)
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '10', 'seat_row' => '4', 'seat_column' => 1, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '9', 'seat_row' => '4', 'seat_column' => 3, 'status' => 'Available']);
+            Seat::create(['vehicle_id' => $this->id, 'seat_number' => '8', 'seat_row' => '4', 'seat_column' => 4, 'status' => 'Available']);
         }
     }
 

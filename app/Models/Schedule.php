@@ -105,11 +105,14 @@ class Schedule extends Model
 
         $occupiedSeats = [];
         foreach ($activeBookings as $booking) {
-            $isPaid = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas']);
-            $statusType = $isPaid ? 'paid' : 'pending';
+            $bookingStatusLower = strtolower($booking->status);
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']);
 
             foreach ($booking->passengers as $passenger) {
                 if ($passenger->seat_id) {
+                    $passengerStatusLower = strtolower($passenger->status ?? '');
+                    $isPassengerCheckedIn = in_array($passengerStatusLower, ['checked_in', 'boarded', 'hadir', 'selesai']);
+                    $statusType = ($isPaid || $isPassengerCheckedIn) ? 'paid' : 'pending';
                     $occupiedSeats[$passenger->seat_id] = [
                         'status' => $statusType,
                         'passenger_name' => $passenger->name,

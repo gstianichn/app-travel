@@ -223,7 +223,7 @@
             <div class="grid sm:grid-cols-3 gap-2">
                 @foreach ($paymentChannels ?? [] as $code => $paymentChannel)
                     <label class="flex items-center gap-3 min-h-11 rounded-lg border border-slate-300 px-4 py-2 cursor-pointer hover:border-brand-600 has-[:checked]:border-2 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50">
-                        <input type="radio" name="payment_channel" value="{{ $code }}" class="w-4 h-4 accent-[#0C5A3E]" @checked($channel === $code)>
+                        <input type="radio" name="payment_channel" value="{{ $code }}" class="w-4 h-4 accent-[#0C5A3E]" @checked($channel === $code) @change="$el.closest('form').submit()">
                         <img src="{{ asset('images/payments/'.$code.'.svg') }}" alt="" class="h-5 w-12 object-contain" loading="lazy">
                         <span class="font-semibold text-slate-900">{{ $channelLabels[$code] ?? $paymentChannel['name'] }}</span>
                     </label>

@@ -34,7 +34,7 @@ class CustomerServiceDashboardController extends Controller
                 'departures_today' => $todaysSchedules->count(),
                 'departures_left' => $todaysSchedules->filter(fn (Schedule $schedule) => $schedule->departureCarbon()->isFuture())->count(),
                 'pending_payments' => Booking::where('status', 'pending')->where('expired_at', '>', now())->count(),
-                'pending_refunds' => Refund::whereIn('status', ['Pending', 'pending'])->count(),
+                'pending_refunds' => Refund::whereIn('status', ['Pending', 'pending', 'Menunggu', 'menunggu', 'Diajukan', 'diajukan'])->count(),
             ],
             'nextDepartures' => $todaysSchedules
                 ->filter(fn (Schedule $schedule) => $schedule->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(30)))

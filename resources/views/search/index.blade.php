@@ -57,6 +57,13 @@
 <section class="sr-results" id="hasil" aria-label="Hasil pencarian">
     <div class="container">
 
+        @if (session('error') || request('expired'))
+            <div class="sr-alert" role="alert" style="border-left-color: #e11d48; margin-bottom: 1.5rem; background-color: #fff1f2; border-left-width: 4px; padding: 1rem 1.25rem; border-radius: 0.5rem;">
+                <p class="sr-alert-title" style="color: #9f1239; font-weight: 700;">Waktu Pemesanan Habis</p>
+                <p style="color: #4c0519; margin-top: 0.25rem;">{{ session('error') ?? 'Waktu tahan kursi (15 menit) sudah habis, kursi Anda telah dilepas kembali. Silakan pilih jadwal dan kursi kembali.' }}</p>
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="sr-alert" role="alert">
                 <p class="sr-alert-title">Pencarian belum bisa dijalankan</p>

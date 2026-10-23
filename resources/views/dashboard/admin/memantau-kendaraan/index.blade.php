@@ -877,8 +877,17 @@
                                     @endif
 
                                     <div class="unit-meta">
-                                        <div style="margin-bottom: 4px;">
+                                        <div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                                             <span class="plate-number-box">{{ $vehicle->plate_number }}</span>
+                                            @if($kir['status'] === 'expired' || $stnk['status'] === 'expired')
+                                                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;">
+                                                    ⚠️ KIR/STNK Lewat Tempo
+                                                </span>
+                                            @elseif($kir['status'] === 'expiring_soon' || $stnk['status'] === 'expiring_soon')
+                                                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;">
+                                                    ⚠️ KIR/STNK Hampir Habis (&le; 30 Hari)
+                                                </span>
+                                            @endif
                                         </div>
                                         <h4>{{ $vehicle->name }}</h4>
                                         <span class="unit-year">Tahun: {{ $vehicle->manufacture_year ?? '-' }} &bull; Total Perjalanan: {{ $vehicle->schedules_count ?? 0 }}</span>

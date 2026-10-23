@@ -6,7 +6,7 @@
     <h1 class="au-title">Daftar akun</h1>
     <p class="au-lead">Akun menyimpan e-ticket dan riwayat perjalananmu, jadi data penumpang tidak perlu diketik ulang. Memesan tetap bisa tanpa akun.</p>
 
-    <a href="{{ route('auth.google.redirect') }}" class="au-google">
+    <a href="{{ route('auth.google.redirect', array_filter(['redirect' => request('redirect')])) }}" class="au-google">
         @include('auth.partials.google-mark')
         Daftar dengan Google
     </a>
@@ -15,6 +15,9 @@
 
     <form method="POST" action="{{ route('register.store') }}" class="au-form" data-auth-form>
         @csrf
+        @if (request('redirect'))
+            <input type="hidden" name="redirect" value="{{ request('redirect') }}">
+        @endif
 
         <div class="au-field">
             <label for="name">Nama lengkap</label>
@@ -106,6 +109,6 @@
     </form>
 
     <div class="au-switch">
-        <p>Sudah punya akun? <a href="{{ route('user.login') }}" class="au-link">Masuk</a></p>
+        <p>Sudah punya akun? <a href="{{ route('user.login', array_filter(['redirect' => request('redirect')])) }}" class="au-link">Masuk</a></p>
     </div>
 @endsection

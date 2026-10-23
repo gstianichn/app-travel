@@ -63,30 +63,21 @@
                     </div>
 
                     <div class="space-y-3 pt-4">
-                        @foreach ($cabinRows as $rowSeats)
-                            <div @class([
-                                'flex items-center gap-2',
-                                'justify-between' => count($rowSeats) !== 3,
-                                'justify-around' => count($rowSeats) === 3,
-                            ])>
-                                @if (count($rowSeats) >= 4)
-                                    <div class="flex gap-2">
-                                        @foreach (array_slice($rowSeats, 0, 2) as $seat)
-                                            @include('dashboard.user.partials.seat-button', ['seat' => $seat])
-                                        @endforeach
-                                    </div>
-                                    <div class="flex gap-2">
-                                        @foreach (array_slice($rowSeats, 2) as $seat)
-                                            @include('dashboard.user.partials.seat-button', ['seat' => $seat])
-                                        @endforeach
-                                    </div>
-                                @else
-                                    @foreach ($rowSeats as $seat)
+                        @foreach ($cabinRows as $rowNumber => $rowSeats)
+                            <div class="grid grid-cols-4 gap-2 items-center justify-items-center">
+                                @foreach ($rowSeats as $seat)
+                                    <div style="grid-column: {{ $seat['seat_column'] }};" class="w-full flex justify-center">
                                         @include('dashboard.user.partials.seat-button', ['seat' => $seat])
-                                    @endforeach
-                                @endif
+                                    </div>
+                                @endforeach
                             </div>
                         @endforeach
+
+                        {{-- Area Bagasi Belakang Kabin Armada --}}
+                        <div class="mt-4 rounded-xl bg-amber-400 text-amber-950 font-black text-xs text-center py-3.5 tracking-widest uppercase border-2 border-amber-500 shadow-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <span>FULL BAGASI</span>
+                        </div>
                     </div>
 
                     <p class="mt-4 border-t-2 border-dashed border-slate-300 pt-3 text-center text-xs text-slate-500">Belakang</p>

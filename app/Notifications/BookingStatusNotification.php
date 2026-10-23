@@ -107,10 +107,61 @@ class BookingStatusNotification extends Notification
             ];
         }
 
-        // expired / cancelled
+        if ($this->statusType === 'admin_cancelled' || $this->statusType === 'cancelled') {
+            return [
+                'title' => 'Tiket Dibatalkan oleh Admin ⚠️',
+                'message' => $this->customMessage ?: "Pesanan {$bookingCode} ({$routeStr}) telah dibatalkan oleh pihak admin. Dana Anda telah otomatis dikembalikan (refund).",
+                'category' => 'transaksi',
+                'status_type' => 'cancelled',
+                'deep_link_url' => route('dashboard.user.user-tiket'),
+                'action_label' => 'Lihat Tiket',
+                'icon' => 'x-circle',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $bookingCode,
+                    'route' => $routeStr,
+                ],
+            ];
+        }
+
+        if ($this->statusType === 'refund_approved') {
+            return [
+                'title' => 'Pengajuan Refund Disetujui ✅',
+                'message' => $this->customMessage ?: "Pengajuan refund untuk pesanan {$bookingCode} ({$routeStr}) telah disetujui admin dan dana otomatis dikembalikan.",
+                'category' => 'transaksi',
+                'status_type' => 'refund_approved',
+                'deep_link_url' => route('dashboard.user.user-tiket'),
+                'action_label' => 'Lihat Rincian',
+                'icon' => 'check-circle',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $bookingCode,
+                    'route' => $routeStr,
+                ],
+            ];
+        }
+
+        if ($this->statusType === 'refund_rejected') {
+            return [
+                'title' => 'Pengajuan Refund Ditolak ⚠️',
+                'message' => $this->customMessage ?: "Pengajuan refund untuk pesanan {$bookingCode} ({$routeStr}) ditolak oleh pihak admin.",
+                'category' => 'transaksi',
+                'status_type' => 'refund_rejected',
+                'deep_link_url' => route('dashboard.user.user-tiket'),
+                'action_label' => 'Lihat Rincian',
+                'icon' => 'alert-triangle',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $bookingCode,
+                    'route' => $routeStr,
+                ],
+            ];
+        }
+
+        // expired
         return [
             'title' => 'Transaksi Dibatalkan (Waktu Habis) ⚠️',
-            'message' => "Pesanan {$bookingCode} ({$routeStr}) otomatis dibatalkan karena batas waktu pembayaran telah habis. Kursi telah dibebaskan kembali.",
+            'message' => $this->customMessage ?: "Pesanan {$bookingCode} ({$routeStr}) otomatis dibatalkan karena batas waktu pembayaran telah habis. Kursi telah dibebaskan kembali.",
             'category' => 'transaksi',
             'status_type' => 'expired',
             'deep_link_url' => route('dashboard.user.search'),

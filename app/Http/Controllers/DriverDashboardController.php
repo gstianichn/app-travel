@@ -89,6 +89,8 @@ class DriverDashboardController extends Controller
                 ->first();
         }
 
+        $hasAssignedSchedule = (bool) $activeSchedule;
+
         // Jika driver belum memiliki jadwal penugasan hari ini, carikan jadwal hari ini yang tersedia di DB
         if (! $activeSchedule) {
             $todaySchedule = Schedule::with([
@@ -375,6 +377,7 @@ class DriverDashboardController extends Controller
             'user',
             'driver',
             'activeSchedule',
+            'hasAssignedSchedule',
             'todaySchedules',
             'tomorrowSchedules',
             'upcomingSchedules',
@@ -542,6 +545,25 @@ class DriverDashboardController extends Controller
         $now = Carbon::now();
         $driver = auth()->user()->driver;
 
+        $currentTripStatus = $schedule->trip_status ?: 'scheduled';
+        $validTransitions = [
+            'scheduled' => ['pickup', 'departed'],
+            'pickup' => ['departed'],
+            'departed' => ['arrived'],
+            'arrived' => ['completed'],
+            'completed' => [],
+        ];
+
+        // Validasi urutan tahapan perjalanan (tidak boleh melompat langsung ke completed)
+        if ($newStatus !== $currentTripStatus && ! in_array($newStatus, $validTransitions[$currentTripStatus] ?? [])) {
+            $err = 'Urutan tahapan perjalanan harus berurutan (Mulai Penjemputan → Berangkat → Tiba di Tujuan → Selesaikan Ritase).';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $err], 422);
+            }
+
+            return redirect()->back()->with('error', $err);
+        }
+
         $updateData = ['trip_status' => $newStatus];
 
         if ($request->filled('latitude')) {
@@ -575,7 +597,7 @@ class DriverDashboardController extends Controller
             }
 
             // Kirim notifikasi keberangkatan
-            $this->notifyPassengers($schedule, 'vehicle_assigned');
+            $this->notifyPassengers($schedule, 'departed');
             $message = 'Status perjalanan diperbarui: Armada telah berangkat meluncur ke tujuan.';
         } elseif ($newStatus === 'arrived') {
             $updateData['arrived_at'] = $now;
@@ -591,9 +613,9 @@ class DriverDashboardController extends Controller
                 $schedule->vehicle->update(['status' => 'siap_jalan']);
             }
 
-            // Tandai semua tiket booking yang aktif menjadi selesai
+            // Tandai hanya tiket booking yang sudah lunas/terkonfirmasi menjadi selesai (jangan ubah pending menjadi lunas)
             Booking::where('schedule_id', $schedule->id)
-                ->whereNotIn('status', ['Cancelled', 'cancelled'])
+                ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
                 ->update(['status' => 'completed']);
 
             $message = 'Selamat! Perjalanan ritase telah berhasil diselesaikan dan dicatat ke riwayat operasional.';

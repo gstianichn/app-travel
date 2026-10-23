@@ -14,10 +14,14 @@ class RegisterController extends Controller
     public function create(Request $request)
     {
         // Same as the login page: ?redirect= brings the passenger back to the booking they were on.
-        $redirect = $request->query('redirect');
+        $redirect = $request->query('redirect') ?? $request->input('redirect');
 
-        if (is_string($redirect) && Str::startsWith($redirect, url('/'))) {
-            $request->session()->put('url.intended', $redirect);
+        if (is_string($redirect) && ! empty($redirect)) {
+            if (Str::startsWith($redirect, '/') && ! Str::startsWith($redirect, '//')) {
+                $request->session()->put('url.intended', url($redirect));
+            } elseif (Str::startsWith($redirect, url('/'))) {
+                $request->session()->put('url.intended', $redirect);
+            }
         }
 
         return view('auth.register');
@@ -66,6 +70,15 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         $bookingAccess->claimFor($user);
+
+        $redirect = $request->input('redirect');
+        if (is_string($redirect) && ! empty($redirect)) {
+            if (Str::startsWith($redirect, '/') && ! Str::startsWith($redirect, '//')) {
+                $request->session()->put('url.intended', url($redirect));
+            } elseif (Str::startsWith($redirect, url('/'))) {
+                $request->session()->put('url.intended', $redirect);
+            }
+        }
 
         return redirect()->intended(route('dashboard.user.index'));
     }

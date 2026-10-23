@@ -14,7 +14,7 @@
         <p class="au-alert au-alert--error" role="alert">{{ $message }}</p>
     @enderror
 
-    <a href="{{ route('auth.google.redirect') }}" class="au-google">
+    <a href="{{ route('auth.google.redirect', array_filter(['redirect' => request('redirect')])) }}" class="au-google">
         @include('auth.partials.google-mark')
         Masuk dengan Google
     </a>
@@ -23,6 +23,9 @@
 
     <form method="POST" action="{{ route('user.login.store') }}" class="au-form" data-auth-form>
         @csrf
+        @if (request('redirect'))
+            <input type="hidden" name="redirect" value="{{ request('redirect') }}">
+        @endif
 
         <div class="au-field">
             <label for="email">Email</label>
@@ -64,7 +67,7 @@
     </form>
 
     <div class="au-switch">
-        <p>Belum punya akun? <a href="{{ route('register') }}" class="au-link">Daftar akun</a></p>
+        <p>Belum punya akun? <a href="{{ route('register', array_filter(['redirect' => request('redirect')])) }}" class="au-link">Daftar akun</a></p>
         <p>Atau <a href="{{ route('search') }}" class="au-link">pesan tiket tanpa akun</a>; e-ticket dikirim ke email.</p>
     </div>
 @endsection

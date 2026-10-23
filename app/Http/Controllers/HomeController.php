@@ -44,21 +44,35 @@ class HomeController extends Controller
     }
 
     /**
-     * Summarise the fleet per vehicle type.
+     * Summarise the fleet per vehicle type, restricted to medium (10 seats) and large (14-19 seats) capacity.
+     * Small capacity vehicles (< 10 seats) are removed per UI specification.
      *
-     * @return Collection<int, array{type: string, units: int, capacity: int, facilities: array<int, string>}>
+     * @return Collection<int, array{type: string, units: int, capacity: int, category: string, facilities: array<int, string>, seatRows: Collection}>
      */
     private function fleetTypes(): Collection
     {
         return Vehicle::query()
-            ->get(['type', 'capacity', 'facilities'])
+            ->where('capacity', '>=', 10)
+            ->get()
             ->groupBy(fn (Vehicle $vehicle) => $vehicle->type ?: 'Minibus')
-            ->map(fn (Collection $vehicles, string $type) => [
-                'type' => $type,
-                'units' => $vehicles->count(),
-                'capacity' => (int) $vehicles->max('capacity'),
-                'facilities' => $vehicles->pluck('facilities')->flatten()->filter()->unique()->take(5)->values()->all(),
-            ])
+            ->map(function (Collection $vehicles, string $type) {
+                /** @var Vehicle $sampleVehicle */
+                $sampleVehicle = $vehicles->first();
+                $sampleVehicle->ensureSeatsExist();
+                $seatRows = $sampleVehicle->seats()->orderBy('seat_row')->orderBy('seat_column')->get()->groupBy('seat_row');
+
+                $capacity = (int) $vehicles->max('capacity');
+                $category = $capacity <= 10 ? 'Kapasitas Sedang' : 'Kapasitas Besar';
+
+                return [
+                    'type' => $type,
+                    'units' => $vehicles->count(),
+                    'capacity' => $capacity,
+                    'category' => $category,
+                    'facilities' => $vehicles->pluck('facilities')->flatten()->filter()->unique()->take(5)->values()->all(),
+                    'seatRows' => $seatRows,
+                ];
+            })
             ->sortBy('capacity')
             ->values();
     }

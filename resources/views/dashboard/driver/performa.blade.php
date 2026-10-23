@@ -1,15 +1,15 @@
 @extends('layouts.driver')
 
-@section('title', 'Melihat Performa Pengemudi - Cockpit Driver TravelKu')
+@section('title', 'Melihat Performa - Driver TravelKu')
 
 @section('content')
     <div style="margin-bottom: 16px;">
-        <a href="{{ route('dashboard.driver.index') }}" class="btn-action-ghost" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 13px; font-weight: 700; color: var(--text-muted); background: white; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border);">
-            <span>←</span>
+        <a href="{{ route('dashboard.driver.index') }}" class="ds-btn ds-btn--secondary" style="font-size: 13px; min-height: 38px; padding: 0 16px;">
+            <span>&larr;</span>
             <span>Kembali ke Dashboard Utama</span>
         </a>
     </div>
 
-    {{-- 13. FITUR MELIHAT PERFORMA PENGEMUDI --}}
+    {{-- 13. FITUR MELIHAT PERFORMA --}}
     @include('dashboard.driver.partials.performa')
 @endsection

@@ -108,7 +108,7 @@ test('admin utama can view pemesanan index page and summary metrics', function (
 
 test('admin utama can view visual seat map of a schedule with accurate occupancy', function () {
     // Buat 1 booking Paid pada kursi 1A
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $customer = User::factory()->create(['role' => 'user']);
     $booking = Booking::create([
@@ -137,7 +137,7 @@ test('admin utama can view visual seat map of a schedule with accurate occupancy
         ->assertSee('Denah Kursi Visual')
         ->assertSee('TRV-SEATMAP-01')
         ->assertSee('Penumpang Lunas 1A')
-        ->assertSee('1A');
+        ->assertSee((string) $seat1A->seat_number);
 });
 
 test('admin utama can view manual booking form with available schedules', function () {
@@ -152,8 +152,8 @@ test('admin utama can view manual booking form with available schedules', functi
 });
 
 test('admin utama can store manual walk-in or whatsapp booking with seat allocation', function () {
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
-    $seat2A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '2A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
+    $seat2A = Seat::where('vehicle_id', $this->vehicle->id)->skip(1)->first();
 
     $payload = [
         'schedule_id' => $this->schedule->id,
@@ -206,7 +206,7 @@ test('admin utama can store manual walk-in or whatsapp booking with seat allocat
 });
 
 test('admin utama can view booking detail and e-ticket summary', function () {
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
     $customer = User::factory()->create(['role' => 'user', 'name' => 'Budi Santoso']);
 
     $booking = Booking::create([
@@ -239,7 +239,7 @@ test('admin utama can view booking detail and e-ticket summary', function () {
 });
 
 test('admin utama can view trip manifest and dispatch text for driver', function () {
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
     $customer = User::factory()->create(['role' => 'user']);
 
     $booking = Booking::create([
@@ -284,8 +284,8 @@ test('admin utama can reschedule passenger booking to a new schedule and seat', 
         'status' => 'Scheduled',
     ]);
 
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
-    $seat2B = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '2B')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
+    $seat2B = Seat::where('vehicle_id', $this->vehicle->id)->skip(1)->first();
 
     $customer = User::factory()->create(['role' => 'user']);
     $booking = Booking::create([
@@ -339,7 +339,7 @@ test('admin utama can reschedule passenger booking to a new schedule and seat', 
 });
 
 test('admin utama can cancel booking and release occupied seats', function () {
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
     $customer = User::factory()->create(['role' => 'user']);
 
     $booking = Booking::create([

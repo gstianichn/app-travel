@@ -813,8 +813,25 @@ class AdminBiasaDashboardController extends Controller
                 }
             }
 
+            // Evaluasi Aturan: Tiket Sudah Pernah Di-Scan / Check-in Mandiri (PRD 19 & 20)
+            $isAlreadyBoarded = ($ticket && strtolower($ticket->status) === 'boarded') ||
+                ($ticket && $ticket->boarded_at !== null) ||
+                (strtolower($booking->status) === 'checked_in') ||
+                ($booking->passengers->isNotEmpty() && $booking->passengers->every(fn ($p) => $p->boarding_status === 'boarded'));
+
+            if ($isAlreadyBoarded) {
+                $scannedAt = $ticket?->boarded_at ? $ticket->boarded_at->format('H:i').' WIB' : Carbon::now()->subMinutes(12)->format('H:i').' WIB';
+
+                return response()->json([
+                    'success' => false,
+                    'reason' => 'already_boarded',
+                    'title' => 'Tiket Sudah Pernah Di-Scan',
+                    'message' => "Tiket ini sudah pernah divalidasi dan digunakan untuk boarding pada pukul {$scannedAt}. Penumpang sudah terdata di dalam kabin armada.",
+                ], 422);
+            }
+
             // Evaluasi Aturan 3: Status Pembayaran (PRD 20 & 21)
-            $validStatuses = ['confirmed', 'paid', 'success', 'completed', 'lunas'];
+            $validStatuses = ['confirmed', 'paid', 'success', 'completed', 'lunas', 'checked_in'];
             if (! in_array(strtolower($booking->status), $validStatuses, true)) {
                 $statusLabel = method_exists($booking, 'statusLabel') ? $booking->statusLabel() : ucfirst($booking->status);
 
@@ -885,22 +902,6 @@ class AdminBiasaDashboardController extends Controller
                         ], 422);
                     }
                 }
-            }
-
-            // Evaluasi Aturan 6: Tiket Sudah Pernah Di-Scan (PRD 19 & 20)
-            $isAlreadyBoarded = ($ticket && strtolower($ticket->status) === 'boarded') ||
-                ($ticket && $ticket->boarded_at !== null) ||
-                ($booking->passengers->isNotEmpty() && $booking->passengers->every(fn ($p) => $p->boarding_status === 'boarded'));
-
-            if ($isAlreadyBoarded) {
-                $scannedAt = $ticket?->boarded_at ? $ticket->boarded_at->format('H:i').' WIB' : Carbon::now()->subMinutes(12)->format('H:i').' WIB';
-
-                return response()->json([
-                    'success' => false,
-                    'reason' => 'already_boarded',
-                    'title' => 'Tiket Sudah Pernah Di-Scan',
-                    'message' => "Tiket ini sudah pernah divalidasi dan digunakan untuk boarding pada pukul {$scannedAt}. Penumpang sudah terdata di dalam kabin armada.",
-                ], 422);
             }
 
             // Lolos semua aturan -> Validasi Sukses & Ubah Status Jadi Boarded
