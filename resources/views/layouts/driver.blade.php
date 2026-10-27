@@ -7,10 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>
-        @yield('title', 'Cockpit Driver Dashboard - Operasional Travel Minibus')
+        @yield('title', 'Dashboard Driver - TravelKu')
     </title>
-
-    {{-- Google Fonts --}}
 
     {{-- Vite Asset Bundler --}}
     @vite([
@@ -28,19 +26,25 @@
     @vite(['resources/css/dashboard-staff.css'])
 </head>
 
-<body data-staff="driver">
+<body data-staff="driver" class="driver-body">
 
-<div class="driver-shell">
+<div class="dashboard-wrapper driver-app-layout">
+
+    {{-- Backdrop untuk Tampilan Mobile saat Sidebar Aktif --}}
+    <div id="driver-sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     {{-- Sidebar Navigasi Menu Driver --}}
     @include('dashboard.driver.partials.sidebar')
 
-    {{-- Konten Utama Dashboard Driver --}}
-    <main class="main-canvas" id="section-dashboard">
+    {{-- Wrapper Utama Konten (Header + Main Content) --}}
+    <div class="main-content driver-main-wrapper">
+
+        {{-- Topbar Header Driver --}}
+        @include('dashboard.driver.partials.topbar')
 
         {{-- Flash Notification Toast --}}
         @if (session('success'))
-            <div class="toast-banner">
+            <div class="toast-banner" style="margin: 20px 32px 0;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
@@ -57,9 +61,9 @@
         @endif
 
         @if (session('error'))
-            <div class="toast-banner error">
+            <div class="toast-banner error" style="margin: 20px 32px 0;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
                         <line x1="12" y1="9" x2="12" y2="13"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -75,13 +79,18 @@
             </div>
         @endif
 
-        {{-- Header Identitas Tugas & Status Sistem --}}
-        @include('dashboard.driver.partials.topbar')
-
         {{-- Dynamic Content Area --}}
-        @yield('content')
+        <main class="content driver-main-content main-canvas" id="section-dashboard">
+            @yield('content')
+        </main>
 
-    </main>
+        {{-- Footer Driver Minimalis --}}
+        <footer style="margin-top: auto; padding: 20px 32px; font-size: 12px; color: var(--lp-muted); border-top: 1px solid var(--lp-line); display: flex; justify-content: space-between; align-items: center;">
+            <span>&copy; {{ date('Y') }} TravelKu &bull; Driver Operasional</span>
+            <span>TravelKu Staff Suite</span>
+        </footer>
+
+    </div>
 
 </div>
 

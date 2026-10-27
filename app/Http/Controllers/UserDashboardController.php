@@ -134,14 +134,17 @@ class UserDashboardController extends Controller
         $routeConnected = false;
         $originLoc = null;
         $destLoc = null;
+        $passengerCount = max(1, (int) $request->input('passengers', 1));
 
         if ($searchPerformed) {
             $validated = $request->validate([
                 'origin' => ['required', 'integer', 'exists:locations,id'],
                 'destination' => ['required', 'integer', 'exists:locations,id', 'different:origin'],
                 'departure_date' => ['required', 'date', 'after_or_equal:today'],
-                'passengers' => ['required', 'integer', 'min:1', 'max:10'],
+                'passengers' => ['nullable', 'integer', 'min:1', 'max:10'],
             ]);
+
+            $passengerCount = max(1, (int) ($validated['passengers'] ?? $request->input('passengers', 1)));
 
             $originLoc = Location::find($validated['origin']);
             $destLoc = Location::find($validated['destination']);
@@ -184,7 +187,7 @@ class UserDashboardController extends Controller
             $schedules = Schedule::query()
                 ->with(['route.origin', 'route.destination', 'vehicle.seats', 'driver.user'])
                 ->whereDate('departure_date', $validated['departure_date'])
-                ->where('available_seats', '>=', $validated['passengers'])
+                ->where('available_seats', '>=', $passengerCount)
                 ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
                 // Departures that already left today cannot be booked any more.
                 ->when(
@@ -196,7 +199,7 @@ class UserDashboardController extends Controller
                         ->where('destination_id', $validated['destination']);
                 })
                 ->whereHas('vehicle', function ($q) {
-                    $q->whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active']);
+                    $q->whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active', 'Available']);
                 })
                 ->orderBy('departure_time')
                 ->get();
@@ -211,7 +214,8 @@ class UserDashboardController extends Controller
             'routeConnected',
             'originLoc',
             'destLoc',
-            'transitHub'
+            'transitHub',
+            'passengerCount'
         ));
     }
 
@@ -221,8 +225,6 @@ class UserDashboardController extends Controller
     public function selectSeat(Request $request, Schedule $schedule): View
     {
         $schedule->load(['route.origin', 'route.destination', 'vehicle', 'driver.user']);
-
-        $passengers = max(1, min(10, (int) $request->query('passengers', 1)));
 
         // Pastikan kursi armada terbuat
         if ($schedule->vehicle) {
@@ -235,6 +237,9 @@ class UserDashboardController extends Controller
         // Ambil data denah kursi dengan status terkini (Available, Selected, Locked, Occupied)
         $occupancyMap = $this->buildSeatOccupancyMap($schedule);
 
+        // $passengers tidak lagi berasal dari query string; nilai ini hanya dipakai blade untuk kompatibilitas partial
+        $passengers = $schedule->available_seats;
+
         return view('dashboard.user.booking-seat', compact('schedule', 'occupancyMap', 'passengers'));
     }
 
@@ -245,14 +250,15 @@ class UserDashboardController extends Controller
     {
         $validated = $request->validate([
             'schedule_id' => ['required', 'integer', 'exists:schedules,id'],
-            'passengers' => ['required', 'integer', 'min:1', 'max:10'],
-            'seat_ids' => ['required', 'array', 'size:'.$request->input('passengers', 1)],
+            'seat_ids' => ['required', 'array', 'min:1', 'max:10'],
             'seat_ids.*' => ['required', 'integer', 'exists:seats,id'],
         ]);
 
         $seatIds = $validated['seat_ids'];
+        // Jumlah penumpang = jumlah kursi yang dipilih pengguna secara langsung
+        $passengersCount = count($seatIds);
 
-        return DB::transaction(function () use ($validated, $seatIds) {
+        return DB::transaction(function () use ($validated, $seatIds, $passengersCount) {
             // 1. Pessimistic lock pada baris schedule
             $schedule = Schedule::where('id', $validated['schedule_id'])
                 ->with('vehicle')
@@ -284,7 +290,7 @@ class UserDashboardController extends Controller
                 ->whereHas('booking', function ($q) use ($schedule, $ownPendingIds) {
                     $q->where('schedule_id', $schedule->id)
                         ->where(function ($sub) use ($ownPendingIds) {
-                            $sub->whereIn('status', ['paid', 'confirmed', 'success', 'lunas'])
+                            $sub->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'])
                                 ->orWhere(function ($pending) use ($ownPendingIds) {
                                     $pending->where('status', 'pending')
                                         ->where('expired_at', '>', Carbon::now())
@@ -306,7 +312,7 @@ class UserDashboardController extends Controller
 
             $bookingCode = 'TRV-'.Carbon::now()->format('Ymd').'-'.strtoupper(Str::random(5));
             $unitPrice = $schedule->effectivePrice();
-            $totalPassenger = count($seatIds);
+            $totalPassenger = $passengersCount;
             $subtotal = $unitPrice * $totalPassenger;
 
             $booking = Booking::create([
@@ -547,14 +553,52 @@ class UserDashboardController extends Controller
             'booker_phone.regex' => 'Nomor HP hanya boleh berisi angka, spasi, +, atau -, minimal 8 digit.',
         ]);
 
+        // Cek apakah waktu lock habis
+        if ($booking->status === 'pending' && $booking->expired_at && $booking->expired_at->isPast()) {
+            $booking->update(['status' => 'cancelled']);
+            $booking->schedule?->recalculateAvailableSeats();
+
+            return redirect()->route(Auth::check() ? 'dashboard.user.search' : 'search')
+                ->with('error', 'Waktu tahan kursi sudah habis, jadi kursinya dilepas. Pilih jadwal dan kursi lagi.');
+        }
+
+        $booking->loadMissing('schedule.route.origin', 'schedule.route.destination');
+        $originName = strtolower($booking->schedule?->route?->origin?->name ?? '');
+        $destinationName = strtolower($booking->schedule?->route?->destination?->name ?? '');
+
         $subtotal = (float) $booking->subtotal;
         $discount = 0.0;
         $promoCode = strtoupper(trim($request->input('promo_code', '')));
+        $appliedUserVoucher = null;
 
-        if ($promoCode === 'HEMATLIBURAN' && $subtotal >= 100000) {
-            $discount = min(50000, $subtotal * 0.25);
+        if ($promoCode === 'HEMATLIBURAN') {
+            $isRouteValid = (str_contains($originName, 'bandung') || str_contains($destinationName, 'bandung'))
+                && (str_contains($originName, 'jakarta') || str_contains($destinationName, 'jakarta'));
+            if ($isRouteValid && $subtotal >= 100000) {
+                $discount = min(50000, $subtotal * 0.25);
+            }
         } elseif ($promoCode === 'TRAVELHEMAT' && $subtotal >= 100000) {
             $discount = 20000;
+        }
+
+        $user = Auth::user();
+        if ($user && $promoCode) {
+            $userVoucher = $user->vouchers()->where('code', $promoCode)->first();
+            if ($userVoucher && $userVoucher->isActive()) {
+                $canApply = true;
+                if ($userVoucher->applicable_route) {
+                    $canApply = str_contains($originName, 'bandung') || str_contains($destinationName, 'jakarta');
+                }
+                if ($canApply && $subtotal >= $userVoucher->min_transaction) {
+                    if ($userVoucher->discount_type === 'percent') {
+                        $rawDiscount = $subtotal * ($userVoucher->discount_value / 100);
+                        $discount = $userVoucher->max_discount ? min($userVoucher->max_discount, $rawDiscount) : $rawDiscount;
+                    } else {
+                        $discount = min($subtotal, (float) $userVoucher->discount_value);
+                    }
+                    $appliedUserVoucher = $userVoucher;
+                }
+            }
         }
 
         $totalPrice = max(0, $subtotal - $discount);
@@ -569,6 +613,13 @@ class UserDashboardController extends Controller
             'notes' => $validated['notes'] ?? null,
             'expired_at' => Carbon::now()->addMinutes(15), // Tambahkan perpanjangan 15 menit untuk waktu pembayaran
         ]);
+
+        if ($appliedUserVoucher) {
+            $appliedUserVoucher->update([
+                'status' => 'used',
+                'used_at' => Carbon::now(),
+            ]);
+        }
 
         // Simpan data setiap penumpang
         foreach ($validated['passengers'] as $passengerData) {
@@ -783,12 +834,18 @@ class UserDashboardController extends Controller
     {
         $payload = $request->all();
         $orderId = $payload['order_id'] ?? $payload['external_id'] ?? null;
-        $transactionStatus = strtolower($payload['transaction_status'] ?? $payload['status'] ?? 'settlement');
-        $fraudStatus = strtolower($payload['fraud_status'] ?? 'accept');
+        $rawStatus = $payload['transaction_status'] ?? $payload['status'] ?? null;
+        $fraudStatus = strtolower((string) ($payload['fraud_status'] ?? 'accept'));
 
         if (! $orderId) {
             return response()->json(['status' => 'error', 'message' => 'Missing order_id'], 400);
         }
+
+        if (! is_string($rawStatus) || trim($rawStatus) === '') {
+            return response()->json(['status' => 'error', 'message' => 'Missing transaction_status'], 400);
+        }
+
+        $transactionStatus = strtolower($rawStatus);
 
         $payment = Payment::where('order_id', $orderId)->first();
         if (! $payment) {
@@ -800,13 +857,23 @@ class UserDashboardController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Associated booking not found'], 404);
         }
 
-        // Verifikasi keaslian signature Midtrans jika server key disetel
+        // Webhook wajib bertanda tangan saat server key tersedia (kecuali simulator lokal).
         $midtransService = app(MidtransService::class);
-        if (isset($payload['signature_key']) && ! empty($midtransService->getServerKey())) {
-            if (! $midtransService->verifySignature($payload)) {
-                return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
-            }
+        if ($midtransService->requiresWebhookSignature() && ! $midtransService->verifySignature($payload)) {
+            Log::warning('Payment webhook ditolak: signature tidak valid', [
+                'order_id' => $orderId,
+                'signature_present' => isset($payload['signature_key']),
+            ]);
+
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
         }
+
+        Log::info('Payment webhook diterima', [
+            'order_id' => $orderId,
+            'transaction_status' => $transactionStatus,
+            'fraud_status' => $fraudStatus,
+            'gateway_provider' => $payment->gateway_provider,
+        ]);
 
         // Tentukan label metode pembayaran dari webhook
         $paymentType = $payload['payment_type'] ?? null;
@@ -823,7 +890,28 @@ class UserDashboardController extends Controller
             $resolvedMethod = 'ShopeePay';
         }
 
-        if (in_array($transactionStatus, ['settlement', 'paid', 'success']) || ($transactionStatus === 'capture' && $fraudStatus === 'accept')) {
+        if (in_array($transactionStatus, ['settlement', 'paid', 'success'], true) || ($transactionStatus === 'capture' && $fraudStatus === 'accept')) {
+            $grossAmount = $payload['gross_amount'] ?? null;
+
+            if ($grossAmount === null || ! is_numeric($grossAmount)) {
+                Log::warning('Payment webhook ditolak: gross_amount tidak ada', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                ]);
+
+                return response()->json(['status' => 'error', 'message' => 'Missing gross_amount'], 400);
+            }
+
+            if (abs((float) $grossAmount - (float) $booking->total_price) > 0.01) {
+                Log::warning('Payment webhook ditolak: nominal tidak cocok', [
+                    'order_id' => $orderId,
+                    'gross_amount' => $grossAmount,
+                    'booking_total' => $booking->total_price,
+                ]);
+
+                return response()->json(['status' => 'error', 'message' => 'Gross amount mismatch'], 422);
+            }
+
             $this->confirmAndIssueTicket($booking, $resolvedMethod, $payload);
 
             return response()->json([
@@ -833,18 +921,47 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        if (in_array($transactionStatus, ['expire', 'expired', 'cancel', 'cancelled', 'deny', 'failed'])) {
-            $booking->update(['status' => 'cancelled']);
-            $payment->update([
-                'status' => 'expired',
-                'gateway_status' => $transactionStatus,
-                'raw_response' => $payload,
-            ]);
-            $booking->schedule?->recalculateAvailableSeats();
+        if (in_array($transactionStatus, ['expire', 'expired', 'cancel', 'cancelled', 'deny', 'failed'], true)) {
+            $paymentStatus = match ($transactionStatus) {
+                'expire', 'expired' => 'expired',
+                'cancel', 'cancelled' => 'cancelled',
+                default => 'failed',
+            };
 
-            // Event Trigger: Transaksi Dibatalkan karena waktu habis
-            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
-            $booking->user?->notify(new BookingStatusNotification($booking, 'expired'));
+            $cancelled = DB::transaction(function () use ($booking, $payment, $transactionStatus, $paymentStatus, $payload) {
+                $lockedBooking = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+                if (! $lockedBooking || $lockedBooking->isPaid()) {
+                    return false;
+                }
+
+                $lockedBooking->update(['status' => 'cancelled']);
+                $payment->update([
+                    'status' => $paymentStatus,
+                    'gateway_status' => $transactionStatus,
+                    'raw_response' => $payload,
+                ]);
+                $lockedBooking->schedule?->recalculateAvailableSeats();
+
+                // Event Trigger: Transaksi Dibatalkan karena waktu habis
+                $lockedBooking->load(['schedule.route.origin', 'schedule.route.destination', 'user']);
+                $lockedBooking->user?->notify(new BookingStatusNotification($lockedBooking, 'expired'));
+
+                return true;
+            });
+
+            if (! $cancelled) {
+                Log::warning('Payment webhook diabaikan: booking sudah lunas', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                    'booking_status' => $booking->fresh()?->status,
+                ]);
+
+                return response()->json([
+                    'status' => 'ignored',
+                    'message' => 'Booking already paid; cancellation ignored.',
+                ]);
+            }
 
             return response()->json([
                 'status' => 'cancelled',
@@ -852,8 +969,40 @@ class UserDashboardController extends Controller
             ]);
         }
 
-        if ($transactionStatus === 'pending') {
+        if (in_array($transactionStatus, ['refund', 'partial_refund', 'chargeback', 'partial_chargeback'], true)) {
             $payment->update([
+                'status' => $transactionStatus,
+                'gateway_status' => $transactionStatus,
+                'raw_response' => $payload,
+            ]);
+
+            Log::warning('Payment webhook: refund/chargeback diterima', [
+                'order_id' => $orderId,
+                'transaction_status' => $transactionStatus,
+                'booking_code' => $booking->booking_code,
+            ]);
+
+            return response()->json([
+                'status' => 'refunded',
+                'message' => 'Refund/chargeback recorded.',
+            ]);
+        }
+
+        if ($transactionStatus === 'pending') {
+            if ($booking->isPaid()) {
+                Log::warning('Payment webhook diabaikan: booking sudah lunas', [
+                    'order_id' => $orderId,
+                    'transaction_status' => $transactionStatus,
+                ]);
+
+                return response()->json([
+                    'status' => 'ignored',
+                    'message' => 'Booking already paid; pending status ignored.',
+                ]);
+            }
+
+            $payment->update([
+                'status' => 'pending',
                 'gateway_status' => 'pending',
                 'raw_response' => $payload,
             ]);
@@ -863,6 +1012,11 @@ class UserDashboardController extends Controller
                 'message' => 'Payment status is pending.',
             ]);
         }
+
+        Log::info('Payment webhook diabaikan: status tidak dikenal', [
+            'order_id' => $orderId,
+            'transaction_status' => $transactionStatus,
+        ]);
 
         return response()->json(['status' => 'ignored']);
     }
@@ -1005,11 +1159,11 @@ class UserDashboardController extends Controller
         // 1. Auto-trigger penyelesaian: jika jam keberangkatan telah lewat, ubah ke completed
         $this->autoCompletePastTrips($userId);
 
-        $cutoff2h = Carbon::now()->subHours(2);
-        $cutoffDate2h = $cutoff2h->toDateString();
-        $cutoffTime2h = $cutoff2h->format('H:i:s');
+        $cutoff1h = Carbon::now()->subHours(1);
+        $cutoffDate1h = $cutoff1h->toDateString();
+        $cutoffTime1h = $cutoff1h->format('H:i:s');
 
-        // 2. Tiket Aktif & Mendatang (Confirmed, Paid, Checked-in) diurutkan keberangkatan terdekat
+        // 2. Tiket Aktif & Mendatang (Confirmed, Paid, Checked-in, Refund Pending) diurutkan keberangkatan terdekat
         $activeBookings = Booking::query()
             ->with([
                 'schedule.route.origin',
@@ -1021,17 +1175,20 @@ class UserDashboardController extends Controller
                 'ticket',
             ])
             ->where('user_id', $userId)
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
-            ->whereHas('schedule', function ($q) use ($cutoffDate2h, $cutoffTime2h) {
-                $q->where(function ($sub) use ($cutoffDate2h, $cutoffTime2h) {
-                    $sub->whereDate('departure_date', '>', $cutoffDate2h)
-                        ->orWhere(function ($sameDaySub) use ($cutoffDate2h, $cutoffTime2h) {
-                            $sameDaySub->whereDate('departure_date', $cutoffDate2h)
-                                ->where('departure_time', '>=', $cutoffTime2h);
+            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'refund_pending'])
+            ->whereHas('schedule', function ($q) use ($cutoffDate1h, $cutoffTime1h) {
+                $q->where(function ($sub) use ($cutoffDate1h, $cutoffTime1h) {
+                    $sub->whereDate('departure_date', '>', $cutoffDate1h)
+                        ->orWhere(function ($sameDaySub) use ($cutoffDate1h, $cutoffTime1h) {
+                            $sameDaySub->whereDate('departure_date', $cutoffDate1h)
+                                ->where('departure_time', '>=', $cutoffTime1h);
                         });
                 });
             })
             ->get()
+            ->filter(function ($booking) {
+                return $booking->schedule && $booking->schedule->departureCarbon()->addHour()->isFuture();
+            })
             ->sortBy(function ($booking) {
                 return $booking->departure_date_time->timestamp;
             })
@@ -1128,6 +1285,10 @@ class UserDashboardController extends Controller
             abort(403);
         }
 
+        if (! $booking || ! in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])) {
+            return back()->with('error', 'Check-in mandiri hanya dapat dilakukan untuk tiket yang sudah lunas.');
+        }
+
         $now = Carbon::now();
 
         // 1. Update status tiket menjadi Boarded
@@ -1180,7 +1341,7 @@ class UserDashboardController extends Controller
         $cancellationFee = round($originalAmount * 0.25, 2); // Potongan administrasi 25%
         $refundAmount = max(0, round($originalAmount * 0.75, 2)); // Dana kembali 75%
 
-        DB::transaction(function () use ($booking, $validated, $originalAmount, $cancellationFee, $refundAmount, $schedule) {
+        DB::transaction(function () use ($booking, $validated, $originalAmount, $cancellationFee, $refundAmount) {
             Refund::create([
                 'booking_id' => $booking->id,
                 'user_id' => Auth::id(),
@@ -1195,21 +1356,14 @@ class UserDashboardController extends Controller
                 'status' => 'Diajukan',
             ]);
 
+            // Status pemesanan diubah menjadi refund_pending (menunggu verifikasi & ACC admin).
+            // Kursi tetap ditahan sampai admin menyetujui refund.
             $booking->update([
-                'status' => 'cancelled',
+                'status' => 'refund_pending',
             ]);
-
-            if ($booking->ticket) {
-                $booking->ticket->update(['status' => 'cancelled']);
-            }
-
-            // Pembebasan Kursi Otomatis ke inventori publik
-            if ($schedule) {
-                $schedule->recalculateAvailableSeats();
-            }
         });
 
-        return back()->with('success', 'Pengajuan pembatalan & refund berhasil dikirim. Kursi telah dibebaskan kembali ke publik dan pengembalian dana 75% sedang diproses.');
+        return back()->with('success', 'Pengajuan refund berhasil dikirim dan sedang menunggu persetujuan admin. Dana akan otomatis dikembalikan setelah disetujui.');
     }
 
     /**
@@ -1219,6 +1373,10 @@ class UserDashboardController extends Controller
     {
         if ($booking->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if ($booking->status !== 'completed') {
+            return back()->with('error', 'Ulasan hanya dapat dikirim setelah perjalanan Anda selesai.');
         }
 
         $validated = $request->validate([
@@ -1258,7 +1416,7 @@ class UserDashboardController extends Controller
         $cutoffTime1h = $cutoff1h->format('H:i:s');
 
         $pastBookings = Booking::where('user_id', $userId)
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'checked_in'])
+            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
             ->whereHas('schedule', function ($q) use ($cutoffDate1h, $cutoffTime1h) {
                 $q->where(function ($sub) use ($cutoffDate1h, $cutoffTime1h) {
                     $sub->whereDate('departure_date', '<', $cutoffDate1h)
@@ -1274,6 +1432,21 @@ class UserDashboardController extends Controller
             $b->update(['status' => 'completed']);
             if ($b->ticket) {
                 $b->ticket->update(['status' => 'completed']);
+            }
+        }
+
+        // Pastikan juga berdasarkan Carbon departureCarbon
+        $allActiveBookings = Booking::with(['schedule', 'ticket'])
+            ->where('user_id', $userId)
+            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
+            ->get();
+
+        foreach ($allActiveBookings as $b) {
+            if ($b->schedule && $b->schedule->departureCarbon()->addHour()->isPast()) {
+                $b->update(['status' => 'completed']);
+                if ($b->ticket) {
+                    $b->ticket->update(['status' => 'completed']);
+                }
             }
         }
     }
@@ -1676,9 +1849,16 @@ class UserDashboardController extends Controller
             return back()->with('error', "Kode voucher '{$code}' tidak valid atau promo sudah berakhir.");
         }
 
-        // Cek apakah voucher dengan kode ini sudah ada dan masih aktif
+        // Cek apakah voucher dengan kode ini sudah ada di akun pengguna
         $existing = $user->vouchers()->where('code', $code)->first();
-        if ($existing && $existing->isActive()) {
+        if ($existing) {
+            if ($existing->isUsed()) {
+                return back()->with('error', "Voucher '{$code}' sudah pernah digunakan.");
+            }
+            if ($existing->isExpired()) {
+                return back()->with('error', "Voucher '{$code}' sudah kedaluwarsa dan tidak dapat diklaim ulang.");
+            }
+
             return back()->with('error', "Voucher '{$code}' sudah ada di Dompet Voucher Anda dan masih aktif.");
         }
 
@@ -1730,7 +1910,14 @@ class UserDashboardController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (! Hash::check($validated['current_password'], $user->password)) {
+        $isCurrentPasswordValid = false;
+        if (password_get_info((string) $user->password)['algoName'] === 'bcrypt') {
+            $isCurrentPasswordValid = Hash::check($validated['current_password'], $user->password);
+        } elseif ((string) $user->password === (string) $validated['current_password']) {
+            $isCurrentPasswordValid = true;
+        }
+
+        if (! $isCurrentPasswordValid) {
             throw ValidationException::withMessages([
                 'current_password' => 'Kata sandi saat ini yang Anda masukkan salah.',
             ]);
@@ -1749,11 +1936,7 @@ class UserDashboardController extends Controller
      */
     protected function ensureUserPresets(User $user): void
     {
-        if (! app()->runningUnitTests()) {
-            return;
-        }
-
-        // 1. Saved Passengers
+        // 1. Saved Passengers (Always ensure user's own primary preset exists)
         if ($user->savedPassengers()->count() === 0) {
             $user->savedPassengers()->create([
                 'name' => $user->name,
@@ -1762,19 +1945,25 @@ class UserDashboardController extends Controller
                 'is_primary' => true,
             ]);
 
-            $user->savedPassengers()->create([
-                'name' => 'Budi Santoso',
-                'nik' => '3273021405880002',
-                'phone' => '081234567891',
-                'is_primary' => false,
-            ]);
+            if (app()->runningUnitTests() || config('app.debug')) {
+                $user->savedPassengers()->create([
+                    'name' => 'Budi Santoso',
+                    'nik' => '3273021405880002',
+                    'phone' => '081234567891',
+                    'is_primary' => false,
+                ]);
 
-            $user->savedPassengers()->create([
-                'name' => 'Sari Dewi',
-                'nik' => '3273045209930003',
-                'phone' => '081298765432',
-                'is_primary' => false,
-            ]);
+                $user->savedPassengers()->create([
+                    'name' => 'Sari Dewi',
+                    'nik' => '3273045209930003',
+                    'phone' => '081298765432',
+                    'is_primary' => false,
+                ]);
+            }
+        }
+
+        if (! app()->runningUnitTests()) {
+            return;
         }
 
         // 2. User Vouchers
@@ -1876,7 +2065,8 @@ class UserDashboardController extends Controller
 
         $occupiedSeats = [];
         foreach ($activeBookings as $b) {
-            $isPaid = in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas']);
+            $bookingStatusLower = strtolower($b->status);
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']);
             $isPendingLock = ($b->status === 'pending') && $b->expired_at && $b->expired_at->isFuture();
 
             if (! $isPaid && ! $isPendingLock) {
@@ -1885,7 +2075,9 @@ class UserDashboardController extends Controller
 
             foreach ($b->passengers as $p) {
                 if ($p->seat_id) {
-                    $status = $isPaid ? 'paid' : ($this->bookingAccess->canAccess($b) ? 'my_lock' : 'locked');
+                    $passengerStatusLower = strtolower($p->status ?? '');
+                    $isPassengerCheckedIn = in_array($passengerStatusLower, ['checked_in', 'boarded', 'hadir', 'selesai']);
+                    $status = ($isPaid || $isPassengerCheckedIn) ? 'paid' : ($this->bookingAccess->canAccess($b) ? 'my_lock' : 'locked');
                     $occupiedSeats[$p->seat_id] = [
                         'status' => $status,
                         'passenger_name' => $p->name,
@@ -1925,17 +2117,26 @@ class UserDashboardController extends Controller
      */
     protected function confirmAndIssueTicket(Booking $booking, string $paymentMethod = 'Virtual Account BCA', array $rawPayload = []): void
     {
-        // Webhook, polling and the status check can all land here; issue the ticket and email only once.
-        if ($booking->fresh()?->isPaid() && $booking->ticket()->exists()) {
-            return;
-        }
+        $ticket = null;
+        $issuedBooking = null;
 
-        DB::transaction(function () use ($booking, $paymentMethod, $rawPayload) {
-            $booking->update([
+        DB::transaction(function () use ($booking, $paymentMethod, $rawPayload, &$ticket, &$issuedBooking) {
+            $lockedBooking = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->first();
+
+            if (! $lockedBooking) {
+                return;
+            }
+
+            // Webhook, polling and the status check can all land here; issue the ticket and email only once.
+            if ($lockedBooking->isPaid() && $lockedBooking->ticket()->exists()) {
+                return;
+            }
+
+            $lockedBooking->update([
                 'status' => 'confirmed',
             ]);
 
-            $payment = Payment::firstOrNew(['booking_id' => $booking->id]);
+            $payment = Payment::firstOrNew(['booking_id' => $lockedBooking->id]);
             $payment->payment_method = $paymentMethod;
             $payment->status = 'paid';
             $payment->paid_at = Carbon::now();
@@ -1946,24 +2147,28 @@ class UserDashboardController extends Controller
             // Terbitkan E-Ticket Boarding Pass
             $ticketNumber = 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(Str::random(5));
             $ticket = Ticket::updateOrCreate(
-                ['booking_id' => $booking->id],
+                ['booking_id' => $lockedBooking->id],
                 [
                     'ticket_number' => $ticketNumber,
-                    'qr_code' => 'QR-'.$booking->booking_code,
+                    'qr_code' => 'QR-'.$lockedBooking->booking_code,
                     'status' => 'active',
                 ]
             );
 
             // Perbarui sisa kursi
-            $booking->schedule?->recalculateAvailableSeats();
+            $lockedBooking->schedule?->recalculateAvailableSeats();
 
             // Event Trigger: Pembayaran Sukses & Terbit E-Ticket
-            $booking->setRelation('ticket', $ticket);
-            $booking->load(['schedule.route.origin', 'schedule.route.destination', 'user', 'ticket']);
-            $booking->user?->notify(new BookingStatusNotification($booking, 'confirmed'));
+            $lockedBooking->setRelation('ticket', $ticket);
+            $lockedBooking->load(['schedule.route.origin', 'schedule.route.destination', 'user', 'ticket']);
+            $lockedBooking->user?->notify(new BookingStatusNotification($lockedBooking, 'confirmed'));
+
+            $issuedBooking = $lockedBooking;
         });
 
-        $this->sendTicketEmail($booking);
+        if ($ticket?->wasRecentlyCreated && $issuedBooking) {
+            $this->sendTicketEmail($issuedBooking);
+        }
     }
 
     /**

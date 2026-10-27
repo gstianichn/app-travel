@@ -37,6 +37,7 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'locked_until' => 'datetime',
             'password' => 'hashed',
+            'access_code' => 'hashed',
             'permissions' => 'array',
         ];
     }

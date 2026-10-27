@@ -18,27 +18,17 @@
     <header class="ds-head">
         <div>
             <h1>Halo, {{ \Illuminate\Support\Str::before(auth()->user()->name ?? 'CS', ' ') }}.</h1>
-            <p>{{ now()->translatedFormat('l, d F Y') }}. Cari pesanan penumpang dari kode booking, nomor tiket, nama, email, atau nomor HP.</p>
+            <p>{{ now()->translatedFormat('l, d F Y') }}.</p>
         </div>
     </header>
 
-    {{-- Lookup: the first thing a CS agent needs when a passenger calls --}}
-    <section class="ds-panel" aria-labelledby="cari-pesanan">
-        <div class="ds-panel-head">
-            <h2 id="cari-pesanan">Cari pesanan</h2>
-        </div>
-        <div class="ds-panel-body">
-            <form method="GET" action="{{ route('dashboard.customer-service.index') }}" class="ds-search" role="search">
-                <label for="cs-lookup" class="ds-visually-hidden">Kode booking, nomor tiket, nama, email, atau nomor HP</label>
-                <input type="search" id="cs-lookup" name="q" value="{{ $query }}" placeholder="TRV-20261011-ABCDE, nama, atau 0812..." autocomplete="off">
-                <button type="submit" class="ds-btn ds-btn--primary">Cari</button>
-                @if ($query !== '')
-                    <a href="{{ route('dashboard.customer-service.index') }}" class="ds-btn ds-btn--secondary">Hapus pencarian</a>
-                @endif
-            </form>
-        </div>
+    @if ($query !== '')
+        <section class="ds-panel" aria-labelledby="hasil-pencarian">
+            <div class="ds-panel-head" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="hasil-pencarian">Hasil pencarian "{{ $query }}"</h2>
+                <a href="{{ route('dashboard.customer-service.index') }}" class="ds-btn ds-btn--secondary" style="font-size: 13px; padding: 6px 14px;">Hapus pencarian</a>
+            </div>
 
-        @if ($query !== '')
             @if ($searchResults->isEmpty())
                 <p class="ds-empty"><b>Tidak ada pesanan yang cocok dengan "{{ $query }}".</b> Coba kode booking lengkap, atau nomor HP tanpa spasi.</p>
             @else
@@ -65,8 +55,20 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $booking->user?->name ?? $booking->passengers->first()?->name ?? '-' }}
-                                        <div class="ds-sub">{{ $booking->user?->phone ?: $booking->user?->email }}</div>
+                                        @php
+                                            $bookerName = $booking->contact_name ?: ($booking->user?->name ?: null);
+                                            $passengersList = $booking->passengers->pluck('name')->filter()->unique()->values();
+                                            $primaryName = $bookerName ?: ($passengersList->first() ?: '-');
+                                            $phone = $booking->contact_phone ?: ($booking->user?->phone ?: ($booking->passengers->first()?->phone ?: ''));
+                                            $email = $booking->contact_email ?: ($booking->user?->email ?: '');
+                                        @endphp
+                                        <b>{{ $primaryName }}</b>
+                                        @if ($passengersList->isNotEmpty() && ($passengersList->count() > 1 || ($bookerName && ! $passengersList->contains($bookerName))))
+                                            <div class="ds-sub" style="font-size: 11px;">
+                                                Penumpang: {{ $passengersList->implode(', ') }}
+                                            </div>
+                                        @endif
+                                        <div class="ds-sub">{{ $phone ?: $email }}</div>
                                     </td>
                                     <td>
                                         {{ $cityOf($booking->schedule?->route?->origin) }} ke {{ $cityOf($booking->schedule?->route?->destination) }}
@@ -82,8 +84,8 @@
                     </table>
                 </div>
             @endif
-        @endif
-    </section>
+        </section>
+    @endif
 
     <dl class="ds-stats">
         <div class="ds-stat ds-stat--lead">

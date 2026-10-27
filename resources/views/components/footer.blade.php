@@ -12,14 +12,7 @@
     <div class="container ft-top">
         <div class="ft-brand">
             <a href="{{ route('home') }}" class="ft-logo">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 6h13l4 4v7H3V6z" />
-                    <circle cx="7.5" cy="17.5" r="2" />
-                    <circle cx="16.5" cy="17.5" r="2" />
-                    <path d="M16 6v4h4" />
-                    <path d="M7 10h4" />
-                </svg>
-                TravelKu
+                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 56px; width: auto; object-fit: contain; background-color: #ffffff; padding: 4px; border-radius: 4px;">
             </a>
             <p>Travel minibus antar kota. Pilih rute, jam, dan kursi dari HP, bayar lewat virtual account, QRIS, atau e-wallet, lalu tunjukkan QR e-ticket saat naik.</p>
             <div class="ft-actions">

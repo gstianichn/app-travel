@@ -146,7 +146,11 @@
                             Sopir: {{ $schedule?->driver?->user?->name ?? 'belum ditentukan' }}.
                         </p>
 
-                        @if ($isBoarded)
+                        @if (strtolower($booking->status) === 'refund_pending')
+                            <p class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+                                ⏳ Pengajuan Refund Menunggu Persetujuan Admin
+                            </p>
+                        @elseif ($isBoarded)
                             <p class="font-bold text-brand-800">
                                 Sudah naik{{ $booking->ticket?->boarded_at ? ', divalidasi petugas jam '.\Illuminate\Support\Carbon::parse($booking->ticket->boarded_at)->format('H:i') : '' }}.
                             </p>
@@ -164,7 +168,9 @@
 
                 <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-6 py-3">
                     <p class="text-sm text-slate-600">
-                        @if ($booking->canRefund())
+                        @if (strtolower($booking->status) === 'refund_pending')
+                            <span class="font-semibold text-amber-700">Pengajuan refund sedang diperiksa admin. Dana otomatis dikembalikan setelah disetujui.</span>
+                        @elseif ($booking->canRefund())
                             Bisa dibatalkan sampai {{ $departure?->copy()->subHour()->format('H:i') }} WIB ({{ $booking->hoursUntilDeparture() }} jam lagi).
                         @else
                             Sudah lewat batas pembatalan (1 jam sebelum berangkat).
@@ -218,8 +224,8 @@
                                 </div>
                             </div>
 
-                            <p class="text-slate-700">Setelah dikirim, tiket langsung batal dan kursinya dibuka lagi untuk penumpang lain. Ini tidak bisa diurungkan.</p>
-                            <button type="submit" class="inline-flex items-center min-h-11 px-5 rounded-lg bg-rose-800 font-bold text-white hover:bg-rose-900">Batalkan tiket ini</button>
+                            <p class="text-slate-700">Pengajuan refund akan diperiksa dan disetujui terlebih dahulu oleh admin. Setelah disetujui admin, tiket dibatalkan dan dana otomatis ditransfer kembali ke rekening tujuan.</p>
+                            <button type="submit" class="inline-flex items-center min-h-11 px-5 rounded-lg bg-rose-800 font-bold text-white hover:bg-rose-900">Kirim Pengajuan Refund</button>
                         </form>
                     </details>
                 @endif
@@ -303,7 +309,7 @@
                 </div>
 
                 @if ($isRejected)
-                    <p class="font-bold text-rose-800">Pengajuan ditolak admin.@if ($refund->admin_notes ?? null) {{ $refund->admin_notes }}@endif</p>
+                    <p class="font-bold text-rose-800">Pengajuan ditolak admin.@if ($refund->admin_note ?? $refund->admin_notes ?? null) Alasan: {{ $refund->admin_note ?? $refund->admin_notes }}@endif</p>
                 @else
                     <ol class="grid grid-cols-3 gap-2 text-sm">
                         @foreach ([1 => 'Diajukan', 2 => 'Diperiksa admin', 3 => 'Dana dikirim'] as $stepNumber => $stepLabel)

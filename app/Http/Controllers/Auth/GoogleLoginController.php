@@ -68,6 +68,11 @@ class GoogleLoginController extends Controller
                 ->withErrors(['google' => 'Email ini terdaftar sebagai akun petugas. Masuk lewat halaman login petugas.']);
         }
 
+        if ($user && in_array($user->status, ['inactive', 'blocked'], true)) {
+            return redirect()->route('user.login')
+                ->withErrors(['google' => 'akun anda diblokir karena suatu kesalahan']);
+        }
+
         if (! $user) {
             $user = User::create([
                 'name' => $googleUser->getName() ?: Str::before($email, '@'),

@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\TicketIssuedMail;
 use App\Models\Booking;
 use App\Models\Location;
 use App\Models\Payment;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
     $this->user = User::firstOrCreate(
@@ -80,6 +82,31 @@ beforeEach(function () {
         ]
     );
 });
+
+function createWebhookBooking($test, string $bookingCode, string $orderId, int $totalPrice = 150000): Booking
+{
+    $booking = Booking::create([
+        'booking_code' => $bookingCode,
+        'user_id' => $test->user->id,
+        'schedule_id' => $test->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => $totalPrice,
+        'discount' => 0,
+        'total_price' => $totalPrice,
+        'status' => 'pending',
+        'expired_at' => Carbon::now()->addMinutes(15),
+    ]);
+
+    Payment::create([
+        'booking_id' => $booking->id,
+        'order_id' => $orderId,
+        'gross_amount' => $totalPrice,
+        'payment_method' => 'Virtual Account BCA',
+        'status' => 'pending',
+    ]);
+
+    return $booking;
+}
 
 test('user can see payment channels in passenger data page before checkout', function () {
     $seats = $this->vehicle->seats()->take(1)->get();
@@ -469,4 +496,227 @@ test('midtrans webhook cancels booking and marks payment expired on expire statu
 
     $payment = $booking->payment->fresh();
     expect($payment->status)->toBe('expired');
+});
+
+test('midtrans webhook requires a valid signature when server key is configured', function () {
+    config(['midtrans.server_key' => 'server-key-rahasia']);
+
+    $booking = Booking::create([
+        'booking_code' => 'TRV-MID-WH3',
+        'user_id' => $this->user->id,
+        'schedule_id' => $this->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 150000,
+        'discount' => 0,
+        'total_price' => 150000,
+        'status' => 'pending',
+        'expired_at' => Carbon::now()->addMinutes(15),
+    ]);
+
+    $orderId = 'INV-20261001-WH003';
+    Payment::create([
+        'booking_id' => $booking->id,
+        'order_id' => $orderId,
+        'gross_amount' => 150000,
+        'payment_method' => 'Virtual Account BCA',
+        'status' => 'pending',
+    ]);
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'transaction_status' => 'settlement',
+        'gross_amount' => '150000.00',
+    ])->assertForbidden();
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'status_code' => '200',
+        'transaction_status' => 'settlement',
+        'gross_amount' => '150000.00',
+        'signature_key' => str_repeat('0', 128),
+    ])->assertForbidden();
+
+    expect($booking->fresh()->status)->toBe('pending');
+    expect($booking->payment->fresh()->status)->toBe('pending');
+});
+
+test('midtrans webhook accepts a valid signature when server key is configured', function () {
+    config(['midtrans.server_key' => 'server-key-rahasia']);
+
+    $booking = Booking::create([
+        'booking_code' => 'TRV-MID-WH4',
+        'user_id' => $this->user->id,
+        'schedule_id' => $this->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 150000,
+        'discount' => 0,
+        'total_price' => 150000,
+        'status' => 'pending',
+        'expired_at' => Carbon::now()->addMinutes(15),
+    ]);
+
+    $orderId = 'INV-20261001-WH004';
+    Payment::create([
+        'booking_id' => $booking->id,
+        'order_id' => $orderId,
+        'gross_amount' => 150000,
+        'payment_method' => 'Virtual Account BCA',
+        'status' => 'pending',
+    ]);
+
+    $payload = [
+        'order_id' => $orderId,
+        'status_code' => '200',
+        'transaction_status' => 'settlement',
+        'payment_type' => 'bank_transfer',
+        'gross_amount' => '150000.00',
+        'va_numbers' => [['bank' => 'bca', 'va_number' => '827100018899']],
+    ];
+    $payload['signature_key'] = hash('sha512', $orderId.'200'.'150000.00'.'server-key-rahasia');
+
+    $this->postJson(route('payment.webhook'), $payload)
+        ->assertOk()
+        ->assertJson(['status' => 'success']);
+
+    expect($booking->fresh()->status)->toBe('confirmed');
+    expect($booking->payment->fresh()->status)->toBe('paid');
+});
+
+test('midtrans webhook allows unsigned payloads for the local simulator', function () {
+    config([
+        'midtrans.server_key' => 'server-key-rahasia',
+        'midtrans.allow_unsigned_webhook' => true,
+    ]);
+
+    $booking = Booking::create([
+        'booking_code' => 'TRV-MID-WH5',
+        'user_id' => $this->user->id,
+        'schedule_id' => $this->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 150000,
+        'discount' => 0,
+        'total_price' => 150000,
+        'status' => 'pending',
+        'expired_at' => Carbon::now()->addMinutes(15),
+    ]);
+
+    $orderId = 'INV-20261001-WH005';
+    Payment::create([
+        'booking_id' => $booking->id,
+        'order_id' => $orderId,
+        'gross_amount' => 150000,
+        'payment_method' => 'Virtual Account BCA',
+        'status' => 'pending',
+    ]);
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'transaction_status' => 'settlement',
+        'gross_amount' => '150000.00',
+    ])->assertOk()->assertJson(['status' => 'success']);
+
+    expect($booking->fresh()->status)->toBe('confirmed');
+});
+
+test('midtrans webhook rejects payloads without transaction_status', function () {
+    $booking = createWebhookBooking($this, 'TRV-MID-WH6', 'INV-20261001-WH006');
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => 'INV-20261001-WH006',
+        'gross_amount' => '150000.00',
+    ])->assertStatus(400)->assertJson([
+        'status' => 'error',
+        'message' => 'Missing transaction_status',
+    ]);
+
+    expect($booking->fresh()->status)->toBe('pending');
+    expect($booking->payment->fresh()->status)->toBe('pending');
+});
+
+test('midtrans webhook rejects settlement with a mismatched gross amount', function () {
+    $booking = createWebhookBooking($this, 'TRV-MID-WH7', 'INV-20261001-WH007');
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => 'INV-20261001-WH007',
+        'transaction_status' => 'settlement',
+        'gross_amount' => '1000.00',
+    ])->assertStatus(422)->assertJson([
+        'status' => 'error',
+        'message' => 'Gross amount mismatch',
+    ]);
+
+    expect($booking->fresh()->status)->toBe('pending');
+    expect($booking->payment->fresh()->status)->toBe('pending');
+    expect($booking->ticket()->exists())->toBeFalse();
+});
+
+test('midtrans webhook ignores expiry for a booking that is already paid', function () {
+    $booking = createWebhookBooking($this, 'TRV-MID-WH8', 'INV-20261001-WH008');
+    $orderId = 'INV-20261001-WH008';
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'transaction_status' => 'settlement',
+        'gross_amount' => '150000.00',
+    ])->assertOk();
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'transaction_status' => 'expire',
+    ])->assertOk()->assertJson(['status' => 'ignored']);
+
+    expect($booking->fresh()->status)->toBe('confirmed');
+    expect($booking->payment->fresh()->status)->toBe('paid');
+    expect($booking->ticket()->exists())->toBeTrue();
+});
+
+test('midtrans webhook marks a denied payment as failed', function () {
+    $booking = createWebhookBooking($this, 'TRV-MID-WH9', 'INV-20261001-WH009');
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => 'INV-20261001-WH009',
+        'transaction_status' => 'deny',
+    ])->assertOk()->assertJson(['status' => 'cancelled']);
+
+    expect($booking->fresh()->status)->toBe('cancelled');
+    expect($booking->payment->fresh()->status)->toBe('failed');
+});
+
+test('midtrans webhook records refunds without cancelling the booking', function () {
+    $booking = createWebhookBooking($this, 'TRV-MID-WH10', 'INV-20261001-WH010');
+    $orderId = 'INV-20261001-WH010';
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'transaction_status' => 'settlement',
+        'gross_amount' => '150000.00',
+    ])->assertOk();
+
+    $this->postJson(route('payment.webhook'), [
+        'order_id' => $orderId,
+        'transaction_status' => 'refund',
+    ])->assertOk()->assertJson(['status' => 'refunded']);
+
+    expect($booking->fresh()->status)->toBe('confirmed');
+    expect($booking->payment->fresh()->status)->toBe('refund');
+});
+
+test('repeated settlement webhooks issue one ticket and one email', function () {
+    Mail::fake();
+
+    $booking = createWebhookBooking($this, 'TRV-MID-WH11', 'INV-20261001-WH011');
+    $payload = [
+        'order_id' => 'INV-20261001-WH011',
+        'transaction_status' => 'settlement',
+        'gross_amount' => '150000.00',
+        'payment_type' => 'bank_transfer',
+    ];
+
+    $this->postJson(route('payment.webhook'), $payload)->assertOk();
+    $ticketNumber = $booking->fresh()->ticket->ticket_number;
+
+    $this->postJson(route('payment.webhook'), $payload)->assertOk();
+
+    expect($booking->fresh()->ticket->ticket_number)->toBe($ticketNumber);
+    Mail::assertSent(TicketIssuedMail::class, 1);
 });

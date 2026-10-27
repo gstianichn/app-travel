@@ -122,6 +122,26 @@ class OperationalInfoNotification extends Notification
             ];
         }
 
+        if ($this->infoType === 'departed') {
+            return [
+                'title' => 'Armada Telah Berangkat 🚐',
+                'message' => "Armada minibus {$plate} ({$vehicleModel}) yang dikemudikan oleh {$driverName} telah berangkat menuju tujuan.",
+                'category' => 'operasional',
+                'status_type' => 'departed',
+                'deep_link_url' => $deepLinkUrl,
+                'action_label' => 'Pantau Status Perjalanan',
+                'icon' => 'truck',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $this->booking->booking_code,
+                    'plate_number' => $plate,
+                    'vehicle_model' => $vehicleModel,
+                    'driver_name' => $driverName,
+                    'pickup_location' => $pickup,
+                ],
+            ];
+        }
+
         // vehicle_assigned / ready
         return [
             'title' => 'Info Armada & Pengemudi Hari-H 🚐',

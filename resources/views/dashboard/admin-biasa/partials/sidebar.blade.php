@@ -10,8 +10,8 @@
 
 <aside class="sidebar">
     <div class="logo-area">
-        <div class="logo-icon" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13l4 4v7H3V6z" /><circle cx="7.5" cy="17.5" r="2" /><circle cx="16.5" cy="17.5" r="2" /><path d="M16 6v4h4" /></svg>
+        <div class="logo-icon" aria-hidden="true" style="padding: 5px; box-sizing: border-box;">
+            <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
         <div class="logo-text">
             <h2>TravelKu</h2>
@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <nav class="menu" aria-label="Menu staf pool">
+    <nav class="menu" id="staff-menu" aria-label="Menu staf pool">
         <div class="menu-title">Menu Utama</div>
         @foreach ($staffMenu as $item)
             @php $isActive = request()->routeIs($item['route']); @endphp
@@ -31,6 +31,23 @@
             </a>
         @endforeach
     </nav>
+
+    <script>
+        (function() {
+            try {
+                var m = document.getElementById('staff-menu');
+                var s = sessionStorage.getItem('staff_sidebar_scroll');
+                if (m && s !== null) {
+                    m.scrollTop = parseInt(s, 10);
+                }
+                if (m) {
+                    m.addEventListener('scroll', function() {
+                        sessionStorage.setItem('staff_sidebar_scroll', m.scrollTop);
+                    }, { passive: true });
+                }
+            } catch(e) {}
+        })();
+    </script>
 
     <div class="sidebar-bottom">
         <form method="POST" action="{{ route('logout') }}">

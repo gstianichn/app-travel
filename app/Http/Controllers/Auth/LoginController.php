@@ -74,16 +74,33 @@ class LoginController extends Controller
                 ]);
         }
 
+        if (in_array($user->status, ['inactive', 'blocked'], true)) {
+            return back()
+                ->withInput($request->only('email', 'role'))
+                ->withErrors([
+                    'email' => 'Akun Anda telah dinonaktifkan oleh Administrator.',
+                ]);
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Validasi password
         |--------------------------------------------------------------------------
         */
 
-        if (! Hash::check(
-            $credentials['password'],
-            $user->password
-        )) {
+        $isPasswordValid = false;
+        if (password_get_info((string) $user->password)['algoName'] === 'bcrypt') {
+            $isPasswordValid = Hash::check(
+                $credentials['password'],
+                $user->password
+            );
+        } elseif ((string) $user->password === (string) $credentials['password']) {
+            $isPasswordValid = true;
+            $user->password = Hash::make($credentials['password']);
+            $user->save();
+        }
+
+        if (! $isPasswordValid) {
             return back()
                 ->withInput($request->only('email', 'role'))
                 ->withErrors([
@@ -111,13 +128,21 @@ class LoginController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (
-            empty($user->access_code) ||
-            ! Hash::check(
-                $credentials['access_code'],
-                $user->access_code
-            )
-        ) {
+        $isAccessCodeValid = false;
+        if (! empty($user->access_code)) {
+            if (password_get_info((string) $user->access_code)['algoName'] === 'bcrypt') {
+                $isAccessCodeValid = Hash::check(
+                    $credentials['access_code'],
+                    $user->access_code
+                );
+            } elseif ((string) $user->access_code === (string) $credentials['access_code']) {
+                $isAccessCodeValid = true;
+                $user->access_code = Hash::make($credentials['access_code']);
+                $user->save();
+            }
+        }
+
+        if (! $isAccessCodeValid) {
             return back()
                 ->withInput($request->only('email', 'role'))
                 ->withErrors([

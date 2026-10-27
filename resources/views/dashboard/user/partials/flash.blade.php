@@ -9,6 +9,10 @@
     <p class="rounded-xl border-2 border-rose-700 bg-rose-50 px-5 py-4 text-rose-900" role="alert">
         <b>Belum berhasil.</b> {{ session('error') }}
     </p>
+@elseif (request('expired'))
+    <p class="rounded-xl border-2 border-rose-700 bg-rose-50 px-5 py-4 text-rose-900" role="alert">
+        <b>Waktu pemesanan habis.</b> Waktu tahan kursi (15 menit) sudah habis, kursi Anda telah dilepas kembali. Silakan pilih jadwal dan kursi kembali.
+    </p>
 @endif
 
 @if ($errors->any())

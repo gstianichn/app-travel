@@ -156,7 +156,7 @@
 
     .filter-form {
         display: grid;
-        grid-template-columns: 2fr 1.2fr 1.2fr 1fr auto;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
         gap: 12px;
         align-items: flex-end;
     }
@@ -688,7 +688,7 @@
 
     {{-- FILTER FORM --}}
     <div class="filter-card">
-        <form action="{{ route('dashboard.admin.pembayaran.index') }}" method="GET" class="filter-form">
+        <form action="{{ route('dashboard.admin.pembayaran.index') }}" method="GET" class="filter-form admin-filter-form">
             {{-- Search input --}}
             <div class="filter-group">
                 <label class="filter-label" for="search">Cari Invoice / Booking / Nama / HP</label>
@@ -699,6 +699,7 @@
                     class="filter-input"
                     placeholder="Contoh: ORD-TRV, TRV-2026, Ahmad, BCA.."
                     value="{{ request('search') }}"
+                    autocomplete="off"
                 >
             </div>
 
@@ -726,7 +727,7 @@
                 </select>
             </div>
 
-            {{-- Tanggal --}}
+            {{-- Dari Tanggal --}}
             <div class="filter-group">
                 <label class="filter-label" for="date_from">Dari Tanggal</label>
                 <input
@@ -738,14 +739,22 @@
                 >
             </div>
 
-            <div class="filter-buttons">
-                <button type="submit" class="btn-filter-submit">
-                    Terapkan
-                </button>
-                @if(request()->hasAny(['search', 'status', 'method', 'date_from', 'date_to']))
-                    <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter">Reset
-                                            </a>
-                @endif
+            {{-- Sampai Tanggal --}}
+            <div class="filter-group">
+                <label class="filter-label" for="date_to">Sampai Tanggal</label>
+                <input
+                    type="date"
+                    name="date_to"
+                    id="date_to"
+                    class="filter-input"
+                    value="{{ request('date_to') }}"
+                >
+            </div>
+
+            <div class="filter-buttons" style="display:flex; align-items:flex-end; gap:8px;">
+                <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter">
+                    ↺ Reset
+                </a>
             </div>
         </form>
     </div>
@@ -880,7 +889,8 @@
                                             onclick="openVerifyModal({{ $payment->id }}, '{{ $payment->order_id }}', '{{ $payment->formattedAmount() }}', '{{ $payment->hasProof() ? asset('storage/' . $payment->proof_image) : '' }}', '{{ $payment->bank_name ?? 'Transfer Bank' }}', '{{ $payment->account_name ?? '-' }}')"
                                             title="Verifikasi Manual Bukti Transfer"
                                         >
-                                            Verifikasi
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span>Verifikasi</span>
                                         </button>
                                     @endif
 
@@ -889,8 +899,11 @@
                                         href="{{ route('dashboard.admin.pembayaran.show', $payment->id) }}"
                                         class="btn-action-view"
                                         title="Buka Faktur & Log Gateway"
+                                        style="display: inline-flex; align-items: center; gap: 5px;"
                                     >
-                                        Faktur</a>
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <span>Faktur</span>
+                                    </a>
 
                                     {{-- Gateway Log Quick Icon --}}
                                     @if($payment->hasGatewayLog())
@@ -899,8 +912,9 @@
                                             class="btn-action-log"
                                             onclick='openGatewayLogModal({{ json_encode($payment->raw_response) }}, "{{ $payment->gateway_provider ?? "gateway" }}", "{{ $payment->transaction_id ?? "-" }}")'
                                             title="Lihat Raw JSON Log Gateway"
-                                        >Log
-                                                                                    </button>
+                                        >
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19" stroke-width="2"/></svg>
+                                        </button>
                                     @endif
                                 </div>
                             </td>

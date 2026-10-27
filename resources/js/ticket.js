@@ -28,7 +28,6 @@ if (ticket) {
         return `${date.getFullYear()}-${month}-${day}`;
     };
 
-    const passengers = ticket.querySelector('#passengers');
     const summary = (key) => ticket.querySelector(`[data-summary="${key}"]`);
 
     const setSummary = (key, value) => {
@@ -49,8 +48,6 @@ if (ticket) {
         setSummary('date', departureDate.value
             ? new Date(year, month - 1, day).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })
             : '');
-
-        setSummary('passengers', `${passengers.value} orang`);
     };
 
     ticket.addEventListener('change', updateSummary);
@@ -90,6 +87,10 @@ if (ticket) {
 
             return;
         }
+
+        // Append #hasil fragment so the browser scrolls to the results section after navigation.
+        const baseAction = ticket.action.split('#')[0];
+        ticket.action = `${baseAction}#hasil`;
 
         // Loading state: the results page can take a moment while schedules are prepared.
         const submitButton = ticket.querySelector('[data-ticket-submit]');
@@ -135,4 +136,21 @@ if (ticket) {
             bringTicketIntoView(origin);
         });
     });
+
+    // Auto slide ke hasil pencarian jadwal travel
+    const slideToResults = () => {
+        const hasil = document.getElementById('hasil');
+        if (hasil && (window.location.search.includes('origin=') || window.location.hash === '#hasil')) {
+            setTimeout(() => {
+                hasil.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 250);
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', slideToResults);
+    } else {
+        slideToResults();
+    }
 }
+

@@ -103,7 +103,11 @@
                             {{ $categoryLabels[$data['category'] ?? ''] ?? 'Pemberitahuan' }},
                             <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->locale('id')->diffForHumans() }}</time>
                         </p>
-                        <h2 @class(['mt-1 text-slate-900', 'font-extrabold' => $isUnread, 'font-semibold' => ! $isUnread])>{{ $data['title'] ?? 'Pemberitahuan' }}</h2>
+                        <h2 @class(['mt-1 text-slate-900', 'font-extrabold' => $isUnread, 'font-semibold' => ! $isUnread])>
+                            <a href="{{ route('dashboard.user.notifikasi.open', $notification->id) }}" class="hover:text-brand-800 hover:underline">
+                                {{ $data['title'] ?? 'Pemberitahuan' }}
+                            </a>
+                        </h2>
                         <p class="mt-1 text-slate-700">{{ $data['message'] ?? '' }}</p>
                         @if ($details)
                             <p class="mt-1 text-sm text-slate-600">{{ ucfirst(implode(', ', $details)) }}.</p>

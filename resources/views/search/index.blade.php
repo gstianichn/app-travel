@@ -2,7 +2,6 @@
 
 @php
     $cityOf = fn ($location) => $location->city ?: $location->name;
-    $passengerCount = (int) request('passengers', 1);
     $searchDate = $searchPerformed && ! $errors->any() && request('departure_date')
         ? \Illuminate\Support\Carbon::parse(request('departure_date'))->locale('id')
         : null;
@@ -37,7 +36,7 @@
 
     <div class="container sr-band-copy" data-depth="0.08">
         @if ($hasRoute)
-            <p class="sr-band-kicker">Jadwal {{ $searchDate->isoFormat('dddd, D MMMM YYYY') }}, {{ $passengerCount }} orang</p>
+            <p class="sr-band-kicker">Jadwal {{ $searchDate->isoFormat('dddd, D MMMM YYYY') }}</p>
             <h1 id="sr-title">{{ $cityOf($originLoc) }} <span>ke</span> {{ $cityOf($destLoc) }}</h1>
         @else
             <h1 id="sr-title">Cari jadwal travel</h1>
@@ -49,15 +48,21 @@
 @include('components.search-ticket', [
     'heading' => $hasRoute ? 'Ubah pencarian' : 'Mau berangkat ke mana?',
     'selected' => [
-        'origin' => request('origin'),
-        'destination' => request('destination'),
+        'origin'         => request('origin'),
+        'destination'    => request('destination'),
         'departure_date' => request('departure_date'),
-        'passengers' => $passengerCount,
     ],
 ])
 
 <section class="sr-results" id="hasil" aria-label="Hasil pencarian">
     <div class="container">
+
+        @if (session('error') || request('expired'))
+            <div class="sr-alert" role="alert" style="border-left-color: #e11d48; margin-bottom: 1.5rem; background-color: #fff1f2; border-left-width: 4px; padding: 1rem 1.25rem; border-radius: 0.5rem;">
+                <p class="sr-alert-title" style="color: #9f1239; font-weight: 700;">Waktu Pemesanan Habis</p>
+                <p style="color: #4c0519; margin-top: 0.25rem;">{{ session('error') ?? 'Waktu tahan kursi (15 menit) sudah habis, kursi Anda telah dilepas kembali. Silakan pilih jadwal dan kursi kembali.' }}</p>
+            </div>
+        @endif
 
         @if ($errors->any())
             <div class="sr-alert" role="alert">
@@ -82,7 +87,7 @@
                         $isCurrent = $stripDate->isSameDay($searchDate);
                     @endphp
                     <a
-                        href="{{ route('search', ['origin' => $originLoc->id, 'destination' => $destLoc->id, 'departure_date' => $stripDate->toDateString(), 'passengers' => $passengerCount]) }}#hasil"
+                        href="{{ route('search', ['origin' => $originLoc->id, 'destination' => $destLoc->id, 'departure_date' => $stripDate->toDateString()]) }}#hasil"
                         @class(['sr-date', 'is-current' => $isCurrent])
                         @if ($isCurrent) aria-current="date" @endif
                         aria-label="{{ $stripDate->isoFormat('dddd, D MMMM') }}"
@@ -110,7 +115,7 @@
                 <ol class="sr-trips">
                     @foreach ($schedules as $schedule)
                         @php
-                            $seatUrl = route('dashboard.user.booking.pilih-kursi', ['schedule' => $schedule->id, 'passengers' => $passengerCount]);
+                            $seatUrl = route('dashboard.user.booking.pilih-kursi', array_filter(['schedule' => $schedule->id, 'passengers' => request('passengers')]));
                             $isLowOnSeats = $schedule->available_seats <= 3;
                         @endphp
                         <li class="sr-trip">
@@ -149,14 +154,14 @@
                 </ol>
             @elseif ($routeConnected)
                 <div class="sr-empty">
-                    <h2>Tidak ada keberangkatan dengan {{ $passengerCount }} kursi kosong</h2>
+                    <h2>Tidak ada keberangkatan pada tanggal ini</h2>
                     <p>
                         @if ($searchDate->isToday())
                             Keberangkatan hari ini mungkin sudah lewat atau penuh.
                         @else
-                            Semua jadwal di tanggal ini sudah penuh untuk jumlah penumpang tersebut.
+                            Semua jadwal di tanggal ini sudah penuh.
                         @endif
-                        Pilih tanggal lain di atas, atau kurangi jumlah penumpang.
+                        Pilih tanggal lain di atas.
                     </p>
                 </div>
             @else
@@ -167,13 +172,13 @@
                         <p>Kamu bisa sampai lewat {{ $cityOf($transitHub) }} dengan dua perjalanan:</p>
                         <ol class="sr-transit">
                             <li>
-                                <a href="{{ route('search', ['origin' => $originLoc->id, 'destination' => $transitHub->id, 'departure_date' => $searchDate->toDateString(), 'passengers' => $passengerCount]) }}#hasil">
+                                <a href="{{ route('search', ['origin' => $originLoc->id, 'destination' => $transitHub->id, 'departure_date' => $searchDate->toDateString()]) }}#hasil">
                                     <span>Perjalanan 1</span>
                                     {{ $cityOf($originLoc) }} ke {{ $cityOf($transitHub) }}
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('search', ['origin' => $transitHub->id, 'destination' => $destLoc->id, 'departure_date' => $searchDate->toDateString(), 'passengers' => $passengerCount]) }}#hasil">
+                                <a href="{{ route('search', ['origin' => $transitHub->id, 'destination' => $destLoc->id, 'departure_date' => $searchDate->toDateString()]) }}#hasil">
                                     <span>Perjalanan 2</span>
                                     {{ $cityOf($transitHub) }} ke {{ $cityOf($destLoc) }}
                                 </a>

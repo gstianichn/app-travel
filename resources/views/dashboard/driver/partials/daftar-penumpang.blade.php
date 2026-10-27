@@ -25,6 +25,43 @@
             </div>
 
             <div class="card-panel-body">
+                <!-- BANNER INFO JADWAL PERJALANAN AKTIF & PEMILIH RITASE -->
+                <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);">
+                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                        <div style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 8px 14px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: 700; color: #94a3b8; display: block; text-transform: uppercase;">Kode Trip</span>
+                            <strong style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #38bdf8;">{{ $activeSchedule->tripCode() }}</strong>
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <strong style="font-size: 15px; color: #ffffff;">{{ $activeSchedule->route?->origin?->name ?? 'Pool Asal' }}</strong>
+                                <span style="color: #38bdf8; font-weight: 800;">➔</span>
+                                <strong style="font-size: 15px; color: #ffffff;">{{ $activeSchedule->route?->destination?->name ?? 'Pool Tujuan' }}</strong>
+                            </div>
+                            <div style="font-size: 12px; color: #cbd5e1; margin-top: 3px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span>📅 {{ $activeSchedule->formattedDepartureDate() }}</span>
+                                <span>•</span>
+                                <span>⏰ Keberangkatan: <strong style="color: #facc15;">{{ $activeSchedule->formattedDepartureTime() }} WIB</strong></span>
+                                <span>•</span>
+                                <span>🚐 {{ $activeSchedule->vehicle?->plate_number ?? 'D 7812 AB' }} ({{ $activeSchedule->vehicle?->type ?? 'Toyota HiAce Premio' }})</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(isset($availableDriverSchedules) && $availableDriverSchedules->count() > 1)
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label for="scheduleSelector" style="font-size: 12px; color: #94a3b8; font-weight: 600; white-space: nowrap;">Ganti Jadwal:</label>
+                            <select id="scheduleSelector" onchange="if(this.value) window.location.href = '{{ request()->url() }}?schedule_id=' + this.value" style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; outline: none;">
+                                @foreach($availableDriverSchedules as $s)
+                                    <option value="{{ $s->id }}" {{ $s->id == $activeSchedule->id ? 'selected' : '' }}>
+                                        {{ $s->departure_date ? $s->departure_date->format('d M') : 'Hari ini' }} - {{ \Carbon\Carbon::parse($s->departure_time)->format('H:i') }} WIB ({{ $s->route?->origin?->city ?? 'Asal' }} ➔ {{ $s->route?->destination?->city ?? 'Tujuan' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                </div>
+
                 <!-- REKAPITULASI JUMLAH PENUMPANG (Total, Sudah Naik, Belum Naik) -->
                 @php
                     $attendanceRate = $totalBookedPassengers > 0 ? round(($boardedCount / $totalBookedPassengers) * 100) : 0;

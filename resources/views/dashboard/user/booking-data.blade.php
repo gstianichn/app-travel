@@ -267,6 +267,7 @@ function bookingDataHandler(config) {
 
                 if (this.remainingSeconds === 0) {
                     clearInterval(timer);
+                    window.location.href = @js(auth()->check() ? route('dashboard.user.search', ['expired' => 1]) : route('search', ['expired' => 1]));
                 }
             }, 1000);
         },
@@ -282,8 +283,16 @@ function bookingDataHandler(config) {
         },
 
         fillPassenger(id, name, phone) {
-            document.getElementById('p_name_' + id).value = name;
-            document.getElementById('p_phone_' + id).value = phone || '';
+            const nameEl = document.getElementById('p_name_' + id);
+            const phoneEl = document.getElementById('p_phone_' + id);
+            if (nameEl) {
+                nameEl.value = name;
+                nameEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (phoneEl) {
+                phoneEl.value = phone || '';
+                phoneEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         },
 
         resetPromo(message) {

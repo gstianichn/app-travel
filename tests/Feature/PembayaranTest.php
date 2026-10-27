@@ -100,7 +100,7 @@ beforeEach(function () {
 
 test('admin utama can view payment index page with metrics and transactions table', function () {
     $customer = User::factory()->create(['name' => 'Pelanggan Uji Bayar']);
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $booking = Booking::create([
         'booking_code' => 'TRV-PAY-01',
@@ -183,7 +183,7 @@ test('admin utama can filter payments by search keyword and status', function ()
 
 test('admin utama can view payment show page with invoice, bank details, and gateway log', function () {
     $customer = User::factory()->create(['name' => 'Dewi Lestari']);
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $booking = Booking::create([
         'booking_code' => 'TRV-SHOW-PAY',
@@ -238,7 +238,7 @@ test('admin utama can view payment show page with invoice, bank details, and gat
 
 test('admin utama can manually approve bank transfer and ticket is automatically issued', function () {
     $customer = User::factory()->create(['name' => 'Hendra Setiawan']);
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $booking = Booking::create([
         'booking_code' => 'TRV-APPROVE-01',
@@ -295,7 +295,7 @@ test('admin utama can manually approve bank transfer and ticket is automatically
 
 test('admin utama can manually reject bank transfer with reason and booking is cancelled', function () {
     $customer = User::factory()->create(['name' => 'Rian Hidayat']);
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $booking = Booking::create([
         'booking_code' => 'TRV-REJECT-01',
@@ -386,7 +386,7 @@ test('admin utama can upload or update manual payment proof image and bank detai
 
 test('admin utama can sync or simulate gateway webhook status update', function () {
     $customer = User::factory()->create();
-    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->where('seat_number', '1A')->first();
+    $seat1A = Seat::where('vehicle_id', $this->vehicle->id)->first();
 
     $booking = Booking::create([
         'booking_code' => 'TRV-GATEWAY-01',

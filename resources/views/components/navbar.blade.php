@@ -2,16 +2,7 @@
     <div class="container navbar-content">
 
         <a href="{{ url('/') }}" class="navbar-brand">
-            <span style="display: inline-flex; align-items: center; justify-content: center;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 6h13l4 4v7H3V6z"/>
-                    <circle cx="7.5" cy="17.5" r="2"/>
-                    <circle cx="16.5" cy="17.5" r="2"/>
-                    <path d="M16 6v4h4"/>
-                    <path d="M7 10h4"/>
-                </svg>
-            </span>
-            <span>TravelKu</span>
+            <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 44px; width: auto; object-fit: contain;">
         </a>
 
         <button type="button" class="navbar-toggle" aria-expanded="false" aria-controls="navbar-panel" data-navbar-toggle>
@@ -21,11 +12,11 @@
 
         <div class="navbar-panel" id="navbar-panel">
             <div class="navbar-menu">
-                <a href="{{ url('/') }}" class="{{ request()->routeIs('home') ? 'navbar-link-active' : '' }}">Beranda</a>
-                <a href="{{ route('home') }}#rute">Rute</a>
-                <a href="{{ route('home') }}#cara-pesan">Cara pesan</a>
-                <a href="{{ route('home') }}#faq">Tanya jawab</a>
-                <a href="{{ url('/search') }}" class="{{ request()->routeIs('search') ? 'navbar-link-active' : '' }}">Cari Travel</a>
+                <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'navbar-link-active' : '' }}" data-nav-section="home">Beranda</a>
+                <a href="{{ route('home') }}#rute" data-nav-section="rute">Rute</a>
+                <a href="{{ route('home') }}#cara-pesan" data-nav-section="cara-pesan">Cara pesan</a>
+                <a href="{{ route('home') }}#faq" data-nav-section="faq">Tanya jawab</a>
+                <a href="{{ route('search') }}" class="{{ request()->routeIs('search') ? 'navbar-link-active' : '' }}">Cari Travel</a>
             </div>
 
             <div class="navbar-actions">

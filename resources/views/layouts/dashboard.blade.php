@@ -28,14 +28,8 @@
     <header class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between gap-4 h-16">
-                <a href="{{ $layoutUser ? route('dashboard.user.index') : route('home') }}" class="flex items-center gap-2 min-h-11 text-brand-900 font-extrabold text-xl">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M3 6h13l4 4v7H3V6z" />
-                        <circle cx="7.5" cy="17.5" r="2" />
-                        <circle cx="16.5" cy="17.5" r="2" />
-                        <path d="M16 6v4h4" />
-                        <path d="M7 10h4" />
-                    </svg>
+                <a href="{{ $layoutUser ? route('dashboard.user.index') : route('home') }}" class="flex items-center gap-2.5 min-h-11 text-brand-900 font-extrabold text-xl">
+                    <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" class="w-8 h-8 object-contain">
                     <span>TravelKu</span>
                 </a>
 

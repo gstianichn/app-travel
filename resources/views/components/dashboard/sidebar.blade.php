@@ -11,9 +11,7 @@
                 href="{{ route('home') }}"
                 class="flex items-center gap-2 text-xl font-bold text-slate-900"
             >
-                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-[#087f55]">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3" stroke-width="2"/><circle cx="7" cy="18" r="2" fill="currentColor"/><circle cx="17" cy="18" r="2" fill="currentColor"/><path stroke-linecap="round" stroke-width="2" d="M2 11h20M14 6v5M8 6v5"/></svg>
-                </span>
+                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" class="w-8 h-8 object-contain">
                 <span>TravelKu</span>
             </a>
 

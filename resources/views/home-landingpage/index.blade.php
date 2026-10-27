@@ -220,19 +220,43 @@
         @else
             <ul class="lp-fleet-list">
                 @foreach ($fleetTypes as $fleetType)
+                    @php
+                        $cols = 4;
+                    @endphp
                     <li class="lp-fleet-row">
                         <div class="lp-fleet-name">
+                            <span class="inline-block px-2.5 py-0.5 mb-2 text-xs font-bold rounded-full {{ $fleetType['capacity'] <= 10 ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' }}">
+                                {{ $fleetType['category'] }}
+                            </span>
                             <h3>{{ $fleetType['type'] }}</h3>
-                            <p>{{ $fleetType['capacity'] }} kursi penumpang, {{ $fleetType['units'] }} unit</p>
+                            <p>{{ $fleetType['capacity'] }} kursi penumpang, {{ $fleetType['units'] }} unit aktif</p>
                         </div>
-                        <div class="lp-seats" style="--seat-columns: {{ $fleetType['capacity'] > 10 ? 4 : 3 }}" role="img" aria-label="Denah {{ $fleetType['capacity'] }} kursi penumpang">
-                            <span class="lp-seat lp-seat--driver">S</span>
-                            @for ($seat = 1; $seat <= $fleetType['capacity']; $seat++)
-                                <span class="lp-seat"></span>
-                            @endfor
+                        <div class="lp-seats" style="--seat-columns: 4; grid-template-columns: repeat(4, 24px); gap: 6px; padding: 14px;" role="img" aria-label="Denah {{ $fleetType['capacity'] }} kursi penumpang {{ $fleetType['type'] }}">
+                            {{-- Baris 1: Kursi 1 di sisi kiri dan Supir di sisi kanan (Standar Kemudi Kanan Indonesia) --}}
+                            <span class="lp-seat" style="grid-column: 1; grid-row: 1; font-size: 0.65rem; font-weight: 800;" title="Kursi 1">1</span>
+                            <span class="lp-seat lp-seat--driver" style="grid-column: 4; grid-row: 1;" title="Posisi Kemudi Sopir (Kanan)">S</span>
+
+                            {{-- Baris Kabin 2 dst: Sesuai Foto Denah Asli --}}
+                            @foreach ($fleetType['seatRows'] as $rowNumber => $rowSeats)
+                                @if ((string) $rowNumber !== '1')
+                                    @foreach ($rowSeats as $seat)
+                                        <span class="lp-seat" style="grid-column: {{ $seat->seat_column }}; grid-row: {{ (int) $rowNumber }}; font-size: 0.65rem; font-weight: 800;" title="Kursi {{ $seat->seat_number }}">
+                                            {{ $seat->seat_number }}
+                                        </span>
+                                    @endforeach
+                                @endif
+                            @endforeach
+
+                            {{-- Area Full Bagasi untuk Seluruh Armada Travel --}}
+                            @php
+                                $bagasiRow = $fleetType['capacity'] <= 10 ? 5 : 6;
+                            @endphp
+                            <div style="grid-column: 1 / span 4; grid-row: {{ $bagasiRow }}; background: #fbbf24; color: #78350f; font-size: 0.55rem; font-weight: 900; text-align: center; padding: 4px 2px; border-radius: 4px; border: 1px solid #d97706; letter-spacing: 0.5px;">
+                                FULL BAGASI
+                            </div>
                         </div>
                         <p class="lp-fleet-facilities">
-                            {{ $fleetType['facilities'] ? implode(', ', $fleetType['facilities']) : 'Fasilitas belum dicatat' }}
+                            {{ $fleetType['facilities'] ? implode(', ', $fleetType['facilities']) : 'AC, Reclining Seat, USB Charger' }}
                         </p>
                     </li>
                 @endforeach

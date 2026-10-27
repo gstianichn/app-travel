@@ -1,10 +1,13 @@
 <?php
 
 use App\Models\Booking;
+use App\Models\BookingPassenger;
 use App\Models\Location;
 use App\Models\Route as TravelRoute;
 use App\Models\Schedule;
+use App\Models\Seat;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
@@ -50,10 +53,31 @@ test('customer service can look up a booking by code or passenger phone', functi
     $origin = Location::create(['code' => 'CS-A', 'name' => 'Pool Pasteur (Bandung)', 'city' => 'Bandung', 'is_active' => true]);
     $destination = Location::create(['code' => 'CS-B', 'name' => 'Tebet (Jakarta)', 'city' => 'Jakarta', 'is_active' => true]);
     $route = TravelRoute::create(['origin_id' => $origin->id, 'destination_id' => $destination->id, 'price' => 125000, 'duration' => '2 Jam 30 Menit', 'is_active' => true]);
-    $schedule = Schedule::create(['route_id' => $route->id, 'departure_date' => now()->addDay()->toDateString(), 'departure_time' => '08:00', 'available_seats' => 9, 'status' => 'Scheduled']);
+    $vehicle = Vehicle::create(['name' => 'HiAce CS', 'type' => 'HiAce Premio', 'plate_number' => 'D 9999 CS', 'capacity' => 10, 'status' => 'Available']);
+    $seat1 = Seat::create(['vehicle_id' => $vehicle->id, 'seat_number' => '1A', 'seat_row' => '1', 'seat_column' => 1, 'status' => 'Available']);
+    $seat2 = Seat::create(['vehicle_id' => $vehicle->id, 'seat_number' => '1B', 'seat_row' => '1', 'seat_column' => 2, 'status' => 'Available']);
+    $schedule = Schedule::create(['route_id' => $route->id, 'vehicle_id' => $vehicle->id, 'departure_date' => now()->addDay()->toDateString(), 'departure_time' => '08:00', 'available_seats' => 9, 'status' => 'Scheduled']);
     $passenger = User::create(['name' => 'Dewi Lestari', 'email' => 'dewi.cs@travel.test', 'phone' => '081299990000', 'role' => 'user', 'status' => 'active', 'password' => Hash::make('password')]);
-    Booking::create(['booking_code' => 'TRV-CS-LOOKUP', 'user_id' => $passenger->id, 'schedule_id' => $schedule->id, 'total_passenger' => 1, 'subtotal' => 125000, 'discount' => 0, 'total_price' => 125000, 'status' => 'paid']);
+    $booking = Booking::create([
+        'booking_code' => 'TRV-CS-LOOKUP',
+        'user_id' => $passenger->id,
+        'contact_name' => 'Dewi Lestari',
+        'contact_phone' => '081299990000',
+        'schedule_id' => $schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 125000,
+        'discount' => 0,
+        'total_price' => 125000,
+        'status' => 'paid',
+    ]);
+    BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat1->id,
+        'name' => 'Dewi Lestari',
+        'phone' => '081299990000',
+    ]);
 
+    // Lookup by booking code
     $byCode = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'CS-LOOKUP']));
     $byCode->assertOk();
     $byCode->assertSee('TRV-CS-LOOKUP');
@@ -61,8 +85,45 @@ test('customer service can look up a booking by code or passenger phone', functi
     $byCode->assertSee('Bandung ke Jakarta');
     $byCode->assertSee('Lunas');
 
+    // Lookup by phone
     $byPhone = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => '081299990000']));
     $byPhone->assertSee('TRV-CS-LOOKUP');
+
+    // Lookup by user name
+    $byName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'Dewi Lestari']));
+    $byName->assertOk();
+    $byName->assertSee('TRV-CS-LOOKUP');
+    $byName->assertSee('Dewi Lestari');
+
+    // Lookup by passenger name when different from booker
+    $guestBooking = Booking::create([
+        'booking_code' => 'TRV-GUEST-NAME',
+        'contact_name' => 'Pemesan Walkin',
+        'contact_phone' => '081311112222',
+        'schedule_id' => $schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 125000,
+        'discount' => 0,
+        'total_price' => 125000,
+        'status' => 'paid',
+    ]);
+    BookingPassenger::create([
+        'booking_id' => $guestBooking->id,
+        'seat_id' => $seat2->id,
+        'name' => 'Siti Khadijah',
+        'phone' => '081311112222',
+    ]);
+
+    $byPassengerName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'Siti Khadijah']));
+    $byPassengerName->assertOk();
+    $byPassengerName->assertSee('TRV-GUEST-NAME');
+    $byPassengerName->assertSee('Siti Khadijah');
+
+    // Lookup by contact name
+    $byContactName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'Pemesan Walkin']));
+    $byContactName->assertOk();
+    $byContactName->assertSee('TRV-GUEST-NAME');
+    $byContactName->assertSee('Pemesan Walkin');
 
     $noMatch = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'TIDAK-ADA']));
     $noMatch->assertSee('Tidak ada pesanan yang cocok');

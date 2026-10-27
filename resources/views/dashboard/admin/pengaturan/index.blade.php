@@ -219,7 +219,8 @@
     }
 
     .logo-preview {
-        width: 80px;
+        min-width: 80px;
+        max-width: 180px;
         height: 80px;
         border-radius: 12px;
         background: #e3f5ee;
@@ -230,9 +231,16 @@
         font-size: 32px;
         overflow: hidden;
         flex-shrink: 0;
+        padding: 6px;
     }
 
-    .logo-preview img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+    }
 
     .logo-upload-info h4 { font-size: 14px; font-weight: 700; color: #17221d; margin: 0 0 4px; }
     .logo-upload-info p  { font-size: 12px; color: #8a9990; margin: 0 0 10px; }
@@ -536,10 +544,10 @@
                         <div class="logo-upload-wrap">
                             <div class="logo-preview" id="logoPreviewBox">
                                 @if ($settings->get('company_logo'))
-                                    <img src="{{ Storage::url($settings->get('company_logo')) }}" alt="Logo Perusahaan" id="logoPreviewImg">
+                                    <img src="{{ asset('storage/' . $settings->get('company_logo')) }}" alt="Logo Perusahaan" id="logoPreviewImg">
                                 @else
-                                    <span id="logoPlaceholder" style="font-size:32px;"></span>
-                                    <img src="" alt="Logo" id="logoPreviewImg" style="display:none; width:100%; height:100%; object-fit:contain;">
+                                    <span id="logoPlaceholder" style="font-size:32px;">🏢</span>
+                                    <img src="" alt="Logo" id="logoPreviewImg" style="display:none; max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain;">
                                 @endif
                             </div>
                             <div class="logo-upload-info">
@@ -552,6 +560,13 @@
                     </div>
 
                     <div class="form-grid">
+                        <div class="form-group form-full">
+                            <label class="form-label">Nama Lengkap Administrator <span class="required-star">*</span></label>
+                            <input type="text" name="admin_name" class="form-input @error('admin_name') is-invalid @enderror" value="{{ old('admin_name', Auth::user()?->name) }}" placeholder="cth: Super Administrator" required id="input-admin-name">
+                            @error('admin_name') <span class="form-error">{{ $message }}</span> @enderror
+                            <span class="form-hint" style="font-size:12px; color:#8a9990;">Nama profil administrator yang tampil di pojok kanan atas sistem.</span>
+                        </div>
+
                         <div class="form-group form-full">
                             <label class="form-label">Nama Legal / Merek Travel <span class="required-star">*</span></label>
                             <input type="text" name="company_name" class="form-input @error('company_name') is-invalid @enderror" value="{{ old('company_name', $settings->get('company_name', 'Travel Trans Utama')) }}" placeholder="cth: PT. Trans Utama Mandiri / Travel Trans Utama" required id="input-company-name">
@@ -1111,18 +1126,32 @@
         }
     }, 5000);
 
-    // ── LOGO PREVIEW ─────────────────────────────────────────────────────────
+    // ── LOGO PREVIEW & VALIDATION ───────────────────────────────────────────
     function previewLogo(input) {
         if (!input.files || !input.files[0]) { return; }
+        var file = input.files[0];
+
+        // Validasi ukuran maksimal 2 MB (2 * 1024 * 1024 bytes)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file logo terlalu besar (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB). Maksimal ukuran file yang diperbolehkan adalah 2 MB.');
+            input.value = '';
+            return;
+        }
+
         var reader = new FileReader();
         reader.onload = function(e) {
             var img = document.getElementById('logoPreviewImg');
             var ph  = document.getElementById('logoPlaceholder');
             img.src = e.target.result;
             img.style.display = 'block';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            img.style.width = 'auto';
+            img.style.height = 'auto';
+            img.style.objectFit = 'contain';
             if (ph) { ph.style.display = 'none'; }
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(file);
     }
 
     // ── API KEY VISIBILITY ────────────────────────────────────────────────────

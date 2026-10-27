@@ -373,6 +373,20 @@ class MidtransService
     }
 
     /**
+     * Apakah webhook wajib membawa signature yang valid.
+     * Wajib saat server key tersedia, kecuali simulator di luar production
+     * mengaktifkan MIDTRANS_ALLOW_UNSIGNED_WEBHOOK.
+     */
+    public function requiresWebhookSignature(): bool
+    {
+        if (empty($this->getServerKey())) {
+            return false;
+        }
+
+        return ! (! app()->isProduction() && config('midtrans.allow_unsigned_webhook', false));
+    }
+
+    /**
      * Verifikasi keaslian signature webhook dari Midtrans.
      * Formula: SHA512(order_id + status_code + gross_amount + server_key)
      *
@@ -385,15 +399,14 @@ class MidtransService
             return false;
         }
 
+        $serverKey = $this->getServerKey();
+        if (empty($serverKey)) {
+            return false;
+        }
+
         $orderId = $payload['order_id'] ?? '';
         $statusCode = $payload['status_code'] ?? '';
         $grossAmount = $payload['gross_amount'] ?? '';
-        $serverKey = $this->getServerKey();
-
-        if (empty($serverKey)) {
-            // Jika belum ada server key (testing/simulator), izinkan jika format signature sesuai
-            return strlen($signature) === 128;
-        }
 
         $expected = hash('sha512', $orderId.$statusCode.$grossAmount.$serverKey);
 

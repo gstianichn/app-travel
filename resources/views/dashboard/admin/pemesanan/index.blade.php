@@ -601,7 +601,7 @@
 
     {{-- FILTER & PENCARIAN --}}
     <div class="filter-card">
-        <form action="{{ route('dashboard.admin.pemesanan.index') }}" method="GET" class="filter-form">
+        <form action="{{ route('dashboard.admin.pemesanan.index') }}" method="GET" class="filter-form admin-filter-form">
             {{-- SEARCH --}}
             <div class="filter-group">
                 <label class="filter-label" for="search">Cari Kode / Pemesan / HP</label>
@@ -762,8 +762,9 @@
                                         href="{{ route('dashboard.admin.pemesanan.show', $b->id) }}"
                                         class="btn-action-icon"
                                         title="Detail E-Ticket & Transaksi"
-                                    >Detail
-                                                                            </a>
+                                    >
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </a>
 
                                     {{-- SEAT MAP JADWAL --}}
                                     @if($b->schedule_id)
@@ -771,16 +772,18 @@
                                             href="{{ route('dashboard.admin.pemesanan.seat-map', $b->schedule_id) }}"
                                             class="btn-action-icon"
                                             title="Denah Kursi Visual Jadwal Ini"
-                                        >Kursi
-                                                                                    </a>
+                                        >
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="2"/></svg>
+                                        </a>
 
                                         {{-- MANIFES --}}
                                         <a
                                             href="{{ route('dashboard.admin.pemesanan.manifes', $b->schedule_id) }}"
                                             class="btn-action-icon"
                                             title="Manifes Perjalanan Sopir"
-                                        >Manifes
-                                                                                    </a>
+                                        >
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                                        </a>
                                     @endif
 
                                     {{-- RESCHEDULE --}}
@@ -789,8 +792,9 @@
                                             href="{{ route('dashboard.admin.pemesanan.reschedule', $b->id) }}"
                                             class="btn-action-icon"
                                             title="Ubah Jadwal (Reschedule) & Geser Kursi"
-                                        >Ubah jadwal
-                                                                                    </a>
+                                        >
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        </a>
 
                                         {{-- BATALKAN --}}
                                         <form
@@ -805,8 +809,9 @@
                                                 type="submit"
                                                 class="btn-action-icon cancel"
                                                 title="Batalkan Pemesanan"
-                                            >Batalkan
-                                                                                            </button>
+                                            >
+                                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
+                                            </button>
                                         </form>
                                     @endif
                                 </div>

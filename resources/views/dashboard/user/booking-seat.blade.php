@@ -8,14 +8,18 @@
 @endphp
 
 @section('content')
-<div class="space-y-8" x-data="seatPicker({ maxSeats: {{ $passengers }}, unitPrice: {{ $schedule->effectivePrice() }} })">
+<div class="space-y-8" x-data="seatPicker({ maxSeats: {{ $schedule->available_seats }}, unitPrice: {{ $schedule->effectivePrice() }} })">
 
     @include('dashboard.user.partials.booking-steps', ['current' => 1])
 
     @include('dashboard.user.partials.flash')
 
     <header class="space-y-4">
-        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">Pilih {{ $passengers }} kursi</h1>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900"
+            x-text="selectedSeats.length > 0
+                ? 'Pilih kursi (' + selectedSeats.length + ' dipilih)'
+                : 'Pilih kursi'"
+        >Pilih kursi</h1>
         @include('dashboard.user.partials.trip-summary', ['schedule' => $schedule])
     </header>
 
@@ -59,30 +63,21 @@
                     </div>
 
                     <div class="space-y-3 pt-4">
-                        @foreach ($cabinRows as $rowSeats)
-                            <div @class([
-                                'flex items-center gap-2',
-                                'justify-between' => count($rowSeats) !== 3,
-                                'justify-around' => count($rowSeats) === 3,
-                            ])>
-                                @if (count($rowSeats) >= 4)
-                                    <div class="flex gap-2">
-                                        @foreach (array_slice($rowSeats, 0, 2) as $seat)
-                                            @include('dashboard.user.partials.seat-button', ['seat' => $seat])
-                                        @endforeach
-                                    </div>
-                                    <div class="flex gap-2">
-                                        @foreach (array_slice($rowSeats, 2) as $seat)
-                                            @include('dashboard.user.partials.seat-button', ['seat' => $seat])
-                                        @endforeach
-                                    </div>
-                                @else
-                                    @foreach ($rowSeats as $seat)
+                        @foreach ($cabinRows as $rowNumber => $rowSeats)
+                            <div class="grid grid-cols-4 gap-2 items-center justify-items-center">
+                                @foreach ($rowSeats as $seat)
+                                    <div style="grid-column: {{ $seat['seat_column'] }};" class="w-full flex justify-center">
                                         @include('dashboard.user.partials.seat-button', ['seat' => $seat])
-                                    @endforeach
-                                @endif
+                                    </div>
+                                @endforeach
                             </div>
                         @endforeach
+
+                        {{-- Area Bagasi Belakang Kabin Armada --}}
+                        <div class="mt-4 rounded-xl bg-amber-400 text-amber-950 font-black text-xs text-center py-3.5 tracking-widest uppercase border-2 border-amber-500 shadow-sm flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <span>FULL BAGASI</span>
+                        </div>
                     </div>
 
                     <p class="mt-4 border-t-2 border-dashed border-slate-300 pt-3 text-center text-xs text-slate-500">Belakang</p>
@@ -94,7 +89,7 @@
         <aside class="lg:sticky lg:top-24 rounded-xl border border-slate-300 bg-white p-6 space-y-5" aria-labelledby="kursi-pilihan">
             <h2 id="kursi-pilihan" class="text-xl font-extrabold text-brand-900">Kursi pilihanmu</h2>
 
-            <p class="text-slate-700" x-show="selectedSeats.length === 0">Ketuk kursi kosong di denah. Kamu perlu memilih {{ $passengers }} kursi.</p>
+            <p class="text-slate-700" x-show="selectedSeats.length === 0">Ketuk kursi kosong di denah. Kamu bisa memilih satu atau lebih kursi.</p>
             <ul class="flex flex-wrap gap-2" x-show="selectedSeats.length > 0" x-cloak>
                 <template x-for="seat in selectedSeats" :key="seat.id">
                     <li>
@@ -115,8 +110,8 @@
                     <dd>{{ $schedule->formattedEffectivePrice() }}</dd>
                 </div>
                 <div class="flex justify-between gap-4 text-slate-600">
-                    <dt>Dipilih</dt>
-                    <dd x-text="selectedSeats.length + ' dari ' + maxSeats"></dd>
+                    <dt>Kursi dipilih</dt>
+                    <dd x-text="selectedSeats.length + ' kursi'"></dd>
                 </div>
                 <div class="flex justify-between gap-4 text-lg font-extrabold text-slate-900">
                     <dt>Total</dt>
@@ -127,13 +122,17 @@
             <form action="{{ route('dashboard.user.booking.lock-seats') }}" method="POST" class="space-y-3">
                 @csrf
                 <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
-                <input type="hidden" name="passengers" value="{{ $passengers }}">
+                {{-- passengers dihitung dari jumlah kursi yang dipilih, diisi dinamis oleh Alpine --}}
+                <input type="hidden" name="passengers" :value="selectedSeats.length">
                 <template x-for="seat in selectedSeats" :key="seat.id">
                     <input type="hidden" name="seat_ids[]" :value="seat.id">
                 </template>
 
-                <button type="submit" class="lp-btn lp-btn--primary w-full" :disabled="selectedSeats.length !== maxSeats">
-                    Tahan kursi dan isi data
+                <button type="submit" class="lp-btn lp-btn--primary w-full" :disabled="selectedSeats.length === 0">
+                    <span x-text="selectedSeats.length > 0
+                        ? 'Tahan ' + selectedSeats.length + ' kursi dan isi data'
+                        : 'Pilih minimal 1 kursi'"
+                    >Tahan kursi dan isi data</span>
                 </button>
                 <p class="text-sm text-slate-600">Kursinya kami tahan 15 menit untuk kamu, jadi tidak bisa diambil penumpang lain selama kamu mengisi data dan membayar.</p>
             </form>
@@ -159,7 +158,7 @@ function seatPicker(config) {
             }
 
             if (this.selectedSeats.length >= this.maxSeats) {
-                this.limitMessage = `Sudah ${this.maxSeats} kursi. Batalkan salah satu dulu kalau mau ganti.`;
+                this.limitMessage = `Semua ${this.maxSeats} kursi yang tersedia sudah dipilih.`;
                 return;
             }
 

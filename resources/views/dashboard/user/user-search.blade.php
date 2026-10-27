@@ -4,7 +4,7 @@
 
 @php
     $cityOf = fn ($location) => $location?->city ?: $location?->name;
-    $passengerCount = (int) request('passengers', 1);
+    $passengerCount = (int) ($passengerCount ?? request('passengers', 1));
     $searchDate = $searchPerformed && ! $errors->any() && request('departure_date')
         ? \Illuminate\Support\Carbon::parse(request('departure_date'))->locale('id')
         : null;

@@ -559,17 +559,20 @@
                 Kaca Depan Minibus
             </div>
 
-            {{-- BARIS DEPAN: KURSI 1A (KIRI) & DRIVER (KANAN - STANDAR INDONESIA) --}}
+            {{-- BARIS DEPAN: KURSI 1 (KIRI) & DRIVER (KANAN - STANDAR INDONESIA) --}}
             <div class="van-front-row">
-                {{-- Cari kursi 1A pada baris 1 (Depan Kiri samping pintu) --}}
+                {{-- Cari kursi depan pada baris 1 (Depan Kiri samping pintu) --}}
                 @php
                     $seat1A = null;
                     if (isset($occupancyMap['1'])) {
                         foreach ($occupancyMap['1'] as $s) {
-                            if ($s['seat_number'] === '1A') {
+                            if ($s['seat_number'] === '1' || $s['seat_number'] === '1A') {
                                 $seat1A = $s;
                                 break;
                             }
+                        }
+                        if (!$seat1A && count($occupancyMap['1']) > 0) {
+                            $seat1A = $occupancyMap['1'][0];
                         }
                     }
                 @endphp
@@ -578,7 +581,7 @@
                     <div
                         class="seat-card {{ $seat1A['occupancy']['status'] }}"
                         onclick='showSeatDetail(@json($seat1A))'
-                        title="Kursi 1A (Depan Kiri Samping Pintu)"
+                        title="Kursi {{ $seat1A['seat_number'] }} (Depan Kiri Samping Pintu)"
                     >
                         <span class="seat-num">{{ $seat1A['seat_number'] }}</span>
                         <span class="seat-status-mini">
@@ -597,11 +600,11 @@
                 @endif
 
                 <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; text-align: center;">
-                    Pintu / Lorong
+                    Lorong
                 </div>
 
                 <div class="driver-seat" title="Kursi Kemudi Sopir (Setir Kanan Indonesia)">
-                    <span class="driver-steering-icon"></span>
+                    <span class="driver-steering-icon">☸</span>
                     <span>Sopir</span>
                     <span style="font-size: 8px; opacity: 0.85; font-weight: 800;">(KANAN)</span>
                 </div>
@@ -616,13 +619,13 @@
 
                     <div class="cabin-row">
                         <span class="row-number-label">R{{ $rowNum }}</span>
-                        <div class="row-seats-container" @if(count($rowSeats) === 2) style="justify-content: space-between; padding: 0 4px;" @endif>
-                            @php $seatCount = count($rowSeats); @endphp
-                            @foreach($rowSeats as $seatIdx => $seat)
+                        <div class="row-seats-container" style="display: grid; grid-template-columns: repeat(4, 76px); gap: 10px; justify-content: center;">
+                            @foreach($rowSeats as $seat)
                                 <div
+                                    style="grid-column: {{ $seat['seat_column'] }};"
                                     class="seat-card {{ $seat['occupancy']['status'] }}"
                                     onclick='showSeatDetail(@json($seat))'
-                                    title="Klik untuk detail kursi {{ $seat['seat_number'] }} ({{ $seatIdx === 0 ? 'Kiri' : 'Kanan Belakang Sopir' }})"
+                                    title="Klik untuk detail kursi {{ $seat['seat_number'] }}"
                                 >
                                     <span class="seat-num">{{ $seat['seat_number'] }}</span>
                                     <span class="seat-status-mini">
@@ -634,13 +637,6 @@
                                         </span>
                                     @endif
                                 </div>
-
-                                {{-- Sisipkan lorong tengah jika baris berisi 2 kursi (kiri dan kanan belakang supir) --}}
-                                @if($seatCount === 2 && $seatIdx === 0)
-                                    <div style="font-size: 10px; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">
-                                        Lorong
-                                    </div>
-                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -648,8 +644,8 @@
             </div>
 
             {{-- BAGASI BELAKANG --}}
-            <div class="van-rear-trunk">
-                Bagasi Belakang Armada
+            <div class="van-rear-trunk" style="background: #fbbf24; color: #78350f; font-weight: 800; border: 2px dashed #d97706; margin-top: 14px;">
+                FULL BAGASI
             </div>
         </div>
     </div>

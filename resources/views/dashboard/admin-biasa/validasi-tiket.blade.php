@@ -82,6 +82,7 @@
             color: var(--white);
             z-index: 100;
             box-shadow: 4px 0 20px rgba(10, 53, 93, 0.10);
+            transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.32s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .logo-area {
@@ -198,52 +199,94 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: margin-left 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.32s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         /* TOPBAR */
         .topbar {
-            height: 82px;
+            min-height: 72px;
+            height: auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 32px;
+            padding: 12px 28px;
             background: var(--white);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 50;
+            gap: 16px;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            min-width: 0;
+        }
+
+        .page-title {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
         }
 
         .page-title h1 {
             color: var(--text-dark);
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            line-height: 1.25;
+            white-space: nowrap;
+            margin: 0;
         }
 
         .page-title p {
             color: var(--text-light);
-            font-size: 12px;
+            font-size: 11.5px;
             margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 320px;
+            line-height: 1.3;
         }
 
         .topbar-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+            flex-shrink: 1;
+            min-width: 0;
+            justify-content: flex-end;
         }
 
         .trip-select-box {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: #f8fafc;
             border: 1px solid var(--border);
-            padding: 6px 14px;
+            padding: 7px 12px;
             border-radius: 10px;
-            font-size: 13px;
+            font-size: 12.5px;
+            max-width: 440px;
+            min-width: 0;
+            flex-shrink: 1;
+        }
+
+        .trip-select-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-light);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .trip-select-box select {
@@ -253,7 +296,11 @@
             color: var(--primary-dark);
             outline: none;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12.5px;
+            max-width: 300px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .profile-badge {
@@ -262,11 +309,29 @@
             gap: 10px;
             padding-left: 14px;
             border-left: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .profile-badge strong {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: block;
+            white-space: nowrap;
+            line-height: 1.25;
+        }
+
+        .profile-badge small {
+            font-size: 11px;
+            color: var(--text-light);
+            display: block;
+            white-space: nowrap;
+            line-height: 1.25;
         }
 
         .avatar {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -274,7 +339,83 @@
             color: var(--primary);
             border-radius: 50%;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        /* Responsive Navbar & Sidebar Breakpoints */
+        @media (max-width: 1200px) {
+            .page-title p {
+                display: none;
+            }
+
+            .trip-select-box select {
+                max-width: 220px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 1000;
+                box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+            }
+
+            .sidebar.sidebar-mobile-open {
+                transform: translateX(0) !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+
+            .topbar {
+                padding: 10px 18px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .topbar-right {
+                flex-wrap: wrap;
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .trip-select-box {
+                flex: 1;
+                max-width: none;
+            }
+
+            .trip-select-box select {
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .topbar {
+                padding: 10px 14px;
+            }
+
+            .page-title h1 {
+                font-size: 15px;
+            }
+
+            .topbar-right {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+
+            .profile-badge {
+                padding-left: 0;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                padding-top: 8px;
+                justify-content: flex-end;
+            }
         }
 
         /* CONTENT AREA */
@@ -1017,36 +1158,27 @@
     <!-- =========================================
          MAIN CONTENT AREA
     ========================================== -->
-    <main class="main-content">
+    <main class="main-content" id="mainContent">
 
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="page-title">
-                <h1 style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                        <rect width="5" height="5" x="3" y="3" rx="1" />
-                        <rect width="5" height="5" x="16" y="3" rx="1" />
-                        <rect width="5" height="5" x="3" y="16" rx="1" />
-                        <path d="M21 16h-3a2 2 0 0 0-2 2v3" />
-                        <path d="M21 21v.01" />
-                    </svg>
-                    <span>Validasi Tiket & Boarding Pass</span>
-                </h1>
-                <p>Verifikasi instan QR code, input fallback kode booking, dan status boarding penumpang kabin.</p>
+                <h1>Validasi Tiket &amp; Boarding Pass</h1>
+                <p title="Verifikasi instan QR code, input fallback kode booking, dan status boarding penumpang kabin.">Verifikasi instan QR code, input fallback kode booking, dan status boarding penumpang kabin.</p>
             </div>
 
             <div class="topbar-right">
                 <!-- SCHEDULE SELECTOR -->
-                <form method="GET" action="{{ route('dashboard.admin-biasa.validasi-tiket') }}" id="scheduleSelectForm">
-                    <div class="trip-select-box" style="display: flex; align-items: center; gap: 6px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                <form method="GET" action="{{ route('dashboard.admin-biasa.validasi-tiket') }}" id="scheduleSelectForm" style="margin: 0; display: flex; min-width: 0; flex-shrink: 1;">
+                    <div class="trip-select-box">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); flex-shrink: 0;">
                             <rect x="2" y="5" width="20" height="13" rx="2" />
                             <circle cx="7" cy="18" r="2" />
                             <circle cx="17" cy="18" r="2" />
                             <path d="M2 10h20" />
                         </svg>
-                        <span>Armada Trip:</span>
-                        <select name="schedule_id" onchange="document.getElementById('scheduleSelectForm').submit()">
+                        <span class="trip-select-label">Armada Trip:</span>
+                        <select name="schedule_id" onchange="document.getElementById('scheduleSelectForm').submit()" title="Pilih jadwal armada trip">
                             @foreach($scheduleList as $sched)
                                 @php
                                     $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
@@ -1065,10 +1197,10 @@
 
                 <!-- USER INFO -->
                 <div class="profile-badge">
-                    <div class="avatar">{{ substr($user->name ?? 'Staf', 0, 2) }}</div>
-                    <div>
-                        <strong style="font-size: 13px; display: block;">{{ $user->name ?? 'Petugas Boarding' }}</strong>
-                        <small style="font-size: 11px; color: var(--text-light);">{{ $user->branch ?: 'Pool Dipatiukur' }}</small>
+                    <div class="avatar">{{ strtoupper(substr($user->name ?? 'Staf', 0, 2)) }}</div>
+                    <div style="min-width: 0;">
+                        <strong>{{ $user->name ?? 'Petugas Boarding' }}</strong>
+                        <small>{{ $user->branch ?: 'Pool Dipatiukur' }}</small>
                     </div>
                 </div>
             </div>

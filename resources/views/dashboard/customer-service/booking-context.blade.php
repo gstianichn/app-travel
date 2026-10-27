@@ -1721,14 +1721,6 @@
 
         let filtered = bookingsDataset;
 
-        if (currentFilterType === 'kritis') {
-            filtered = filtered.filter(b => b.urgency === 'kritis');
-        } else if (currentFilterType === 'today') {
-            filtered = filtered.filter(b => b.departure.toLowerCase().includes('hari ini') || b.urgency === 'today' || b.urgency === 'kritis');
-        } else if (currentFilterType === 'pending') {
-            filtered = filtered.filter(b => b.paymentStatus.toLowerCase().includes('menunggu'));
-        }
-
         if (query.length > 0) {
             filtered = filtered.filter(b =>
                 b.code.toLowerCase().includes(query) ||
@@ -1738,6 +1730,14 @@
                 b.plate.toLowerCase().includes(query) ||
                 b.route.toLowerCase().includes(query)
             );
+        } else {
+            if (currentFilterType === 'kritis') {
+                filtered = filtered.filter(b => b.urgency === 'kritis');
+            } else if (currentFilterType === 'today') {
+                filtered = filtered.filter(b => b.departure.toLowerCase().includes('hari ini') || b.urgency === 'today' || b.urgency === 'kritis');
+            } else if (currentFilterType === 'pending') {
+                filtered = filtered.filter(b => b.paymentStatus.toLowerCase().includes('menunggu'));
+            }
         }
 
         document.getElementById('booking-total-badge').innerText = `${filtered.length} Tiket`;

@@ -1,15 +1,15 @@
 @extends('layouts.driver')
 
-@section('title', 'Melihat Riwayat Perjalanan - Cockpit Driver TravelKu')
+@section('title', 'Melihat Riwayat Perjalanan - Driver TravelKu')
 
 @section('content')
     <div style="margin-bottom: 16px;">
-        <a href="{{ route('dashboard.driver.index') }}" class="btn-action-ghost" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 13px; font-weight: 700; color: var(--text-muted); background: white; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border);">
-            <span>←</span>
+        <a href="{{ route('dashboard.driver.index') }}" class="ds-btn ds-btn--secondary" style="font-size: 13px; min-height: 38px; padding: 0 16px;">
+            <span>&larr;</span>
             <span>Kembali ke Dashboard Utama</span>
         </a>
     </div>
 
-    {{-- 15. FITUR MELIHAT RIWAYAT PERJALANAN (RITASE SELESAI & REKAP) --}}
+    {{-- 15. FITUR MELIHAT RIWAYAT PERJALANAN --}}
     @include('dashboard.driver.partials.riwayat')
 @endsection

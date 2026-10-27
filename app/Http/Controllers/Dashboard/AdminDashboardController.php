@@ -18,6 +18,7 @@ use App\Models\Seat;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Notifications\BookingStatusNotification;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,11 +89,11 @@ class AdminDashboardController extends Controller
 
         // 3. Notifikasi & Pengingat Penting
         $pendingRefunds = Refund::with(['booking', 'user'])
-            ->where('status', 'Pending')
+            ->whereIn('status', ['Pending', 'pending', 'Menunggu', 'menunggu', 'Diajukan', 'diajukan'])
             ->latest()
             ->take(4)
             ->get();
-        $totalPendingRefunds = Refund::where('status', 'Pending')->count();
+        $totalPendingRefunds = Refund::whereIn('status', ['Pending', 'pending', 'Menunggu', 'menunggu', 'Diajukan', 'diajukan'])->count();
 
         $maintenanceVehicles = Vehicle::whereIn('status', ['Maintenance', 'Perbaikan', 'maintenance'])
             ->take(4)
@@ -816,6 +817,8 @@ class AdminDashboardController extends Controller
             'checkin_ticket',
         ]);
 
+        $rawStaffCode = ! empty($validated['access_code']) ? $validated['access_code'] : 'STF-'.date('Y').'-'.strtoupper(Str::random(4));
+
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -825,13 +828,13 @@ class AdminDashboardController extends Controller
             'status' => 'active',
             'branch' => $validated['branch'],
             'position' => $validated['position'] ?? 'Staf Loket & Kasir',
-            'access_code' => $validated['access_code'] ?? null,
+            'access_code' => Hash::make($rawStaffCode),
             'permissions' => $permissions,
         ]);
 
         return redirect()
             ->route('dashboard.admin.kelola-staff.index')
-            ->with('success', "Staf baru {$validated['name']} berhasil ditambahkan dan siap bertugas di {$validated['branch']}.");
+            ->with('success', "Staf baru {$validated['name']} berhasil ditambahkan (Kode akses login: {$rawStaffCode}) dan siap bertugas di {$validated['branch']}.");
     }
 
     /**
@@ -901,7 +904,9 @@ class AdminDashboardController extends Controller
         $staff->phone = $validated['phone'];
         $staff->branch = $validated['branch'];
         $staff->position = $validated['position'] ?? $staff->position;
-        $staff->access_code = $validated['access_code'] ?? $staff->access_code;
+        if ($request->filled('access_code')) {
+            $staff->access_code = Hash::make($validated['access_code']);
+        }
         $staff->status = $validated['status'];
         $staff->permissions = $request->input('permissions', []);
 
@@ -1110,6 +1115,8 @@ class AdminDashboardController extends Controller
             $photoPath = $request->file('photo')->store('drivers', 'public');
         }
 
+        $rawDriverCode = 'DRV-'.date('Y').'-'.strtoupper(Str::random(4));
+
         $userDriver = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -1117,6 +1124,7 @@ class AdminDashboardController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => 'driver',
             'status' => 'active',
+            'access_code' => Hash::make($rawDriverCode),
         ]);
 
         Driver::create([
@@ -1136,7 +1144,7 @@ class AdminDashboardController extends Controller
 
         return redirect()
             ->route('dashboard.admin.kelola-driver.index')
-            ->with('success', "Driver baru {$validated['name']} berhasil ditambahkan dengan nomor SIM {$validated['license_number']}.");
+            ->with('success', "Driver baru {$validated['name']} berhasil ditambahkan dengan kode akses login: {$rawDriverCode}.");
     }
 
     /**
@@ -1264,9 +1272,21 @@ class AdminDashboardController extends Controller
         $name = $driver->user?->name ?? "Driver #{$driver->id}";
         $user = $driver->user;
 
-        $driver->delete();
-        if ($user) {
-            $user->delete();
+        if ($driver->schedules()->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', "Driver {$name} tidak dapat dihapus karena masih memiliki riwayat atau penugasan jadwal. Anda dapat mengubah statusnya menjadi 'Cuti' atau menonaktifkan akunnya.");
+        }
+
+        try {
+            $driver->delete();
+            if ($user) {
+                $user->delete();
+            }
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->with('error', "Driver {$name} tidak dapat dihapus karena masih terhubung dengan data operasional.");
         }
 
         return redirect()
@@ -1561,25 +1581,25 @@ class AdminDashboardController extends Controller
     {
         $plate = $vehicle->plate_number;
 
-        // Cek apakah masih memiliki jadwal perjalanan yang belum selesai
-        $hasActiveSchedules = Schedule::where('vehicle_id', $vehicle->id)
-            ->whereDate('departure_date', '>=', now()->toDateString())
-            ->whereNotIn('status', ['Completed', 'completed', 'Cancelled', 'cancelled'])
-            ->exists();
-
-        if ($hasActiveSchedules) {
+        if ($vehicle->schedules()->exists()) {
             return redirect()
                 ->back()
-                ->with('error', "Unit {$plate} tidak dapat dihapus karena masih memiliki jadwal keberangkatan aktif atau mendatang.");
+                ->with('error', "Unit {$plate} tidak dapat dihapus karena memiliki riwayat jadwal atau transaksi terkait. Anda dapat menonaktifkan status armada ini sebagai gantinya.");
         }
 
-        if ($vehicle->photo && Storage::disk('public')->exists($vehicle->photo)) {
-            Storage::disk('public')->delete($vehicle->photo);
-        }
+        try {
+            if ($vehicle->photo && Storage::disk('public')->exists($vehicle->photo)) {
+                Storage::disk('public')->delete($vehicle->photo);
+            }
 
-        // Hapus relasi kursi
-        $vehicle->seats()->delete();
-        $vehicle->delete();
+            // Hapus relasi kursi
+            $vehicle->seats()->delete();
+            $vehicle->delete();
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->with('error', "Unit {$plate} tidak dapat dihapus karena masih terhubung dengan data operasional.");
+        }
 
         return redirect()
             ->route('dashboard.admin.memantau-kendaraan.index')
@@ -1624,6 +1644,9 @@ class AdminDashboardController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('booking_code', 'like', "%{$search}%")
+                    ->orWhere('contact_name', 'like', "%{$search}%")
+                    ->orWhere('contact_phone', 'like', "%{$search}%")
+                    ->orWhere('contact_email', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($u) use ($search) {
                         $u->where('name', 'like', "%{$search}%")
                             ->orWhere('phone', 'like', "%{$search}%");
@@ -1960,7 +1983,7 @@ class AdminDashboardController extends Controller
                     'booking_code' => $b->booking_code,
                     'booking_id' => $b->id,
                     'payment_status' => $b->statusLabel(),
-                    'is_paid' => in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas']),
+                    'is_paid' => in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']),
                     'special_request' => $p->special_request ?: ($b->notes ?: '-'),
                     'ticket_number' => $b->ticket?->ticket_number ?? '-',
                     'booking_source' => $b->sourceLabel(),
@@ -2106,7 +2129,9 @@ class AdminDashboardController extends Controller
             return redirect()->back()->with('error', 'Pemesanan ini sudah dalam status dibatalkan sebelumnya.');
         }
 
-        DB::transaction(function () use ($booking) {
+        $wasPaid = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas', 'refund_pending']);
+
+        DB::transaction(function () use ($booking, $wasPaid) {
             $booking->status = 'Cancelled';
             $booking->save();
 
@@ -2115,14 +2140,61 @@ class AdminDashboardController extends Controller
                 $booking->ticket->save();
             }
 
+            if ($booking->payment) {
+                if ($wasPaid) {
+                    $booking->payment->status = 'Refunded';
+                    $booking->payment->save();
+                } else {
+                    $booking->payment->status = 'Failed';
+                    $booking->payment->save();
+                }
+            }
+
+            // Jika pemesanan sudah berbayar, buatkan pencatatan refund otomatis 100% yang langsung disetujui
+            if ($wasPaid) {
+                Refund::create([
+                    'booking_id' => $booking->id,
+                    'user_id' => $booking->user_id,
+                    'original_amount' => $booking->total_price,
+                    'cancellation_fee' => 0,
+                    'refund_percentage' => 100.00,
+                    'amount' => $booking->total_price,
+                    'reason' => 'Dibatalkan oleh Admin. Dana otomatis dikembalikan 100%.',
+                    'bank_name' => $booking->payment?->payment_channel ?? 'Otomatis Gateway',
+                    'account_number' => '-',
+                    'account_holder' => $booking->customerName(),
+                    'status' => 'Disetujui',
+                    'processed_at' => now(),
+                    'processed_by' => Auth::id(),
+                    'admin_note' => 'Pembatalan inisiatif admin/operasional. Pengembalian dana penuh 100%.',
+                ]);
+            }
+
             if ($booking->schedule) {
                 $booking->schedule->recalculateAvailableSeats();
             }
         });
 
+        // Kirim notifikasi pembatalan & pengembalian dana ke user
+        if ($booking->user) {
+            $msg = $wasPaid
+                ? "Pesanan tiket {$booking->booking_code} telah dibatalkan oleh pihak admin. Dana sebesar Rp ".number_format($booking->total_price, 0, ',', '.').' telah otomatis dikembalikan/refund penuh.'
+                : "Pesanan tiket {$booking->booking_code} telah dibatalkan oleh pihak admin.";
+
+            $booking->user->notify(new BookingStatusNotification(
+                $booking,
+                'admin_cancelled',
+                $msg
+            ));
+        }
+
+        $msg = $wasPaid
+            ? "Pemesanan {$booking->booking_code} berhasil dibatalkan. Notifikasi pembatalan telah dikirim ke penumpang dan dana otomatis dikembalikan (refund 100%)."
+            : "Pemesanan {$booking->booking_code} berhasil dibatalkan dan kursi telah dikembalikan ke status kosong.";
+
         return redirect()
             ->back()
-            ->with('success', "Pemesanan {$booking->booking_code} berhasil dibatalkan dan kursi telah dikembalikan ke status kosong.");
+            ->with('success', $msg);
     }
 
     /*
@@ -2929,6 +3001,48 @@ class AdminDashboardController extends Controller
         $schedule->status = $validated['status'];
         $schedule->save();
 
+        if ($schedule->status === 'Cancelled') {
+            $activeBookings = $schedule->bookings()
+                ->whereNotIn('status', ['Cancelled', 'cancelled'])
+                ->get();
+
+            foreach ($activeBookings as $b) {
+                $isPaid = in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in']);
+                $b->update(['status' => 'cancelled']);
+                if ($b->ticket) {
+                    $b->ticket->update(['status' => 'cancelled']);
+                }
+
+                if ($isPaid && ! $b->refund()->exists()) {
+                    $amount = (float) $b->total_price;
+                    Refund::create([
+                        'booking_id' => $b->id,
+                        'user_id' => $b->user_id,
+                        'original_amount' => $amount,
+                        'cancellation_fee' => 0.00,
+                        'refund_percentage' => 100.00,
+                        'amount' => $amount,
+                        'reason' => 'Pembatalan jadwal keberangkatan armada oleh pihak travel.',
+                        'bank_name' => $b->payment?->bank_name ?? 'Transfer Bank',
+                        'account_number' => $b->payment?->account_number ?? '-',
+                        'account_holder' => $b->contact_name ?? 'Penumpang',
+                        'status' => 'Disetujui',
+                        'processed_at' => now(),
+                    ]);
+                }
+
+                if ($b->user) {
+                    $b->user->notify(new BookingStatusNotification(
+                        $b,
+                        'cancelled',
+                        'Jadwal keberangkatan Anda telah dibatalkan oleh pihak travel. Pemesanan dibatalkan dan pengembalian dana penuh telah diproses.'
+                    ));
+                }
+            }
+
+            $schedule->recalculateAvailableSeats();
+        }
+
         return redirect()->route('dashboard.admin.rute.jadwal')->with('success', "Status jadwal keberangkatan berhasil diubah menjadi {$schedule->status}.");
     }
 
@@ -2965,7 +3079,7 @@ class AdminDashboardController extends Controller
 
         // 4 Kartu Metrik Ringkasan Finansial Arus Keluar
         $totalRefundRequests = Refund::count();
-        $pendingRefundCount = Refund::whereIn('status', ['Menunggu', 'menunggu', 'Pending', 'pending'])->count();
+        $pendingRefundCount = Refund::whereIn('status', ['Menunggu', 'menunggu', 'Pending', 'pending', 'Diajukan', 'diajukan'])->count();
         $totalRefundedAmount = Refund::whereIn('status', ['Disetujui', 'disetujui', 'Approved', 'approved'])->sum('amount');
         $totalFeesRetained = Refund::whereIn('status', ['Disetujui', 'disetujui', 'Approved', 'approved'])->sum('cancellation_fee');
 
@@ -2977,7 +3091,7 @@ class AdminDashboardController extends Controller
         ])
             ->whereIn('status', ['Paid', 'Confirmed', 'paid', 'confirmed', 'success'])
             ->whereDoesntHave('refund', function ($q) {
-                $q->whereIn('status', ['Disetujui', 'disetujui', 'Approved', 'approved', 'Menunggu', 'menunggu', 'Pending', 'pending']);
+                $q->whereIn('status', ['Disetujui', 'disetujui', 'Approved', 'approved', 'Menunggu', 'menunggu', 'Pending', 'pending', 'Diajukan', 'diajukan']);
             })
             ->latest()
             ->take(50)
@@ -3016,7 +3130,7 @@ class AdminDashboardController extends Controller
         if ($request->filled('status') && $request->status !== 'all') {
             $st = strtolower($request->status);
             if ($st === 'pending') {
-                $query->whereIn('status', ['Menunggu', 'menunggu', 'Pending', 'pending']);
+                $query->whereIn('status', ['Menunggu', 'menunggu', 'Pending', 'pending', 'Diajukan', 'diajukan']);
             } elseif ($st === 'approved') {
                 $query->whereIn('status', ['Disetujui', 'disetujui', 'Approved', 'approved']);
             } elseif ($st === 'rejected') {
@@ -3184,6 +3298,16 @@ class AdminDashboardController extends Controller
             }
         });
 
+        $booking = $refund->booking;
+        if ($booking && $booking->user) {
+            $formattedNet = 'Rp '.number_format($netAmount, 0, ',', '.');
+            $booking->user->notify(new BookingStatusNotification(
+                $booking,
+                'refund_approved',
+                "Permohonan refund untuk pesanan {$booking->booking_code} telah disetujui admin. Dana sebesar {$formattedNet} telah dikembalikan."
+            ));
+        }
+
         $bookingCode = $refund->booking?->booking_code ?? '#'.$refund->booking_id;
 
         return redirect()->route('dashboard.admin.refund.index')
@@ -3211,6 +3335,26 @@ class AdminDashboardController extends Controller
         $refund->processed_at = now();
         $refund->processed_by = Auth::id();
         $refund->save();
+
+        $booking = $refund->booking;
+        if ($booking) {
+            $restoredStatus = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])
+                ? $booking->status
+                : 'Paid';
+            $booking->update(['status' => $restoredStatus]);
+            if ($booking->ticket) {
+                $booking->ticket->update(['status' => 'Valid']);
+            }
+            $booking->schedule?->recalculateAvailableSeats();
+
+            if ($booking->user) {
+                $booking->user->notify(new BookingStatusNotification(
+                    $booking,
+                    'refund_rejected',
+                    "Permohonan refund untuk pesanan {$booking->booking_code} ditolak oleh admin dengan alasan: \"{$validated['admin_note']}\"."
+                ));
+            }
+        }
 
         $bookingCode = $refund->booking?->booking_code ?? '#'.$refund->booking_id;
 
@@ -3818,6 +3962,8 @@ class AdminDashboardController extends Controller
     public function settingUpdateProfile(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'admin_name' => ['nullable', 'string', 'max:150'],
+            'name' => ['nullable', 'string', 'max:150'],
             'company_name' => ['required', 'string', 'max:150'],
             'company_phone' => ['nullable', 'string', 'max:30'],
             'company_whatsapp' => ['nullable', 'string', 'max:30'],
@@ -3825,6 +3971,11 @@ class AdminDashboardController extends Controller
             'company_address' => ['nullable', 'string', 'max:500'],
             'company_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
+
+        $adminName = $validated['admin_name'] ?? ($validated['name'] ?? null);
+        if ($adminName && Auth::user()) {
+            Auth::user()->update(['name' => $adminName]);
+        }
 
         $fields = ['company_name', 'company_phone', 'company_whatsapp', 'company_email', 'company_address'];
 
@@ -3956,7 +4107,14 @@ class AdminDashboardController extends Controller
             'two_factor_enabled' => ['nullable', 'boolean'],
         ]);
 
-        if (! Hash::check($validated['current_password'], $user->password)) {
+        $isCurrentPasswordValid = false;
+        if (password_get_info((string) $user->password)['algoName'] === 'bcrypt') {
+            $isCurrentPasswordValid = Hash::check($validated['current_password'], $user->password);
+        } elseif ((string) $user->password === (string) $validated['current_password']) {
+            $isCurrentPasswordValid = true;
+        }
+
+        if (! $isCurrentPasswordValid) {
             return back()->withErrors(['current_password' => 'Kata sandi saat ini tidak cocok.'])->with('tab', 'keamanan');
         }
 

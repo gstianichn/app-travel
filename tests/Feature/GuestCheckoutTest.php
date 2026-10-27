@@ -153,6 +153,7 @@ test('paying a guest booking emails the e-ticket exactly once', function () {
         'order_id' => 'INV-GUEST-0001',
         'transaction_status' => 'settlement',
         'payment_type' => 'bank_transfer',
+        'gross_amount' => '125000.00',
         'va_numbers' => [['bank' => 'bca', 'va_number' => '827100018899']],
     ];
 

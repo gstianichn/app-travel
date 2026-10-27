@@ -254,6 +254,11 @@
                                     <span style="font-weight:700; color:#059669;">
                                         Sisa {{ $sched->available_seats ?? 8 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
                                     </span>
+                                    @if($sched->exists && $sched->id)
+                                        <a href="{{ route('dashboard.driver.penumpang', ['schedule_id' => $sched->id]) }}" class="btn-action-ghost" style="padding: 4px 10px; font-size: 11.5px; border-radius: 8px; text-decoration: none; border: 1px solid var(--border); background: white; font-weight: 700;">
+                                            Manifes Penumpang →
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -340,6 +345,11 @@
                                     <span style="font-weight:700; color:#059669;">
                                         Sisa {{ $sched->available_seats ?? 9 }} / {{ $sched->vehicle?->capacity ?? 10 }} Kursi Kosong
                                     </span>
+                                    @if($sched->exists && $sched->id)
+                                        <a href="{{ route('dashboard.driver.penumpang', ['schedule_id' => $sched->id]) }}" class="btn-action-ghost" style="padding: 4px 10px; font-size: 11.5px; border-radius: 8px; text-decoration: none; border: 1px solid var(--border); background: white; font-weight: 700;">
+                                            Manifes Penumpang →
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>

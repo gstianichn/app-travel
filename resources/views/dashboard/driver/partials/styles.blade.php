@@ -49,27 +49,246 @@
         }
 
         /* LAYOUT SHELL */
-        .driver-shell {
+        .driver-shell,
+        .driver-app-layout {
             display: flex;
             min-height: 100vh;
+            background: var(--page, #F6F4EC);
+        }
+
+        .driver-main-wrapper {
+            margin-left: 270px;
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--page, #F6F4EC);
+        }
+
+        .driver-main-content {
+            flex: 1;
+            padding: clamp(24px, 3vw, 40px);
+            min-width: 0;
+        }
+
+        /* TOPBAR UNIFIED */
+        .topbar {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: var(--lp-card, #FFFDF8);
+            border-bottom: 1px solid var(--lp-line, #DEDAC9);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .page-title p {
+            color: var(--lp-muted, #5C6862);
+            font-size: 13.5px;
+            margin: 0;
+        }
+
+        .page-title strong {
+            color: var(--lp-forest, #0C392F);
+            font-weight: 800;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--lp-mint, #DFF0E8);
+            color: var(--lp-forest, #0C392F);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        .profile-info strong {
+            display: block;
+            color: var(--lp-ink, #13201B);
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .profile-info span {
+            color: var(--lp-muted, #5C6862);
+            font-size: 11.5px;
+            line-height: 1.2;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 95;
+            display: none;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.active {
+            display: block;
         }
 
         /* SIDEBAR (Desktop) */
         .sidebar {
-            width: 270px;
-            background: #064e3b;
-            color: white;
+            width: 260px;
+            min-height: 100vh;
             position: fixed;
+            left: 0;
             top: 0;
             bottom: 0;
-            left: 0;
             display: flex;
             flex-direction: column;
+            background: var(--lp-forest, #0C392F);
+            color: var(--white, #FFFDF8);
             z-index: 100;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-            transition: all 0.25s ease;
+            box-shadow: 4px 0 20px rgba(10, 53, 93, 0.10);
+            transition: transform 0.25s ease;
         }
 
+        .logo-area {
+            height: 74px;
+            display: flex;
+            align-items: center;
+            padding: 0 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            color: var(--lp-forest, #0C392F);
+            border-radius: 11px;
+            font-size: 20px;
+            font-weight: 800;
+            margin-right: 12px;
+            padding: 5px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+        }
+
+        .logo-text h2 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.2px;
+            margin: 0;
+        }
+
+        .logo-text span {
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .menu {
+            flex: 1;
+            padding: 16px 14px;
+            overflow-y: auto;
+        }
+
+        .menu-title {
+            padding: 0 12px;
+            margin-bottom: 8px;
+            margin-top: 14px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .menu-title:first-child {
+            margin-top: 0;
+        }
+
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            margin-bottom: 4px;
+            color: rgba(255, 255, 255, 0.75);
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .menu a:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: #ffffff;
+        }
+
+        .menu a.active {
+            background: #ffffff;
+            color: var(--lp-forest, #0C392F) !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            font-weight: 800;
+        }
+
+        .menu a.active .menu-icon svg {
+            stroke: var(--lp-forest, #0C392F) !important;
+        }
+
+        .menu-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-bottom {
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
+            margin-top: auto;
+            background: rgba(0, 0, 0, 0.10);
+        }
+
+        .logout-btn {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 10px 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+        }
+
+        /* Legacy driver brand elements for backwards compatibility */
         .brand-zone {
             padding: 24px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -81,12 +300,13 @@
         .brand-logo-icon {
             width: 42px;
             height: 42px;
-            background: linear-gradient(135deg, #10b981, #047857);
+            background: #ffffff;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            padding: 5px;
+            box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
@@ -321,10 +541,28 @@
 
         /* MAIN CONTENT AREA */
         .main-canvas {
-            margin-left: 270px;
+            margin-left: 0px;
             flex: 1;
             min-width: 0;
             padding: 24px 32px 60px;
+        }
+
+        /* IN-PAGE ANCHOR NAVIGATION & SCROLL OFFSET */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .ds-panel,
+        .card-panel,
+        #section-jadwal,
+        #section-armada,
+        #section-manifest,
+        #section-pintasan,
+        #perjalanan-aktif,
+        #armada-unit,
+        #manifes-penumpang,
+        #modul-driver {
+            scroll-margin-top: 90px;
         }
 
         /* EMERGENCY TOP BANNER */
@@ -3527,9 +3765,14 @@
             .sidebar.mobile-open {
                 transform: translateX(0);
             }
+            .driver-main-wrapper,
             .main-canvas {
-                margin-left: 0;
+                margin-left: 0 !important;
                 padding: 16px;
+            }
+            .topbar {
+                padding: 0 16px;
+                height: 64px;
             }
             .schedule-hero-header {
                 flex-direction: column;
