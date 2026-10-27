@@ -199,7 +199,7 @@ class UserDashboardController extends Controller
                         ->where('destination_id', $validated['destination']);
                 })
                 ->whereHas('vehicle', function ($q) {
-                    $q->whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active']);
+                    $q->whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active', 'Available']);
                 })
                 ->orderBy('departure_time')
                 ->get();

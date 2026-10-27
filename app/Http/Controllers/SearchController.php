@@ -107,6 +107,9 @@ class SearchController extends Controller
                         ->where('origin_id', $validated['origin'])
                         ->where('destination_id', $validated['destination']);
                 })
+                ->whereHas('vehicle', function ($query) {
+                    $query->whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active', 'Available']);
+                })
                 ->orderBy('departure_time')
                 ->get()
                 ->filter(function (Schedule $schedule) {
