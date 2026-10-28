@@ -618,3 +618,16 @@ test('concurrency control: user can lock seat after previous seat lock has expir
     expect($newBooking->status)->toBe('pending');
     expect($newBooking->passengers()->first()->seat_id)->toBe($seat->id);
 });
+
+test('lock seats rejects when seat count does not match passenger count', function () {
+    $seat = $this->vehicle->seats()->first();
+
+    $response = $this->actingAs($this->user)->post(route('dashboard.user.booking.lock-seats'), [
+        'schedule_id' => $this->schedule->id,
+        'passengers' => 2,
+        'seat_ids' => [$seat->id],
+    ]);
+
+    $response->assertSessionHasErrors(['seat_ids' => 'Jumlah kursi yang dipilih harus sama dengan jumlah penumpang.']);
+    expect(Booking::where('user_id', $this->user->id)->exists())->toBeFalse();
+});

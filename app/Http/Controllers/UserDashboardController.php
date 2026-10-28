@@ -250,8 +250,11 @@ class UserDashboardController extends Controller
     {
         $validated = $request->validate([
             'schedule_id' => ['required', 'integer', 'exists:schedules,id'],
-            'seat_ids' => ['required', 'array', 'min:1', 'max:10'],
+            'passengers' => ['required', 'integer', 'min:1', 'max:10'],
+            'seat_ids' => ['required', 'array', 'min:1', 'max:10', 'size:'.$request->integer('passengers')],
             'seat_ids.*' => ['required', 'integer', 'exists:seats,id'],
+        ], [
+            'seat_ids.size' => 'Jumlah kursi yang dipilih harus sama dengan jumlah penumpang.',
         ]);
 
         $seatIds = $validated['seat_ids'];
