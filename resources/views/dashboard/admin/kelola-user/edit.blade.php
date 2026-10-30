@@ -294,6 +294,35 @@
                     </div>
 
 
+                    {{-- NOMOR HP --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Nomor HP
+                        </label>
+
+                        <input
+                            type="text"
+                            name="phone"
+                            value="{{ old('phone', $user->phone) }}"
+                            class="form-input"
+                            placeholder="Contoh: 081234567890"
+                        >
+
+                        <span class="form-help">
+                            Kosongkan apabila nomor HP belum tersedia.
+                        </span>
+
+                        @error('phone')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
                     {{-- ROLE --}}
 
                     <div class="form-group">
@@ -347,6 +376,46 @@
                         </select>
 
                         @error('role')
+                            <span class="field-error">
+                                {{ $message }}
+                            </span>
+                        @enderror
+
+                    </div>
+
+
+                    {{-- STATUS --}}
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Status Akun
+                            <span class="required">*</span>
+                        </label>
+
+                        <select
+                            name="status"
+                            class="form-select"
+                            required
+                        >
+
+                            <option
+                                value="active"
+                                {{ old('status', $user->status ?? 'active') === 'active' ? 'selected' : '' }}
+                            >
+                                Aktif
+                            </option>
+
+                            <option
+                                value="inactive"
+                                {{ old('status', $user->status ?? 'active') === 'inactive' ? 'selected' : '' }}
+                            >
+                                Nonaktif
+                            </option>
+
+                        </select>
+
+                        @error('status')
                             <span class="field-error">
                                 {{ $message }}
                             </span>

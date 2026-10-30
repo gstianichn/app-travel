@@ -513,6 +513,17 @@ class AdminDashboardController extends Controller
                 'max:20',
             ],
 
+            'role' => [
+                'required',
+                Rule::in([
+                    'admin',
+                    'staff',
+                    'cs',
+                    'driver',
+                    'user',
+                ]),
+            ],
+
             'password' => [
                 'nullable',
                 'string',
@@ -538,6 +549,10 @@ class AdminDashboardController extends Controller
 
             'email.unique' => 'Email sudah digunakan.',
 
+            'role.required' => 'Role wajib dipilih.',
+
+            'role.in' => 'Role tidak valid.',
+
             'password.min' => 'Password minimal 8 karakter.',
 
             'password.confirmed' => 'Konfirmasi password tidak sesuai.',
@@ -560,6 +575,9 @@ class AdminDashboardController extends Controller
 
         $user->phone =
             $validated['phone'] ?? null;
+
+        $user->role =
+            $validated['role'];
 
         $user->status =
             $validated['status'];
