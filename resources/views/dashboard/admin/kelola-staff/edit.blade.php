@@ -592,9 +592,12 @@
                                 id="access_code"
                                 name="access_code"
                                 class="form-input @error('access_code') is-invalid @enderror"
-                                placeholder="Contoh: STF-BDO-001"
-                                value="{{ old('access_code', $staff->access_code) }}"
+                                placeholder="Kosongkan jika tidak diubah"
+                                value="{{ old('access_code') }}"
                             >
+                            <span class="form-help">
+                                Isi hanya jika ingin mengganti kode akses. Kosongkan untuk mempertahankan kode yang sekarang.
+                            </span>
                             @error('access_code')
                                 <span class="field-error">{{ $message }}</span>
                             @enderror

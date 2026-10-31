@@ -912,6 +912,7 @@ class AdminDashboardController extends Controller
             'email.unique' => 'Email ini sudah digunakan oleh akun lain.',
             'phone.required' => 'Nomor kontak / WhatsApp wajib diisi.',
             'branch.required' => 'Penempatan cabang / loket wajib dipilih.',
+            'access_code.max' => 'Kode akses maksimal 50 karakter.',
             'status.required' => 'Status kepegawaian wajib ditentukan.',
             'password.min' => 'Kata sandi baru minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi kata sandi baru tidak sesuai.',
@@ -1471,6 +1472,8 @@ class AdminDashboardController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
+        $vehicle->ensureSeatsExist();
+
         return redirect()
             ->route('dashboard.admin.memantau-kendaraan.show', $vehicle->id)
             ->with('success', "Unit armada {$vehicle->plate_number} ({$vehicle->name}) berhasil ditambahkan ke sistem.");
@@ -1567,6 +1570,8 @@ class AdminDashboardController extends Controller
         $vehicle->facilities = $validated['facilities'] ?? [];
         $vehicle->notes = $validated['notes'] ?? null;
         $vehicle->save();
+
+        $vehicle->ensureSeatsExist();
 
         return redirect()
             ->route('dashboard.admin.memantau-kendaraan.show', $vehicle->id)

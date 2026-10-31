@@ -1042,7 +1042,8 @@
 
                                 {{-- AKSI --}}
                                 <td>
-                                    <div class="action-group"                                        {{-- DETAIL & RIWAYAT PENUGASAN --}}
+                                    <div class="action-group">
+                                    {{-- DETAIL & RIWAYAT PENUGASAN --}}
                                         <a
                                             href="{{ route('dashboard.admin.kelola-driver.show', $driver->id) }}"
                                             class="action-btn view"

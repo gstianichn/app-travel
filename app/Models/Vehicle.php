@@ -284,15 +284,16 @@ class Vehicle extends Model
      */
     public function ensureSeatsExist(bool $forceRecreate = false): void
     {
+        $capacity = (int) ($this->capacity ?? 10);
+
         $existingCount = $this->seats()->count();
-        if (! $forceRecreate && $existingCount >= ($this->capacity ?? 10) && $existingCount > 0) {
+        if (! $forceRecreate && $existingCount === $capacity && $existingCount > 0) {
             return;
         }
 
-        $capacity = (int) ($this->capacity ?? 10);
         $this->seats()->delete();
 
-        if ($capacity >= 14) {
+        if ($capacity === 14) {
             // HiAce Commuter 14 Seats (Sesuai Foto Denah Asli)
             // Row 1: Kursi 1 (kiri), Driver di kanan
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '1', 'seat_row' => '1', 'seat_column' => 1, 'status' => 'Available']);
@@ -317,7 +318,7 @@ class Vehicle extends Model
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '13', 'seat_row' => '5', 'seat_column' => 2, 'status' => 'Available']);
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '12', 'seat_row' => '5', 'seat_column' => 3, 'status' => 'Available']);
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '11', 'seat_row' => '5', 'seat_column' => 4, 'status' => 'Available']);
-        } else {
+        } elseif ($capacity === 10) {
             // HiAce Premio 10 Seats Full Bagasi (Sesuai Foto Denah Asli)
             // Row 1: Kursi 1 (kiri), Driver di kanan
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '1', 'seat_row' => '1', 'seat_column' => 1, 'status' => 'Available']);
@@ -336,6 +337,37 @@ class Vehicle extends Model
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '10', 'seat_row' => '4', 'seat_column' => 1, 'status' => 'Available']);
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '9', 'seat_row' => '4', 'seat_column' => 3, 'status' => 'Available']);
             Seat::create(['vehicle_id' => $this->id, 'seat_number' => '8', 'seat_row' => '4', 'seat_column' => 4, 'status' => 'Available']);
+        } else {
+            Seat::create([
+                'vehicle_id' => $this->id,
+                'seat_number' => '1',
+                'seat_row' => '1',
+                'seat_column' => 1,
+                'status' => 'Available',
+            ]);
+
+            $seatNumber = 2;
+            $row = 2;
+
+            while ($seatNumber <= $capacity) {
+                foreach ([1, 3, 4] as $column) {
+                    if ($seatNumber > $capacity) {
+                        break;
+                    }
+
+                    Seat::create([
+                        'vehicle_id' => $this->id,
+                        'seat_number' => (string) $seatNumber,
+                        'seat_row' => (string) $row,
+                        'seat_column' => $column,
+                        'status' => 'Available',
+                    ]);
+
+                    $seatNumber++;
+                }
+
+                $row++;
+            }
         }
     }
 
