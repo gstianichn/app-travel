@@ -55,7 +55,7 @@
         </p>
     </div>
 
-    <form action="{{ route('dashboard.user.booking.save-passenger', $booking) }}" method="POST" id="form-booking-data" class="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
+    <form action="{{ route('dashboard.user.booking.save-passenger', $booking) }}" method="POST" id="form-booking-data" @submit="submitBookingData($event)" novalidate class="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
         @csrf
 
         <div class="space-y-10">
@@ -198,8 +198,8 @@
                         <div class="grid sm:grid-cols-2 gap-2">
                             @foreach ($channels as $code => [$label, $hint])
                                 @continue(! isset($paymentChannels[$code]))
-                                <label class="flex items-start gap-3 min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-3 cursor-pointer hover:border-brand-600 has-[:checked]:border-2 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50">
-                                    <input type="radio" name="payment_channel" value="{{ $code }}" class="mt-1 w-4 h-4 accent-[#0C5A3E]" @checked($selectedChannel === $code)>
+                                <label class="flex items-start gap-3 min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-3 cursor-pointer transition-colors duration-150 hover:bg-slate-100 hover:border-brand-700 has-[:checked]:border-2 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50">
+                                    <input type="radio" name="payment_channel" value="{{ $code }}" class="mt-1 w-4 h-4 accent-[#0C5A3E]" @checked($selectedChannel === $code) @change="window.TravelFeedback?.playAction(false)">
                                     <span class="min-w-0">
                                         <img src="{{ asset('images/payments/'.$code.'.svg') }}" alt="" class="h-6 w-auto max-w-28 object-contain object-left mb-1.5" loading="lazy">
                                         <span class="block font-bold text-slate-900">{{ $label }}</span>
@@ -242,7 +242,17 @@
                 </div>
             </dl>
 
-            <button type="submit" class="lp-btn lp-btn--primary w-full" :disabled="remainingSeconds <= 0">Lanjut ke pembayaran</button>
+            <button type="submit"
+                    id="btn-lanjut-pembayaran"
+                    class="lp-btn lp-btn--primary w-full inline-flex items-center justify-center gap-2.5"
+                    :disabled="remainingSeconds <= 0 || isSubmitting"
+                    :aria-busy="isSubmitting.toString()">
+                <svg x-show="isSubmitting" x-cloak class="w-5 h-5 animate-spin text-current shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span x-text="isSubmitting ? 'Memproses ke pembayaran...' : 'Lanjut ke pembayaran'">Lanjut ke pembayaran</span>
+            </button>
         </aside>
     </form>
 </div>
@@ -259,6 +269,7 @@ function bookingDataHandler(config) {
         appliedPromoCode: '',
         promoMessage: '',
         promoSuccess: false,
+        isSubmitting: false,
         csrfToken: config.csrfToken,
 
         init() {
@@ -293,6 +304,39 @@ function bookingDataHandler(config) {
                 phoneEl.value = phone || '';
                 phoneEl.dispatchEvent(new Event('input', { bubbles: true }));
             }
+            window.TravelFeedback?.playAction(false);
+            window.TravelFeedback?.toast(`Data penumpang "${name}" berhasil diisi.`, 'success', 'Data Terisi');
+        },
+
+        submitBookingData(event) {
+            if (this.isSubmitting) {
+                event.preventDefault();
+                return;
+            }
+
+            if (this.remainingSeconds <= 0) {
+                event.preventDefault();
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast('Waktu tahan kursi telah habis. Silakan pilih kursi kembali.', 'error', 'Waktu Habis');
+                return;
+            }
+
+            const form = event.target;
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast('Mohon lengkapi nama, nomor HP, email pemesan, dan nama seluruh penumpang terlebih dahulu.', 'error', 'Data Belum Lengkap');
+                const firstInvalid = form.querySelector(':invalid');
+                if (firstInvalid) {
+                    firstInvalid.setAttribute('aria-invalid', 'true');
+                    firstInvalid.focus();
+                }
+                return;
+            }
+
+            this.isSubmitting = true;
+            window.TravelFeedback?.playSuccess();
+            window.TravelFeedback?.toast('Data pesanan tervalidasi! Mengalihkan ke halaman pembayaran Midtrans...', 'success', 'Menuju Pembayaran');
         },
 
         resetPromo(message) {
@@ -306,6 +350,8 @@ function bookingDataHandler(config) {
         async applyPromo() {
             if (!this.promoInput.trim()) {
                 this.resetPromo('Tulis kodenya dulu.');
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast('Masukkan kode promo terlebih dahulu.', 'error', 'Kode Promo Kosong');
                 return;
             }
 
@@ -327,11 +373,19 @@ function bookingDataHandler(config) {
                     this.appliedPromoCode = data.code;
                     this.discount = data.discount;
                     this.totalPrice = data.new_total;
+                    window.TravelFeedback?.playSuccess();
+                    window.TravelFeedback?.toast(data.message, 'success', 'Promo Berhasil Dipasang');
                 } else {
-                    this.resetPromo(data.message || 'Kode ini tidak bisa dipakai untuk pesanan ini.');
+                    const errMsg = data.message || 'Kode ini tidak bisa dipakai untuk pesanan ini.';
+                    this.resetPromo(errMsg);
+                    window.TravelFeedback?.playWarning();
+                    window.TravelFeedback?.toast(errMsg, 'error', 'Promo Tidak Valid');
                 }
             } catch (error) {
-                this.resetPromo('Kode belum bisa dicek. Periksa koneksi internet lalu coba lagi.');
+                const errMsg = 'Kode belum bisa dicek. Periksa koneksi internet lalu coba lagi.';
+                this.resetPromo(errMsg);
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast(errMsg, 'error', 'Gagal Memeriksa Promo');
             }
         },
     };

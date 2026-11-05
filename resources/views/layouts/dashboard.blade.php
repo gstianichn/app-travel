@@ -122,6 +122,7 @@
     </nav>
     @endif
 
+    @include('dashboard.user.partials.feedback-taxonomy')
     @stack('scripts')
 </body>
 </html>

@@ -113,6 +113,7 @@
                             $status = strtolower($recent->status);
                             $statusLabel = match (true) {
                                 in_array($status, ['paid', 'confirmed', 'success', 'lunas']) => ['Lunas', 'text-brand-700 bg-brand-100'],
+                                $status === 'refund_pending' => ['Menunggu ACC Refund', 'text-amber-900 bg-amber-100'],
                                 $status === 'pending' => ['Menunggu bayar', 'text-amber-900 bg-amber-100'],
                                 $status === 'completed' => ['Selesai', 'text-slate-700 bg-slate-100'],
                                 in_array($status, ['cancelled', 'expired']) => ['Batal', 'text-rose-800 bg-rose-50'],

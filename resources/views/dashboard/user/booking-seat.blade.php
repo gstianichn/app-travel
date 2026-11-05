@@ -32,8 +32,7 @@
                 <ul class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-700">
                     <li class="flex items-center gap-2"><span class="w-5 h-5 rounded border-2 border-brand-600 bg-white" aria-hidden="true"></span> Kosong</li>
                     <li class="flex items-center gap-2"><span class="w-5 h-5 rounded bg-brand-800" aria-hidden="true"></span> Pilihanmu</li>
-                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded border-2 border-dashed border-amber-700 bg-amber-50" aria-hidden="true"></span> Ditahan orang lain</li>
-                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded bg-slate-300" aria-hidden="true"></span> Terisi</li>
+                    <li class="flex items-center gap-2"><span class="w-5 h-5 rounded border-2 border-slate-400 bg-slate-300" aria-hidden="true"></span> Terisi / Ditahan (Nonaktif)</li>
                 </ul>
             </div>
 
@@ -119,7 +118,7 @@
                 </div>
             </dl>
 
-            <form action="{{ route('dashboard.user.booking.lock-seats') }}" method="POST" class="space-y-3">
+            <form action="{{ route('dashboard.user.booking.lock-seats') }}" method="POST" class="space-y-3" @submit="submitSeatLock($event)">
                 @csrf
                 <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
                 {{-- passengers dihitung dari jumlah kursi yang dipilih, diisi dinamis oleh Alpine --}}
@@ -128,10 +127,19 @@
                     <input type="hidden" name="seat_ids[]" :value="seat.id">
                 </template>
 
-                <button type="submit" class="lp-btn lp-btn--primary w-full" :disabled="selectedSeats.length === 0">
-                    <span x-text="selectedSeats.length > 0
-                        ? 'Tahan ' + selectedSeats.length + ' kursi dan isi data'
-                        : 'Pilih minimal 1 kursi'"
+                <button type="submit"
+                        class="lp-btn lp-btn--primary w-full inline-flex items-center justify-center gap-2.5"
+                        :disabled="selectedSeats.length === 0 || isSubmitting"
+                        :aria-busy="isSubmitting.toString()">
+                    <svg x-show="isSubmitting" x-cloak class="w-5 h-5 animate-spin text-current shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="isSubmitting
+                        ? 'Menahan kursi & memproses...'
+                        : (selectedSeats.length > 0
+                            ? 'Tahan ' + selectedSeats.length + ' kursi dan isi data'
+                            : 'Pilih minimal 1 kursi')"
                     >Tahan kursi dan isi data</span>
                 </button>
                 <p class="text-sm text-slate-600">Kursinya kami tahan 15 menit untuk kamu, jadi tidak bisa diambil penumpang lain selama kamu mengisi data dan membayar.</p>
@@ -147,22 +155,69 @@ function seatPicker(config) {
         unitPrice: config.unitPrice,
         selectedSeats: [],
         limitMessage: '',
+        rejectedSeatId: null,
+        isSubmitting: false,
 
         toggleSeat(id, number) {
+            if (this.isSubmitting) {
+                return;
+            }
+
             const index = this.selectedSeats.findIndex((seat) => seat.id === id);
             this.limitMessage = '';
+            this.rejectedSeatId = null;
 
             if (index > -1) {
                 this.selectedSeats.splice(index, 1);
+                window.TravelFeedback?.playAction(true);
+                window.TravelFeedback?.toast(`Kursi ${number} dibatalkan dari pilihan.`, 'success', 'Pilihan Diperbarui');
                 return;
             }
 
             if (this.selectedSeats.length >= this.maxSeats) {
                 this.limitMessage = `Semua ${this.maxSeats} kursi yang tersedia sudah dipilih.`;
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast(this.limitMessage, 'error', 'Batas Kursi Tercapai');
                 return;
             }
 
             this.selectedSeats.push({ id, number });
+            window.TravelFeedback?.playAction(false);
+            window.TravelFeedback?.toast(`Kursi ${number} berhasil dipilih.`, 'success', 'Kursi Dipilih');
+        },
+
+        warnOccupiedSeat(id, number, status) {
+            this.rejectedSeatId = id;
+            const statusText = status === 'locked'
+                ? `Kursi ${number} sedang ditahan penumpang lain dan tidak dapat dipilih.`
+                : `Kursi ${number} sudah dipesan orang lain. Silakan pilih kursi kosong.`;
+            this.limitMessage = statusText;
+            window.TravelFeedback?.playWarning();
+            window.TravelFeedback?.toast(statusText, 'error', 'Kursi Tidak Tersedia');
+
+            setTimeout(() => {
+                if (this.rejectedSeatId === id) {
+                    this.rejectedSeatId = null;
+                }
+            }, 900);
+        },
+
+        submitSeatLock(event) {
+            if (this.isSubmitting) {
+                event.preventDefault();
+                return;
+            }
+
+            if (this.selectedSeats.length === 0) {
+                event.preventDefault();
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast('Pilih minimal 1 kursi kosong sebelum melanjutkan ke pengisian data.', 'error', 'Kursi Belum Dipilih');
+                return;
+            }
+
+            this.isSubmitting = true;
+            window.TravelFeedback?.playSuccess();
+            window.TravelFeedback?.toast(`${this.selectedSeats.length} kursi berhasil dikunci! Mengalihkan ke pengisian data penumpang...`, 'success', 'Kursi Dikunci');
         },
 
         isSelected(id) {

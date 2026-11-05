@@ -58,6 +58,16 @@ Route::middleware('guest')->group(function () {
         'redirect',
     ])->name('auth.google.redirect');
 
+    Route::get('/auth/google/choose', [
+        GoogleLoginController::class,
+        'showChooser',
+    ])->name('auth.google.choose');
+
+    Route::post('/auth/google/verify', [
+        GoogleLoginController::class,
+        'verifyLocalChooser',
+    ])->name('auth.google.verify');
+
     Route::get('/auth/google/callback', [
         GoogleLoginController::class,
         'callback',
@@ -78,6 +88,11 @@ Route::middleware('guest')->group(function () {
         RegisterController::class,
         'store',
     ])->name('register.store');
+
+    Route::post('/user/register', [
+        RegisterController::class,
+        'store',
+    ])->name('user.register');
 
     /*
     |--------------------------------------------------------------------------

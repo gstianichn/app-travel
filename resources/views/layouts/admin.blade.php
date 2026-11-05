@@ -355,56 +355,21 @@
         @media (max-width: 700px) {
 
             .admin-sidebar {
-                width: 70px;
+                width: 260px;
             }
 
-            .admin-logo {
-                justify-content: center;
-                padding: 0;
-            }
-
-            .admin-logo-icon {
-                margin-right: 0;
-            }
-
-            .admin-logo-text,
-            .admin-logo-subtitle,
-            .admin-menu-title,
-            .admin-menu-link span:not(.admin-menu-icon),
             .admin-profile-info {
                 display: none;
             }
 
-            .admin-menu {
-                padding: 20px 10px;
-            }
-
-            .admin-menu-link {
-                justify-content: center;
-                padding: 11px;
-            }
-
-            .admin-menu-icon {
-                margin: 0;
-            }
-
-            .admin-sidebar-bottom {
-                padding: 10px;
-            }
-
-            .admin-logout-button {
-                justify-content: center;
-                padding: 12px;
-            }
-
             .admin-main {
-                width: calc(100% - 70px);
-                margin-left: 70px;
+                width: 100%;
+                margin-left: 0;
             }
 
             .admin-topbar {
-                height: 72px;
-                padding: 0 18px;
+                height: 68px;
+                padding: 0 14px;
             }
 
             .admin-page-title h2 {
@@ -416,7 +381,7 @@
             }
 
             .admin-content {
-                padding: 20px 16px;
+                padding: 16px 12px 28px;
             }
 
         }
@@ -962,6 +927,73 @@
         </main>
     </div>
 </div>
+
+{{-- GLOBAL ADMIN CUSTOM CONFIRMATION MODAL (Menghindari Alert Localhost Bawaan Browser) --}}
+<div id="globalAdminConfirmModal" role="dialog" aria-modal="true" aria-labelledby="globalAdminConfirmTitle" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 29, 24, 0.62); backdrop-filter: blur(4px);">
+    <div style="width: 100%; max-width: 440px; background: #ffffff; border-radius: 18px; border: 1px solid #e2ebe6; box-shadow: 0 24px 60px rgba(15, 29, 24, 0.25); overflow: hidden;">
+        <div style="padding: 18px 22px; background: #f8faf9; border-bottom: 1px solid #e2ebe6; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <h3 id="globalAdminConfirmTitle" style="margin: 0; font-size: 15px; font-weight: 800; color: #16251f;">Konfirmasi Tindakan Admin</h3>
+            <button type="button" data-close-global-confirm style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid #d7e3dd; background: #ffffff; color: #16251f; font-weight: 800; cursor: pointer;">✕</button>
+        </div>
+        <div style="padding: 20px 22px;">
+            <p id="globalAdminConfirmMessage" style="margin: 0 0 18px; font-size: 13.5px; color: #334155; line-height: 1.55;"></p>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" data-close-global-confirm style="height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-size: 13px; font-weight: 700; cursor: pointer;">Batal</button>
+                <button type="button" id="globalAdminConfirmAcceptBtn" style="height: 38px; padding: 0 18px; border-radius: 10px; border: none; background: #087f55; color: #ffffff; font-size: 13px; font-weight: 700; cursor: pointer;">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('globalAdminConfirmModal');
+    const msgEl = document.getElementById('globalAdminConfirmMessage');
+    const acceptBtn = document.getElementById('globalAdminConfirmAcceptBtn');
+    if (!modal || !msgEl || !acceptBtn) return;
+
+    let pendingForm = null;
+
+    document.querySelectorAll('form[onsubmit*="confirm("]').forEach((form) => {
+        const rawOnsubmit = form.getAttribute('onsubmit') || '';
+        const match = rawOnsubmit.match(/confirm\((['"`])([\s\S]*?)\1\)/);
+        const message = match ? match[2] : 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+
+        form.removeAttribute('onsubmit');
+        form.addEventListener('submit', (e) => {
+            if (form.dataset.confirmed === '1') {
+                return;
+            }
+            e.preventDefault();
+            pendingForm = form;
+            msgEl.textContent = message;
+            modal.style.display = 'flex';
+        });
+    });
+
+    acceptBtn.addEventListener('click', () => {
+        if (pendingForm) {
+            pendingForm.dataset.confirmed = '1';
+            modal.style.display = 'none';
+            pendingForm.submit();
+        }
+    });
+
+    modal.querySelectorAll('[data-close-global-confirm]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            pendingForm = null;
+            modal.style.display = 'none';
+        });
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            pendingForm = null;
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
 
 @stack('scripts')
 </body>

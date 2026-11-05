@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Kelola Driver')
 
@@ -1110,7 +1110,7 @@
                                             action="{{ route('dashboard.admin.kelola-driver.destroy', $driver->id) }}"
                                             method="POST"
                                             style="display: inline;"
-                                            onsubmit="return confirm('Hapus permanen data pengemudi {{ $driver->user?->name }}? Seluruh riwayat akan dihapus.');"
+                                            onsubmit="return confirm(@js('Hapus permanen data pengemudi '.($driver->user?->name ?? '').'? Seluruh riwayat akan dihapus.'));"
                                         >
                                             @csrf
                                             @method('DELETE')

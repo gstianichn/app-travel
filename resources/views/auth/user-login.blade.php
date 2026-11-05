@@ -67,7 +67,9 @@
     </form>
 
     <div class="au-switch">
-        <p>Belum punya akun? <a href="{{ route('register', array_filter(['redirect' => request('redirect')])) }}" class="au-link">Daftar akun</a></p>
-        <p>Atau <a href="{{ route('search') }}" class="au-link">pesan tiket tanpa akun</a>; e-ticket dikirim ke email.</p>
+        <div style="margin-bottom: 10px; padding: 12px 14px; border-radius: 10px; border: 1.5px dashed #0C7950; background: #E3F2EA; color: #0C392F; font-size: 0.9rem;">
+            <strong>Belum punya akun?</strong> Kami rekomendasikan untuk <a href="{{ route('register', array_filter(['redirect' => request('redirect')])) }}" class="au-link" style="font-weight: 800;">Daftar akun baru (Register)</a> terlebih dahulu agar dapat memesan tiket.
+        </div>
+        <p><a href="{{ route('search') }}" class="au-link">← Kembali ke pencarian jadwal keberangkatan</a></p>
     </div>
 @endsection

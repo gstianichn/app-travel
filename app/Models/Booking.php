@@ -113,7 +113,9 @@ class Booking extends Model
         $status = strtolower($this->status ?? 'pending');
 
         return match ($status) {
-            'paid', 'confirmed', 'success', 'lunas' => 'Sudah Lunas',
+            'paid', 'confirmed', 'success', 'lunas', 'checked_in' => 'Sudah Lunas',
+            'completed' => 'Selesai',
+            'refund_pending' => 'Menunggu ACC Refund',
             'cancelled', 'batal' => 'Dibatalkan',
             default => 'Dipesan Sementara (Pending)',
         };
@@ -127,7 +129,7 @@ class Booking extends Model
         $status = strtolower($this->status ?? 'pending');
 
         return match ($status) {
-            'paid', 'confirmed', 'success', 'lunas' => 'badge-status-paid',
+            'paid', 'confirmed', 'success', 'lunas', 'checked_in', 'completed' => 'badge-status-paid',
             'cancelled', 'batal' => 'badge-status-cancelled',
             default => 'badge-status-pending',
         };
@@ -185,7 +187,7 @@ class Booking extends Model
      */
     public function isPaid(): bool
     {
-        return in_array(strtolower($this->status ?? ''), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'completed'], true);
+        return in_array(strtolower($this->status ?? ''), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'completed', 'refund_pending'], true);
     }
 
     /**

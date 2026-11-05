@@ -186,9 +186,15 @@
 
                 @if ($booking->canRefund())
                     <details class="border-t border-slate-200">
-                        <summary class="cursor-pointer list-none flex items-center min-h-11 px-6 py-3 font-semibold text-rose-800">Batalkan dan ajukan refund</summary>
+                        <summary class="cursor-pointer list-none flex items-center justify-between min-h-11 px-6 py-3 font-semibold text-rose-800">
+                            <span>Ajukan refund (Perlu ACC Admin terlebih dahulu)</span>
+                            <span aria-hidden="true">▾</span>
+                        </summary>
                         <form action="{{ route('dashboard.user.tiket.refund', $booking) }}" method="POST" class="space-y-4 border-t border-slate-200 px-6 py-5">
                             @csrf
+                            <p class="rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-900">
+                                <strong>Alur Persetujuan Refund:</strong> Pengajuan refund Anda akan diperiksa untuk mendapatkan <strong>ACC dari Admin</strong> terlebih dahulu. Selama menunggu ACC, kursi Anda tetap aman dan setelah di-ACC dana otomatis dikembalikan ke rekening/e-wallet tujuan Anda.
+                            </p>
                             <dl class="max-w-sm space-y-1">
                                 <div class="flex justify-between gap-4 text-slate-600"><dt>Dibayar</dt><dd>Rp {{ number_format($booking->total_price, 0, ',', '.') }}</dd></div>
                                 <div class="flex justify-between gap-4 text-slate-600"><dt>Biaya pembatalan 25%</dt><dd>- Rp {{ number_format($booking->total_price * 0.25, 0, ',', '.') }}</dd></div>

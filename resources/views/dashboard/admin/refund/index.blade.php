@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Kelola Refund & Pembatalan Tiket - Admin Utama')
 
@@ -853,7 +853,7 @@
                     @forelse($refunds as $rf)
                         @php
                             $st = strtolower($rf->status ?? 'menunggu');
-                            $isPending = in_array($st, ['menunggu', 'pending']);
+                            $isPending = in_array($st, ['menunggu', 'pending', 'diajukan']);
                             $isApproved = in_array($st, ['disetujui', 'approved', 'success']);
                             $isRejected = in_array($st, ['ditolak', 'rejected']);
                         @endphp

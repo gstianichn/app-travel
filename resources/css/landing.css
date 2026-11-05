@@ -340,6 +340,11 @@ body.is-landing {
     transform: translateY(-6px);
 }
 
+.lp-sign:hover .lp-sign-face {
+    background: var(--lp-forest);
+    box-shadow: 0 0 0 4px var(--lp-forest);
+}
+
 .lp-sign:focus-visible {
     outline: 3px solid var(--lp-ink);
     outline-offset: 8px;
@@ -701,7 +706,7 @@ body.is-landing {
     line-height: 1;
 }
 
-.lp-reviews-score > p:last-child {
+.lp-reviews-score > p:last-of-type {
     margin-top: 8px;
     color: var(--lp-muted);
 }
@@ -720,6 +725,21 @@ body.is-landing {
     line-height: 1.5;
 }
 
+.lp-reviews-stars,
+.lp-review-stars {
+    display: inline-flex;
+    gap: 2px;
+    margin: 4px 0 8px;
+    color: #CBD5E1;
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.lp-reviews-stars .is-filled,
+.lp-review-stars .is-filled {
+    color: #EAB308;
+}
+
 .lp-review-meta {
     display: flex;
     flex-wrap: wrap;
@@ -733,7 +753,270 @@ body.is-landing {
 }
 
 /* =========================
-   FAQ
+   BHISA SCHEDULE REFERENCE BOARD
+========================= */
+
+.lp-schedule-section {
+    padding: clamp(32px, 5vw, 56px) 0 0;
+}
+
+.lp-schedule-ref {
+    padding: clamp(24px, 4vw, 38px);
+    border-radius: 20px;
+    background: #FFFFFF;
+    border: 1.5px solid var(--lp-line);
+    box-shadow: 0 14px 36px rgb(12 57 47 / 0.06);
+}
+
+.lp-schedule-ref-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--lp-line);
+}
+
+.lp-eyebrow {
+    margin-bottom: 6px;
+    color: var(--lp-green);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.lp-schedule-ref-head h3 {
+    color: var(--lp-forest);
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    font-weight: 800;
+}
+
+.lp-schedule-ref-sub {
+    max-width: 48ch;
+    color: var(--lp-muted);
+    font-size: 0.95rem;
+}
+
+.lp-city-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 24px;
+}
+
+.lp-city-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 6px 14px;
+    border: 1.5px solid var(--lp-line);
+    border-radius: 999px;
+    background: var(--lp-paper);
+    color: var(--lp-forest);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.lp-city-tab small {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgb(12 57 47 / 0.1);
+    font-size: 0.75rem;
+}
+
+.lp-city-tab:hover {
+    background: var(--lp-mint);
+    border-color: var(--lp-green);
+}
+
+.lp-city-tab.is-active {
+    background: var(--lp-forest);
+    border-color: var(--lp-forest);
+    color: #FFFFFF;
+}
+
+.lp-city-tab.is-active small {
+    background: rgb(255 255 255 / 0.2);
+    color: #FFFFFF;
+}
+
+.lp-schedule-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.lp-schedule-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px;
+    border: 1.5px solid var(--lp-line);
+    border-radius: 14px;
+    background: var(--lp-paper);
+    transition: border-color 0.2s ease, transform 0.2s var(--lp-ease-out), box-shadow 0.2s ease;
+}
+
+.lp-schedule-card:hover {
+    border-color: var(--lp-green);
+    background: #F4F1E6;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgb(12 57 47 / 0.08);
+}
+
+.lp-schedule-card[hidden] {
+    display: none !important;
+}
+
+.lp-schedule-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.lp-schedule-cities {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    color: var(--lp-forest);
+    font-size: 1.08rem;
+}
+
+.lp-schedule-origin,
+.lp-schedule-dest {
+    font-weight: 800;
+}
+
+.lp-schedule-arrow {
+    color: var(--lp-green);
+    font-weight: 800;
+}
+
+.lp-schedule-corridor {
+    display: inline-block;
+    color: var(--lp-green);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.lp-schedule-points {
+    margin-top: 2px;
+    color: var(--lp-forest);
+    font-size: 1.02rem;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.lp-schedule-address {
+    margin-top: 10px;
+    color: var(--lp-muted);
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.lp-schedule-address strong {
+    color: var(--lp-ink);
+}
+
+.lp-schedule-badge {
+    flex: none;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--lp-mint);
+    color: var(--lp-forest);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.lp-schedule-times {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.lp-schedule-times-label {
+    color: var(--lp-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.lp-schedule-time-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.lp-time-chip {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #FFFFFF;
+    border: 1px solid #D5CFC0;
+    color: var(--lp-forest);
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.lp-time-chip--more {
+    background: var(--lp-mint);
+    border-color: transparent;
+    color: var(--lp-green);
+}
+
+.lp-schedule-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #D5CFC0;
+}
+
+.lp-schedule-price {
+    display: grid;
+    line-height: 1.15;
+}
+
+.lp-schedule-price small {
+    color: var(--lp-muted);
+    font-size: 0.74rem;
+}
+
+.lp-schedule-price b {
+    color: var(--lp-forest);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.lp-schedule-select-btn {
+    min-height: 40px;
+    padding: 0 16px;
+    font-size: 0.9rem;
+}
+
+.lp-schedule-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.lp-schedule-more-wrap[hidden] {
+    display: none !important;
+}
+
+/* =========================
+   FAQ (Dropdown Style)
 ========================= */
 
 .lp-faq {
@@ -762,12 +1045,17 @@ body.is-landing {
     justify-content: space-between;
     gap: 16px;
     min-height: 64px;
-    padding: 14px 0;
+    padding: 14px 4px;
     color: var(--lp-forest);
     font-size: 1.15rem;
     font-weight: 600;
     list-style: none;
     cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.lp-faq-list summary:hover {
+    color: var(--lp-green);
 }
 
 .lp-faq-list summary::-webkit-details-marker {
@@ -775,23 +1063,37 @@ body.is-landing {
 }
 
 .lp-faq-list summary::after {
-    content: '';
-    flex: none;
-    width: 14px;
-    height: 14px;
-    background:
-        linear-gradient(var(--lp-forest), var(--lp-forest)) center / 14px 2px no-repeat,
-        linear-gradient(var(--lp-forest), var(--lp-forest)) center / 2px 14px no-repeat;
-    transition: transform 0.3s var(--lp-ease-out);
+    display: none;
 }
 
-.lp-faq-list details[open] summary::after {
-    transform: rotate(45deg);
+.lp-faq-dropdown-icon {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1.5px solid #C9C3AF;
+    background: var(--lp-paper);
+    color: var(--lp-forest);
+    transition: transform 0.3s var(--lp-ease-out), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.lp-faq-list summary:hover .lp-faq-dropdown-icon {
+    border-color: var(--lp-green);
+    background: var(--lp-mint);
+}
+
+.lp-faq-list details[open] .lp-faq-dropdown-icon {
+    transform: rotate(180deg);
+    background: var(--lp-forest);
+    border-color: var(--lp-forest);
+    color: #FFFFFF;
 }
 
 .lp-faq-list details p {
     max-width: 60ch;
-    padding-bottom: 20px;
+    padding: 0 4px 20px;
     color: var(--lp-muted);
 }
 
@@ -1228,9 +1530,16 @@ body.is-landing {
     grid-template-columns: 210px minmax(0, 1fr) 140px auto;
     align-items: center;
     gap: 16px 32px;
-    padding: 24px 4px;
+    padding: 24px 12px;
+    margin: 0 -12px;
+    border-radius: 12px;
     border-bottom: 1px solid var(--lp-line);
+    transition: background-color 0.18s ease;
     animation: lp-rise 0.5s var(--lp-ease-out) both;
+}
+
+.sr-trip:hover {
+    background-color: #E8E3D3;
 }
 
 .sr-trip:nth-child(2) { animation-delay: 0.04s; }
@@ -1395,6 +1704,8 @@ body.is-landing {
 
 .sr-suggest-sign:hover {
     transform: translateY(-4px);
+    background: var(--lp-forest);
+    box-shadow: 0 0 0 3px var(--lp-forest);
 }
 
 .sr-suggest-sign:focus-visible {
@@ -1490,8 +1801,34 @@ body.is-landing {
 }
 
 @media (max-width: 768px) {
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
     .is-landing .navbar-content {
         min-height: 64px;
+    }
+
+    .lp-schedule-ref {
+        padding: 18px 16px;
+        border-radius: 16px;
+    }
+
+    .lp-city-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .lp-city-tab {
+        flex: none;
+    }
+
+    .lp-schedule-cards {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -1501,7 +1838,21 @@ body.is-landing {
     }
 
     .lp-hero {
-        --scene-h: 300px;
+        --scene-h: 260px;
+        padding-top: calc(var(--lp-nav-h) + 28px);
+    }
+
+    .is-landing main .lp-hero h1 {
+        font-size: clamp(2.15rem, 9.5vw, 3.1rem);
+    }
+
+    .lp-hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lp-hero-actions .lp-btn {
+        width: 100%;
     }
 
     .lp-clouds {
@@ -1518,12 +1869,21 @@ body.is-landing {
         min-width: 220px;
     }
 
+    .lp-schedule-card-foot {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lp-schedule-select-btn {
+        width: 100%;
+    }
+
     .lp-steps-road {
-        padding-left: 64px;
+        padding-left: 56px;
     }
 
     .lp-steps-lane {
-        width: 40px;
+        width: 36px;
     }
 
     .lp-steps-list li {
@@ -1543,6 +1903,25 @@ body.is-landing {
     .lp-fleet-row {
         grid-template-columns: 1fr;
         justify-items: start;
+    }
+
+    .sr-trip {
+        margin: 0;
+        padding: 18px 12px;
+    }
+
+    .sr-trip-buy {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .sr-trip-buy .lp-btn {
+        width: 100%;
+    }
+
+    .ft-pay-logos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

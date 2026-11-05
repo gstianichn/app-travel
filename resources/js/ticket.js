@@ -62,6 +62,7 @@ if (ticket) {
     ticket.querySelector('[data-swap]').addEventListener('click', () => {
         [origin.value, destination.value] = [destination.value, origin.value];
         updateSummary();
+        window.TravelFeedback?.playAction(false);
         announce(origin.value && destination.value ? 'Kota asal dan tujuan sudah ditukar.' : '');
     });
 
@@ -70,19 +71,41 @@ if (ticket) {
             departureDate.value = localDate(Number(button.dataset.dateOffset));
             departureDate.removeAttribute('aria-invalid');
             updateSummary();
+            window.TravelFeedback?.playAction(false);
             announce(`Tanggal berangkat diisi ${button.textContent.trim().toLowerCase()}.`);
         });
     });
 
     [origin, destination, departureDate].forEach((field) => {
-        field.addEventListener('change', () => field.removeAttribute('aria-invalid'));
+        field.addEventListener('change', () => {
+            field.removeAttribute('aria-invalid');
+            window.TravelFeedback?.playAction(false);
+        });
     });
 
     ticket.addEventListener('submit', (event) => {
+        if (!origin.value || !destination.value || !departureDate.value) {
+            event.preventDefault();
+            const missingField = !origin.value ? origin : !destination.value ? destination : departureDate;
+            missingField.setAttribute('aria-invalid', 'true');
+            const errMsg = !origin.value || !destination.value
+                ? 'Silakan pilih titik berangkat dan kota tujuan terlebih dahulu.'
+                : 'Silakan pilih tanggal keberangkatan terlebih dahulu.';
+            announce(errMsg, true);
+            window.TravelFeedback?.playWarning();
+            window.TravelFeedback?.toast(errMsg, 'error', 'Rute / Tanggal Belum Dipilih');
+            missingField.focus();
+
+            return;
+        }
+
         if (origin.value && origin.value === destination.value) {
             event.preventDefault();
             destination.setAttribute('aria-invalid', 'true');
-            announce('Kota asal dan tujuan tidak boleh sama. Pilih kota tujuan lain.', true);
+            const sameCityMsg = 'Kota asal dan tujuan tidak boleh sama. Pilih kota tujuan lain.';
+            announce(sameCityMsg, true);
+            window.TravelFeedback?.playWarning();
+            window.TravelFeedback?.toast(sameCityMsg, 'error', 'Rute Tidak Valid');
             destination.focus();
 
             return;
@@ -94,14 +117,17 @@ if (ticket) {
 
         // Loading state: the results page can take a moment while schedules are prepared.
         const submitButton = ticket.querySelector('[data-ticket-submit]');
-        submitButton.textContent = 'Mencari jadwal...';
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<svg style="width:18px;height:18px;margin-right:8px;animation:lp-spin 0.8s linear infinite;" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:0.25;"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:0.9;"></path></svg><span>Mencari jadwal...</span>';
         submitButton.setAttribute('aria-busy', 'true');
         ticket.setAttribute('aria-busy', 'true');
+        window.TravelFeedback?.playSuccess();
     });
 
     // Coming back with the browser's back button restores the page from cache; reset the button.
     window.addEventListener('pageshow', () => {
         const submitButton = ticket.querySelector('[data-ticket-submit]');
+        submitButton.disabled = false;
         submitButton.textContent = 'Lihat jadwal';
         submitButton.removeAttribute('aria-busy');
         ticket.removeAttribute('aria-busy');
@@ -109,6 +135,7 @@ if (ticket) {
 
     ticket.addEventListener('invalid', (event) => {
         event.target.setAttribute('aria-invalid', 'true');
+        window.TravelFeedback?.playWarning();
     }, true);
 
     document.querySelectorAll('[data-route-fill]').forEach((sign) => {
@@ -125,6 +152,8 @@ if (ticket) {
             destination.value = sign.dataset.destination;
             [origin, destination].forEach((field) => field.removeAttribute('aria-invalid'));
             updateSummary();
+            window.TravelFeedback?.playAction(false);
+            window.TravelFeedback?.toast(`Rute ${sign.dataset.label} dipilih. Silakan tentukan tanggal keberangkatan.`, 'success', 'Rute Dipilih');
             announce(`Rute ${sign.dataset.label} sudah diisi. Tinggal pilih tanggal berangkat.`);
             bringTicketIntoView(departureDate);
         });

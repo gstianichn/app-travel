@@ -13,7 +13,7 @@
 
 <section class="lp-search" id="cari" aria-labelledby="cari-title">
     <div class="container">
-        <form class="lp-ticket" action="{{ $action ?? route('search') }}" method="GET" data-ticket>
+        <form class="lp-ticket" action="{{ $action ?? route('search') }}" method="GET" data-ticket novalidate>
             <input type="hidden" name="passengers" value="{{ $selected['passengers'] ?? 1 }}">
             <div class="lp-ticket-main">
                 <h2 id="cari-title">{{ $heading }}</h2>
@@ -29,8 +29,12 @@
                         <label for="origin">Dari</label>
                         <select name="origin" id="origin" required>
                             <option value="">Pilih titik berangkat</option>
-                            @foreach ($locations as $location)
-                                <option value="{{ $location->id }}" @selected((string) $selected['origin'] === (string) $location->id)>{{ $location->name }}</option>
+                            @foreach ($locations->where('type', '!=', 'drop_point')->groupBy(fn ($loc) => strtoupper($loc->city ?: 'LAINNYA')) as $city => $cityLocations)
+                                <optgroup label="{{ $city }}">
+                                    @foreach ($cityLocations as $location)
+                                        <option value="{{ $location->id }}" @selected((string) $selected['origin'] === (string) $location->id)>{{ $location->name }} ({{ $location->city }})</option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
                         </select>
                     </div>
@@ -43,8 +47,12 @@
                         <label for="destination">Ke</label>
                         <select name="destination" id="destination" required>
                             <option value="">Pilih tujuan</option>
-                            @foreach ($locations as $location)
-                                <option value="{{ $location->id }}" @selected((string) $selected['destination'] === (string) $location->id)>{{ $location->name }}</option>
+                            @foreach ($locations->groupBy(fn ($loc) => strtoupper($loc->city ?: 'LAINNYA')) as $city => $cityLocations)
+                                <optgroup label="{{ $city }}">
+                                    @foreach ($cityLocations as $location)
+                                        <option value="{{ $location->id }}" @selected((string) $selected['destination'] === (string) $location->id)>{{ $location->name }} ({{ $location->city }})</option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
                         </select>
                     </div>

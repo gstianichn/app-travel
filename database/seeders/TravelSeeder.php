@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Booking;
 use App\Models\Driver;
 use App\Models\Route;
 use App\Models\Schedule;
+use App\Models\TripReview;
 use App\Models\User;
 use App\Models\Vehicle;
 use Carbon\Carbon;
@@ -142,6 +144,12 @@ class TravelSeeder extends Seeder
             ],
         ];
 
+        // Pastikan tidak ada tipe armada Mercedes-Benz Sprinter yang tersisa (hanya Toyota HiAce Premio & Toyota HiAce Commuter)
+        Vehicle::where('type', 'like', '%Sprinter%')->update([
+            'type' => 'Toyota HiAce Premio',
+            'capacity' => 10,
+        ]);
+
         $vehicles = [];
         foreach ($vehiclesData as $vData) {
             $vehicle = Vehicle::updateOrCreate(
@@ -254,5 +262,119 @@ class TravelSeeder extends Seeder
                 }
             }
         });
+
+        // -------------------------------------------------------------
+        // 5. ULASAN PENUMPANG UNTUK BERANDA (TRIP REVIEWS)
+        // -------------------------------------------------------------
+        if (! empty($createdRoutes) && ! empty($vehicles) && ! empty($drivers)) {
+            $sampleReviews = [
+                [
+                    'name' => 'Rina Kartika',
+                    'email' => 'rina.review@travel.test',
+                    'phone' => '081280001001',
+                    'rating' => 5.0,
+                    'comment' => 'Berangkat dari Pool Pasteur Bandung ke Jakarta Semanggi tepat waktu, armada Toyota HiAce Premio sangat bersih dan kursinya nyaman.',
+                ],
+                [
+                    'name' => 'Dimas Saputra',
+                    'email' => 'dimas.review@travel.test',
+                    'phone' => '081280001002',
+                    'rating' => 4.9,
+                    'comment' => 'Pesan tiket dari Bekasi Barat Kemang View ke Buah Batu Bandung gampang lewat HP, tinggal scan QR e-ticket langsung naik.',
+                ],
+                [
+                    'name' => 'Siti Nurhaliza',
+                    'email' => 'siti.review@travel.test',
+                    'phone' => '081280001003',
+                    'rating' => 5.0,
+                    'comment' => 'Rute Cirebon Pilang Raya ke Dipati Ukur Bandung sangat nyaman, pengemudi sopan dan mengemudi dengan aman.',
+                ],
+                [
+                    'name' => 'Fajar Nugroho',
+                    'email' => 'fajar.review@travel.test',
+                    'phone' => '081280001004',
+                    'rating' => 4.8,
+                    'comment' => 'Shuttle dari Bandara Kertajati (BIJB) Majalengka ke Bandung sangat membantu, jadwalnya sesuai jam pendaratan pesawat.',
+                ],
+                [
+                    'name' => 'Nadia Maharani',
+                    'email' => 'nadia.review@travel.test',
+                    'phone' => '081280001005',
+                    'rating' => 4.9,
+                    'comment' => 'Perjalanan dari Purwakarta Sadang menuju Grogol Jakarta lancar, AC dingin dan ada USB charger di setiap kursi.',
+                ],
+                [
+                    'name' => 'Hendra Gunawan',
+                    'email' => 'hendra.review@travel.test',
+                    'phone' => '081280001006',
+                    'rating' => 5.0,
+                    'comment' => 'Titik penjemputan Virtual Point sangat jelas, harga transparan dan pelayanan petugas di pool sangat ramah.',
+                ],
+            ];
+
+            $pastDate = Carbon::yesterday()->toDateString();
+            foreach ($sampleReviews as $idx => $rev) {
+                $reviewer = User::updateOrCreate(
+                    ['email' => $rev['email']],
+                    [
+                        'name' => $rev['name'],
+                        'phone' => $rev['phone'],
+                        'role' => 'user',
+                        'status' => 'active',
+                        'password' => Hash::make('password'),
+                    ]
+                );
+
+                $routeForReview = $createdRoutes[$idx % count($createdRoutes)];
+                $vehicleForReview = $vehicles[$idx % count($vehicles)];
+                $driverForReview = $drivers[$idx % count($drivers)];
+
+                $completedSchedule = Schedule::updateOrCreate(
+                    [
+                        'route_id' => $routeForReview->id,
+                        'departure_date' => $pastDate,
+                        'departure_time' => sprintf('%02d:00', 8 + $idx),
+                    ],
+                    [
+                        'vehicle_id' => $vehicleForReview->id,
+                        'driver_id' => $driverForReview->id,
+                        'available_seats' => 8,
+                        'price' => $routeForReview->price,
+                        'status' => 'Completed',
+                        'trip_status' => 'completed',
+                    ]
+                );
+
+                $bookingCode = 'TRV-REV-00'.($idx + 1);
+                $completedBooking = Booking::updateOrCreate(
+                    ['booking_code' => $bookingCode],
+                    [
+                        'user_id' => $reviewer->id,
+                        'schedule_id' => $completedSchedule->id,
+                        'total_passenger' => 1,
+                        'subtotal' => $routeForReview->price,
+                        'discount' => 0,
+                        'total_price' => $routeForReview->price,
+                        'status' => 'completed',
+                        'source' => 'online',
+                    ]
+                );
+
+                TripReview::updateOrCreate(
+                    ['booking_id' => $completedBooking->id],
+                    [
+                        'user_id' => $reviewer->id,
+                        'schedule_id' => $completedSchedule->id,
+                        'vehicle_id' => $vehicleForReview->id,
+                        'driver_id' => $driverForReview->id,
+                        'cleanliness_rating' => 5,
+                        'driver_rating' => 5,
+                        'punctuality_rating' => 5,
+                        'overall_rating' => $rev['rating'],
+                        'comment' => $rev['comment'],
+                    ]
+                );
+            }
+        }
     }
 }

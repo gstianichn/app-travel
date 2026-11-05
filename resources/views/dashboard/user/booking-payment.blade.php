@@ -204,8 +204,12 @@
             <div class="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-5">
                 <button type="button" class="{{ $copyClass }}" @click="copyText(@js((string) (int) $booking->total_price), 'Nominal tersalin.')">Salin nominal {{ $amount }}</button>
                 <button type="button" @click="checkStatusManual()" :disabled="isChecking"
-                        class="inline-flex items-center min-h-11 px-4 rounded-lg font-semibold text-brand-700 underline underline-offset-2 disabled:opacity-60">
-                    <span x-text="isChecking ? 'Mengecek...' : 'Saya sudah bayar, cek status'"></span>
+                        class="inline-flex items-center gap-2 min-h-11 px-4 rounded-lg font-semibold text-brand-700 underline underline-offset-2 disabled:opacity-60">
+                    <svg x-show="isChecking" x-cloak class="w-4 h-4 animate-spin text-current shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span x-text="isChecking ? 'Mengecek status pembayaran...' : 'Saya sudah bayar, cek status'"></span>
                 </button>
             </div>
             <p class="text-sm font-semibold text-brand-800" role="status" aria-live="polite" x-text="feedback"></p>
@@ -286,8 +290,12 @@ function paymentHandler(config) {
             try {
                 await navigator.clipboard.writeText(text);
                 this.feedback = message;
+                window.TravelFeedback?.playAction(false);
+                window.TravelFeedback?.toast(message, 'success', 'Tersalin');
             } catch (error) {
                 this.feedback = 'Browser menolak menyalin. Pilih teksnya lalu salin manual.';
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast(this.feedback, 'error', 'Gagal Menyalin');
             }
         },
 
@@ -296,6 +304,8 @@ function paymentHandler(config) {
             const data = await response.json();
 
             if (data.is_paid) {
+                window.TravelFeedback?.playSuccess();
+                window.TravelFeedback?.toast('Pembayaran berhasil dikonfirmasi! Menerbitkan E-Ticket...', 'success', 'Pembayaran Lunas');
                 window.location.href = this.successUrl;
             }
 
@@ -303,6 +313,9 @@ function paymentHandler(config) {
         },
 
         async checkStatusManual() {
+            if (this.isChecking) {
+                return;
+            }
             this.isChecking = true;
 
             try {
@@ -310,9 +323,13 @@ function paymentHandler(config) {
 
                 if (!data.is_paid) {
                     this.feedback = 'Pembayaran belum masuk. Transfer bank bisa butuh 1 sampai 2 menit, halaman ini akan pindah sendiri.';
+                    window.TravelFeedback?.playWarning();
+                    window.TravelFeedback?.toast(this.feedback, 'warning', 'Menunggu Pembayaran');
                 }
             } catch (error) {
                 this.feedback = 'Status belum bisa dicek. Periksa koneksi internet lalu coba lagi.';
+                window.TravelFeedback?.playWarning();
+                window.TravelFeedback?.toast(this.feedback, 'error', 'Gagal Mengecek Status');
             } finally {
                 this.isChecking = false;
             }

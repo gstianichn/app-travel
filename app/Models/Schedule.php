@@ -106,7 +106,7 @@ class Schedule extends Model
         $occupiedSeats = [];
         foreach ($activeBookings as $booking) {
             $bookingStatusLower = strtolower($booking->status);
-            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']);
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending']);
 
             foreach ($booking->passengers as $passenger) {
                 if ($passenger->seat_id) {
@@ -521,11 +521,15 @@ class Schedule extends Model
             return;
         }
 
-        $driver = Driver::where('status', 'standby')->first() ?? Driver::first();
+        $drivers = Driver::where('status', 'standby')->get();
+        if ($drivers->isEmpty()) {
+            $drivers = Driver::all();
+        }
 
         $standardTimes = ['07:00', '10:00', '14:00', '18:30'];
         foreach ($standardTimes as $idx => $time) {
             $vehicle = $vehicles[$idx % $vehicles->count()];
+            $driver = $drivers->isNotEmpty() ? $drivers[$idx % $drivers->count()] : null;
             $seatCap = $vehicle->capacity ?: 10;
             $vehicle->ensureSeatsExist();
 
@@ -535,7 +539,7 @@ class Schedule extends Model
                 'departure_time' => $time,
                 'vehicle_id' => $vehicle->id,
                 'driver_id' => $driver?->id,
-                'available_seats' => max(4, $seatCap - 2),
+                'available_seats' => $seatCap,
                 'price' => $route->price ?: 125000,
                 'status' => 'Scheduled',
                 'trip_status' => 'scheduled',

@@ -1,4 +1,4 @@
-﻿@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', 'Kelola Staff')
 
@@ -1051,7 +1051,7 @@
                                             action="{{ route('dashboard.admin.kelola-staff.toggle-status', $staff->id) }}"
                                             method="POST"
                                             style="display: inline;"
-                                            onsubmit="return confirm('{{ $staff->status === 'active' ? "Nonaktifkan akun staf {$staff->name}? Staf yang berhenti bekerja tidak dapat lagi masuk ke sistem loket." : "Aktifkan kembali akun staf {$staff->name} agar dapat bertugas melayani loket?" }}');"
+                                            onsubmit="return confirm(@js($staff->status === 'active' ? "Nonaktifkan akun staf {$staff->name}? Staf yang berhenti bekerja tidak dapat lagi masuk ke sistem loket." : "Aktifkan kembali akun staf {$staff->name} agar dapat bertugas melayani loket?"));"
                                         >
                                             @csrf
                                             @method('PATCH')
@@ -1071,7 +1071,7 @@
                                             action="{{ route('dashboard.admin.kelola-staff.destroy', $staff->id) }}"
                                             method="POST"
                                             style="display: inline;"
-                                            onsubmit="return confirm('Hapus permanen akun staf {{ $staff->name }}? Tindakan ini tidak dapat dibatalkan.');"
+                                            onsubmit="return confirm(@js("Hapus permanen akun staf {$staff->name}? Tindakan ini tidak dapat dibatalkan."));"
                                         >
                                             @csrf
                                             @method('DELETE')

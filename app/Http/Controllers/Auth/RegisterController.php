@@ -55,6 +55,8 @@ class RegisterController extends Controller
                 'min:8',
                 'confirmed',
             ],
+        ], [
+            'email.unique' => 'Email sudah terdaftar.',
         ]);
 
         $user = User::create([

@@ -11,7 +11,7 @@ class SearchController extends Controller
 {
     public function index(Request $request)
     {
-        $locations = Location::where('is_active', true)->orderBy('name')->get();
+        $locations = Location::where('is_active', true)->orderBy('city')->orderBy('name')->get();
 
         $searchPerformed = $request->hasAny([
             'origin',
@@ -57,6 +57,36 @@ class SearchController extends Controller
                     $q->where('is_active', true)->orWhereNull('is_active');
                 })
                 ->first();
+
+            // Jika belum ada rute spesifik antar titik point, gunakan koridor kota yang sama jika tersedia
+            if (! $route && $originLoc?->city && $destLoc?->city && strtolower($originLoc->city) !== strtolower($destLoc->city)) {
+                $cityCorridor = Route::with(['origin', 'destination'])
+                    ->where(function ($q) {
+                        $q->where('is_active', true)->orWhereNull('is_active');
+                    })
+                    ->whereHas('origin', fn ($q) => $q->where('city', $originLoc->city))
+                    ->whereHas('destination', fn ($q) => $q->where('city', $destLoc->city))
+                    ->orderBy('price')
+                    ->first();
+
+                if ($cityCorridor) {
+                    $route = Route::firstOrCreate(
+                        [
+                            'origin_id' => $originLoc->id,
+                            'destination_id' => $destLoc->id,
+                        ],
+                        [
+                            'price' => $cityCorridor->price,
+                            'weekend_price' => $cityCorridor->weekend_price,
+                            'holiday_price' => $cityCorridor->holiday_price,
+                            'duration' => $cityCorridor->duration,
+                            'distance_km' => $cityCorridor->distance_km,
+                            'is_active' => true,
+                        ]
+                    );
+                    $route->load(['origin', 'destination']);
+                }
+            }
 
             $routeConnected = ($route !== null);
             $transitHub = null;

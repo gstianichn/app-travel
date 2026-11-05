@@ -43,7 +43,7 @@
                             $seatsLeft = (int) $schedule->available_seats;
                             $facilities = array_slice((array) ($schedule->vehicle?->facilities ?? []), 0, 3);
                         @endphp
-                        <li class="grid gap-4 py-5 sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center">
+                        <li class="grid gap-4 py-5 px-4 -mx-4 rounded-xl transition-colors duration-150 hover:bg-slate-200/70 sm:grid-cols-[120px_minmax(0,1fr)_auto] sm:items-center">
                             <p class="text-2xl font-extrabold text-slate-900 tabular-nums">
                                 {{ $schedule->departureCarbon()->format('H:i') }}
                                 <span class="block text-base font-semibold text-slate-500">tiba {{ str_replace(' WIB', '', $schedule->estimatedArrivalTime()) }}</span>
@@ -69,7 +69,9 @@
                                     {{ $schedule->formattedEffectivePrice() }}
                                     <span class="block text-sm font-normal text-slate-500 sm:text-right">per orang</span>
                                 </p>
-                                <a href="{{ route('dashboard.user.booking.pilih-kursi', ['schedule' => $schedule->id, 'passengers' => $passengerCount]) }}" class="lp-btn lp-btn--green">Pilih kursi</a>
+                                <a href="{{ route('dashboard.user.booking.pilih-kursi', ['schedule' => $schedule->id, 'passengers' => $passengerCount]) }}"
+                                   onclick="window.TravelFeedback?.playAction(false)"
+                                   class="lp-btn lp-btn--green">Pilih kursi</a>
                             </div>
                         </li>
                     @endforeach

@@ -122,13 +122,16 @@
                                 aria-label="Isi pencarian {{ $fromCity }} ke {{ $toCity }}, mulai {{ $routeSign->formattedPrice() }}"
                             >
                                 <span class="lp-sign-face">
-                                    <span class="lp-sign-from">dari {{ $fromCity }}</span>
+                                    <span class="lp-sign-from">dari {{ $fromCity }} ({{ $routeSign->origin->name }})</span>
                                     <span class="lp-sign-to">
                                         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 4 11h5v11h6V11h5z" /></svg>
                                         {{ $toCity }}
                                     </span>
                                     <span class="lp-sign-meta">
                                         {{ $routeSign->duration }}@if ($routeSign->distance_km), {{ $routeSign->distance_km }} km @endif
+                                    </span>
+                                    <span class="lp-sign-meta" style="font-size: 0.8rem; opacity: 0.92;">
+                                        Jadwal: 06:00 – 20:30 WIB (Setiap 2 Jam)
                                     </span>
                                 </span>
                                 <span class="lp-sign-plate">mulai {{ $routeSign->formattedPrice() }}</span>
@@ -161,6 +164,99 @@
         @endif
     </div>
 </section>
+
+@php
+    $allScheduleRoutes = $scheduleRoutes ?? $routeSigns;
+@endphp
+@if ($allScheduleRoutes->isNotEmpty() && isset($routesByOriginCity) && $routesByOriginCity->isNotEmpty())
+    <section class="lp-schedule-section" aria-labelledby="jadwal-ref-title">
+        <div class="container lp-schedule-ref" id="jadwal-rute-referensi">
+            <div class="lp-schedule-ref-head">
+                <div>
+                    <span class="lp-plate" style="margin-bottom: 10px;">Jadwal & Rute Shuttle Antar Kota</span>
+                    <h3 id="jadwal-ref-title">Daftar Jadwal & Titik Point Keberangkatan</h3>
+                    <p class="lp-schedule-ref-sub">Pilih kota keberangkatan untuk melihat rute tujuan, titik pool/virtual point, dan jam keberangkatan harian.</p>
+                </div>
+            </div>
+
+            <div class="lp-city-tabs" data-city-tabs role="tablist" aria-label="Filter Kota Keberangkatan">
+                <button type="button" class="lp-city-tab is-active" data-city-filter="ALL" aria-selected="true">
+                    Semua Kota <small>{{ $allScheduleRoutes->count() }}</small>
+                </button>
+                @foreach ($routesByOriginCity->keys()->sort() as $originCityName)
+                    <button type="button" class="lp-city-tab" data-city-filter="{{ $originCityName }}" aria-selected="false">
+                        {{ $originCityName }} <small>{{ $routesByOriginCity->get($originCityName)->count() }}</small>
+                    </button>
+                @endforeach
+            </div>
+
+            <div class="lp-schedule-cards" data-schedule-cards>
+                @foreach ($allScheduleRoutes as $idx => $rItem)
+                    @php
+                        $origCity = $cityOf($rItem->origin);
+                        $destCity = $cityOf($rItem->destination);
+                        $scheduleHours = match ($idx % 3) {
+                            0 => ['06:00', '08:00', '10:00', '13:00', '15:30', '18:00', '20:30'],
+                            1 => ['06:30', '09:00', '11:30', '14:00', '16:30', '19:00', '21:00'],
+                            default => ['07:00', '09:30', '12:00', '14:30', '17:00', '19:30'],
+                        };
+                    @endphp
+                    <article
+                        class="lp-schedule-card"
+                        data-origin-city="{{ $origCity }}"
+                        data-card-index="{{ $idx }}"
+                        @if ($idx >= 9) data-extra-route hidden @endif
+                    >
+                        <div>
+                            <div class="lp-schedule-card-top">
+                                <div>
+                                    <span class="lp-schedule-corridor">{{ $origCity }} &rarr; {{ $destCity }}</span>
+                                    <h4 class="lp-schedule-points">{{ $rItem->origin->name }} ke {{ $rItem->destination->name }}</h4>
+                                </div>
+                                <span class="lp-schedule-badge">{{ $rItem->duration }}</span>
+                            </div>
+                            <p class="lp-schedule-address">
+                                <strong>Titik Naik:</strong> {{ $rItem->origin->address ?: $rItem->origin->name }}
+                            </p>
+                            <div class="lp-schedule-times" aria-label="Jam keberangkatan">
+                                <span class="lp-schedule-times-label">Jam Keberangkatan Harian:</span>
+                                <div class="lp-schedule-time-chips">
+                                    @foreach ($scheduleHours as $hr)
+                                        <span class="lp-time-chip">{{ $hr }} WIB</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lp-schedule-card-foot">
+                            <div class="lp-schedule-price">
+                                <small>Tarif mulai</small>
+                                <b>{{ $rItem->formattedPrice() }}</b>
+                            </div>
+                            <a
+                                href="#cari"
+                                class="lp-btn lp-btn--green lp-schedule-select-btn lp-schedule-pick"
+                                data-route-fill
+                                data-origin="{{ $rItem->origin_id }}"
+                                data-destination="{{ $rItem->destination_id }}"
+                                data-label="{{ $origCity }} ke {{ $destCity }}"
+                            >
+                                Pilih Jadwal &rarr;
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            @if ($allScheduleRoutes->count() > 9)
+                <div class="lp-schedule-more-wrap" data-schedule-more-wrap>
+                    <button type="button" class="lp-btn lp-btn--ghost" data-toggle-all-routes data-total-count="{{ $allScheduleRoutes->count() }}">
+                        Tampilkan Semua Rute ({{ $allScheduleRoutes->count() }} Rute)
+                    </button>
+                </div>
+            @endif
+        </div>
+    </section>
+@endif
 
 {{-- HOW TO BOOK: the van drives down the road as the reader moves through the steps --}}
 <section class="lp-steps" id="cara-pesan" aria-labelledby="cara-pesan-title">
@@ -270,17 +366,34 @@
     <section class="lp-reviews" id="ulasan" aria-labelledby="ulasan-title">
         <div class="container lp-reviews-grid">
             <div class="lp-reviews-score">
+                <p class="lp-eyebrow">Ulasan Terverifikasi</p>
                 <h2 id="ulasan-title">Kata penumpang</h2>
                 <p class="lp-reviews-average"><b>{{ number_format($reviewAverage, 1, ',', '.') }}</b> dari 5</p>
-                <p>Rata-rata dari {{ $reviewCount }} ulasan setelah perjalanan selesai.</p>
+                <div class="lp-reviews-stars" aria-label="Rating {{ number_format($reviewAverage, 1, ',', '.') }} dari 5">
+                    @for ($star = 1; $star <= 5; $star++)
+                        <span class="{{ $star <= round($reviewAverage) ? 'is-filled' : '' }}">★</span>
+                    @endfor
+                </div>
+                <p>Rata-rata dari {{ $reviewCount }} ulasan penumpang setelah perjalanan selesai.</p>
+                @auth
+                    <a href="{{ route('user.history') }}" class="lp-btn lp-btn--ghost" style="margin-top: 12px; display: inline-flex;">Tulis Ulasan Perjalanan</a>
+                @else
+                    <a href="{{ route('user.login') }}" class="lp-btn lp-btn--ghost" style="margin-top: 12px; display: inline-flex;">Masuk untuk Beri Ulasan</a>
+                @endauth
             </div>
 
             <ul class="lp-reviews-list">
                 @foreach ($reviews as $review)
                     @php
                         $reviewRoute = $review->schedule?->route;
+                        $starsCount = (int) round((float) $review->overall_rating);
                     @endphp
                     <li>
+                        <div class="lp-review-stars" aria-hidden="true">
+                            @for ($s = 1; $s <= 5; $s++)
+                                <span class="{{ $s <= $starsCount ? 'is-filled' : '' }}">★</span>
+                            @endfor
+                        </div>
                         <blockquote>{{ $review->comment }}</blockquote>
                         <p class="lp-review-meta">
                             <b>{{ \Illuminate\Support\Str::before($review->user?->name ?? 'Penumpang', ' ') ?: 'Penumpang' }}</b>
@@ -303,23 +416,57 @@
 
         <div class="lp-faq-list">
             <details>
-                <summary>Sampai kapan tiket bisa dibatalkan?</summary>
-                <p>Pembatalan bisa diajukan dari akunmu paling lambat 1 jam sebelum jam berangkat. Besaran refund ditentukan admin, dan dananya kembali lewat metode bayar yang kamu pakai. Kalau kamu memesan tanpa akun, masuk dengan Google memakai email yang sama dengan pesananmu; tiketnya ikut muncul di akun.</p>
+                <summary>
+                    <span>Sampai kapan tiket bisa dibatalkan?</span>
+                    <span class="lp-faq-dropdown-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7.5 10 12.5 15 7.5"></polyline></svg>
+                    </span>
+                </summary>
+                <p>Pembatalan/refund bisa diajukan dari akunmu paling lambat 1 jam sebelum jam berangkat. Pengajuan refund akan diperiksa terlebih dahulu untuk mendapatkan ACC dari Admin, dan setelah disetujui dana otomatis dikembalikan penuh sesuai ketentuan ke metode pembayaran yang kamu pakai.</p>
             </details>
             <details>
-                <summary>Berapa lama kursi ditahan saat saya membayar?</summary>
+                <summary>
+                    <span>Apakah harus login terlebih dahulu untuk memesan tiket?</span>
+                    <span class="lp-faq-dropdown-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7.5 10 12.5 15 7.5"></polyline></svg>
+                    </span>
+                </summary>
+                <p>Kamu bebas mengecek rute dan mencari jadwal keberangkatan di beranda tanpa login. Namun saat memilih jadwal dan kursi untuk memesan tiket, kamu wajib masuk ke akun terlebih dahulu (atau daftar akun baru/masuk dengan Google) agar e-ticket, notifikasi jadwal, dan pengajuan refund tercatat aman di akunmu.</p>
+            </details>
+            <details>
+                <summary>
+                    <span>Berapa lama kursi ditahan saat saya membayar?</span>
+                    <span class="lp-faq-dropdown-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7.5 10 12.5 15 7.5"></polyline></svg>
+                    </span>
+                </summary>
                 <p>15 menit. Kalau pembayaran belum masuk sampai batas itu, booking batal otomatis dan kursinya dilepas untuk penumpang lain.</p>
             </details>
             <details>
-                <summary>Kenapa harga akhir pekan berbeda?</summary>
+                <summary>
+                    <span>Kenapa harga akhir pekan berbeda?</span>
+                    <span class="lp-faq-dropdown-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7.5 10 12.5 15 7.5"></polyline></svg>
+                    </span>
+                </summary>
                 <p>Tiap rute punya tarif hari biasa, akhir pekan, dan hari libur. Harga yang kamu bayar mengikuti tanggal berangkat yang kamu pilih.</p>
             </details>
             <details>
-                <summary>Kapan saya harus sudah di pool?</summary>
+                <summary>
+                    <span>Kapan saya harus sudah di pool?</span>
+                    <span class="lp-faq-dropdown-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7.5 10 12.5 15 7.5"></polyline></svg>
+                    </span>
+                </summary>
                 <p>Boarding dibuka 15 menit sebelum jam berangkat. Siapkan QR e-ticket di HP supaya petugas bisa langsung memindainya.</p>
             </details>
             <details>
-                <summary>Bagaimana kalau saya tidak datang?</summary>
+                <summary>
+                    <span>Bagaimana kalau saya tidak datang?</span>
+                    <span class="lp-faq-dropdown-icon" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 7.5 10 12.5 15 7.5"></polyline></svg>
+                    </span>
+                </summary>
                 <p>Tiket dicatat sebagai tidak hadir (no show), hangus, dan tidak bisa direfund. Kalau rencanamu berubah, batalkan paling lambat 1 jam sebelum berangkat.</p>
             </details>
         </div>
@@ -343,7 +490,7 @@
 
     <div class="container lp-dusk-copy">
         <h2 id="dusk-title">Tinggal pilih tanggalnya.</h2>
-        <p>Cek rute, jam, dan kursi, lalu pesan langsung. Tidak perlu daftar akun dulu.</p>
+        <p>Cek rute, jam, dan kursi di beranda, lalu masuk ke akunmu untuk memesan tiket perjalanan dengan aman.</p>
         <a href="#cari" class="lp-btn lp-btn--light" data-focus-search>Isi pencarian</a>
     </div>
 </section>

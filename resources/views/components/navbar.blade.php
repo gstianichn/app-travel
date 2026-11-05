@@ -15,6 +15,7 @@
                 <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'navbar-link-active' : '' }}" data-nav-section="home">Beranda</a>
                 <a href="{{ route('home') }}#rute" data-nav-section="rute">Rute</a>
                 <a href="{{ route('home') }}#cara-pesan" data-nav-section="cara-pesan">Cara pesan</a>
+                <a href="{{ route('home') }}#ulasan" data-nav-section="ulasan">Ulasan</a>
                 <a href="{{ route('home') }}#faq" data-nav-section="faq">Tanya jawab</a>
                 <a href="{{ route('search') }}" class="{{ request()->routeIs('search') ? 'navbar-link-active' : '' }}">Cari Travel</a>
             </div>

@@ -1,3 +1,4 @@
+import './feedback-taxonomy.js';
 import './ticket.js';
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -212,20 +213,63 @@ document.fonts?.ready.then(() => {
 layoutRoutes();
 render();
 
-/* ---------- Auto-scroll to results after search form navigation ----------
- * When the search form appends #hasil to the URL and the browser navigates
- * to the results page, scroll smoothly to the results section on load.
- */
-if (window.location.hash === '#hasil') {
-    const resultsSection = document.getElementById('hasil');
+/* ---------- Bhisa Schedule Reference City Tabs ---------- */
+const cityTabsContainer = document.querySelector('[data-city-tabs]');
+const scheduleCardsGrid = document.querySelector('[data-schedule-cards]');
+const moreWrap = document.querySelector('[data-schedule-more-wrap]');
+const toggleAllRoutesBtn = document.querySelector('[data-toggle-all-routes]');
 
-    if (resultsSection) {
-        // Use requestAnimationFrame to ensure the layout is settled before scrolling.
-        requestAnimationFrame(() => {
-            resultsSection.scrollIntoView({
-                behavior: prefersReducedMotion.matches ? 'auto' : 'smooth',
-                block: 'start',
-            });
+if (cityTabsContainer && scheduleCardsGrid) {
+    const cityTabs = [...cityTabsContainer.querySelectorAll('[data-city-filter]')];
+    const scheduleCards = [...scheduleCardsGrid.querySelectorAll('[data-origin-city]')];
+    let activeCity = 'ALL';
+    let showAllWhenAllSelected = false;
+
+    const applyScheduleFilter = () => {
+        const isAll = activeCity.toUpperCase() === 'ALL';
+
+        scheduleCards.forEach((card, idx) => {
+            if (isAll) {
+                card.hidden = !showAllWhenAllSelected && idx >= 9;
+            } else {
+                card.hidden = card.dataset.originCity !== activeCity;
+            }
         });
-    }
+
+        if (moreWrap) {
+            moreWrap.hidden = !isAll;
+        }
+
+        if (toggleAllRoutesBtn) {
+            const totalCount = toggleAllRoutesBtn.dataset.totalCount || scheduleCards.length;
+            toggleAllRoutesBtn.textContent = showAllWhenAllSelected
+                ? 'Tampilkan Lebih Sedikit'
+                : `Tampilkan Semua Rute (${totalCount} Rute)`;
+        }
+    };
+
+    cityTabsContainer.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-city-filter]');
+        if (!btn) {
+            return;
+        }
+
+        activeCity = btn.dataset.cityFilter || 'ALL';
+
+        cityTabs.forEach((tab) => {
+            const isActive = tab === btn;
+            tab.classList.toggle('is-active', isActive);
+            tab.setAttribute('aria-selected', String(isActive));
+        });
+
+        window.TravelFeedback?.playAction(false);
+        applyScheduleFilter();
+    });
+
+    toggleAllRoutesBtn?.addEventListener('click', () => {
+        showAllWhenAllSelected = !showAllWhenAllSelected;
+        window.TravelFeedback?.playAction(false);
+        applyScheduleFilter();
+    });
 }
+

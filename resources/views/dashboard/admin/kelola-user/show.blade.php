@@ -799,7 +799,7 @@
             <form
                 action="{{ route('dashboard.admin.kelola-user.toggle-status', $user->id) }}"
                 method="POST"
-                onsubmit="return confirm('Apakah Anda yakin ingin {{ ($user->status ?? 'active') === 'active' ? 'MEMBLOKIR' : 'MENGAKTIFKAN KEMBALI' }} akun {{ $user->name }}?');"
+                onsubmit="return confirm(@js('Apakah Anda yakin ingin '.(($user->status ?? 'active') === 'active' ? 'MEMBLOKIR' : 'MENGAKTIFKAN KEMBALI').' akun '.$user->name.'?'));"
             >
                 @csrf
                 @method('PATCH')

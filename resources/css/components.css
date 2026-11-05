@@ -151,11 +151,23 @@
     text-overflow: ellipsis;
 }
 
+.lp-field select:hover,
+.lp-field input:hover {
+    background-color: #F4F1E6;
+    border-color: var(--lp-forest);
+}
+
 .lp-field select:focus-visible,
 .lp-field input:focus-visible {
     outline: 3px solid rgb(12 121 80 / 0.35);
     outline-offset: 1px;
     border-color: var(--lp-green);
+}
+
+@keyframes lp-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .lp-field [aria-invalid='true'] {

@@ -22,6 +22,7 @@
 
     {{-- Profile --}}
     <section aria-labelledby="profil" class="space-y-3">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Profil Saya</p>
         <h1 id="profil" class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">{{ $user->name }}</h1>
         <p class="text-slate-700">
             {{ $user->email }}<br>

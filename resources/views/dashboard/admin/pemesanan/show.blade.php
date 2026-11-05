@@ -512,17 +512,13 @@
                 </div>
 
                 @if(strtolower($booking->status) !== 'cancelled')
-                    <form
-                        action="{{ route('dashboard.admin.pemesanan.cancel', $booking->id) }}"
-                        method="POST"
-                        onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pemesanan ini? Kursi akan dilepaskan kembali.');"
+                    <button
+                        type="button"
+                        id="openShowCancelModalBtn"
+                        style="padding: 8px 16px; border: 1px solid #fecaca; background: #fee2e2; color: #b91c1c; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;"
                     >
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" style="padding: 8px 16px; border: 1px solid #fecaca; background: #fee2e2; color: #b91c1c; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                            Batalkan Pemesanan
-                        </button>
-                    </form>
+                        Batalkan Pemesanan
+                    </button>
                 @endif
             </div>
 
@@ -530,5 +526,41 @@
     </div>
 
 </div>
+
+@if(strtolower($booking->status) !== 'cancelled')
+<div id="showCancelBookingModal" role="dialog" aria-modal="true" aria-labelledby="showCancelTitle" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 29, 24, 0.62); backdrop-filter: blur(4px);">
+    <div style="width: 100%; max-width: 460px; background: #ffffff; border-radius: 18px; border: 1px solid #e2ebe6; box-shadow: 0 24px 60px rgba(15, 29, 24, 0.25); overflow: hidden;">
+        <div style="padding: 18px 22px; background: #fef2f2; border-bottom: 1px solid #fecaca; display: flex; align-items: center; justify-content: space-between;">
+            <h3 id="showCancelTitle" style="margin: 0; font-size: 15px; font-weight: 800; color: #991b1b;">Konfirmasi Pembatalan Tiket {{ $booking->booking_code }}</h3>
+            <button type="button" data-close-show-cancel style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid #fecaca; background: #ffffff; color: #991b1b; font-weight: 800; cursor: pointer;">✕</button>
+        </div>
+        <form action="{{ route('dashboard.admin.pemesanan.cancel', $booking->id) }}" method="POST" style="padding: 20px 22px;">
+            @csrf
+            @method('PATCH')
+            <p style="margin: 0 0 12px; font-size: 13px; color: #334155; line-height: 1.5;">
+                Apakah Anda yakin ingin membatalkan pemesanan <strong>{{ $booking->booking_code }}</strong> atas nama <strong>{{ $booking->contact_name ?? $booking->user?->name ?? 'Penumpang' }}</strong>? Kursi akan dilepaskan kembali dan notifikasi pembatalan beserta refund otomatis akan dikirim ke penumpang.
+            </p>
+            <div style="margin-bottom: 16px;">
+                <label for="showCancelReason" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">Alasan Pembatalan</label>
+                <input type="text" id="showCancelReason" name="cancel_reason" value="Dibatalkan oleh Admin Operasional TravelKu" style="width: 100%; height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" data-close-show-cancel style="height: 38px; padding: 0 14px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-size: 12px; font-weight: 700; cursor: pointer;">Batal</button>
+                <button type="submit" style="height: 38px; padding: 0 16px; border-radius: 8px; border: none; background: #dc2626; color: #ffffff; font-size: 12px; font-weight: 700; cursor: pointer;">Ya, Batalkan Tiket</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const openBtn = document.getElementById('openShowCancelModalBtn');
+    const modal = document.getElementById('showCancelBookingModal');
+    if (!openBtn || !modal) return;
+    openBtn.addEventListener('click', () => { modal.style.display = 'flex'; });
+    modal.querySelectorAll('[data-close-show-cancel]').forEach((b) => b.addEventListener('click', () => { modal.style.display = 'none'; }));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+});
+</script>
+@endif
 
 @endsection

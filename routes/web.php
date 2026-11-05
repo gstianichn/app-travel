@@ -8,6 +8,7 @@ use App\Http\Controllers\DriverDashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserDashboardController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -418,6 +419,11 @@ Route::middleware(['auth', 'role:admin_utama,admin'])
             'storeSchedule',
         ])->name('dashboard.admin.rute.jadwal.store');
 
+        Route::put('/rute/jadwal/{schedule}', [
+            AdminDashboardController::class,
+            'updateSchedule',
+        ])->name('dashboard.admin.rute.jadwal.update');
+
         Route::post('/rute/jadwal/batch-generate', [
             AdminDashboardController::class,
             'batchGenerateSchedules',
@@ -797,6 +803,22 @@ Route::middleware(['auth', 'role:user'])
             UserDashboardController::class,
             'updateProfile',
         ])->name('dashboard.user.profil.update');
+
+        Route::put('/user/profil/update', [
+            UserDashboardController::class,
+            'updateProfile',
+        ])->name('user.profil.update');
+
+        Route::get('/user/profil', [
+            UserDashboardController::class,
+            'akun',
+        ])->name('dashboard.user.profil');
+
+        Route::get('/user/petugas/{user}', function (User $user) {
+            abort_if($user->role !== 'user', 404);
+
+            return redirect()->route('dashboard.user.user-akun');
+        })->name('detail.petugas');
 
         Route::post('/user/profil/password', [
             UserDashboardController::class,

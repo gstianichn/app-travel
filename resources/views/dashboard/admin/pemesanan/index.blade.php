@@ -796,23 +796,20 @@
                                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                         </a>
 
-                                        {{-- BATALKAN --}}
-                                        <form
-                                            action="{{ route('dashboard.admin.pemesanan.cancel', $b->id) }}"
-                                            method="POST"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan {{ $b->booking_code }}? Kursi akan kembali kosong.');"
-                                            style="display: inline;"
+                                        {{-- BATALKAN (Custom Popup Modal, tanpa confirm localhost) --}}
+                                        <button
+                                            type="button"
+                                            class="btn-action-icon cancel"
+                                            title="Batalkan Pemesanan"
+                                            data-open-cancel-modal
+                                            data-cancel-action="{{ route('dashboard.admin.pemesanan.cancel', $b->id) }}"
+                                            data-booking-code="{{ $b->booking_code }}"
+                                            data-customer-name="{{ $b->contact_name ?? $b->user?->name ?? 'Penumpang' }}"
+                                            data-total-amount="Rp {{ number_format((float) $b->total_amount, 0, ',', '.') }}"
+                                            data-is-paid="{{ in_array(strtolower((string) $b->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending'], true) ? '1' : '0' }}"
                                         >
-                                            @csrf
-                                            @method('PATCH')
-                                            <button
-                                                type="submit"
-                                                class="btn-action-icon cancel"
-                                                title="Batalkan Pemesanan"
-                                            >
-                                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
-                                            </button>
-                                        </form>
+                                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke-width="2"/></svg>
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -853,5 +850,106 @@
     </div>
 
 </div>
+
+{{-- CUSTOM POPUP MODAL PEMBATALAN TIKET (Tanpa Alert Localhost) --}}
+<div id="adminCancelBookingModal" role="dialog" aria-modal="true" aria-labelledby="adminCancelModalTitle" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 29, 24, 0.62); backdrop-filter: blur(4px);">
+    <div style="width: 100%; max-width: 480px; background: #ffffff; border-radius: 18px; border: 1px solid #e2ebe6; box-shadow: 0 24px 60px rgba(15, 29, 24, 0.25); overflow: hidden; animation: modalPopIn 0.2s ease-out;">
+        <div style="padding: 20px 24px; background: #fef2f2; border-bottom: 1px solid #fecaca; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <div>
+                    <h3 id="adminCancelModalTitle" style="margin: 0; font-size: 16px; font-weight: 800; color: #991b1b;">Konfirmasi Pembatalan Tiket</h3>
+                    <p style="margin: 2px 0 0; font-size: 12px; color: #b91c1c;">Tindakan ini akan membatalkan pesanan & mengosongkan kursi</p>
+                </div>
+            </div>
+            <button type="button" data-close-cancel-modal style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #fecaca; background: #ffffff; color: #991b1b; font-weight: 800; cursor: pointer;">✕</button>
+        </div>
+
+        <form id="adminCancelBookingForm" method="POST" action="" style="padding: 20px 24px;">
+            @csrf
+            @method('PATCH')
+
+            <div style="padding: 12px 14px; border-radius: 12px; background: #f8faf9; border: 1px solid #e2ebe6; margin-bottom: 14px; font-size: 13px; color: #16251f;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: #64748b;">Kode Booking:</span>
+                    <strong id="cancelModalCode" style="font-family: monospace; color: #0f172a;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="color: #64748b;">Nama Penumpang:</span>
+                    <strong id="cancelModalCustomer">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b;">Total Transaksi:</span>
+                    <strong id="cancelModalAmount" style="color: #0f766e;">-</strong>
+                </div>
+            </div>
+
+            <div id="cancelModalRefundNotice" style="display: none; padding: 10px 12px; border-radius: 10px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; font-size: 12px; margin-bottom: 14px; line-height: 1.45;">
+                <strong>Refund & Notifikasi Otomatis:</strong> Karena tiket ini sudah terbayar, sistem akan otomatis mengembalikan dana (Refund 100%) dan mengirimkan notifikasi pembatalan ke akun & email penumpang.
+            </div>
+
+            <div style="margin-bottom: 18px;">
+                <label for="cancelReasonInput" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">Alasan Pembatalan (Dikirim ke Notifikasi Penumpang)</label>
+                <input
+                    type="text"
+                    id="cancelReasonInput"
+                    name="cancel_reason"
+                    value="Dibatalkan oleh Admin Operasional TravelKu"
+                    placeholder="Contoh: Perubahan operasional armada / jadwal"
+                    style="width: 100%; height: 40px; padding: 0 12px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 13px; color: #0f172a;"
+                >
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                <button type="button" data-close-cancel-modal style="height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; font-size: 13px; font-weight: 700; cursor: pointer;">
+                    Batal
+                </button>
+                <button type="submit" style="height: 40px; padding: 0 18px; border-radius: 10px; border: none; background: #dc2626; color: #ffffff; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);">
+                    Ya, Batalkan Tiket
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('adminCancelBookingModal');
+    const form = document.getElementById('adminCancelBookingForm');
+    if (!modal || !form) return;
+
+    const codeEl = document.getElementById('cancelModalCode');
+    const customerEl = document.getElementById('cancelModalCustomer');
+    const amountEl = document.getElementById('cancelModalAmount');
+    const refundNoticeEl = document.getElementById('cancelModalRefundNotice');
+
+    document.querySelectorAll('[data-open-cancel-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            form.action = btn.dataset.cancelAction || '';
+            if (codeEl) codeEl.textContent = btn.dataset.bookingCode || '-';
+            if (customerEl) customerEl.textContent = btn.dataset.customerName || '-';
+            if (amountEl) amountEl.textContent = btn.dataset.totalAmount || '-';
+            if (refundNoticeEl) {
+                refundNoticeEl.style.display = btn.dataset.isPaid === '1' ? 'block' : 'none';
+            }
+            modal.style.display = 'flex';
+        });
+    });
+
+    modal.querySelectorAll('[data-close-cancel-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
 
 @endsection

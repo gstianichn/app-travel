@@ -62,7 +62,9 @@ function lockSeatAsGuest($test): Booking
     return Booking::latest('id')->firstOrFail();
 }
 
-test('public search lets guests go straight to the seat map', function () {
+test('public search lets guests view schedules and requires login before selecting seats', function () {
+    $seatUrl = route('dashboard.user.booking.pilih-kursi', ['schedule' => $this->schedule->id, 'passengers' => 1]);
+
     $this->get(route('search', [
         'origin' => $this->schedule->route->origin_id,
         'destination' => $this->schedule->route->destination_id,
@@ -70,10 +72,15 @@ test('public search lets guests go straight to the seat map', function () {
         'passengers' => 1,
     ]))
         ->assertOk()
-        ->assertSee(route('dashboard.user.booking.pilih-kursi', ['schedule' => $this->schedule->id, 'passengers' => 1]), false)
-        ->assertDontSee('Masuk untuk pesan');
+        ->assertSee($seatUrl, false)
+        ->assertSee('Buat Akun / Register');
 
-    $this->get(route('dashboard.user.booking.pilih-kursi', ['schedule' => $this->schedule->id, 'passengers' => 1]))
+    $this->get($seatUrl)
+        ->assertRedirect(route('user.login', ['redirect' => $seatUrl]));
+
+    $user = User::factory()->create(['role' => 'user', 'status' => 'active']);
+    $this->actingAs($user)
+        ->get($seatUrl)
         ->assertOk()
         ->assertSee('Tahan kursi dan isi data');
 });

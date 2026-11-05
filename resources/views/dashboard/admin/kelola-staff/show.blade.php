@@ -793,7 +793,7 @@
                             <form
                                 action="{{ route('dashboard.admin.kelola-staff.toggle-status', $staff->id) }}"
                                 method="POST"
-                                onsubmit="return confirm('Nonaktifkan akun staf {{ $staff->name }}? Staf yang berhenti bekerja tidak dapat lagi masuk ke aplikasi loket.');"
+                                onsubmit="return confirm(@js("Nonaktifkan akun staf {$staff->name}? Staf yang berhenti bekerja tidak dapat lagi masuk ke aplikasi loket."));"
                             >
                                 @csrf
                                 @method('PATCH')
@@ -815,7 +815,7 @@
                             <form
                                 action="{{ route('dashboard.admin.kelola-staff.toggle-status', $staff->id) }}"
                                 method="POST"
-                                onsubmit="return confirm('Aktifkan kembali akun staf {{ $staff->name }} agar dapat bertugas di loket?');"
+                                onsubmit="return confirm(@js("Aktifkan kembali akun staf {$staff->name} agar dapat bertugas di loket?"));"
                             >
                                 @csrf
                                 @method('PATCH')
@@ -866,7 +866,7 @@
                         <form
                             action="{{ route('dashboard.admin.kelola-staff.destroy', $staff->id) }}"
                             method="POST"
-                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen akun staf {{ $staff->name }}?');"
+                            onsubmit="return confirm(@js("Apakah Anda yakin ingin menghapus permanen akun staf {$staff->name}?"));"
                         >
                             @csrf
                             @method('DELETE')

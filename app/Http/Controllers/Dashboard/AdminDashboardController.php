@@ -582,6 +582,10 @@ class AdminDashboardController extends Controller
         $user->status =
             $validated['status'];
 
+        if ($user->role !== 'user' && empty($user->access_code)) {
+            $user->access_code = Hash::make('ACCESS-'.strtoupper(Str::random(6)));
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Update password jika diisi
@@ -2152,7 +2156,7 @@ class AdminDashboardController extends Controller
             return redirect()->back()->with('error', 'Pemesanan ini sudah dalam status dibatalkan sebelumnya.');
         }
 
-        $wasPaid = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas', 'refund_pending']);
+        $wasPaid = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'refund_pending']);
 
         DB::transaction(function () use ($booking, $wasPaid) {
             $booking->status = 'Cancelled';
@@ -2173,24 +2177,27 @@ class AdminDashboardController extends Controller
                 }
             }
 
-            // Jika pemesanan sudah berbayar, buatkan pencatatan refund otomatis 100% yang langsung disetujui
+            // Jika pemesanan sudah berbayar, buatkan/perbarui pencatatan refund otomatis 100% yang langsung disetujui
             if ($wasPaid) {
-                Refund::create([
-                    'booking_id' => $booking->id,
-                    'user_id' => $booking->user_id,
-                    'original_amount' => $booking->total_price,
-                    'cancellation_fee' => 0,
-                    'refund_percentage' => 100.00,
-                    'amount' => $booking->total_price,
-                    'reason' => 'Dibatalkan oleh Admin. Dana otomatis dikembalikan 100%.',
-                    'bank_name' => $booking->payment?->payment_channel ?? 'Otomatis Gateway',
-                    'account_number' => '-',
-                    'account_holder' => $booking->customerName(),
-                    'status' => 'Disetujui',
-                    'processed_at' => now(),
-                    'processed_by' => Auth::id(),
-                    'admin_note' => 'Pembatalan inisiatif admin/operasional. Pengembalian dana penuh 100%.',
-                ]);
+                $existingRefund = $booking->refund()->first();
+                Refund::updateOrCreate(
+                    ['booking_id' => $booking->id],
+                    [
+                        'user_id' => $booking->user_id,
+                        'original_amount' => $booking->total_price,
+                        'cancellation_fee' => 0,
+                        'refund_percentage' => 100.00,
+                        'amount' => $booking->total_price,
+                        'reason' => $existingRefund?->reason ?: 'Dibatalkan oleh Admin. Dana otomatis dikembalikan 100%.',
+                        'bank_name' => $existingRefund?->bank_name ?: ($booking->payment?->payment_channel ?? 'Otomatis Gateway'),
+                        'account_number' => $existingRefund?->account_number ?: '-',
+                        'account_holder' => $existingRefund?->account_holder ?: $booking->customerName(),
+                        'status' => 'Disetujui',
+                        'processed_at' => now(),
+                        'processed_by' => Auth::id(),
+                        'admin_note' => 'Pembatalan inisiatif admin/operasional. Pengembalian dana penuh 100%.',
+                    ]
+                );
             }
 
             if ($booking->schedule) {
@@ -2582,13 +2589,13 @@ class AdminDashboardController extends Controller
         // 4 Kartu Metrik
         $totalRoutes = Route::count();
         $activeRoutesCount = Route::where('is_active', true)->count();
-        $totalLocations = Location::count();
+        $totalLocations = Location::where('is_active', true)->count();
         $activeSchedulesCount = Schedule::whereDate('departure_date', '>=', now()->toDateString())
             ->whereNotIn('status', ['Cancelled', 'cancelled', 'Completed', 'completed'])
             ->count();
 
         // Master Data untuk Modal
-        $locations = Location::where('is_active', true)->orderBy('name')->get();
+        $locations = Location::where('is_active', true)->orderBy('city')->orderBy('name')->get();
         $vehicles = Vehicle::where('status', 'siap_jalan')->orderBy('name')->get();
         $drivers = Driver::with('user')->where('status', 'standby')->get();
 
@@ -3002,14 +3009,115 @@ class AdminDashboardController extends Controller
         $schedule->driver_id = $validated['driver_id'] ?? null;
         $schedule->save();
 
-        // Jika armada berganti, hitung ulang sisa kursi
+        // Jika armada berganti, sesuaikan pemetaan kursi penumpang dan hitung ulang sisa kursi
         if ($oldVehicleId !== $newVehicle->id) {
+            $newSeatsByNumber = $newVehicle->seats()->get()->keyBy('seat_number');
+            $newSeatsList = $newSeatsByNumber->values();
+            $passengers = BookingPassenger::whereHas('booking', function ($q) use ($schedule) {
+                $q->where('schedule_id', $schedule->id)
+                    ->whereNotIn('status', ['Cancelled', 'cancelled']);
+            })->with('seat')->get();
+
+            foreach ($passengers as $idx => $passenger) {
+                $oldSeatNumber = $passenger->seat?->seat_number;
+                $mappedSeat = ($oldSeatNumber && $newSeatsByNumber->has($oldSeatNumber))
+                    ? $newSeatsByNumber->get($oldSeatNumber)
+                    : ($newSeatsList->get($idx) ?? $newSeatsList->first());
+
+                if ($mappedSeat) {
+                    $passenger->update(['seat_id' => $mappedSeat->id]);
+                }
+            }
+
             $schedule->recalculateAvailableSeats();
         }
 
         $driverName = $schedule->driver?->user?->name ?? 'Belum ada sopir';
 
         return redirect()->route('dashboard.admin.rute.jadwal')->with('success', "Penetapan jadwal berhasil diperbarui: Armada {$newVehicle->name} [{$newVehicle->plate_number}] & Sopir: {$driverName}.");
+    }
+
+    /**
+     * Memperbarui detail jadwal keberangkatan (rute, tanggal, jam, armada, sopir, tarif, catatan).
+     */
+    public function updateSchedule(Request $request, Schedule $schedule)
+    {
+        $validated = $request->validate([
+            'route_id' => ['required', 'exists:routes,id'],
+            'vehicle_id' => ['required', 'exists:vehicles,id'],
+            'driver_id' => ['nullable', 'exists:drivers,id'],
+            'departure_date' => ['required', 'date'],
+            'departure_time' => ['required', 'date_format:H:i'],
+            'price' => ['nullable', 'numeric', 'min:10000'],
+            'notes' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $oldVehicleId = $schedule->vehicle_id;
+        $newVehicle = Vehicle::findOrFail($validated['vehicle_id']);
+        $newVehicle->ensureSeatsExist();
+
+        // Cek bentrok jam jalan armada selain jadwal ini sendiri
+        $vehicleClash = Schedule::where('vehicle_id', $newVehicle->id)
+            ->where('id', '!=', $schedule->id)
+            ->whereDate('departure_date', $validated['departure_date'])
+            ->where('departure_time', $validated['departure_time'])
+            ->whereNotIn('status', ['Cancelled', 'cancelled'])
+            ->exists();
+
+        if ($vehicleClash) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Armada {$newVehicle->name} [{$newVehicle->plate_number}] sudah memiliki jadwal keberangkatan lain pada tanggal dan jam tersebut.");
+        }
+
+        if (! empty($validated['driver_id'])) {
+            $driverClash = Schedule::where('driver_id', $validated['driver_id'])
+                ->where('id', '!=', $schedule->id)
+                ->whereDate('departure_date', $validated['departure_date'])
+                ->where('departure_time', $validated['departure_time'])
+                ->whereNotIn('status', ['Cancelled', 'cancelled'])
+                ->exists();
+
+            if ($driverClash) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Sopir yang dipilih sudah ditugaskan pada jadwal lain di tanggal dan jam yang sama.');
+            }
+        }
+
+        $schedule->update([
+            'route_id' => $validated['route_id'],
+            'vehicle_id' => $newVehicle->id,
+            'driver_id' => $validated['driver_id'] ?? null,
+            'departure_date' => $validated['departure_date'],
+            'departure_time' => $validated['departure_time'],
+            'price' => $validated['price'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+        ]);
+
+        if ($oldVehicleId !== $newVehicle->id) {
+            $newSeatsByNumber = $newVehicle->seats()->get()->keyBy('seat_number');
+            $newSeatsList = $newSeatsByNumber->values();
+            $passengers = BookingPassenger::whereHas('booking', function ($q) use ($schedule) {
+                $q->where('schedule_id', $schedule->id)
+                    ->whereNotIn('status', ['Cancelled', 'cancelled']);
+            })->with('seat')->get();
+
+            foreach ($passengers as $idx => $passenger) {
+                $oldSeatNumber = $passenger->seat?->seat_number;
+                $mappedSeat = ($oldSeatNumber && $newSeatsByNumber->has($oldSeatNumber))
+                    ? $newSeatsByNumber->get($oldSeatNumber)
+                    : ($newSeatsList->get($idx) ?? $newSeatsList->first());
+
+                if ($mappedSeat) {
+                    $passenger->update(['seat_id' => $mappedSeat->id]);
+                }
+            }
+        }
+
+        $schedule->recalculateAvailableSeats();
+
+        return redirect()->route('dashboard.admin.rute.jadwal')->with('success', 'Data jadwal keberangkatan berhasil diperbarui.');
     }
 
     /**
@@ -3030,28 +3138,35 @@ class AdminDashboardController extends Controller
                 ->get();
 
             foreach ($activeBookings as $b) {
-                $isPaid = in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in']);
+                $isPaid = in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'refund_pending']);
                 $b->update(['status' => 'cancelled']);
                 if ($b->ticket) {
                     $b->ticket->update(['status' => 'cancelled']);
                 }
+                if ($b->payment) {
+                    $b->payment->update(['status' => $isPaid ? 'Refunded' : 'Failed']);
+                }
 
-                if ($isPaid && ! $b->refund()->exists()) {
+                if ($isPaid) {
+                    $existingRefund = $b->refund()->first();
                     $amount = (float) $b->total_price;
-                    Refund::create([
-                        'booking_id' => $b->id,
-                        'user_id' => $b->user_id,
-                        'original_amount' => $amount,
-                        'cancellation_fee' => 0.00,
-                        'refund_percentage' => 100.00,
-                        'amount' => $amount,
-                        'reason' => 'Pembatalan jadwal keberangkatan armada oleh pihak travel.',
-                        'bank_name' => $b->payment?->bank_name ?? 'Transfer Bank',
-                        'account_number' => $b->payment?->account_number ?? '-',
-                        'account_holder' => $b->contact_name ?? 'Penumpang',
-                        'status' => 'Disetujui',
-                        'processed_at' => now(),
-                    ]);
+                    Refund::updateOrCreate(
+                        ['booking_id' => $b->id],
+                        [
+                            'user_id' => $b->user_id,
+                            'original_amount' => $amount,
+                            'cancellation_fee' => 0.00,
+                            'refund_percentage' => 100.00,
+                            'amount' => $amount,
+                            'reason' => 'Pembatalan jadwal keberangkatan armada oleh pihak travel.',
+                            'bank_name' => $existingRefund?->bank_name ?: ($b->payment?->bank_name ?? 'Transfer Bank'),
+                            'account_number' => $existingRefund?->account_number ?: ($b->payment?->account_number ?? '-'),
+                            'account_holder' => $existingRefund?->account_holder ?: ($b->contact_name ?? $b->customerName()),
+                            'status' => 'Disetujui',
+                            'processed_at' => now(),
+                            'processed_by' => Auth::id(),
+                        ]
+                    );
                 }
 
                 if ($b->user) {
@@ -3342,8 +3457,8 @@ class AdminDashboardController extends Controller
      */
     public function rejectRefund(Request $request, Refund $refund)
     {
-        if (in_array(strtolower($refund->status), ['disetujui', 'approved'])) {
-            return redirect()->back()->with('error', 'Permohonan refund yang sudah disetujui tidak dapat ditolak.');
+        if (in_array(strtolower($refund->status), ['disetujui', 'approved', 'ditolak', 'rejected'])) {
+            return redirect()->back()->with('error', 'Permohonan refund yang sudah diproses tidak dapat ditolak ulang.');
         }
 
         $validated = $request->validate([
@@ -3360,7 +3475,7 @@ class AdminDashboardController extends Controller
         $refund->save();
 
         $booking = $refund->booking;
-        if ($booking) {
+        if ($booking && ! in_array(strtolower($booking->status), ['cancelled', 'batal', 'expired'])) {
             $restoredStatus = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])
                 ? $booking->status
                 : 'Paid';

@@ -64,7 +64,6 @@ class Vehicle extends Model
         return [
             'Toyota HiAce Premio',
             'Toyota HiAce Commuter',
-            'Mercedes-Benz Sprinter',
         ];
     }
 

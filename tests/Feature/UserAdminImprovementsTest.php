@@ -320,3 +320,155 @@ test('logo file exists in public images folder', function () {
     expect(file_exists(public_path('images/logo-travelku.png')))->toBeTrue();
     expect(file_exists(public_path('images/logo-bustravelku.png')))->toBeTrue();
 });
+
+// Edge Case 1: Seat remains locked against other passengers while booking is in refund_pending
+test('seat in refund_pending booking cannot be locked by another passenger until admin approves', function () {
+    $seat = $this->vehicle->seats()->first();
+
+    $booking = Booking::create([
+        'booking_code' => 'TRV-LOCK-REF',
+        'user_id' => $this->user->id,
+        'schedule_id' => $this->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'discount' => 0,
+        'total_price' => 120000,
+        'status' => 'refund_pending',
+        'source' => 'online',
+    ]);
+
+    BookingPassenger::create([
+        'booking_id' => $booking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Penumpang Menunggu ACC',
+        'phone' => '08123456789',
+    ]);
+
+    $otherUser = User::factory()->create(['role' => 'user', 'status' => 'active']);
+
+    $response = $this->actingAs($otherUser)->post(route('dashboard.user.booking.lock-seats'), [
+        'schedule_id' => $this->schedule->id,
+        'passengers' => 1,
+        'seat_ids' => [$seat->id],
+    ]);
+
+    $response->assertSessionHas('error');
+    expect(Booking::where('user_id', $otherUser->id)->exists())->toBeFalse();
+});
+
+// Edge Case 2: Admin can update schedule details via PUT /rute/jadwal/{schedule}
+test('admin can update existing schedule departure time and price', function () {
+    $response = $this->actingAs($this->admin)->put(route('dashboard.admin.rute.jadwal.update', $this->schedule), [
+        'route_id' => $this->route->id,
+        'vehicle_id' => $this->vehicle->id,
+        'driver_id' => null,
+        'departure_date' => $this->schedule->departure_date->format('Y-m-d'),
+        'departure_time' => '15:30',
+        'price' => 135000,
+        'notes' => 'Jadwal diperbarui admin',
+    ]);
+
+    $response->assertRedirect(route('dashboard.admin.rute.jadwal'));
+    $response->assertSessionHas('success');
+
+    $this->schedule->refresh();
+    expect($this->schedule->departure_time->format('H:i'))->toBe('15:30');
+    expect((int) $this->schedule->price)->toBe(135000);
+});
+
+// Visual & Audio Feedback Taxonomy Test
+test('booking seat and passenger pages render visual and audio feedback taxonomy hooks', function () {
+    $seat = $this->vehicle->seats()->first();
+
+    // Create a paid booking on the first seat so we have both disabled (paid) and available seats
+    $paidBooking = Booking::create([
+        'booking_code' => 'TRV-OCCUPIED-01',
+        'user_id' => $this->user->id,
+        'schedule_id' => $this->schedule->id,
+        'total_passenger' => 1,
+        'subtotal' => 120000,
+        'discount' => 0,
+        'total_price' => 120000,
+        'status' => 'Paid',
+        'source' => 'online',
+    ]);
+
+    BookingPassenger::create([
+        'booking_id' => $paidBooking->id,
+        'seat_id' => $seat->id,
+        'name' => 'Penumpang Terisi',
+        'phone' => '08123456789',
+    ]);
+
+    $seatResponse = $this->actingAs($this->user)
+        ->get(route('dashboard.user.booking.pilih-kursi', $this->schedule));
+
+    $seatResponse->assertOk()
+        ->assertSee('travel-toast-container', false)
+        ->assertSee('TravelFeedback', false)
+        ->assertSee('warnOccupiedSeat', false)
+        ->assertSee('data-seat-disabled="true"', false)
+        ->assertSee('data-seat-available="true"', false)
+        ->assertSee('playAction', false)
+        ->assertSee('playWarning', false)
+        ->assertSee('playSuccess', false);
+});
+
+test('master locations seeder registers all 18 cities and 76 departure points and supports point-to-point schedule search', function () {
+    (require database_path('migrations/2026_10_11_064005_seed_master_locations_and_routes.php'))->insertMasterData();
+
+    $expectedCities = [
+        'Bandung',
+        'Bekasi',
+        'Boyolali',
+        'Brebes',
+        'Ciamis',
+        'Cianjur',
+        'Cibubur',
+        'Cimahi',
+        'Cirebon',
+        'Depok',
+        'Garut',
+        'Indramayu',
+        'Jakarta',
+        'Karawang',
+        'Kuningan',
+        'Magelang',
+        'Majalengka',
+        'Purwakarta',
+    ];
+
+    foreach ($expectedCities as $city) {
+        expect(Location::where('city', $city)->where('is_active', true)->exists())->toBeTrue("City {$city} should have active points");
+    }
+
+    // Check specific points from user specification
+    $gedebage = Location::where('name', 'Gedebage')->where('city', 'Bandung')->first();
+    $fatmawati = Location::where('name', 'Fatmawati')->where('city', 'Jakarta')->first();
+    $ukridaDropOnly = Location::where('name', 'Halte Ukrida Tanjung Duren (drop only)')->where('city', 'Jakarta')->first();
+    $bijb = Location::where('name', 'Bandara Kertajati (BIJB)')->where('city', 'Majalengka')->first();
+
+    expect($gedebage)->not->toBeNull();
+    expect($fatmawati)->not->toBeNull();
+    expect($ukridaDropOnly?->type)->toBe('drop_point');
+    expect($bijb)->not->toBeNull();
+
+    // Searching any point in Bandung (Gedebage) to any point in Jakarta (Fatmawati) auto-provisions schedules via corridor
+    $tomorrow = now()->addDay()->toDateString();
+    $searchResponse = $this->get(route('search', [
+        'origin' => $gedebage->id,
+        'destination' => $fatmawati->id,
+        'departure_date' => $tomorrow,
+    ]));
+
+    $searchResponse->assertOk()
+        ->assertSee('Gedebage')
+        ->assertSee('Fatmawati');
+
+    $autoRoute = TravelRoute::where('origin_id', $gedebage->id)
+        ->where('destination_id', $fatmawati->id)
+        ->first();
+
+    expect($autoRoute)->not->toBeNull();
+    expect(Schedule::where('route_id', $autoRoute->id)->whereDate('departure_date', $tomorrow)->count())->toBeGreaterThan(0);
+});

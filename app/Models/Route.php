@@ -108,7 +108,11 @@ class Route extends Model
             ->when($originId, fn ($query) => $query->where('origin_id', $originId))
             ->orderBy('price')
             ->get()
-            ->filter(fn (Route $route) => $route->origin && $route->destination)
+            ->filter(fn (Route $route) => $route->origin
+                && $route->destination
+                && $route->origin->is_active !== false
+                && $route->destination->is_active !== false
+                && $route->origin->type !== 'drop_point')
             ->unique(fn (Route $route) => ($route->origin->city ?: $route->origin->name).'|'.($route->destination->city ?: $route->destination->name))
             ->values();
     }

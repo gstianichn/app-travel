@@ -13,21 +13,26 @@ class HomeController extends Controller
 {
     public function index(): View
     {
-        $locations = Location::orderBy('name')->get();
+        $locations = Location::where('is_active', true)->orderBy('city')->orderBy('name')->get();
 
         $activeRouteCount = Route::query()
             ->where(fn ($query) => $query->where('is_active', true)->orWhereNull('is_active'))
-            ->whereHas('origin')
-            ->whereHas('destination')
+            ->whereHas('origin', fn ($query) => $query->where('is_active', true)->where('type', '!=', 'drop_point'))
+            ->whereHas('destination', fn ($query) => $query->where('is_active', true))
             ->count();
 
         $reviewSummary = TripReview::query()
             ->selectRaw('COUNT(*) as total, AVG(overall_rating) as average')
             ->first();
 
+        $scheduleRoutes = Route::cheapestPerCityPair()->values();
+        $routeSigns = $scheduleRoutes->take(10)->values();
+
         return view('home-landingpage.index', [
             'locations' => $locations,
-            'routeSigns' => Route::cheapestPerCityPair()->take(10)->values(),
+            'routeSigns' => $routeSigns,
+            'scheduleRoutes' => $scheduleRoutes,
+            'routesByOriginCity' => $scheduleRoutes->groupBy(fn (Route $route) => $route->origin?->city ?: $route->origin?->name ?: 'Lainnya'),
             'activeRouteCount' => $activeRouteCount,
             'servedCityCount' => $locations->where('is_active', true)->pluck('city')->filter()->unique()->count(),
             'fleetTypes' => $this->fleetTypes(),
@@ -36,7 +41,7 @@ class HomeController extends Controller
                 ->whereNotNull('comment')
                 ->where('comment', '!=', '')
                 ->latest()
-                ->take(3)
+                ->take(6)
                 ->get(),
             'reviewCount' => (int) ($reviewSummary->total ?? 0),
             'reviewAverage' => $reviewSummary->average !== null ? round((float) $reviewSummary->average, 1) : null,
@@ -44,8 +49,8 @@ class HomeController extends Controller
     }
 
     /**
-     * Summarise the fleet per vehicle type, restricted to medium (10 seats) and large (14-19 seats) capacity.
-     * Small capacity vehicles (< 10 seats) are removed per UI specification.
+     * Summarise the fleet per vehicle type, restricted to medium (Toyota HiAce Premio, 10 seats)
+     * and large (Toyota HiAce Commuter, 14 seats) capacity.
      *
      * @return Collection<int, array{type: string, units: int, capacity: int, category: string, facilities: array<int, string>, seatRows: Collection}>
      */
@@ -53,6 +58,7 @@ class HomeController extends Controller
     {
         return Vehicle::query()
             ->where('capacity', '>=', 10)
+            ->whereIn('type', ['Toyota HiAce Premio', 'Toyota HiAce Commuter'])
             ->get()
             ->groupBy(fn (Vehicle $vehicle) => $vehicle->type ?: 'Minibus')
             ->map(function (Collection $vehicles, string $type) {

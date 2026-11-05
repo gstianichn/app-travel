@@ -767,10 +767,19 @@
                                     <button
                                         type="button"
                                         class="btn-action-assign"
-                                        onclick="openAssignModal({{ $sch->id }}, '{{ $sch->vehicle_id }}', '{{ $sch->driver_id }}', '{{ $dDate }} {{ $dTime }}', '{{ $sch->route?->routeTitle() }}')"
+                                        onclick="openAssignModal({{ $sch->id }}, @js((string) $sch->vehicle_id), @js((string) ($sch->driver_id ?? '')), @js($dDate.' '.$dTime), @js($sch->route?->routeTitle() ?? ''))"
                                         title="Tetapkan atau Ganti Armada & Sopir"
                                     >
                                         Pasang Sopir/Armada
+                                    </button>
+
+                                    {{-- Edit Schedule --}}
+                                    <button
+                                        type="button"
+                                        class="btn-action-icon"
+                                        onclick="openEditScheduleModal({{ $sch->id }}, @js((string) $sch->route_id), @js((string) $sch->vehicle_id), @js((string) ($sch->driver_id ?? '')), @js(\Carbon\Carbon::parse($sch->departure_date)->format('Y-m-d')), @js(\Carbon\Carbon::parse($sch->departure_time)->format('H:i')), @js($sch->price ?? ''), @js($sch->notes ?? ''))"
+                                        title="Edit Jadwal Keberangkatan"
+                                    >Edit
                                     </button>
 
                                     {{-- Seat Map Link --}}
@@ -1075,6 +1084,87 @@
     </div>
 </div>
 
+{{-- =========================================
+     MODAL 4: EDIT JADWAL KEBERANGKATAN
+========================================== --}}
+<div id="editScheduleModal" class="custom-modal">
+    <div class="modal-dialog" style="max-width: 580px;">
+        <div class="modal-dialog-header">
+            <h3>Edit Jadwal Keberangkatan</h3>
+            <button type="button" class="btn-close-modal" onclick="closeEditScheduleModal()">&times;</button>
+        </div>
+
+        <form id="editScheduleForm" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="modal-dialog-body">
+                <div class="form-group">
+                    <label class="form-label" for="edit_route_id">Pilih Rute Perjalanan <span style="color: #dc2626;">*</span></label>
+                    <select name="route_id" id="edit_route_id" class="form-select" required>
+                        @foreach($routes as $r)
+                            <option value="{{ $r->id }}">{{ $r->routeTitle() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="edit_date">Tanggal Jalan <span style="color: #dc2626;">*</span></label>
+                        <input type="date" name="departure_date" id="edit_date" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit_time">Jam Keberangkatan <span style="color: #dc2626;">*</span></label>
+                        <input type="text" name="departure_time" id="edit_time" class="form-input" placeholder="06:00" required>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="edit_vehicle_id">Armada Minibus <span style="color: #dc2626;">*</span></label>
+                        <select name="vehicle_id" id="edit_vehicle_id" class="form-select" required>
+                            @foreach($vehicles as $v)
+                                <option value="{{ $v->id }}">{{ $v->name }} [{{ $v->plate_number }}]</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit_driver_id">Sopir</label>
+                        <select name="driver_id" id="edit_driver_id" class="form-select">
+                            <option value="">-- Pilih Sopir (Opsional) --</option>
+                            @foreach($drivers as $d)
+                                <option value="{{ $d->id }}">{{ $d->user?->name ?? 'Driver' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="edit_price">Tarif Khusus (Opsional)</label>
+                        <input type="number" name="price" id="edit_price" class="form-input" min="10000" placeholder="Kosongkan untuk tarif dasar rute">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edit_notes">Catatan</label>
+                        <input type="text" name="notes" id="edit_notes" class="form-input" maxlength="255" placeholder="Catatan operasional">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-dialog-footer">
+                <button type="button" class="btn-create-single" onclick="closeEditScheduleModal()" style="border-color: #cbd5e1; color: #475569;">
+                    Batal
+                </button>
+                <button type="submit" class="btn-filter-submit">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openBatchModal() {
         document.getElementById('batchModal').classList.add('show');
@@ -1094,11 +1184,26 @@
         document.getElementById('assignForm').action = `/rute/jadwal/${scheduleId}/assign`;
         document.getElementById('assignSubtitle').innerText = `${routeTitle} • ${datetimeStr}`;
         if (vehicleId) document.getElementById('assign_vehicle_id').value = vehicleId;
-        if (driverId) document.getElementById('assign_driver_id').value = driverId;
+        document.getElementById('assign_driver_id').value = driverId || '';
         document.getElementById('assignModal').classList.add('show');
     }
     function closeAssignModal() {
         document.getElementById('assignModal').classList.remove('show');
+    }
+
+    function openEditScheduleModal(scheduleId, routeId, vehicleId, driverId, depDate, depTime, price, notes) {
+        document.getElementById('editScheduleForm').action = `/rute/jadwal/${scheduleId}`;
+        document.getElementById('edit_route_id').value = routeId || '';
+        document.getElementById('edit_vehicle_id').value = vehicleId || '';
+        document.getElementById('edit_driver_id').value = driverId || '';
+        document.getElementById('edit_date').value = depDate || '';
+        document.getElementById('edit_time').value = depTime || '';
+        document.getElementById('edit_price').value = price || '';
+        document.getElementById('edit_notes').value = notes || '';
+        document.getElementById('editScheduleModal').classList.add('show');
+    }
+    function closeEditScheduleModal() {
+        document.getElementById('editScheduleModal').classList.remove('show');
     }
 
     window.addEventListener('click', function(e) {

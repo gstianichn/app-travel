@@ -107,16 +107,30 @@
                     <p>
                         Jam dalam WIB. Jam tiba adalah perkiraan, bisa bergeser karena kondisi jalan.
                         @guest
-                            Bisa pesan tanpa akun; e-ticket dikirim ke email setelah bayar.
+                            Untuk memesan jadwal pilihanmu, silakan <b>Masuk</b> terlebih dahulu atau <b>Daftar Akun Baru</b> jika belum punya akun.
                         @endguest
                     </p>
                 </div>
+
+                @guest
+                    <div class="sr-guest-banner" role="region" aria-label="Informasi pemesanan tiket" style="margin-bottom: 20px; padding: 16px 20px; border-radius: 14px; border: 1.5px solid #0C7950; background: #E3F2EA; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px;">
+                        <div>
+                            <p style="color: #0C392F; font-weight: 800; font-size: 1rem;">Sudah menemukan jadwal yang cocok?</p>
+                            <p style="color: #2E4A40; font-size: 0.92rem; margin-top: 2px;">Silakan masuk ke akun Anda untuk memilih kursi dan memesan tiket. Belum punya akun? Kami rekomendasikan untuk membuat akun baru terlebih dahulu.</p>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <a href="{{ route('user.login', ['redirect' => request()->fullUrl()]) }}" class="lp-btn lp-btn--green" style="min-height: 42px; padding: 0 18px; font-size: 0.92rem;">Masuk</a>
+                            <a href="{{ route('register', ['redirect' => request()->fullUrl()]) }}" class="lp-btn lp-btn--ghost" style="min-height: 42px; padding: 0 18px; font-size: 0.92rem; background: #FFFFFF;">Buat Akun / Register</a>
+                        </div>
+                    </div>
+                @endguest
 
                 <ol class="sr-trips">
                     @foreach ($schedules as $schedule)
                         @php
                             $seatUrl = route('dashboard.user.booking.pilih-kursi', array_filter(['schedule' => $schedule->id, 'passengers' => request('passengers')]));
                             $isLowOnSeats = $schedule->available_seats <= 3;
+                            $routeSummary = $schedule->route->origin->name.' ke '.$schedule->route->destination->name.' ('.$schedule->departureCarbon()->format('H:i').' WIB)';
                         @endphp
                         <li class="sr-trip">
                             <div class="sr-trip-times">
@@ -147,7 +161,19 @@
                                     Rp {{ number_format($schedule->effectivePrice(), 0, ',', '.') }}
                                     <small>per orang</small>
                                 </p>
-                                <a href="{{ $seatUrl }}" class="lp-btn lp-btn--green">Pilih kursi</a>
+                                @auth
+                                    <a href="{{ $seatUrl }}" onclick="window.TravelFeedback?.playAction(false)" class="lp-btn lp-btn--green">Pilih kursi</a>
+                                @else
+                                    <a
+                                        href="{{ $seatUrl }}"
+                                        data-guest-book-trigger
+                                        data-login-url="{{ route('user.login', ['redirect' => $seatUrl]) }}"
+                                        data-register-url="{{ route('register', ['redirect' => $seatUrl]) }}"
+                                        data-google-url="{{ route('auth.google.redirect', ['redirect' => $seatUrl]) }}"
+                                        data-route-label="{{ $routeSummary }}"
+                                        class="lp-btn lp-btn--green"
+                                    >Pilih kursi</a>
+                                @endauth
                             </div>
                         </li>
                     @endforeach
@@ -233,4 +259,76 @@
         @endif
     </div>
 </section>
+
+@guest
+<div id="guestAuthModal" role="dialog" aria-modal="true" aria-labelledby="guestAuthTitle" hidden style="position: fixed; inset: 0; z-index: 1000; display: none; place-items: center; padding: 16px; background: rgba(12, 57, 47, 0.6); backdrop-filter: blur(4px);">
+    <div style="width: 100%; max-width: 480px; border-radius: 20px; background: #FBFAF6; border: 2px solid #D9D4C4; padding: 28px 24px; box-shadow: 0 24px 60px rgba(12, 57, 47, 0.28); color: #19241E;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+            <div>
+                <p style="color: #0C7950; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em;">Login Diperlukan untuk Memesan</p>
+                <h3 id="guestAuthTitle" style="color: #0C392F; font-size: 1.35rem; font-weight: 800; margin-top: 4px; line-height: 1.2;">Masuk atau Buat Akun Terlebih Dahulu</h3>
+            </div>
+            <button type="button" data-close-guest-modal aria-label="Tutup" style="width: 36px; height: 36px; border-radius: 999px; border: 1.5px solid #D9D4C4; background: #FFFFFF; color: #0C392F; font-weight: 800; cursor: pointer;">✕</button>
+        </div>
+
+        <p id="guestAuthRouteLabel" style="margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: #E3F2EA; color: #0C392F; font-size: 0.9rem; font-weight: 700;"></p>
+
+        <p style="margin-top: 12px; color: #56635B; font-size: 0.94rem; line-height: 1.5;">
+            Anda sudah menemukan jadwal perjalanan pilihan Anda. Untuk melanjutkan pemilihan kursi dan pembayaran tiket, silakan <b>masuk ke akun</b> Anda terlebih dahulu.
+        </p>
+
+        <div style="margin-top: 14px; padding: 12px 14px; border-radius: 12px; border: 1.5px dashed #0C7950; background: #FFFFFF;">
+            <p style="color: #0C392F; font-size: 0.88rem; font-weight: 800;">Belum punya akun TravelKu?</p>
+            <p style="color: #56635B; font-size: 0.84rem; margin-top: 2px;">Kami merekomendasikan untuk mendaftar akun baru (Register) atau masuk dengan Google agar e-ticket dan riwayat perjalanan tersimpan otomatis.</p>
+        </div>
+
+        <div style="display: grid; gap: 10px; margin-top: 20px;">
+            <a id="guestModalLoginBtn" href="{{ route('user.login') }}" class="lp-btn lp-btn--green" style="width: 100%; min-height: 48px;">Masuk ke Akun</a>
+            <a id="guestModalRegisterBtn" href="{{ route('register') }}" class="lp-btn lp-btn--primary" style="width: 100%; min-height: 48px;">Buat Akun Baru (Register) — Direkomendasikan</a>
+            <a id="guestModalGoogleBtn" href="{{ route('auth.google.redirect') }}" class="lp-btn lp-btn--ghost" style="width: 100%; min-height: 46px; background: #FFFFFF;">Masuk Cepat dengan Google</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('guestAuthModal');
+    if (!modal) return;
+
+    const routeLabel = document.getElementById('guestAuthRouteLabel');
+    const loginBtn = document.getElementById('guestModalLoginBtn');
+    const registerBtn = document.getElementById('guestModalRegisterBtn');
+    const googleBtn = document.getElementById('guestModalGoogleBtn');
+
+    document.querySelectorAll('[data-guest-book-trigger]').forEach((btn) => {
+        btn.addEventListener('click', (event) => {
+            event.preventDefault();
+            window.TravelFeedback?.playWarning('Silakan masuk atau daftar akun terlebih dahulu untuk memesan kursi.');
+            if (routeLabel) {
+                routeLabel.textContent = 'Jadwal dipilih: ' + (btn.dataset.routeLabel || '');
+            }
+            if (loginBtn && btn.dataset.loginUrl) loginBtn.href = btn.dataset.loginUrl;
+            if (registerBtn && btn.dataset.registerUrl) registerBtn.href = btn.dataset.registerUrl;
+            if (googleBtn && btn.dataset.googleUrl) googleBtn.href = btn.dataset.googleUrl;
+            modal.hidden = false;
+            modal.style.display = 'grid';
+        });
+    });
+
+    modal.querySelectorAll('[data-close-guest-modal]').forEach((closeBtn) => {
+        closeBtn.addEventListener('click', () => {
+            modal.hidden = true;
+            modal.style.display = 'none';
+        });
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.hidden = true;
+            modal.style.display = 'none';
+        }
+    });
+});
+</script>
+@endguest
 @endsection

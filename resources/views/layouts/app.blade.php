@@ -22,6 +22,7 @@
     </main>
 
     @include('components.footer')
+    @include('dashboard.user.partials.feedback-taxonomy')
 
 </body>
 </html>

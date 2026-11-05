@@ -22,6 +22,7 @@ use App\Notifications\TripReminderNotification;
 use App\Services\BookingAccess;
 use App\Services\MidtransService;
 use Carbon\Carbon;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ class UserDashboardController extends Controller
      */
     public function index(): View
     {
-        $locations = Location::where('is_active', true)->orderBy('name')->get();
+        $locations = Location::where('is_active', true)->orderBy('city')->orderBy('name')->get();
 
         // Cari perjalanan aktif / mendatang pengguna yang sudah terkonfirmasi
         $activeBooking = Booking::query()
@@ -55,7 +56,7 @@ class UserDashboardController extends Controller
                 'ticket',
             ])
             ->where('user_id', Auth::id())
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas'])
+            ->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in', 'refund_pending'])
             ->whereHas('schedule', function ($q) {
                 $q->whereDate('departure_date', '>=', Carbon::today()->toDateString());
             })
@@ -92,18 +93,18 @@ class UserDashboardController extends Controller
 
         // Metrik statistik Client Area
         $activeTicketsCount = Booking::where('user_id', Auth::id())
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
+            ->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in', 'refund_pending'])
             ->whereHas('schedule', function ($q) {
                 $q->whereDate('departure_date', '>=', Carbon::today()->toDateString());
             })
             ->count();
 
         $completedTripsCount = Booking::where('user_id', Auth::id())
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'Completed'])
             ->count();
 
         $pendingPaymentsCount = Booking::where('user_id', Auth::id())
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'Pending'])
             ->where('expired_at', '>', Carbon::now())
             ->count();
 
@@ -126,7 +127,7 @@ class UserDashboardController extends Controller
      */
     public function search(Request $request): View
     {
-        $locations = Location::where('is_active', true)->orderBy('name')->get();
+        $locations = Location::where('is_active', true)->orderBy('city')->orderBy('name')->get();
 
         $searchPerformed = $request->hasAny(['origin', 'destination', 'departure_date', 'passengers']);
 
@@ -149,7 +150,7 @@ class UserDashboardController extends Controller
             $originLoc = Location::find($validated['origin']);
             $destLoc = Location::find($validated['destination']);
 
-            // Cek apakah rute antara kedua kota terhubung ke jaringan shuttle aktif
+            // Cek apakah rute antara kedua titik atau kedua kota terhubung ke jaringan shuttle aktif
             $route = Route::with(['origin', 'destination'])
                 ->where('origin_id', $validated['origin'])
                 ->where('destination_id', $validated['destination'])
@@ -157,6 +158,35 @@ class UserDashboardController extends Controller
                     $q->where('is_active', true)->orWhereNull('is_active');
                 })
                 ->first();
+
+            if (! $route && $originLoc?->city && $destLoc?->city && strtolower($originLoc->city) !== strtolower($destLoc->city)) {
+                $cityCorridor = Route::with(['origin', 'destination'])
+                    ->where(function ($q) {
+                        $q->where('is_active', true)->orWhereNull('is_active');
+                    })
+                    ->whereHas('origin', fn ($q) => $q->where('city', $originLoc->city))
+                    ->whereHas('destination', fn ($q) => $q->where('city', $destLoc->city))
+                    ->orderBy('price')
+                    ->first();
+
+                if ($cityCorridor) {
+                    $route = Route::firstOrCreate(
+                        [
+                            'origin_id' => $originLoc->id,
+                            'destination_id' => $destLoc->id,
+                        ],
+                        [
+                            'price' => $cityCorridor->price,
+                            'weekend_price' => $cityCorridor->weekend_price,
+                            'holiday_price' => $cityCorridor->holiday_price,
+                            'duration' => $cityCorridor->duration,
+                            'distance_km' => $cityCorridor->distance_km,
+                            'is_active' => true,
+                        ]
+                    );
+                    $route->load(['origin', 'destination']);
+                }
+            }
 
             $routeConnected = ($route !== null);
             $transitHub = null;
@@ -222,8 +252,26 @@ class UserDashboardController extends Controller
     /**
      * Sub-Flow 2: Pemilihan Armada & Denah Kursi (Seat Map).
      */
-    public function selectSeat(Request $request, Schedule $schedule): View
+    public function selectSeat(Request $request, Schedule $schedule): View|RedirectResponse
     {
+        if (! Auth::check()) {
+            $intendedUrl = $request->fullUrl();
+            $request->session()->put('url.intended', $intendedUrl);
+
+            return redirect()->route('user.login', ['redirect' => $intendedUrl])
+                ->with('status', 'Silakan masuk terlebih dahulu untuk memesan tiket perjalanan pilihan Anda. Belum punya akun? Kami merekomendasikan untuk membuat akun (Register) terlebih dahulu.');
+        }
+
+        if (Auth::check() && in_array(Auth::user()->status, ['inactive', 'blocked'], true)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('user.login')->withErrors([
+                'email' => 'akun anda diblokir karena suatu kesalahan',
+            ]);
+        }
+
         $schedule->load(['route.origin', 'route.destination', 'vehicle', 'driver.user']);
 
         // Pastikan kursi armada terbuat
@@ -248,6 +296,16 @@ class UserDashboardController extends Controller
      */
     public function lockSeats(Request $request): RedirectResponse
     {
+        if (Auth::check() && in_array(Auth::user()->status, ['inactive', 'blocked'], true)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('user.login')->withErrors([
+                'email' => 'akun anda diblokir karena suatu kesalahan',
+            ]);
+        }
+
         $validated = $request->validate([
             'schedule_id' => ['required', 'integer', 'exists:schedules,id'],
             'passengers' => ['required', 'integer', 'min:1', 'max:10'],
@@ -285,7 +343,7 @@ class UserDashboardController extends Controller
             $ownPendingIds = $this->bookingAccess
                 ->scopeToCurrentVisitor(Booking::query())
                 ->where('schedule_id', $schedule->id)
-                ->where('status', 'pending')
+                ->whereIn('status', ['pending', 'Pending'])
                 ->pluck('id')
                 ->all();
 
@@ -293,9 +351,9 @@ class UserDashboardController extends Controller
                 ->whereHas('booking', function ($q) use ($schedule, $ownPendingIds) {
                     $q->where('schedule_id', $schedule->id)
                         ->where(function ($sub) use ($ownPendingIds) {
-                            $sub->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'])
+                            $sub->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in', 'boarded', 'Boarded', 'completed', 'Completed', 'refund_pending'])
                                 ->orWhere(function ($pending) use ($ownPendingIds) {
-                                    $pending->where('status', 'pending')
+                                    $pending->whereIn('status', ['pending', 'Pending'])
                                         ->where('expired_at', '>', Carbon::now())
                                         ->whereNotIn('id', $ownPendingIds);
                                 });
@@ -1178,7 +1236,7 @@ class UserDashboardController extends Controller
                 'ticket',
             ])
             ->where('user_id', $userId)
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'refund_pending'])
+            ->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in', 'refund_pending'])
             ->whereHas('schedule', function ($q) use ($cutoffDate1h, $cutoffTime1h) {
                 $q->where(function ($sub) use ($cutoffDate1h, $cutoffTime1h) {
                     $sub->whereDate('departure_date', '>', $cutoffDate1h)
@@ -1226,7 +1284,7 @@ class UserDashboardController extends Controller
                 'review',
             ])
             ->where('user_id', $userId)
-            ->whereIn('status', ['completed', 'cancelled', 'batal'])
+            ->whereIn('status', ['completed', 'Completed', 'cancelled', 'Cancelled', 'batal', 'Batal', 'expired', 'Expired'])
             ->latest()
             ->get();
 
@@ -1250,7 +1308,7 @@ class UserDashboardController extends Controller
                 'schedule.route.destination',
             ])
             ->where('user_id', $userId)
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'Completed'])
             ->doesntHave('review')
             ->latest()
             ->first();
@@ -1326,12 +1384,14 @@ class UserDashboardController extends Controller
             abort(403);
         }
 
+        if ($booking->refund()->whereIn('status', ['Diajukan', 'diajukan', 'Menunggu', 'menunggu', 'Pending', 'pending', 'Disetujui', 'disetujui', 'Approved', 'approved'])->exists()) {
+            return back()->with('error', 'Pengajuan refund untuk tiket ini sudah terdaftar dan sedang diproses.');
+        }
+
         // Pengecekan Syarat Waktu (Cut-off Time maksimal H-1 jam sebelum keberangkatan)
         if (! $booking->canRefund()) {
             return back()->with('error', 'Batas waktu pembatalan telah berakhir. Pembatalan dan refund hanya dapat diajukan maksimal H-1 jam sebelum keberangkatan armada.');
         }
-
-        $schedule = $booking->schedule;
 
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:500'],
@@ -1345,19 +1405,23 @@ class UserDashboardController extends Controller
         $refundAmount = max(0, round($originalAmount * 0.75, 2)); // Dana kembali 75%
 
         DB::transaction(function () use ($booking, $validated, $originalAmount, $cancellationFee, $refundAmount) {
-            Refund::create([
-                'booking_id' => $booking->id,
-                'user_id' => Auth::id(),
-                'original_amount' => $originalAmount,
-                'cancellation_fee' => $cancellationFee,
-                'refund_percentage' => 75.00,
-                'amount' => $refundAmount,
-                'reason' => $validated['reason'],
-                'bank_name' => $validated['bank_name'],
-                'account_number' => $validated['account_number'],
-                'account_holder' => $validated['account_holder'],
-                'status' => 'Diajukan',
-            ]);
+            Refund::updateOrCreate(
+                ['booking_id' => $booking->id],
+                [
+                    'user_id' => Auth::id(),
+                    'original_amount' => $originalAmount,
+                    'cancellation_fee' => $cancellationFee,
+                    'refund_percentage' => 75.00,
+                    'amount' => $refundAmount,
+                    'reason' => $validated['reason'],
+                    'bank_name' => $validated['bank_name'],
+                    'account_number' => $validated['account_number'],
+                    'account_holder' => $validated['account_holder'],
+                    'status' => 'Diajukan',
+                    'processed_at' => null,
+                    'processed_by' => null,
+                ]
+            );
 
             // Status pemesanan diubah menjadi refund_pending (menunggu verifikasi & ACC admin).
             // Kursi tetap ditahan sampai admin menyetujui refund.
@@ -1419,7 +1483,7 @@ class UserDashboardController extends Controller
         $cutoffTime1h = $cutoff1h->format('H:i:s');
 
         $pastBookings = Booking::where('user_id', $userId)
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
+            ->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in'])
             ->whereHas('schedule', function ($q) use ($cutoffDate1h, $cutoffTime1h) {
                 $q->where(function ($sub) use ($cutoffDate1h, $cutoffTime1h) {
                     $sub->whereDate('departure_date', '<', $cutoffDate1h)
@@ -1441,7 +1505,7 @@ class UserDashboardController extends Controller
         // Pastikan juga berdasarkan Carbon departureCarbon
         $allActiveBookings = Booking::with(['schedule', 'ticket'])
             ->where('user_id', $userId)
-            ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
+            ->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in'])
             ->get();
 
         foreach ($allActiveBookings as $b) {
@@ -1892,7 +1956,7 @@ class UserDashboardController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'phone' => ['nullable', 'string', 'max:25'],
         ]);
 
@@ -2069,8 +2133,8 @@ class UserDashboardController extends Controller
         $occupiedSeats = [];
         foreach ($activeBookings as $b) {
             $bookingStatusLower = strtolower($b->status);
-            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']);
-            $isPendingLock = ($b->status === 'pending') && $b->expired_at && $b->expired_at->isFuture();
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending']);
+            $isPendingLock = ($bookingStatusLower === 'pending') && $b->expired_at && $b->expired_at->isFuture();
 
             if (! $isPaid && ! $isPendingLock) {
                 continue;
@@ -2198,6 +2262,18 @@ class UserDashboardController extends Controller
 
     protected function authorizeBookingAccess(Booking $booking): void
     {
+        if (Auth::check() && in_array(Auth::user()->status, ['inactive', 'blocked'], true)) {
+            Auth::logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            throw new HttpResponseException(
+                redirect()->route('user.login')->withErrors([
+                    'email' => 'akun anda diblokir karena suatu kesalahan',
+                ])
+            );
+        }
+
         abort_unless($this->bookingAccess->canAccess($booking), 403, 'Pesanan ini tidak bisa dibuka dari sesi ini.');
     }
 }
