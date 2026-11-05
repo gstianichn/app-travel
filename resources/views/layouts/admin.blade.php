@@ -971,6 +971,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('button[onclick*="confirm("], input[type="submit"][onclick*="confirm("]').forEach((btn) => {
+        const form = btn.closest('form');
+        if (!form) return;
+        const rawOnclick = btn.getAttribute('onclick') || '';
+        const match = rawOnclick.match(/confirm\((['"`])([\s\S]*?)\1\)/);
+        const message = match ? match[2] : 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+
+        btn.removeAttribute('onclick');
+        btn.addEventListener('click', (e) => {
+            if (form.dataset.confirmed === '1') {
+                return;
+            }
+            e.preventDefault();
+            pendingForm = form;
+            msgEl.textContent = message;
+            modal.style.display = 'flex';
+        });
+    });
+
     acceptBtn.addEventListener('click', () => {
         if (pendingForm) {
             pendingForm.dataset.confirmed = '1';

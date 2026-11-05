@@ -14,6 +14,26 @@
 @section('content')
 <div class="space-y-10">
 
+    @if (session('success'))
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 px-5 py-4" role="status">
+            <p class="font-semibold text-emerald-950">{{ session('success') }}</p>
+            @if (auth()->user()?->email)
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="https://mail.google.com/mail/u/?authuser={{ urlencode(auth()->user()->email) }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center min-h-10 px-3.5 rounded-lg bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800">
+                        Buka Gmail ({{ auth()->user()->email }})
+                    </a>
+                    <a href="{{ route('dashboard.user.user-notifikasi') }}"
+                       class="inline-flex items-center min-h-10 px-3.5 rounded-lg border border-emerald-700 bg-white text-emerald-800 text-sm font-bold hover:bg-emerald-100">
+                        Lihat Notifikasi Verifikasi
+                    </a>
+                </div>
+            @endif
+        </div>
+    @endif
+
     {{-- Greeting: one line of real context instead of a promo banner --}}
     <section aria-labelledby="sapaan">
         <h1 id="sapaan" class="text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-900">Halo, {{ $firstName }}.</h1>
