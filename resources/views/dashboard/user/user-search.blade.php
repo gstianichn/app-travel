@@ -110,6 +110,29 @@
                     @endif
                 </div>
             @endif
+
+            @if ($fullSchedules->isNotEmpty())
+                <div class="space-y-2">
+                    <h3 class="text-lg font-extrabold text-slate-700">Jadwal penuh</h3>
+                    <ol class="divide-y divide-slate-200 border-y border-slate-200">
+                        @foreach ($fullSchedules as $fullSchedule)
+                            <li class="flex flex-wrap items-center justify-between gap-4 py-4 text-slate-500">
+                                <p class="font-bold">
+                                    <span class="text-xl tabular-nums">{{ $fullSchedule->departureCarbon()->format('H:i') }}</span>
+                                    {{ $fullSchedule->route?->origin?->name }} ke {{ $fullSchedule->route?->destination?->name }}
+                                    <span class="block text-sm font-semibold">{{ (int) $fullSchedule->available_seats }} kursi tersisa</span>
+                                </p>
+                                <button type="button"
+                                        aria-disabled="true"
+                                        data-schedule-full
+                                        data-full-message="Jadwal {{ $fullSchedule->departureCarbon()->format('H:i') }} sudah penuh untuk {{ $passengerCount }} penumpang. Silakan pilih jam atau tanggal lain."
+                                        onclick="window.TravelFeedback?.playWarning(); window.TravelFeedback?.toast(this.dataset.fullMessage, 'error', 'Jadwal Penuh')"
+                                        class="lp-btn cursor-not-allowed border-2 border-slate-400 bg-slate-300 text-slate-600 hover:bg-slate-400/70">Penuh</button>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            @endif
         </section>
     @endif
 </div>

@@ -217,6 +217,38 @@
                     @endif
                 </div>
             @endif
+
+            @if ($fullSchedules->isNotEmpty())
+                <div class="sr-full" style="margin-top: 24px;">
+                    <h3 style="color: #56635B; font-weight: 800; font-size: 1.1rem;">Jadwal penuh</h3>
+                    <ol class="sr-trips">
+                        @foreach ($fullSchedules as $fullSchedule)
+                            <li class="sr-trip" style="opacity: 0.75;">
+                                <div class="sr-trip-times">
+                                    <span class="sr-time">{{ $fullSchedule->departureCarbon()->format('H:i') }}</span>
+                                </div>
+                                <div class="sr-trip-route">
+                                    <p class="sr-trip-points">
+                                        <b>{{ $fullSchedule->route->origin->name }}</b>
+                                        <span>ke</span>
+                                        <b>{{ $fullSchedule->route->destination->name }}</b>
+                                    </p>
+                                </div>
+                                <p class="sr-seats is-low">0 kursi tersisa</p>
+                                <div class="sr-trip-buy">
+                                    <button type="button"
+                                            aria-disabled="true"
+                                            data-schedule-full
+                                            data-full-message="Jadwal {{ $fullSchedule->departureCarbon()->format('H:i') }} sudah penuh. Silakan pilih jam atau tanggal lain."
+                                            onclick="window.TravelFeedback?.playWarning(); window.TravelFeedback?.toast(this.dataset.fullMessage, 'error', 'Jadwal Penuh')"
+                                            class="lp-btn"
+                                            style="background: #CBD5E1; color: #475569; border: 2px solid #94A3B8; cursor: not-allowed;">Penuh</button>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            @endif
         @endif
 
         @if (! $hasRoute || (! $routeConnected && ! $transitHub))

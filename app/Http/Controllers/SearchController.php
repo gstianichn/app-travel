@@ -125,7 +125,6 @@ class SearchController extends Controller
                     'departure_date',
                     $validated['departure_date']
                 )
-                ->where('available_seats', '>=', 1)
                 ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
                 // Departures that already left today cannot be booked any more.
                 ->when(
@@ -150,6 +149,13 @@ class SearchController extends Controller
                     return true;
                 })
                 ->values();
+
+            // Jadwal penuh tetap ditampilkan (nonaktif) agar klik pada jadwal penuh memberi feedback peringatan.
+            [$schedules, $fullSchedules] = $schedules->partition(
+                fn (Schedule $schedule) => (int) $schedule->available_seats >= 1
+            );
+            $schedules = $schedules->values();
+            $fullSchedules = $fullSchedules->values();
         } else {
             $transitHub = null;
         }
@@ -157,6 +163,7 @@ class SearchController extends Controller
         return view('search.index', [
             'locations' => $locations,
             'schedules' => $schedules,
+            'fullSchedules' => $fullSchedules ?? collect(),
             'searchPerformed' => $searchPerformed,
             'routeConnected' => $routeConnected,
             'originLoc' => $originLoc,

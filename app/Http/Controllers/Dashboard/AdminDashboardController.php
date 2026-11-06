@@ -929,6 +929,8 @@ class AdminDashboardController extends Controller
         $staff->position = $validated['position'] ?? $staff->position;
         if ($request->filled('access_code')) {
             $staff->access_code = Hash::make($validated['access_code']);
+        } elseif (empty($staff->access_code)) {
+            $staff->access_code = Hash::make('STF-'.date('Y').'-'.strtoupper(Str::random(4)));
         }
         $staff->status = $validated['status'];
         $staff->permissions = $request->input('permissions', []);
@@ -1104,6 +1106,7 @@ class AdminDashboardController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8'],
+            'access_code' => ['nullable', 'string', 'max:50'],
             'license_number' => ['required', 'string', 'max:50', 'unique:drivers,license_number'],
             'license_type' => ['required', 'string', 'max:50'],
             'license_expired_at' => ['required', 'date'],
@@ -1138,7 +1141,9 @@ class AdminDashboardController extends Controller
             $photoPath = $request->file('photo')->store('drivers', 'public');
         }
 
-        $rawDriverCode = 'DRV-'.date('Y').'-'.strtoupper(Str::random(4));
+        $rawDriverCode = ! empty($validated['access_code'])
+            ? $validated['access_code']
+            : 'DRV-'.date('Y').'-'.strtoupper(Str::random(4));
 
         $userDriver = User::create([
             'name' => $validated['name'],
@@ -1211,6 +1216,7 @@ class AdminDashboardController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['nullable', 'string', 'min:8'],
+            'access_code' => ['nullable', 'string', 'max:50'],
             'license_number' => ['required', 'string', 'max:50', Rule::unique('drivers', 'license_number')->ignore($driver->id)],
             'license_type' => ['required', 'string', 'max:50'],
             'license_expired_at' => ['required', 'date'],
@@ -1242,6 +1248,11 @@ class AdminDashboardController extends Controller
             $driver->user->phone = $validated['phone'];
             if (! empty($validated['password'])) {
                 $driver->user->password = Hash::make($validated['password']);
+            }
+            if ($request->filled('access_code')) {
+                $driver->user->access_code = Hash::make($validated['access_code']);
+            } elseif (empty($driver->user->access_code)) {
+                $driver->user->access_code = Hash::make('DRV-'.date('Y').'-'.strtoupper(Str::random(4)));
             }
             $driver->user->save();
         }

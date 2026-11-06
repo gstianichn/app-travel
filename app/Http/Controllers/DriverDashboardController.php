@@ -530,11 +530,27 @@ class DriverDashboardController extends Controller
     }
 
     /**
+     * Memastikan jadwal perjalanan milik pengemudi yang sedang login.
+     */
+    protected function ensureScheduleOwnedByDriver(?Schedule $schedule): Driver
+    {
+        $driver = auth()->user()?->driver;
+
+        if (! $driver || ! $schedule || (int) $schedule->driver_id !== (int) $driver->id) {
+            abort(403, 'Anda tidak memiliki akses ke jadwal perjalanan ini.');
+        }
+
+        return $driver;
+    }
+
+    /**
      * Memperbarui status perjalanan secara bertahap
      * (Mulai Jemput -> Berangkat -> Tiba di Tujuan -> Selesaikan Ritase)
      */
     public function updateTripStatus(Request $request, Schedule $schedule)
     {
+        $driver = $this->ensureScheduleOwnedByDriver($schedule);
+
         $request->validate([
             'status' => 'required|string|in:pickup,departed,arrived,completed',
             'latitude' => 'nullable|numeric',
@@ -543,7 +559,6 @@ class DriverDashboardController extends Controller
 
         $newStatus = $request->input('status');
         $now = Carbon::now();
-        $driver = auth()->user()->driver;
 
         $currentTripStatus = $schedule->trip_status ?: 'scheduled';
         $validTransitions = [
@@ -615,7 +630,7 @@ class DriverDashboardController extends Controller
 
             // Tandai hanya tiket booking yang sudah lunas/terkonfirmasi menjadi selesai (jangan ubah pending menjadi lunas)
             Booking::where('schedule_id', $schedule->id)
-                ->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in'])
+                ->whereRaw("LOWER(status) IN ('paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded')")
                 ->update(['status' => 'completed']);
 
             $message = 'Selamat! Perjalanan ritase telah berhasil diselesaikan dan dicatat ke riwayat operasional.';
@@ -644,6 +659,8 @@ class DriverDashboardController extends Controller
      */
     public function updateGps(Request $request, Schedule $schedule): JsonResponse
     {
+        $this->ensureScheduleOwnedByDriver($schedule);
+
         $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
@@ -672,10 +689,25 @@ class DriverDashboardController extends Controller
      */
     public function updateCheckin(Request $request, BookingPassenger $passenger)
     {
+        $booking = $passenger->booking;
+        $this->ensureScheduleOwnedByDriver($booking?->schedule);
+
         $request->validate([
             'boarding_status' => 'required|string|in:boarded,belum_hadir',
             'mark_paid' => 'nullable|boolean',
         ]);
+
+        // Cegah mark_paid=1 mengubah booking online yang masih memiliki tagihan non-tunai belum lunas menjadi confirmed
+        if ($request->boolean('mark_paid') && $booking) {
+            $existingPayment = $booking->payment;
+            $paymentMethodLower = strtolower((string) ($existingPayment?->payment_method ?? ''));
+            $paymentStatusLower = strtolower((string) ($existingPayment?->status ?? ''));
+            $isCashOrCod = $existingPayment === null || in_array($paymentMethodLower, ['cash', 'tunai', 'cod'], true);
+
+            if (! $isCashOrCod && ! in_array($paymentStatusLower, ['paid', 'success', 'settlement', 'lunas'], true)) {
+                abort(403, 'Pesanan dengan metode pembayaran non-tunai yang belum lunas tidak dapat ditandai lunas oleh pengemudi.');
+            }
+        }
 
         $status = $request->input('boarding_status');
         $boardedAt = ($status === 'boarded') ? Carbon::now() : null;
@@ -686,8 +718,7 @@ class DriverDashboardController extends Controller
         ]);
 
         // Jika supir mengonfirmasi penerimaan uang tunai / COD di tempat
-        if ($request->boolean('mark_paid') && $passenger->booking) {
-            $booking = $passenger->booking;
+        if ($request->boolean('mark_paid') && $booking) {
             $booking->update(['status' => 'confirmed']);
 
             Payment::updateOrCreate(
@@ -725,6 +756,8 @@ class DriverDashboardController extends Controller
      */
     public function reportIncident(Request $request, Schedule $schedule)
     {
+        $driver = $this->ensureScheduleOwnedByDriver($schedule);
+
         $request->validate([
             'category' => 'required|string|in:ban_bocor,macet_parah,mesin_mogok,penumpang_batal,kecelakaan,darurat_medis,sos_emergency,lainnya',
             'severity' => 'required|string|in:rendah,sedang,tinggi,darurat',
@@ -733,11 +766,6 @@ class DriverDashboardController extends Controller
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
-
-        $driver = auth()->user()->driver;
-        if (! $driver) {
-            return back()->with('error', 'Akun pengemudi belum terdaftar.');
-        }
 
         $incident = TripIncident::create([
             'schedule_id' => $schedule->id,
@@ -775,10 +803,7 @@ class DriverDashboardController extends Controller
      */
     public function triggerSos(Request $request, Schedule $schedule)
     {
-        $driver = auth()->user()->driver;
-        if (! $driver) {
-            return response()->json(['success' => false, 'message' => 'Driver tidak ditemukan.'], 404);
-        }
+        $driver = $this->ensureScheduleOwnedByDriver($schedule);
 
         $latitude = $request->input('latitude') ?: $schedule->current_latitude;
         $longitude = $request->input('longitude') ?: $schedule->current_longitude;

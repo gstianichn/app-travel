@@ -83,29 +83,47 @@ class TravelFeedbackSystem {
         }
 
         try {
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
             const now = ctx.currentTime;
 
-            // Dua ketukan rendah ("thud-bip") agar secara kognitif langsung dikenali sebagai penolakan
-            [0, 0.09].forEach((offset, idx) => {
+            // Dua ketukan rendah tegas ("thud-thud") yang terdengar jelas di seluruh speaker laptop & HP
+            [0, 0.11].forEach((offset, idx) => {
                 const osc = ctx.createOscillator();
+                const oscHarmonic = ctx.createOscillator();
+                const filter = ctx.createBiquadFilter();
                 const gain = ctx.createGain();
 
-                osc.type = 'triangle';
-                const startFreq = idx === 0 ? 175 : 140;
-                const endFreq = idx === 0 ? 130 : 105;
+                osc.type = 'sawtooth';
+                oscHarmonic.type = 'triangle';
 
-                osc.frequency.setValueAtTime(startFreq, now + offset);
-                osc.frequency.linearRampToValueAtTime(endFreq, now + offset + 0.07);
+                const baseFreq = idx === 0 ? 240 : 190;
+                const dropFreq = idx === 0 ? 160 : 130;
+
+                osc.frequency.setValueAtTime(baseFreq, now + offset);
+                osc.frequency.exponentialRampToValueAtTime(dropFreq, now + offset + 0.08);
+
+                oscHarmonic.frequency.setValueAtTime(baseFreq * 1.5, now + offset);
+                oscHarmonic.frequency.exponentialRampToValueAtTime(dropFreq * 1.5, now + offset + 0.08);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(650, now + offset);
+                filter.frequency.linearRampToValueAtTime(320, now + offset + 0.08);
 
                 gain.gain.setValueAtTime(0.001, now + offset);
-                gain.gain.exponentialRampToValueAtTime(0.24, now + offset + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.075);
+                gain.gain.exponentialRampToValueAtTime(0.35, now + offset + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.09);
 
-                osc.connect(gain);
+                osc.connect(filter);
+                oscHarmonic.connect(filter);
+                filter.connect(gain);
                 gain.connect(ctx.destination);
 
                 osc.start(now + offset);
-                osc.stop(now + offset + 0.08);
+                oscHarmonic.start(now + offset);
+                osc.stop(now + offset + 0.095);
+                oscHarmonic.stop(now + offset + 0.095);
             });
         } catch (e) {
             // Abaikan jika autoplay diblokir browser

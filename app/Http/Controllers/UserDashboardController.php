@@ -217,7 +217,6 @@ class UserDashboardController extends Controller
             $schedules = Schedule::query()
                 ->with(['route.origin', 'route.destination', 'vehicle.seats', 'driver.user'])
                 ->whereDate('departure_date', $validated['departure_date'])
-                ->where('available_seats', '>=', $passengerCount)
                 ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
                 // Departures that already left today cannot be booked any more.
                 ->when(
@@ -233,13 +232,23 @@ class UserDashboardController extends Controller
                 })
                 ->orderBy('departure_time')
                 ->get();
+
+            // Jadwal penuh tetap ditampilkan (nonaktif) agar klik pada jadwal penuh memberi feedback peringatan.
+            [$schedules, $fullSchedules] = $schedules->partition(
+                fn (Schedule $schedule) => (int) $schedule->available_seats >= $passengerCount
+            );
+            $schedules = $schedules->values();
+            $fullSchedules = $fullSchedules->values();
         } else {
             $transitHub = null;
         }
 
+        $fullSchedules ??= collect();
+
         return view('dashboard.user.user-search', compact(
             'locations',
             'schedules',
+            'fullSchedules',
             'searchPerformed',
             'routeConnected',
             'originLoc',
@@ -273,6 +282,18 @@ class UserDashboardController extends Controller
         }
 
         $schedule->load(['route.origin', 'route.destination', 'vehicle', 'driver.user']);
+
+        // Tolak jadwal yang dibatalkan, selesai, atau sudah penuh (memicu Warning Sound + Toast merah lewat flash error).
+        $isClosedSchedule = in_array(strtolower((string) $schedule->status), ['cancelled', 'completed'], true);
+        if ($isClosedSchedule || (int) $schedule->available_seats <= 0) {
+            return redirect()->route('dashboard.user.search', array_filter([
+                'origin' => $schedule->route?->origin_id,
+                'destination' => $schedule->route?->destination_id,
+                'departure_date' => $schedule->departure_date?->toDateString(),
+            ]))->with('error', $isClosedSchedule
+                ? 'Jadwal ini sudah tidak dapat dipesan. Silakan pilih jadwal lain.'
+                : 'Jadwal ini sudah penuh. Silakan pilih jam atau tanggal lain.');
+        }
 
         // Pastikan kursi armada terbuat
         if ($schedule->vehicle) {
@@ -343,18 +364,22 @@ class UserDashboardController extends Controller
             $ownPendingIds = $this->bookingAccess
                 ->scopeToCurrentVisitor(Booking::query())
                 ->where('schedule_id', $schedule->id)
-                ->whereIn('status', ['pending', 'Pending'])
+                ->whereRaw("LOWER(status) = 'pending'")
                 ->pluck('id')
                 ->all();
 
             $occupiedSeatIds = BookingPassenger::query()
                 ->whereHas('booking', function ($q) use ($schedule, $ownPendingIds) {
                     $q->where('schedule_id', $schedule->id)
+                        ->whereRaw("LOWER(status) NOT IN ('cancelled', 'expired', 'failed')")
                         ->where(function ($sub) use ($ownPendingIds) {
-                            $sub->whereIn('status', ['paid', 'Paid', 'confirmed', 'Confirmed', 'success', 'Success', 'lunas', 'Lunas', 'checked_in', 'Checked_in', 'boarded', 'Boarded', 'completed', 'Completed', 'refund_pending'])
+                            $sub->whereRaw("LOWER(status) IN ('paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending')")
                                 ->orWhere(function ($pending) use ($ownPendingIds) {
-                                    $pending->whereIn('status', ['pending', 'Pending'])
-                                        ->where('expired_at', '>', Carbon::now())
+                                    $pending->whereRaw("LOWER(status) = 'pending'")
+                                        ->where(function ($exp) {
+                                            $exp->whereNull('expired_at')
+                                                ->orWhere('expired_at', '>', Carbon::now());
+                                        })
                                         ->whereNotIn('id', $ownPendingIds);
                                 });
                         });
@@ -902,6 +927,17 @@ class UserDashboardController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Missing order_id'], 400);
         }
 
+        // Webhook wajib bertanda tangan saat server key tersedia (kecuali simulator lokal) atau saat signature_key dikirim.
+        $midtransService = app(MidtransService::class);
+        if (($midtransService->requiresWebhookSignature() || array_key_exists('signature_key', $payload)) && ! $midtransService->verifySignature($payload)) {
+            Log::warning('Payment webhook ditolak: signature tidak valid', [
+                'order_id' => $orderId,
+                'signature_present' => isset($payload['signature_key']),
+            ]);
+
+            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
+        }
+
         if (! is_string($rawStatus) || trim($rawStatus) === '') {
             return response()->json(['status' => 'error', 'message' => 'Missing transaction_status'], 400);
         }
@@ -916,17 +952,6 @@ class UserDashboardController extends Controller
         $booking = $payment->booking;
         if (! $booking) {
             return response()->json(['status' => 'error', 'message' => 'Associated booking not found'], 404);
-        }
-
-        // Webhook wajib bertanda tangan saat server key tersedia (kecuali simulator lokal).
-        $midtransService = app(MidtransService::class);
-        if ($midtransService->requiresWebhookSignature() && ! $midtransService->verifySignature($payload)) {
-            Log::warning('Payment webhook ditolak: signature tidak valid', [
-                'order_id' => $orderId,
-                'signature_present' => isset($payload['signature_key']),
-            ]);
-
-            return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 403);
         }
 
         Log::info('Payment webhook diterima', [
@@ -2096,7 +2121,8 @@ class UserDashboardController extends Controller
     protected function releaseExpiredLocks(Schedule $schedule): void
     {
         $expiredBookings = Booking::where('schedule_id', $schedule->id)
-            ->where('status', 'pending')
+            ->whereRaw("LOWER(status) = 'pending'")
+            ->whereNotNull('expired_at')
             ->where('expired_at', '<=', Carbon::now())
             ->lockForUpdate()
             ->get();
@@ -2127,14 +2153,14 @@ class UserDashboardController extends Controller
         // Cari semua passenger yang memesan jadwal ini di booking yang belum dibatalkan
         $activeBookings = $schedule->bookings()
             ->with(['passengers.seat', 'user'])
-            ->whereNotIn('status', ['cancelled', 'Cancelled'])
+            ->whereRaw("LOWER(status) NOT IN ('cancelled', 'expired', 'failed')")
             ->get();
 
         $occupiedSeats = [];
         foreach ($activeBookings as $b) {
-            $bookingStatusLower = strtolower($b->status);
-            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending']);
-            $isPendingLock = ($bookingStatusLower === 'pending') && $b->expired_at && $b->expired_at->isFuture();
+            $bookingStatusLower = strtolower((string) $b->status);
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending'], true);
+            $isPendingLock = ($bookingStatusLower === 'pending') && (! $b->expired_at || $b->expired_at->isFuture());
 
             if (! $isPaid && ! $isPendingLock) {
                 continue;
@@ -2142,8 +2168,8 @@ class UserDashboardController extends Controller
 
             foreach ($b->passengers as $p) {
                 if ($p->seat_id) {
-                    $passengerStatusLower = strtolower($p->status ?? '');
-                    $isPassengerCheckedIn = in_array($passengerStatusLower, ['checked_in', 'boarded', 'hadir', 'selesai']);
+                    $passengerStatusLower = strtolower((string) ($p->boarding_status ?: $p->status ?: ''));
+                    $isPassengerCheckedIn = in_array($passengerStatusLower, ['checked_in', 'boarded', 'hadir', 'selesai'], true);
                     $status = ($isPaid || $isPassengerCheckedIn) ? 'paid' : ($this->bookingAccess->canAccess($b) ? 'my_lock' : 'locked');
                     $occupiedSeats[$p->seat_id] = [
                         'status' => $status,
