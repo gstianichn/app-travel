@@ -2,13 +2,16 @@
 @php
     $staffMenu = [
         ['route' => 'dashboard.admin-biasa.index', 'label' => 'Beranda', 'icon' => 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
+        ['route' => 'dashboard.admin-biasa.offline-booking', 'label' => 'Pemesanan Loket (Offline)', 'icon' => 'M12 5v14M5 12h14'],
         ['route' => 'dashboard.admin-biasa.validasi-tiket', 'label' => 'Validasi E-Ticket', 'icon' => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h6v2h-6z'],
         ['route' => 'dashboard.admin-biasa.booking', 'label' => 'Manajemen Booking', 'icon' => 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01'],
         ['route' => 'dashboard.admin-biasa.perjalanan', 'label' => 'Melihat Informasi Perjalanan', 'icon' => 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14'],
     ];
 @endphp
 
-<aside class="sidebar">
+<div class="staff-sidebar-backdrop" id="staffSidebarBackdrop" onclick="closeStaffSidebar()" aria-hidden="true"></div>
+
+<aside class="sidebar" id="staffSidebar" aria-label="Sidebar staf pool">
     <div class="logo-area">
         <div class="logo-icon" aria-hidden="true" style="padding: 5px; box-sizing: border-box;">
             <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="width: 100%; height: 100%; object-fit: contain;">
@@ -17,6 +20,7 @@
             <h2>TravelKu</h2>
             <span>Staf pool</span>
         </div>
+        <button type="button" class="staff-sidebar-close" onclick="closeStaffSidebar()" aria-label="Tutup menu">&times;</button>
     </div>
 
     <nav class="menu" id="staff-menu" aria-label="Menu staf pool">
@@ -61,3 +65,12 @@
         </form>
     </div>
 </aside>
+
+<script>
+    function toggleStaffSidebar() {
+        document.body.classList.toggle('is-staff-nav-open');
+    }
+    function closeStaffSidebar() {
+        document.body.classList.remove('is-staff-nav-open');
+    }
+</script>

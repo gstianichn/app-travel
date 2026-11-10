@@ -31,8 +31,6 @@ class HomeController extends Controller
         return view('home-landingpage.index', [
             'locations' => $locations,
             'routeSigns' => $routeSigns,
-            'scheduleRoutes' => $scheduleRoutes,
-            'routesByOriginCity' => $scheduleRoutes->groupBy(fn (Route $route) => $route->origin?->city ?: $route->origin?->name ?: 'Lainnya'),
             'activeRouteCount' => $activeRouteCount,
             'servedCityCount' => $locations->where('is_active', true)->pluck('city')->filter()->unique()->count(),
             'fleetTypes' => $this->fleetTypes(),
@@ -41,7 +39,7 @@ class HomeController extends Controller
                 ->whereNotNull('comment')
                 ->where('comment', '!=', '')
                 ->latest()
-                ->take(6)
+                ->take(3)
                 ->get(),
             'reviewCount' => (int) ($reviewSummary->total ?? 0),
             'reviewAverage' => $reviewSummary->average !== null ? round((float) $reviewSummary->average, 1) : null,

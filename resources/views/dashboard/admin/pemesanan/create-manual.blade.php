@@ -599,10 +599,14 @@
                             Nomor WhatsApp / Telepon <span class="required">*</span>
                         </label>
                         <input
-                            type="text"
+                            type="tel"
                             name="customer_phone"
                             id="customer_phone"
                             class="form-input"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                            maxlength="20"
                             placeholder="Contoh: 08123456789"
                             value="{{ old('customer_phone') }}"
                             required

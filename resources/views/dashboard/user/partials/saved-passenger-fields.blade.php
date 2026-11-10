@@ -11,8 +11,8 @@
     <input id="{{ $prefix }}-name" type="text" name="name" required maxlength="100" value="{{ $savedPassenger?->name }}" placeholder="Nama sesuai KTP" class="{{ $fieldClass }}">
 </div>
 <div class="space-y-1.5">
-    <label for="{{ $prefix }}-phone" class="block font-semibold text-slate-900">Nomor HP <span class="font-normal text-slate-600">(boleh kosong)</span></label>
-    <input id="{{ $prefix }}-phone" type="tel" name="phone" maxlength="25" inputmode="tel" value="{{ $savedPassenger?->phone }}" placeholder="08xxxxxxxxxx" class="{{ $fieldClass }}">
+    <label for="{{ $prefix }}-phone" class="block font-semibold text-slate-900">Nomor HP <span class="font-normal text-slate-600">(angka saja, boleh kosong)</span></label>
+    <input id="{{ $prefix }}-phone" type="tel" name="phone" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="{{ $savedPassenger?->phone }}" placeholder="08xxxxxxxxxx" class="{{ $fieldClass }}">
 </div>
 <div class="space-y-1.5">
     <label for="{{ $prefix }}-nik" class="block font-semibold text-slate-900">NIK <span class="font-normal text-slate-600">(boleh kosong)</span></label>

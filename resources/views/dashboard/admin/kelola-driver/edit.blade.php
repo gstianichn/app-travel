@@ -408,10 +408,14 @@
                                 Nomor WhatsApp Pengemudi <span class="required">*</span>
                             </label>
                             <input
-                                type="text"
+                                type="tel"
                                 id="phone"
                                 name="phone"
                                 class="form-input @error('phone') is-invalid @enderror"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                maxlength="20"
                                 placeholder="Contoh: 081234567890"
                                 value="{{ old('phone', $driver->phone ?? $driver->user?->phone) }}"
                                 required
@@ -626,10 +630,14 @@
                                 Nomor Telepon / WA Darurat <span class="required">*</span>
                             </label>
                             <input
-                                type="text"
+                                type="tel"
                                 id="emergency_contact_phone"
                                 name="emergency_contact_phone"
                                 class="form-input @error('emergency_contact_phone') is-invalid @enderror"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                maxlength="20"
                                 placeholder="Contoh: 085298765432"
                                 value="{{ old('emergency_contact_phone', $driver->emergency_contact_phone) }}"
                                 required

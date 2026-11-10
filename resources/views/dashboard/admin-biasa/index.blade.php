@@ -40,9 +40,42 @@
                         <p>{{ $shiftInfo['active_date'] }}@if ($shiftInfo['pool_name']), {{ $shiftInfo['pool_name'] }}@endif</p>
                     </div>
                     <div class="ds-head-actions">
+                        <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="ds-btn ds-btn--primary">+ Input Pesanan Offline (Loket)</a>
                         <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}" class="ds-btn ds-btn--accent">Pindai QR atau cari kode booking</a>
                     </div>
                 </header>
+
+                <div class="ds-flow-grid">
+                    <section class="ds-flow-card ds-flow-card--online" aria-labelledby="flow-online-title">
+                        <div class="ds-flow-head">
+                            <h3 id="flow-online-title">Alur Customer Online (Website / Aplikasi)</h3>
+                            <span class="ds-channel-badge ds-channel-badge--online">Online Web/App</span>
+                        </div>
+                        <ol class="ds-flow-steps">
+                            <li>Customer memesan jadwal, memilih kursi, dan membayar lewat Website/Aplikasi.</li>
+                            <li>Saat tiba di pool, customer menunjukkan QR E-Ticket atau Kode Booking (`TRV-...`).</li>
+                            <li>Staf pindai/periksa di <strong>Validasi E-Ticket</strong>: jika status <em>Lunas</em>, langsung tercatat <strong>Boarded</strong>. Jika masih <em>Pending</em>, proses pelunasan di loket sebelum naik.</li>
+                        </ol>
+                        <div>
+                            <a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}" class="ds-btn ds-btn--secondary">Buka Validasi E-Ticket</a>
+                        </div>
+                    </section>
+
+                    <section class="ds-flow-card ds-flow-card--offline" aria-labelledby="flow-offline-title">
+                        <div class="ds-flow-head">
+                            <h3 id="flow-offline-title">Alur Customer Offline (Loket / WA / Telepon)</h3>
+                            <span class="ds-channel-badge ds-channel-badge--offline">Non-Website</span>
+                        </div>
+                        <ol class="ds-flow-steps">
+                            <li>Customer datang ke pool atau memesan via WhatsApp/telepon tanpa membuka website/app.</li>
+                            <li>Staf buka <strong>Pemesanan Loket (Offline)</strong>, pilih jadwal & kursi kosong di denah real-time (sinkron dengan kursi Online agar tidak bentrok).</li>
+                            <li>Terima pembayaran (<em>Cash / QRIS / Transfer</em>) atau tahan kursi sementara untuk bayar di pool, lalu tiket aktif & siap boarding.</li>
+                        </ol>
+                        <div>
+                            <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="ds-btn ds-btn--primary">Input Pesanan Loket Sekarang</a>
+                        </div>
+                    </section>
+                </div>
 
                 <dl class="ds-stats">
                     <div class="ds-stat ds-stat--lead">
@@ -128,6 +161,7 @@
 
                     <nav aria-label="Menu staf pool">
                         <ul class="ds-nav">
+                            <li><a href="{{ route('dashboard.admin-biasa.offline-booking') }}"><b>Pemesanan loket (Offline)</b><span>Input pesanan walk-in, WA, atau telepon</span></a></li>
                             <li><a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}"><b>Validasi tiket</b><span>Pindai QR atau cari kode booking</span></a></li>
                             <li><a href="{{ route('dashboard.admin-biasa.booking') }}"><b>Manifes booking</b><span>Penumpang per keberangkatan</span></a></li>
                             <li><a href="{{ route('dashboard.admin-biasa.perjalanan') }}"><b>Informasi perjalanan</b><span>Jadwal, rute, dan status armada</span></a></li>

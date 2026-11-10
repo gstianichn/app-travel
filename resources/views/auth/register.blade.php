@@ -57,7 +57,7 @@
         </div>
 
         <div class="au-field">
-            <label for="phone">Nomor HP <span class="au-hint">(boleh dikosongkan)</span></label>
+            <label for="phone">Nomor HP <span class="au-hint">(angka saja, boleh dikosongkan)</span></label>
             <input
                 type="tel"
                 id="phone"
@@ -65,7 +65,9 @@
                 value="{{ old('phone') }}"
                 placeholder="08xxxxxxxxxx"
                 autocomplete="tel"
-                inputmode="tel"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                 maxlength="20"
                 @error('phone') aria-invalid="true" aria-describedby="phone-error" @enderror
             >

@@ -575,6 +575,26 @@ Route::middleware(['auth', 'role:staff'])
             'ajaxUpdatePassengerBoardingStatus',
         ])->name('dashboard.admin-biasa.validasi-tiket.update-status');
 
+        Route::get('/admin/pemesanan-loket', [
+            AdminBiasaDashboardController::class,
+            'offlineBooking',
+        ])->name('dashboard.admin-biasa.offline-booking');
+
+        Route::get('/admin/pemesanan-loket/jadwal/{schedule}/kursi', [
+            AdminBiasaDashboardController::class,
+            'offlineBookingSeats',
+        ])->name('dashboard.admin-biasa.offline-booking.seats');
+
+        Route::post('/admin/pemesanan-loket', [
+            AdminBiasaDashboardController::class,
+            'storeOfflineBooking',
+        ])->name('dashboard.admin-biasa.offline-booking.store');
+
+        Route::post('/admin/booking/{booking}/pelunasan', [
+            AdminBiasaDashboardController::class,
+            'settlePayment',
+        ])->name('dashboard.admin-biasa.booking.settle');
+
     });
 
 /*

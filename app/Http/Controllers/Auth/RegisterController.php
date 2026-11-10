@@ -47,6 +47,7 @@ class RegisterController extends Controller
                 'nullable',
                 'string',
                 'max:20',
+                'regex:/^[0-9]{8,20}$/',
             ],
 
             'password' => [
@@ -57,6 +58,7 @@ class RegisterController extends Controller
             ],
         ], [
             'email.unique' => 'Email sudah terdaftar.',
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka (8-20 digit).',
         ]);
 
         $user = User::create([

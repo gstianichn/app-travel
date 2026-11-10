@@ -208,8 +208,8 @@ test('approve pembayaran booking yang sudah batal (BUG-10)', function () {
         ->and($data['booking']->fresh()->status)->toBe('Paid');
 });
 
-test('reject pembayaran yang sudah lunas (BUG-10)', function () {
-    $data = ($this->makePayment)([], ['status' => 'Success']);
+test('reject pembayaran yang sudah lunas ditolak (BUG-10)', function () {
+    $data = ($this->makePayment)(['status' => 'Paid'], ['status' => 'Success']);
 
     $response = $this->actingAs($this->admin)->patch(route('dashboard.admin.pembayaran.verify', $data['payment']->id), [
         'action' => 'reject',
@@ -219,8 +219,8 @@ test('reject pembayaran yang sudah lunas (BUG-10)', function () {
     $response->assertRedirect();
     $response->assertSessionHas('error');
 
-    expect($data['payment']->fresh()->status)->toBe('Failed')
-        ->and($data['booking']->fresh()->status)->toBe('Cancelled');
+    expect($data['payment']->fresh()->status)->toBe('Success')
+        ->and($data['booking']->fresh()->status)->toBe('Paid');
 });
 
 test('upload bukti transfer valid (jpg/png/webp/pdf, maksimal 5MB)', function () {

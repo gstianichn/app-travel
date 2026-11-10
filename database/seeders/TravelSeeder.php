@@ -289,27 +289,6 @@ class TravelSeeder extends Seeder
                     'rating' => 5.0,
                     'comment' => 'Rute Cirebon Pilang Raya ke Dipati Ukur Bandung sangat nyaman, pengemudi sopan dan mengemudi dengan aman.',
                 ],
-                [
-                    'name' => 'Fajar Nugroho',
-                    'email' => 'fajar.review@travel.test',
-                    'phone' => '081280001004',
-                    'rating' => 4.8,
-                    'comment' => 'Shuttle dari Bandara Kertajati (BIJB) Majalengka ke Bandung sangat membantu, jadwalnya sesuai jam pendaratan pesawat.',
-                ],
-                [
-                    'name' => 'Nadia Maharani',
-                    'email' => 'nadia.review@travel.test',
-                    'phone' => '081280001005',
-                    'rating' => 4.9,
-                    'comment' => 'Perjalanan dari Purwakarta Sadang menuju Grogol Jakarta lancar, AC dingin dan ada USB charger di setiap kursi.',
-                ],
-                [
-                    'name' => 'Hendra Gunawan',
-                    'email' => 'hendra.review@travel.test',
-                    'phone' => '081280001006',
-                    'rating' => 5.0,
-                    'comment' => 'Titik penjemputan Virtual Point sangat jelas, harga transparan dan pelayanan petugas di pool sangat ramah.',
-                ],
             ];
 
             $pastDate = Carbon::yesterday()->toDateString();

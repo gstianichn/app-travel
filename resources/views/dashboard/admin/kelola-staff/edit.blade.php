@@ -525,10 +525,14 @@
                                 Nomor Kontak / WhatsApp <span class="required">*</span>
                             </label>
                             <input
-                                type="text"
+                                type="tel"
                                 id="phone"
                                 name="phone"
                                 class="form-input @error('phone') is-invalid @enderror"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                maxlength="20"
                                 placeholder="Contoh: 081234567890"
                                 value="{{ old('phone', $staff->phone) }}"
                                 required

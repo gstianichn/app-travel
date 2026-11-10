@@ -581,3 +581,199 @@ body[data-staff] :is(.actions-cell, .action-group) form {
 body[data-staff] :is(.table-wrapper, .table-responsive, .table-container, .data-table-wrapper) {
     overflow-x: auto;
 }
+
+/* =========================
+   3. STAFF POOL FLOW CARDS, CHANNEL BADGES & RESPONSIVE DRAWER
+========================= */
+
+.ds-flow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.ds-flow-card {
+    border: 1px solid var(--lp-line);
+    border-radius: 14px;
+    background: var(--lp-card);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ds-flow-card--online {
+    border-left: 4px solid #1F5F8B;
+}
+
+.ds-flow-card--offline {
+    border-left: 4px solid var(--lp-green);
+}
+
+.ds-flow-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.ds-flow-head h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--lp-forest);
+}
+
+.ds-flow-steps {
+    display: grid;
+    gap: 8px;
+    padding-left: 18px;
+    color: var(--lp-ink);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.ds-channel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ds-channel-badge--online {
+    background: #E3EEF6;
+    color: #174A6E;
+    border: 1px solid #C2D7E8;
+}
+
+.ds-channel-badge--offline {
+    background: #DFF0E8;
+    color: #0C4535;
+    border: 1px solid #B7DEC9;
+}
+
+.ds-alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.ds-alert--success {
+    background: #DFF0E8;
+    border: 1px solid #A7D7BE;
+    color: #0C4535;
+}
+
+.ds-alert--error {
+    background: #F8E3DC;
+    border: 1px solid #EAB5A6;
+    color: #7E2716;
+}
+
+/* Responsive mobile drawer toggle & sidebar layout for Staff Pool */
+.staff-menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1.5px solid var(--lp-line);
+    background: #FFFFFF;
+    color: var(--lp-forest);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.staff-sidebar-close {
+    display: none;
+    margin-left: auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-size: 18px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.staff-sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(12, 57, 47, 0.5);
+    z-index: 95;
+}
+
+body[data-staff='staff'].is-staff-nav-open .staff-sidebar-backdrop {
+    display: block;
+}
+
+@media (max-width: 960px) {
+    .staff-menu-toggle {
+        display: inline-flex !important;
+    }
+
+    .staff-sidebar-close {
+        display: inline-flex !important;
+    }
+
+    body[data-staff='staff'] .sidebar {
+        width: 270px !important;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 120 !important;
+    }
+
+    body[data-staff='staff'].is-staff-nav-open .sidebar {
+        transform: translateX(0);
+    }
+
+    body[data-staff='staff'] .logo-area {
+        justify-content: flex-start !important;
+        padding: 0 20px !important;
+    }
+
+    body[data-staff='staff'] .logo-icon {
+        margin-right: 12px !important;
+    }
+
+    body[data-staff='staff'] :is(.logo-text, .menu-title, .menu a span, .sidebar-bottom span) {
+        display: inline-block !important;
+    }
+
+    body[data-staff='staff'] .menu a {
+        justify-content: flex-start !important;
+        padding: 12px 14px !important;
+    }
+
+    body[data-staff='staff'] .logout-btn {
+        justify-content: flex-start !important;
+    }
+
+    body[data-staff='staff'] .main-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+
+    body[data-staff='staff'] .topbar {
+        padding: 12px 16px !important;
+        height: auto !important;
+    }
+
+    body[data-staff='staff'] .content {
+        padding: 18px 16px 36px !important;
+    }
+}

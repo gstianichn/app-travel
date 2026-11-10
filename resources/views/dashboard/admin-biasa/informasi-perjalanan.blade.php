@@ -894,22 +894,10 @@
     <main class="main-content">
 
         <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="page-title">
-                <h1>Melihat Informasi Perjalanan Armada</h1>
-                <p>Pantau detail armada & kru, rute titik singgah, jadwal kumpul & boarding, serta status lokasi unit.</p>
-            </div>
-
-            <div class="profile">
-                <div class="avatar">
-                    {{ strtoupper(substr($user->name ?? 'S', 0, 1)) }}
-                </div>
-                <div class="profile-info">
-                    <strong>{{ $user->name ?? 'Staff Loket' }}</strong>
-                    <span>{{ $user->branch ?? 'Pool Bandung Pusat' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('dashboard.admin-biasa.partials.topbar', [
+            'topbarTitle' => 'Melihat Informasi Perjalanan Armada',
+            'topbarSubtitle' => 'Pantau detail armada & kru, jadwal kumpul & boarding, serta status lokasi unit.',
+        ])
 
 
         <!-- CONTENT SECTION -->
@@ -1312,7 +1300,8 @@
                     </div>
                 @empty
                     <div style="padding: 50px; text-align: center; background: white; border-radius: 20px; border: 1px dashed var(--border);">
-                        <p style="color: var(--text-light); font-size: 15px;">Belum ada jadwal informasi perjalanan yang terdaftar.</p>
+                        <p style="color: var(--text-dark); font-weight: 700; font-size: 15px; margin-bottom: 6px;">Belum ada jadwal Waktu Berangkat yang terdaftar.</p>
+                        <p style="color: var(--text-light); font-size: 13px;">Jadwal keberangkatan, armada, dan sopir akan tampil otomatis setelah Admin Utama menambahkan jadwal.</p>
                     </div>
                 @endforelse
 

@@ -62,7 +62,12 @@
         </button>
     </form>
 
-    <div class="au-switch">
-        <p>Sudah ingat? <a href="{{ route('user.login') }}" class="au-link">Kembali ke halaman masuk</a></p>
+    <div class="au-switch" style="display: grid; gap: 12px;">
+        <p class="au-or" style="margin: 4px 0;">atau masuk langsung tanpa password lama</p>
+        <a href="{{ route('auth.google.redirect') }}" class="au-google">
+            @include('auth.partials.google-mark')
+            Masuk dengan Akun Google
+        </a>
+        <p style="margin: 0;">Sudah ingat? <a href="{{ route('user.login') }}" class="au-link">Kembali ke halaman masuk</a></p>
     </div>
 @endsection

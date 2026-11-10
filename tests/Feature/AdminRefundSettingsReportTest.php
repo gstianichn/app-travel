@@ -186,7 +186,7 @@ test('refund ganda ditolak ketika booking sudah punya pengajuan aktif', function
     expect(Refund::where('booking_id', $booking->id)->count())->toBe(1);
 });
 
-test('refund ganda dengan status Diajukan masih dapat dibuat (BUG-09)', function () {
+test('refund ganda dengan status Diajukan ditolak (BUG-09)', function () {
     $booking = ($this->makePaidBooking)();
     Refund::create(array_merge([
         'booking_id' => $booking->id,
@@ -205,9 +205,9 @@ test('refund ganda dengan status Diajukan masih dapat dibuat (BUG-09)', function
     $response = $this->actingAs($this->admin)->post(route('dashboard.admin.refund.store'), ($this->refundPayload)($booking));
 
     $response->assertRedirect();
-    $response->assertSessionHas('success');
+    $response->assertSessionHas('error');
 
-    expect(Refund::where('booking_id', $booking->id)->count())->toBe(2);
+    expect(Refund::where('booking_id', $booking->id)->count())->toBe(1);
 });
 
 test('approve refund: status Disetujui, booking & tiket batal, pembayaran Refunded, kursi lepas', function () {

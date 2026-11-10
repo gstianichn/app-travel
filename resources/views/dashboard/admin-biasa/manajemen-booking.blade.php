@@ -822,26 +822,34 @@
     <main class="main-content">
 
         <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="page-title">
-                <h1>Manajemen Booking (Manifes Penumpang)</h1>
-                <p>Daftar manifes penumpang per perjalanan, nomor kursi, kontak langsung, titik singgah & catatan khusus.</p>
-            </div>
-
-            <div class="profile">
-                <div class="avatar">
-                    {{ strtoupper(substr($user->name ?? 'S', 0, 1)) }}
-                </div>
-                <div class="profile-info">
-                    <strong>{{ $user->name ?? 'Staff Loket' }}</strong>
-                    <span>{{ $user->branch ?? 'Pool Bandung Pusat' }}</span>
-                </div>
-            </div>
-        </header>
+        @include('dashboard.admin-biasa.partials.topbar', [
+            'topbarTitle' => 'Manajemen Booking (Manifes Penumpang)',
+            'topbarSubtitle' => 'Manifes penumpang gabungan Online (Web/App) & Offline (Loket/WA/Telp), pelunasan & status boarding.',
+        ])
 
 
         <!-- CONTENT SECTION -->
         <section class="content">
+
+            @if (session('success'))
+                <div class="ds-alert ds-alert--success" role="status">
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="ds-alert ds-alert--error" role="alert">
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
+
+            @if (!$activeTripInfo)
+                <section class="ds-panel">
+                    <p class="ds-empty">
+                        <b>Belum ada jadwal keberangkatan yang tersedia.</b>
+                        Jadwal muncul di sini setelah dibuat oleh Admin Utama.
+                    </p>
+                </section>
+            @else
 
             <!-- 1. HEADER PERJALANAN & FILTER TRIP -->
             <div class="trip-header-card">
@@ -854,33 +862,25 @@
                         </label>
 
                         <select id="scheduleSelect" name="schedule_id" class="trip-dropdown" onchange="this.form.submit()">
-                            @if($scheduleList->isNotEmpty())
-                                @foreach($scheduleList as $sched)
-                                    @php
-                                        $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
-                                        $starTag = $bCount > 0 ? " • ({$bCount} Terdaftar)" : "";
-                                        $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
-                                    @endphp
-                                    <option value="{{ $sched->id }}" {{ ($selectedSchedule && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
-                                        {{ $dateText }}{{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '13:00' }} WIB — {{ $sched->route?->origin?->name ?? 'Bandung' }} ke {{ $sched->route?->destination?->name ?? 'Jakarta' }} ({{ $sched->vehicle?->plate_number ?? 'D 7812 AB' }}){{ $starTag }}
-                                    </option>
-                                @endforeach
-                            @else
-                                <option value="1" selected>
-                                    13:00 WIB — Bandung (Dipatiukur) ke Jakarta (Semanggi) (D 7812 AB)
+                            @foreach($scheduleList as $sched)
+                                @php
+                                    $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled', 'Expired', 'expired', 'Failed', 'failed'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
+                                    $starTag = $bCount > 0 ? " • ({$bCount} Terdaftar)" : "";
+                                    $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
+                                @endphp
+                                <option value="{{ $sched->id }}" {{ ($selectedSchedule && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
+                                    {{ $dateText }}{{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '-' }} WIB — {{ $sched->route?->origin?->name ?? 'Asal' }} ke {{ $sched->route?->destination?->name ?? 'Tujuan' }} ({{ $sched->vehicle?->plate_number ?? '-' }}){{ $starTag }}
                                 </option>
-                                <option value="2">
-                                    14:15 WIB — Bandung (Pasteur) ke Bandara Soetta T3 (B 1945 TKL)
-                                </option>
-                                <option value="3">
-                                    15:30 WIB — Bandung (Dipatiukur) ke Bekasi Timur (D 7023 XY)
-                                </option>
-                            @endif
+                            @endforeach
                         </select>
                     </form>
 
-                    <!-- Tombol Aksi: Cetak & WhatsApp Driver -->
+                    <!-- Tombol Aksi: Pesan Loket, Cetak & WhatsApp Driver -->
                     <div class="trip-header-actions">
+                        <a href="{{ route('dashboard.admin-biasa.offline-booking', ['schedule_id' => $activeTripInfo->id]) }}" class="btn-action btn-print" style="background: #0C7950; color: #FFFFFF; border-color: #0C7950; display: inline-flex; align-items: center; gap: 6px;">
+                            <span>+ Input Pesanan Offline (Loket)</span>
+                        </a>
+
                         <button type="button" class="btn-action btn-print" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 6px;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="6 9 6 2 18 2 18 9" />
@@ -890,21 +890,23 @@
                             <span>Cetak Manifes</span>
                         </button>
 
-                        @php
-                            $waDriverText = urlencode("Halo Pak {$activeTripInfo->driver_name}, berikut ringkasan manifes trip {$activeTripInfo->time} ({$activeTripInfo->route_name}) armada {$activeTripInfo->plate_number}: Terisi {$totalBooked}/{$activeTripInfo->capacity} kursi, Sudah Boarding: {$boardedCount} orang. Mohon standby di pool.");
-                        @endphp
-                        <a
-                            href="https://wa.me/6281288889999?text={{ $waDriverText }}"
-                            target="_blank"
-                            class="btn-action btn-driver-wa"
-                            style="display: inline-flex; align-items: center; gap: 6px;"
-                        >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m22 2-7 20-4-9-9-4Z" />
-                                <path d="M22 2 11 13" />
-                            </svg>
-                            <span>Kirim Manifes ke Driver</span>
-                        </a>
+                        @if ($activeTripInfo->driver_wa_clean !== '')
+                            @php
+                                $waDriverText = urlencode("Halo Pak {$activeTripInfo->driver_name}, berikut ringkasan manifes trip {$activeTripInfo->time} ({$activeTripInfo->route_name}) armada {$activeTripInfo->plate_number}: Terisi {$totalBooked}/{$activeTripInfo->capacity} kursi, Sudah Boarding: {$boardedCount} orang. Mohon standby di pool.");
+                            @endphp
+                            <a
+                                href="https://wa.me/{{ $activeTripInfo->driver_wa_clean }}?text={{ $waDriverText }}"
+                                target="_blank"
+                                class="btn-action btn-driver-wa"
+                                style="display: inline-flex; align-items: center; gap: 6px;"
+                            >
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m22 2-7 20-4-9-9-4Z" />
+                                    <path d="M22 2 11 13" />
+                                </svg>
+                                <span>Kirim Manifes ke Driver</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
 
@@ -1049,7 +1051,7 @@
                                         </div>
                                     </td>
 
-                                    <!-- 2. NAMA PENUMPANG -->
+                                    <!-- 2. NAMA PENUMPANG & SALURAN PEMESANAN -->
                                     <td>
                                         <div class="passenger-info">
                                             <strong class="passenger-name-text">{{ $p->name }}</strong>
@@ -1059,6 +1061,14 @@
                                                 </svg>
                                                 {{ $p->booking_code }}
                                             </span>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                                <span class="ds-channel-badge {{ $p->is_offline ? 'ds-channel-badge--offline' : 'ds-channel-badge--online' }}">
+                                                    {{ $p->source_label }}
+                                                </span>
+                                                <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; {{ $p->is_paid ? 'background: #eaf8f2; color: #087f55;' : 'background: #fff7e6; color: #b45309;' }}">
+                                                    {{ $p->is_paid ? 'Lunas' : 'Belum Bayar' }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </td>
 
@@ -1139,7 +1149,7 @@
                                         </div>
                                     </td>
 
-                                    <!-- 6. STATUS BOARDING & AKSI TOGGLE -->
+                                    <!-- 6. STATUS BOARDING & AKSI TOGGLE / PELUNASAN -->
                                     <td style="text-align: center;">
                                         <div id="badge-status-{{ $p->id }}">
                                             @if($isBoarded)
@@ -1160,14 +1170,25 @@
                                             @endif
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            class="btn-toggle-boarding {{ $isBoarded ? 'btn-toggle-boarded' : 'btn-toggle-not-yet' }}"
-                                            onclick="togglePassengerBoarding({{ $p->id }}, '{{ $p->name }}', '{{ $p->seat_number }}')"
-                                            id="btn-toggle-{{ $p->id }}"
-                                        >
-                                            {{ $isBoarded ? 'Batalkan' : 'Masuk Armada' }}
-                                        </button>
+                                        @if(!$p->is_paid)
+                                            <form method="POST" action="{{ route('dashboard.admin-biasa.booking.settle', $p->booking_id) }}" style="margin-top: 6px;">
+                                                @csrf
+                                                <input type="hidden" name="payment_method" value="Cash">
+                                                <input type="hidden" name="mark_boarded" value="1">
+                                                <button type="submit" class="btn-toggle-boarding" style="background: #fff7e6; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">
+                                                    Lunasi Cash &amp; Boarding
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button
+                                                type="button"
+                                                class="btn-toggle-boarding {{ $isBoarded ? 'btn-toggle-boarded' : 'btn-toggle-not-yet' }}"
+                                                onclick="togglePassengerBoarding({{ $p->id }}, '{{ $p->name }}', '{{ $p->seat_number }}')"
+                                                id="btn-toggle-{{ $p->id }}"
+                                            >
+                                                {{ $isBoarded ? 'Batalkan' : 'Masuk Armada' }}
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -1196,6 +1217,8 @@
                 </div>
 
             </div>
+
+            @endif
 
         </section>
 

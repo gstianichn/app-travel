@@ -42,8 +42,8 @@
                     <input id="profile-email" type="email" name="email" required maxlength="255" autocomplete="email" value="{{ old('email', $user->email) }}" class="{{ $fieldClass }}">
                 </div>
                 <div class="space-y-1.5">
-                    <label for="profile-phone" class="{{ $labelClass }}">Nomor HP (WhatsApp)</label>
-                    <input id="profile-phone" type="tel" name="phone" maxlength="25" autocomplete="tel" inputmode="tel" value="{{ old('phone', $user->phone) }}" placeholder="08xxxxxxxxxx" class="{{ $fieldClass }}">
+                    <label for="profile-phone" class="{{ $labelClass }}">Nomor HP (WhatsApp) <span class="text-xs font-normal text-slate-500">(angka saja)</span></label>
+                    <input id="profile-phone" type="tel" name="phone" maxlength="20" autocomplete="tel" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="{{ old('phone', $user->phone) }}" placeholder="08xxxxxxxxxx" class="{{ $fieldClass }}">
                 </div>
                 <div class="sm:col-span-2">
                     <button type="submit" class="lp-btn lp-btn--green">Simpan profil</button>

@@ -1498,6 +1498,22 @@
                                     Alasan penolakan spesifik.
                                 </div>
 
+                                <div id="fbSettleBox" style="display: none; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                                    <div style="font-size: 12px; font-weight: 700; color: #92400E; margin-bottom: 8px;">
+                                        Tagihan <span id="fbSettleBookingCode">-</span> (<span id="fbSettleAmount">Rp 0</span>) belum dibayar. Terima pelunasan langsung di loket:
+                                    </div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                                        <select id="fbSettleMethod" style="padding: 7px 10px; border-radius: 8px; border: 1px solid #FCD34D; font-size: 12px; font-weight: 700; background: #FFFFFF;">
+                                            <option value="Cash">Tunai (Cash)</option>
+                                            <option value="QRIS">QRIS Loket</option>
+                                            <option value="Transfer Bank">Transfer Bank</option>
+                                        </select>
+                                        <button type="button" id="fbSettleConfirmBtn" onclick="confirmSettleFromScanner()" style="padding: 8px 14px; border: none; border-radius: 8px; background: #0C7950; color: #FFFFFF; font-size: 12px; font-weight: 700; cursor: pointer;">
+                                            Lunasi di Loket &amp; Boarding
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <button type="button" class="fb-btn-dismiss btn-danger-action" onclick="dismissFeedback()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -1628,9 +1644,14 @@
                                             <span style="font-family: monospace; font-weight: 700; color: var(--text-dark);">
                                                 {{ $p->booking_code }}
                                             </span>
-                                            <small style="display: block; font-size: 11px; color: var(--primary);">
-                                                {{ $p->payment_status }}
-                                            </small>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                                <span class="ds-channel-badge {{ $p->is_offline ? 'ds-channel-badge--offline' : 'ds-channel-badge--online' }}">
+                                                    {{ $p->source_label }}
+                                                </span>
+                                                <small style="display: inline-block; font-size: 11px; font-weight: 700; color: {{ $p->is_paid ? 'var(--primary)' : '#B45309' }};">
+                                                    {{ $p->payment_status }}
+                                                </small>
+                                            </div>
                                         </td>
 
                                         <td style="text-align: center;" id="statusCell-{{ $p->id }}">
@@ -1661,21 +1682,32 @@
                                         </td>
 
                                         <td class="action-cell">
-                                            <select
-                                                class="status-select-btn"
-                                                id="statusDropdown-{{ $p->id }}"
-                                                onchange="updatePassengerStatusManual('{{ $p->id }}', this.value)"
-                                            >
-                                                <option value="belum_hadir" {{ $p->boarding_status === 'belum_hadir' ? 'selected' : '' }}>
-                                                    Belum Hadir
-                                                </option>
-                                                <option value="boarded" {{ $p->boarding_status === 'boarded' ? 'selected' : '' }}>
-                                                    Boarded
-                                                </option>
-                                                <option value="no_show" {{ $p->boarding_status === 'no_show' ? 'selected' : '' }}>
-                                                    No-Show
-                                                </option>
-                                            </select>
+                                            @if(!$p->is_paid)
+                                                <form method="POST" action="{{ route('dashboard.admin-biasa.booking.settle', $p->booking_id) }}">
+                                                    @csrf
+                                                    <input type="hidden" name="payment_method" value="Cash">
+                                                    <input type="hidden" name="mark_boarded" value="1">
+                                                    <button type="submit" class="status-select-btn" style="background: #FFFBEB; border-color: #FDE68A; color: #B45309;">
+                                                        Lunasi Cash &amp; Board
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <select
+                                                    class="status-select-btn"
+                                                    id="statusDropdown-{{ $p->id }}"
+                                                    onchange="updatePassengerStatusManual('{{ $p->id }}', this.value)"
+                                                >
+                                                    <option value="belum_hadir" {{ $p->boarding_status === 'belum_hadir' ? 'selected' : '' }}>
+                                                        Belum Hadir
+                                                    </option>
+                                                    <option value="boarded" {{ $p->boarding_status === 'boarded' ? 'selected' : '' }}>
+                                                        Boarded
+                                                    </option>
+                                                    <option value="no_show" {{ $p->boarding_status === 'no_show' ? 'selected' : '' }}>
+                                                        No-Show
+                                                    </option>
+                                                </select>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -2131,6 +2163,19 @@
                 document.getElementById('fbErrorTitle').innerText = data.title || 'TIKET DITOLAK';
                 document.getElementById('fbErrorMessage').innerText = data.message || 'Tiket tidak memenuhi syarat boarding.';
 
+                const settleBox = document.getElementById('fbSettleBox');
+                if (settleBox) {
+                    if (data.can_settle && data.booking_id) {
+                        window.__pendingSettleBookingId = data.booking_id;
+                        document.getElementById('fbSettleBookingCode').innerText = data.booking_code || '-';
+                        document.getElementById('fbSettleAmount').innerText = 'Rp ' + Number(data.total_price || 0).toLocaleString('id-ID');
+                        settleBox.style.display = 'block';
+                    } else {
+                        window.__pendingSettleBookingId = null;
+                        settleBox.style.display = 'none';
+                    }
+                }
+
                 showToast(data.title || 'Validasi Gagal', 'danger');
             }
 
@@ -2143,10 +2188,62 @@
             successBox.style.display = 'none';
             failedBox.style.display = 'block';
 
+            const settleBox = document.getElementById('fbSettleBox');
+            if (settleBox) settleBox.style.display = 'none';
+
             document.getElementById('fbErrorTitle').innerText = 'KONEKSI TERKENDALA';
             document.getElementById('fbErrorMessage').innerText = 'Gagal menghubungi server loket. Pastikan koneksi jaringan aktif.';
         } finally {
             isSubmitting = false;
+        }
+    }
+
+    const settleRouteTemplate = @json(route('dashboard.admin-biasa.booking.settle', ['booking' => '__BOOKING_ID__']));
+
+    async function confirmSettleFromScanner() {
+        const bookingId = window.__pendingSettleBookingId;
+        if (!bookingId) return;
+
+        const method = document.getElementById('fbSettleMethod')?.value || 'Cash';
+        const btn = document.getElementById('fbSettleConfirmBtn');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Memproses...';
+        }
+
+        try {
+            const res = await fetch(settleRouteTemplate.replace('__BOOKING_ID__', bookingId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    payment_method: method,
+                    mark_boarded: true
+                })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                playSuccessSound();
+                showToast(data.message || 'Pelunasan & Boarding berhasil!', 'success');
+                setTimeout(() => window.location.reload(), 650);
+            } else {
+                playErrorSound();
+                showToast(data.message || 'Gagal memproses pelunasan.', 'danger');
+            }
+        } catch (err) {
+            console.error(err);
+            playErrorSound();
+            showToast('Koneksi gagal saat melunasi tiket.', 'danger');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = 'Lunasi di Loket & Boarding';
+            }
         }
     }
 

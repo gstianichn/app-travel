@@ -335,6 +335,7 @@ class AdminDashboardController extends Controller
                 'nullable',
                 'string',
                 'max:20',
+                'regex:/^[0-9]{8,20}$/',
             ],
 
             'password' => [
@@ -511,6 +512,7 @@ class AdminDashboardController extends Controller
                 'nullable',
                 'string',
                 'max:20',
+                'regex:/^[0-9]{8,20}$/',
             ],
 
             'role' => [
@@ -812,7 +814,7 @@ class AdminDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'branch' => ['required', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:255'],
             'access_code' => ['nullable', 'string', 'max:50'],
@@ -825,6 +827,7 @@ class AdminDashboardController extends Controller
             'email.email' => 'Format email tidak valid.',
             'email.unique' => 'Email ini sudah terdaftar pada sistem.',
             'phone.required' => 'Nomor kontak / WhatsApp wajib diisi.',
+            'phone.regex' => 'Nomor HP staf hanya boleh berisi angka (8-20 digit).',
             'branch.required' => 'Penempatan cabang / loket wajib dipilih.',
             'password.required' => 'Kata sandi akun wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
@@ -902,7 +905,7 @@ class AdminDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($staff->id)],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'branch' => ['required', 'string', 'max:255'],
             'position' => ['nullable', 'string', 'max:255'],
             'access_code' => ['nullable', 'string', 'max:50'],
@@ -915,6 +918,7 @@ class AdminDashboardController extends Controller
             'email.required' => 'Alamat email wajib diisi.',
             'email.unique' => 'Email ini sudah digunakan oleh akun lain.',
             'phone.required' => 'Nomor kontak / WhatsApp wajib diisi.',
+            'phone.regex' => 'Nomor HP staf hanya boleh berisi angka (8-20 digit).',
             'branch.required' => 'Penempatan cabang / loket wajib dipilih.',
             'access_code.max' => 'Kode akses maksimal 50 karakter.',
             'status.required' => 'Status kepegawaian wajib ditentukan.',
@@ -1104,14 +1108,14 @@ class AdminDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'password' => ['required', 'string', 'min:8'],
             'access_code' => ['nullable', 'string', 'max:50'],
             'license_number' => ['required', 'string', 'max:50', 'unique:drivers,license_number'],
             'license_type' => ['required', 'string', 'max:50'],
             'license_expired_at' => ['required', 'date'],
             'emergency_contact_name' => ['required', 'string', 'max:255'],
-            'emergency_contact_phone' => ['required', 'string', 'max:20'],
+            'emergency_contact_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'emergency_contact_relation' => ['required', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -1122,6 +1126,7 @@ class AdminDashboardController extends Controller
             'email.required' => 'Alamat email login wajib diisi.',
             'email.unique' => 'Alamat email ini sudah terdaftar.',
             'phone.required' => 'Nomor WhatsApp pengemudi wajib diisi.',
+            'phone.regex' => 'Nomor WhatsApp pengemudi hanya boleh berisi angka (8-20 digit).',
             'password.required' => 'Kata sandi login wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
             'license_number.required' => 'Nomor SIM wajib diisi.',
@@ -1130,6 +1135,7 @@ class AdminDashboardController extends Controller
             'license_expired_at.required' => 'Masa berlaku SIM wajib diisi.',
             'emergency_contact_name.required' => 'Nama kontak darurat keluarga wajib diisi.',
             'emergency_contact_phone.required' => 'Nomor telepon kontak darurat wajib diisi.',
+            'emergency_contact_phone.regex' => 'Nomor telepon kontak darurat hanya boleh berisi angka (8-20 digit).',
             'emergency_contact_relation.required' => 'Hubungan kontak darurat keluarga wajib diisi.',
             'status.required' => 'Status kerja pengemudi wajib ditentukan.',
             'photo.image' => 'File foto harus berupa gambar valid.',
@@ -1214,14 +1220,14 @@ class AdminDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'password' => ['nullable', 'string', 'min:8'],
             'access_code' => ['nullable', 'string', 'max:50'],
             'license_number' => ['required', 'string', 'max:50', Rule::unique('drivers', 'license_number')->ignore($driver->id)],
             'license_type' => ['required', 'string', 'max:50'],
             'license_expired_at' => ['required', 'date'],
             'emergency_contact_name' => ['required', 'string', 'max:255'],
-            'emergency_contact_phone' => ['required', 'string', 'max:20'],
+            'emergency_contact_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'emergency_contact_relation' => ['required', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -1231,11 +1237,13 @@ class AdminDashboardController extends Controller
             'name.required' => 'Nama lengkap pengemudi wajib diisi.',
             'email.required' => 'Alamat email login wajib diisi.',
             'phone.required' => 'Nomor WhatsApp pengemudi wajib diisi.',
+            'phone.regex' => 'Nomor WhatsApp pengemudi hanya boleh berisi angka (8-20 digit).',
             'license_number.required' => 'Nomor SIM wajib diisi.',
             'license_type.required' => 'Jenis SIM wajib dipilih.',
             'license_expired_at.required' => 'Masa berlaku SIM wajib diisi.',
             'emergency_contact_name.required' => 'Nama kontak darurat keluarga wajib diisi.',
             'emergency_contact_phone.required' => 'Nomor telepon kontak darurat wajib diisi.',
+            'emergency_contact_phone.regex' => 'Nomor telepon kontak darurat hanya boleh berisi angka (8-20 digit).',
             'emergency_contact_relation.required' => 'Hubungan kontak darurat keluarga wajib diisi.',
             'status.required' => 'Status kerja pengemudi wajib ditentukan.',
             'photo.image' => 'File foto harus berupa gambar valid.',
@@ -1625,14 +1633,25 @@ class AdminDashboardController extends Controller
                 ->with('error', "Unit {$plate} tidak dapat dihapus karena memiliki riwayat jadwal atau transaksi terkait. Anda dapat menonaktifkan status armada ini sebagai gantinya.");
         }
 
-        try {
-            if ($vehicle->photo && Storage::disk('public')->exists($vehicle->photo)) {
-                Storage::disk('public')->delete($vehicle->photo);
-            }
+        $seatIds = $vehicle->seats()->pluck('id');
+        if ($seatIds->isNotEmpty() && BookingPassenger::whereIn('seat_id', $seatIds)->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', "Unit {$plate} tidak dapat dihapus karena data kursinya masih terhubung dengan riwayat penumpang.");
+        }
 
-            // Hapus relasi kursi
-            $vehicle->seats()->delete();
-            $vehicle->delete();
+        $photoPath = $vehicle->photo;
+
+        try {
+            DB::transaction(function () use ($vehicle) {
+                // Hapus relasi kursi dan data kendaraan
+                $vehicle->seats()->delete();
+                $vehicle->delete();
+            });
+
+            if ($photoPath && Storage::disk('public')->exists($photoPath)) {
+                Storage::disk('public')->delete($photoPath);
+            }
         } catch (\Throwable $e) {
             return redirect()
                 ->back()
@@ -1796,13 +1815,17 @@ class AdminDashboardController extends Controller
             'selected_seats' => ['required', 'array', 'min:1'],
             'selected_seats.*' => ['integer', 'exists:seats,id'],
             'customer_name' => ['required', 'string', 'max:100'],
-            'customer_phone' => ['required', 'string', 'max:20'],
+            'customer_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'customer_email' => ['nullable', 'email', 'max:100'],
             'source' => ['required', Rule::in(['walk_in', 'whatsapp', 'phone'])],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer Bank', 'QRIS'])],
             'payment_status' => ['required', Rule::in(['paid', 'pending'])],
             'notes' => ['nullable', 'string', 'max:500'],
             'passengers' => ['nullable', 'array'],
+            'passengers.*.phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
+        ], [
+            'customer_phone.regex' => 'Nomor HP pemesan hanya boleh berisi angka (8-20 digit).',
+            'passengers.*.phone.regex' => 'Nomor HP penumpang hanya boleh berisi angka (8-20 digit).',
         ]);
 
         return DB::transaction(function () use ($validated, $request) {
@@ -2392,6 +2415,27 @@ class AdminDashboardController extends Controller
             $admin = Auth::user();
 
             if ($validated['action'] === 'approve') {
+                $booking = $payment->booking;
+
+                // Cek bentrok kursi jika booking sudah sempat batal/kedaluwarsa dan kursinya diambil orang lain
+                if ($booking) {
+                    $seatIds = $booking->passengers()->pluck('seat_id')->filter()->all();
+                    if (! empty($seatIds) && $booking->schedule_id) {
+                        $conflictBooking = BookingPassenger::query()
+                            ->whereIn('seat_id', $seatIds)
+                            ->where('booking_id', '!=', $booking->id)
+                            ->whereHas('booking', function ($q) use ($booking) {
+                                $q->where('schedule_id', $booking->schedule_id)
+                                    ->whereRaw("LOWER(status) IN ('paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'refund_pending')");
+                            })
+                            ->exists();
+
+                        if ($conflictBooking) {
+                            return redirect()->back()->with('error', 'Pembayaran tidak dapat disetujui karena kursi pemesanan ini telah ditempati oleh pemesanan lain.');
+                        }
+                    }
+                }
+
                 $payment->status = 'Success';
                 $payment->paid_at = now();
                 $payment->verified_by = $admin ? $admin->id : null;
@@ -2428,7 +2472,11 @@ class AdminDashboardController extends Controller
 
                 return redirect()->back()->with('success', "Pembayaran untuk tagihan {$payment->order_id} berhasil diverifikasi (Lunas). E-Ticket perjalanan telah resmi diterbitkan.");
             } else {
-                // Reject
+                // Reject: Pembayaran yang sudah lunas tidak dapat ditolak
+                if (in_array(strtolower((string) $payment->status), ['success', 'paid', 'lunas'], true)) {
+                    return redirect()->back()->with('error', 'Pembayaran yang sudah lunas tidak dapat ditolak.');
+                }
+
                 $reason = $validated['rejection_reason'] ?: ($validated['notes'] ?: 'Bukti transfer ditolak oleh admin karena tidak valid.');
                 $payment->status = 'Failed';
                 $payment->verified_by = $admin ? $admin->id : null;
@@ -2563,6 +2611,9 @@ class AdminDashboardController extends Controller
                 if ($payment->booking) {
                     $payment->booking->status = 'Expired';
                     $payment->booking->save();
+                    if ($payment->booking->ticket) {
+                        $payment->booking->ticket->update(['status' => 'Cancelled']);
+                    }
                     if ($payment->booking->schedule) {
                         $payment->booking->schedule->recalculateAvailableSeats();
                     }
@@ -3336,7 +3387,7 @@ class AdminDashboardController extends Controller
 
         // Cek jika sudah memiliki pengajuan refund aktif
         $existing = Refund::where('booking_id', $booking->id)
-            ->whereIn('status', ['Menunggu', 'menunggu', 'Pending', 'pending', 'Disetujui', 'disetujui', 'Approved', 'approved'])
+            ->whereIn('status', ['Diajukan', 'diajukan', 'Menunggu', 'menunggu', 'Pending', 'pending', 'Disetujui', 'disetujui', 'Approved', 'approved'])
             ->exists();
 
         if ($existing) {
@@ -3486,11 +3537,8 @@ class AdminDashboardController extends Controller
         $refund->save();
 
         $booking = $refund->booking;
-        if ($booking && ! in_array(strtolower($booking->status), ['cancelled', 'batal', 'expired'])) {
-            $restoredStatus = in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])
-                ? $booking->status
-                : 'Paid';
-            $booking->update(['status' => $restoredStatus]);
+        if ($booking) {
+            $booking->update(['status' => 'Paid']);
             if ($booking->ticket) {
                 $booking->ticket->update(['status' => 'Valid']);
             }

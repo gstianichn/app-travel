@@ -303,10 +303,14 @@
                         </label>
 
                         <input
-                            type="text"
+                            type="tel"
                             name="phone"
                             value="{{ old('phone', $user->phone) }}"
                             class="form-input"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                            maxlength="20"
                             placeholder="Contoh: 081234567890"
                         >
 

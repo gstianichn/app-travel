@@ -97,10 +97,10 @@ class Schedule extends Model
         $vehicle->ensureSeatsExist();
         $seats = $vehicle->seats()->orderBy('seat_row')->orderBy('seat_column')->get();
 
-        // Cari semua passenger yang memesan jadwal ini di booking yang aktif (tidak dibatalkan)
+        // Cari semua passenger yang memesan jadwal ini di booking yang aktif (tidak dibatalkan / kedaluwarsa / gagal)
         $activeBookings = $this->bookings()
             ->with(['passengers.seat', 'user'])
-            ->whereNotIn('status', ['Cancelled', 'cancelled'])
+            ->whereNotIn('status', ['Cancelled', 'cancelled', 'Expired', 'expired', 'Failed', 'failed'])
             ->get();
 
         $occupiedSeats = [];
@@ -167,7 +167,7 @@ class Schedule extends Model
 
         $occupiedCount = BookingPassenger::whereHas('booking', function ($q) {
             $q->where('schedule_id', $this->id)
-                ->whereNotIn('status', ['Cancelled', 'cancelled']);
+                ->whereNotIn('status', ['Cancelled', 'cancelled', 'Expired', 'expired', 'Failed', 'failed']);
         })->count();
 
         $available = max(0, $totalCapacity - $occupiedCount);
@@ -435,7 +435,7 @@ class Schedule extends Model
         // 2. Titik Jemput Penumpang (Dihimpun dari manifes penumpang aktif)
         $passengers = BookingPassenger::whereHas('booking', function ($q) {
             $q->where('schedule_id', $this->id)
-                ->whereNotIn('status', ['Cancelled', 'cancelled']);
+                ->whereNotIn('status', ['Cancelled', 'cancelled', 'Expired', 'expired', 'Failed', 'failed']);
         })->with(['booking.user', 'seat'])->get();
 
         $pickupGroups = [];

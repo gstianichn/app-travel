@@ -105,8 +105,9 @@
                         @enderror
                     </div>
                     <div class="space-y-1.5">
-                        <label for="booker_phone" class="block font-semibold text-slate-800">Nomor HP (WhatsApp)</label>
-                        <input type="tel" id="booker_phone" name="booker_phone" required maxlength="25" autocomplete="tel" inputmode="tel"
+                        <label for="booker_phone" class="block font-semibold text-slate-800">Nomor HP (WhatsApp) <span class="text-xs font-normal text-slate-500">(angka saja)</span></label>
+                        <input type="tel" id="booker_phone" name="booker_phone" required maxlength="20" autocomplete="tel" inputmode="numeric" pattern="[0-9]*"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                value="{{ old('booker_phone', $booking->contact_phone ?? $account?->phone) }}"
                                placeholder="08xxxxxxxxxx"
                                @error('booker_phone') aria-invalid="true" aria-describedby="booker_phone-error" @enderror
@@ -167,8 +168,9 @@
                                            class="{{ $inputClass }}">
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label for="p_phone_{{ $passenger->id }}" class="block font-semibold text-slate-800">Nomor HP <span class="font-normal text-slate-600">(boleh kosong)</span></label>
-                                    <input type="tel" name="passengers[{{ $index }}][phone]" id="p_phone_{{ $passenger->id }}" maxlength="25" inputmode="tel"
+                                    <label for="p_phone_{{ $passenger->id }}" class="block font-semibold text-slate-800">Nomor HP <span class="font-normal text-slate-600">(angka saja, boleh kosong)</span></label>
+                                    <input type="tel" name="passengers[{{ $index }}][phone]" id="p_phone_{{ $passenger->id }}" maxlength="20" inputmode="numeric" pattern="[0-9]*"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                            value="{{ old('passengers.'.$index.'.phone', $passenger->phone) }}"
                                            placeholder="08xxxxxxxxxx"
                                            class="{{ $inputClass }}">

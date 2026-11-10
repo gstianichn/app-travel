@@ -566,6 +566,7 @@
         align-items: center;
         justify-content: center;
         padding: 16px;
+        overflow-y: auto;
     }
 
     .custom-modal.show {
@@ -577,9 +578,19 @@
         border-radius: 16px;
         width: 100%;
         max-width: 560px;
+        max-height: calc(100vh - 32px);
+        display: flex;
+        flex-direction: column;
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         overflow: hidden;
         animation: modalFadeIn 0.2s ease-out;
+    }
+
+    .modal-dialog form {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(100vh - 32px);
+        min-height: 0;
     }
 
     @keyframes modalFadeIn {
@@ -594,6 +605,7 @@
         align-items: center;
         justify-content: space-between;
         background: #fbfdfc;
+        flex-shrink: 0;
     }
 
     .modal-dialog-header h3 {
@@ -622,7 +634,8 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
-        max-height: 80vh;
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
     }
 
@@ -634,6 +647,7 @@
         justify-content: flex-end;
         gap: 10px;
         background: #f8fafc;
+        flex-shrink: 0;
     }
 
     .info-callout {
@@ -1105,8 +1119,12 @@
 
             <div class="modal-dialog-footer">
                 <button type="button" class="btn-filter-reset" onclick="closeApproveModal()">Batal</button>
-                <button type="submit" class="btn-create-refund">
-                    <span></span> Konfirmasi & Setujui Refund
+                <button type="submit" class="btn-create-refund" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m22 2-7 20-4-9-9-4Z" />
+                        <path d="M22 2 11 13" />
+                    </svg>
+                    <span>Kirim Persetujuan &amp; Setujui Refund</span>
                 </button>
             </div>
         </form>
@@ -1318,9 +1336,12 @@
 
 
 <script>
+    const approveRouteTemplate = @json(route('dashboard.admin.refund.approve', ['refund' => '__REFUND_ID__']));
+    const rejectRouteTemplate = @json(route('dashboard.admin.refund.reject', ['refund' => '__REFUND_ID__']));
+
     // MODAL APPROVE
     function openApproveModal(refund, booking) {
-        document.getElementById('approveRefundForm').action = `/refund/${refund.id}/approve`;
+        document.getElementById('approveRefundForm').action = approveRouteTemplate.replace('__REFUND_ID__', refund.id);
         document.getElementById('approve_booking_code').innerText = booking ? booking.booking_code : ('#' + refund.booking_id);
         document.getElementById('approve_customer_name').innerText = (booking && booking.user) ? booking.user.name : 'Pelanggan';
         document.getElementById('approve_bank_account').innerText = `${refund.bank_name || 'BANK'} - ${refund.account_number || '-'} a.n ${refund.account_holder || '-'}`;
@@ -1359,7 +1380,7 @@
 
     // MODAL REJECT
     function openRejectModal(refundId, bookingCode) {
-        document.getElementById('rejectRefundForm').action = `/refund/${refundId}/reject`;
+        document.getElementById('rejectRefundForm').action = rejectRouteTemplate.replace('__REFUND_ID__', refundId);
         document.getElementById('reject_booking_code').innerText = bookingCode || ('#' + refundId);
         document.getElementById('reject_admin_note').value = '';
         document.getElementById('rejectRefundModal').classList.add('show');

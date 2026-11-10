@@ -502,6 +502,26 @@
                 </table>
             </div>
 
+            @if($booking->refund && in_array(strtolower((string) $booking->refund->status), ['diajukan', 'menunggu', 'pending'], true))
+                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 14px 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+                    <div>
+                        <strong style="color: #92400e; font-size: 13px; display: block;">Permohonan Refund Menunggu ACC Admin</strong>
+                        <span style="font-size: 12px; color: #78350f;">Alasan: {{ $booking->refund->reason ?: '-' }} • Nominal: Rp {{ number_format((float) $booking->refund->amount, 0, ',', '.') }}</span>
+                    </div>
+                    <form method="POST" action="{{ route('dashboard.admin.refund.approve', $booking->refund->id) }}" style="display: inline-flex; gap: 8px; align-items: center;">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="cancellation_fee" value="{{ (float) ($booking->refund->cancellation_fee ?? 0) }}">
+                        <button type="submit" style="padding: 8px 16px; border: none; border-radius: 8px; background: #087f55; color: #ffffff; font-size: 12px; font-weight: 700; cursor: pointer;">
+                            Kirim Persetujuan &amp; Setujui Refund
+                        </button>
+                        <a href="{{ route('dashboard.admin.refund.index', ['search' => $booking->booking_code]) }}" style="padding: 8px 12px; border: 1px solid #d97706; border-radius: 8px; background: #ffffff; color: #92400e; font-size: 12px; font-weight: 700; text-decoration: none;">
+                            Kelola di Halaman Refund
+                        </a>
+                    </form>
+                </div>
+            @endif
+
             {{-- FOOTER NOTICE --}}
             <div class="payment-summary-box">
                 <div>

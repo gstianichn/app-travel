@@ -502,16 +502,15 @@ class UserDashboardController extends Controller
         $code = strtoupper(trim($validated['promo_code']));
         $subtotal = (float) $booking->subtotal;
 
-        $originName = strtolower($booking->schedule?->route?->origin?->name ?? '');
-        $destinationName = strtolower($booking->schedule?->route?->destination?->name ?? '');
+        $originText = strtolower(trim(($booking->schedule?->route?->origin?->name ?? '').' '.($booking->schedule?->route?->origin?->city ?? '')));
+        $destinationText = strtolower(trim(($booking->schedule?->route?->destination?->name ?? '').' '.($booking->schedule?->route?->destination?->city ?? '')));
+        $isBandungJakarta = (str_contains($originText, 'bandung') && str_contains($destinationText, 'jakarta'))
+            || (str_contains($originText, 'jakarta') && str_contains($destinationText, 'bandung'));
 
         // Aturan validasi promo:
         if ($code === 'HEMATLIBURAN') {
             // Berlaku untuk Bandung - Jakarta PP, min transaksi Rp 100.000, diskon 25% max Rp 50.000
-            $isRouteValid = (str_contains($originName, 'bandung') || str_contains($destinationName, 'bandung'))
-                && (str_contains($originName, 'jakarta') || str_contains($destinationName, 'jakarta'));
-
-            if (! $isRouteValid) {
+            if (! $isBandungJakarta) {
                 return response()->json([
                     'valid' => false,
                     'message' => 'Voucer HEMATLIBURAN hanya berlaku untuk rute Bandung ke Jakarta atau sebaliknya.',
@@ -560,7 +559,7 @@ class UserDashboardController extends Controller
         }
 
         // Cek apakah ada di dompet voucher pengguna (UserVoucher)
-        $user = Auth::user();
+        $user = Auth::user() ?? $booking->user;
         if ($user) {
             $userVoucher = $user->vouchers()->where('code', $code)->first();
             if ($userVoucher) {
@@ -574,8 +573,7 @@ class UserDashboardController extends Controller
                 }
 
                 if ($userVoucher->applicable_route) {
-                    $routeMatch = str_contains(strtolower($originName), 'bandung') || str_contains(strtolower($destinationName), 'jakarta');
-                    if (! $routeMatch) {
+                    if (! $isBandungJakarta) {
                         return response()->json([
                             'valid' => false,
                             'message' => "Voucher {$code} hanya berlaku untuk rute: {$userVoucher->applicable_route}.",
@@ -624,19 +622,20 @@ class UserDashboardController extends Controller
 
         $validated = $request->validate([
             'booker_name' => ['required', 'string', 'max:150'],
-            'booker_phone' => ['required', 'string', 'max:25', 'regex:/^[0-9+\-\s()]{8,25}$/'],
+            'booker_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'booker_email' => ['required', 'email', 'max:150'],
             'passengers' => ['required', 'array'],
             'passengers.*.id' => ['required', 'integer', 'exists:booking_passengers,id'],
             'passengers.*.name' => ['required', 'string', 'max:150'],
-            'passengers.*.phone' => ['nullable', 'string', 'max:25'],
+            'passengers.*.phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'passengers.*.special_request' => ['nullable', 'string', 'max:255'],
             'promo_code' => ['nullable', 'string'],
             'notes' => ['nullable', 'string', 'max:500'],
             'payment_channel' => ['nullable', 'string', 'in:bca,mandiri,bni,bri,bsi,seabank,qris,gopay,shopeepay'],
             'payment_category' => ['nullable', 'string', 'in:va,qris,ewallet'],
         ], [
-            'booker_phone.regex' => 'Nomor HP hanya boleh berisi angka, spasi, +, atau -, minimal 8 digit.',
+            'booker_phone.regex' => 'Nomor HP pemesan hanya boleh berisi angka (minimal 8 digit).',
+            'passengers.*.phone.regex' => 'Nomor HP penumpang hanya boleh berisi angka (minimal 8 digit).',
         ]);
 
         // Cek apakah waktu lock habis
@@ -649,31 +648,23 @@ class UserDashboardController extends Controller
         }
 
         $booking->loadMissing('schedule.route.origin', 'schedule.route.destination');
-        $originName = strtolower($booking->schedule?->route?->origin?->name ?? '');
-        $destinationName = strtolower($booking->schedule?->route?->destination?->name ?? '');
+        $originText = strtolower(trim(($booking->schedule?->route?->origin?->name ?? '').' '.($booking->schedule?->route?->origin?->city ?? '')));
+        $destinationText = strtolower(trim(($booking->schedule?->route?->destination?->name ?? '').' '.($booking->schedule?->route?->destination?->city ?? '')));
+        $isBandungJakarta = (str_contains($originText, 'bandung') && str_contains($destinationText, 'jakarta'))
+            || (str_contains($originText, 'jakarta') && str_contains($destinationText, 'bandung'));
 
         $subtotal = (float) $booking->subtotal;
         $discount = 0.0;
         $promoCode = strtoupper(trim($request->input('promo_code', '')));
         $appliedUserVoucher = null;
 
-        if ($promoCode === 'HEMATLIBURAN') {
-            $isRouteValid = (str_contains($originName, 'bandung') || str_contains($destinationName, 'bandung'))
-                && (str_contains($originName, 'jakarta') || str_contains($destinationName, 'jakarta'));
-            if ($isRouteValid && $subtotal >= 100000) {
-                $discount = min(50000, $subtotal * 0.25);
-            }
-        } elseif ($promoCode === 'TRAVELHEMAT' && $subtotal >= 100000) {
-            $discount = 20000;
-        }
-
-        $user = Auth::user();
+        $user = Auth::user() ?? $booking->user;
         if ($user && $promoCode) {
             $userVoucher = $user->vouchers()->where('code', $promoCode)->first();
             if ($userVoucher && $userVoucher->isActive()) {
                 $canApply = true;
                 if ($userVoucher->applicable_route) {
-                    $canApply = str_contains($originName, 'bandung') || str_contains($destinationName, 'jakarta');
+                    $canApply = $isBandungJakarta;
                 }
                 if ($canApply && $subtotal >= $userVoucher->min_transaction) {
                     if ($userVoucher->discount_type === 'percent') {
@@ -684,6 +675,16 @@ class UserDashboardController extends Controller
                     }
                     $appliedUserVoucher = $userVoucher;
                 }
+            }
+        }
+
+        if ($discount <= 0 && ! $appliedUserVoucher && $promoCode) {
+            if ($promoCode === 'HEMATLIBURAN') {
+                if ($isBandungJakarta && $subtotal >= 100000) {
+                    $discount = min(50000, $subtotal * 0.25);
+                }
+            } elseif ($promoCode === 'TRAVELHEMAT' && $subtotal >= 100000) {
+                $discount = 20000;
             }
         }
 
@@ -1354,27 +1355,45 @@ class UserDashboardController extends Controller
         $ticket = Ticket::with('booking.passengers')->find($ticketId)
             ?? Ticket::with('booking.passengers')->where('booking_id', $ticketId)->first();
 
-        if (! $ticket) {
+        if ($ticket) {
+            $booking = $ticket->booking;
+            if ($booking && $booking->user_id !== Auth::id()) {
+                abort(403);
+            }
+
+            $ticketStatusLower = strtolower((string) $ticket->status);
+            $bookingStatusLower = strtolower((string) ($booking?->status ?? ''));
+
+            if (in_array($ticketStatusLower, ['cancelled', 'dibatalkan', 'refunded'], true) ||
+                in_array($bookingStatusLower, ['cancelled', 'refunded', 'failed', 'expired'], true)) {
+                return back()->with('error', 'Tiket yang telah dibatalkan tidak dapat di-check-in.');
+            }
+
+            if (! $booking || ! in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas'], true)) {
+                return back()->with('error', 'Check-in mandiri hanya dapat dilakukan untuk tiket yang sudah lunas.');
+            }
+        } else {
+            // Jika tiket belum terbit, cari booking milik user
             $booking = Booking::with('passengers')->where('id', $ticketId)->where('user_id', Auth::id())->firstOrFail();
-            $ticket = Ticket::firstOrCreate(
-                ['booking_id' => $booking->id],
-                [
-                    'ticket_number' => 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(substr($booking->booking_code, -4)),
-                    'qr_code' => 'QR-'.$booking->booking_code,
-                    'status' => 'Valid',
-                ]
-            );
+
+            $bookingStatusLower = strtolower((string) $booking->status);
+            if (in_array($bookingStatusLower, ['cancelled', 'refunded', 'failed', 'expired'], true)) {
+                return back()->with('error', 'Tiket yang telah dibatalkan tidak dapat di-check-in.');
+            }
+
+            if (! in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas'], true)) {
+                return back()->with('error', 'Check-in mandiri hanya dapat dilakukan untuk tiket yang sudah lunas.');
+            }
+
+            $ticket = Ticket::create([
+                'booking_id' => $booking->id,
+                'ticket_number' => 'TKT-'.Carbon::now()->format('ymd').'-'.strtoupper(substr($booking->booking_code, -4)),
+                'qr_code' => 'QR-'.$booking->booking_code,
+                'status' => 'Valid',
+            ]);
         }
 
         $booking = $ticket->booking;
-        if ($booking && $booking->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if (! $booking || ! in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas'])) {
-            return back()->with('error', 'Check-in mandiri hanya dapat dilakukan untuk tiket yang sudah lunas.');
-        }
-
         $now = Carbon::now();
 
         // 1. Update status tiket menjadi Boarded
@@ -1758,10 +1777,11 @@ class UserDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'nik' => ['nullable', 'string', 'regex:/^[0-9]{16}$/'],
-            'phone' => ['nullable', 'string', 'max:25'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'is_primary' => ['nullable', 'boolean'],
         ], [
             'nik.regex' => 'Nomor Identitas Kependudukan (NIK) harus terdiri dari 16 digit angka.',
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka (8-20 digit).',
         ]);
 
         $user = $request->user();
@@ -1793,10 +1813,11 @@ class UserDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'nik' => ['nullable', 'string', 'regex:/^[0-9]{16}$/'],
-            'phone' => ['nullable', 'string', 'max:25'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'is_primary' => ['nullable', 'boolean'],
         ], [
             'nik.regex' => 'Nomor Identitas Kependudukan (NIK) harus terdiri dari 16 digit angka.',
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka (8-20 digit).',
         ]);
 
         $isPrimary = $request->boolean('is_primary');
@@ -1982,7 +2003,9 @@ class UserDashboardController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['sometimes', 'required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'phone' => ['nullable', 'string', 'max:25'],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
+        ], [
+            'phone.regex' => 'Nomor HP hanya boleh berisi angka (8-20 digit).',
         ]);
 
         $user->update($validated);
