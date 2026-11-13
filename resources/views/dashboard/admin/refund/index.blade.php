@@ -1291,8 +1291,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="create_account_number">Nomor Rekening <span style="color: #dc2626;">*</span></label>
-                        <input type="text" name="account_number" id="create_account_number" class="form-input" placeholder="Contoh: 1234567890" required>
+                        <label class="form-label" for="create_account_number">Nomor Rekening (Angka saja) <span style="color: #dc2626;">*</span></label>
+                        <input type="text" name="account_number" id="create_account_number" class="form-input" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Contoh: 1234567890" required>
                     </div>
                 </div>
 

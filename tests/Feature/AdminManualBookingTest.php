@@ -70,7 +70,7 @@ beforeEach(function () {
         return Schedule::create(array_merge([
             'route_id' => $this->route->id,
             'vehicle_id' => $vehicle->id,
-            'departure_date' => Carbon::tomorrow()->toDateString(),
+            'departure_date' => Carbon::now()->next(Carbon::TUESDAY)->toDateString(),
             'departure_time' => '09:00',
             'price' => null,
             'available_seats' => $vehicle->capacity,

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bodyGradSprinter" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="50%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="glassGradSprinter" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="400" height="240" rx="16" fill="#F8FAFC"/>
+  <rect x="1" y="1" width="398" height="238" rx="15" fill="none" stroke="#E2E8F0" stroke-width="2"/>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="200" cy="195" rx="165" ry="12" fill="#000000" opacity="0.15"/>
+  <ellipse cx="200" cy="195" rx="140" ry="7" fill="#000000" opacity="0.22"/>
+
+  <!-- High Roof Mercedes Sprinter Shell -->
+  <path d="M 48 165 L 48 100 Q 50 68 85 66 L 270 66 Q 315 68 348 102 L 364 135 Q 368 148 368 165 L 342 165 A 25 25 0 0 0 292 165 L 138 165 A 25 25 0 0 0 88 165 Z" fill="url(#bodyGradSprinter)" stroke="#475569" stroke-width="2"/>
+
+  <!-- Luxury Gold Pin-Stripe -->
+  <path d="M 50 144 L 354 144 L 350 148 L 50 148 Z" fill="#F59E0B"/>
+
+  <!-- Windows -->
+  <rect x="62" y="78" width="55" height="44" rx="3" fill="#0F172A" stroke="#334155"/>
+  <rect x="124" y="78" width="65" height="44" rx="3" fill="#0F172A" stroke="#334155"/>
+  <rect x="196" y="78" width="65" height="44" rx="3" fill="#0F172A" stroke="#334155"/>
+  <path d="M 268 78 L 305 78 L 338 122 L 268 122 Z" fill="#0F172A" stroke="#334155"/>
+
+  <!-- Window Reflections -->
+  <polygon points="75,80 90,80 80,120 65,120" fill="#38BDF8" opacity="0.25"/>
+  <polygon points="140,80 155,80 145,120 130,120" fill="#38BDF8" opacity="0.25"/>
+  <polygon points="210,80 225,80 215,120 200,120" fill="#38BDF8" opacity="0.25"/>
+  <polygon points="280,80 295,80 290,120 275,120" fill="#38BDF8" opacity="0.25"/>
+
+  <!-- Door Lines -->
+  <line x1="192" y1="74" x2="192" y2="164" stroke="#475569" stroke-width="1.5"/>
+  <line x1="264" y1="74" x2="264" y2="164" stroke="#475569" stroke-width="1.5"/>
+  <rect x="202" y="132" width="12" height="4" rx="2" fill="#E2E8F0"/>
+  <rect x="274" y="132" width="12" height="4" rx="2" fill="#E2E8F0"/>
+
+  <!-- Front Headlight & Mercedes Star Emblem -->
+  <polygon points="346,122 365,132 358,144 338,138" fill="#F8FAFC" stroke="#94A3B8"/>
+  <circle cx="355" cy="150" r="6" fill="none" stroke="#F8FAFC" stroke-width="1.5"/>
+  <line x1="355" y1="144" x2="355" y2="150" stroke="#F8FAFC" stroke-width="1.5"/>
+  <line x1="350" y1="154" x2="355" y2="150" stroke="#F8FAFC" stroke-width="1.5"/>
+  <line x1="360" y1="154" x2="355" y2="150" stroke="#F8FAFC" stroke-width="1.5"/>
+
+  <!-- Rear Light -->
+  <rect x="46" y="115" width="4" height="28" rx="2" fill="#EF4444"/>
+
+  <!-- Front Wheel -->
+  <g transform="translate(317, 165)">
+    <circle cx="0" cy="0" r="23" fill="#0F172A"/>
+    <circle cx="0" cy="0" r="16" fill="#94A3B8"/>
+    <circle cx="0" cy="0" r="10" fill="#475569"/>
+    <circle cx="0" cy="0" r="4" fill="#E2E8F0"/>
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#E2E8F0" stroke-width="2"/>
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="#E2E8F0" stroke-width="2"/>
+  </g>
+
+  <!-- Rear Wheel -->
+  <g transform="translate(113, 165)">
+    <circle cx="0" cy="0" r="23" fill="#0F172A"/>
+    <circle cx="0" cy="0" r="16" fill="#94A3B8"/>
+    <circle cx="0" cy="0" r="10" fill="#475569"/>
+    <circle cx="0" cy="0" r="4" fill="#E2E8F0"/>
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#E2E8F0" stroke-width="2"/>
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="#E2E8F0" stroke-width="2"/>
+  </g>
+
+  <!-- Tag / Model Label -->
+  <rect x="18" y="16" width="130" height="22" rx="6" fill="#F3E8FF"/>
+  <text x="83" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="800" fill="#9333EA" text-anchor="middle">MERCEDES SPRINTER</text>
+</svg>
+

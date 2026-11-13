@@ -106,6 +106,7 @@
 
 {{-- Extra Scripts Stack --}}
 @stack('scripts')
+@include('components.numeric-input-enforcer')
 
 </body>
 </html>

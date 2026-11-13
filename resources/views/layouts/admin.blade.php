@@ -1014,6 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+@include('components.numeric-input-enforcer')
 @stack('scripts')
 </body>
 </html>

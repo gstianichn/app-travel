@@ -617,11 +617,7 @@
     {{-- HERO PROFIL ARMADA --}}
     <div class="vehicle-hero-card">
         <div class="hero-main">
-            @if($vehicle->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($vehicle->photo))
-                <img src="{{ asset('storage/' . $vehicle->photo) }}" alt="{{ $vehicle->name }}" class="hero-thumb-img">
-            @else
-                <div class="hero-thumb-fallback">Belum ada foto</div>
-            @endif
+            <img src="{{ $vehicle->photoUrl() }}" alt="{{ $vehicle->name }}" class="hero-thumb-img" style="object-fit: cover; border-radius: 12px; border: 1.5px solid #d4dfda; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
 
             <div class="hero-text">
                 <div>

@@ -359,27 +359,22 @@
     }
 
     .vehicle-thumb-img {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
         object-fit: cover;
-        border: 1px solid #e2eae6;
-        background: #f1f5f3;
+        border: 1.5px solid #d4dfda;
+        background: #ffffff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         flex-shrink: 0;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .vehicle-thumb-fallback {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
-        background: #e3f5ee;
-        color: #087f55;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        flex-shrink: 0;
-        border: 1px solid #c9ebd9;
+    .vehicle-thumb-img:hover {
+        transform: scale(1.06);
+        box-shadow: 0 4px 12px rgba(8, 127, 85, 0.2);
+        border-color: #087f55;
     }
 
     .unit-meta h4 {
@@ -870,11 +865,14 @@
                             {{-- IDENTITAS & PELAT --}}
                             <td>
                                 <div class="vehicle-unit-cell">
-                                    @if($vehicle->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($vehicle->photo))
-                                        <img src="{{ asset('storage/' . $vehicle->photo) }}" alt="{{ $vehicle->name }}" class="vehicle-thumb-img">
-                                    @else
-                                        <div class="vehicle-thumb-fallback">Belum ada foto</div>
-                                    @endif
+                                    <div style="position: relative;" title="Klik untuk melihat foto armada">
+                                        <img
+                                            src="{{ $vehicle->photoUrl() }}"
+                                            alt="{{ $vehicle->name }}"
+                                            class="vehicle-thumb-img"
+                                            onclick="openVehiclePhotoModal('{{ $vehicle->photoUrl() }}', '{{ addslashes($vehicle->name) }}', '{{ $vehicle->plate_number }}', '{{ $vehicle->type }}', '{{ $vehicle->capacity }}')"
+                                        >
+                                    </div>
 
                                     <div class="unit-meta">
                                         <div style="margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
@@ -1060,7 +1058,45 @@
     </div>
 </div>
 
+{{-- MODAL PREVIEW FOTO ARMADA --}}
+<div id="vehiclePhotoModal" class="custom-modal">
+    <div class="modal-dialog" style="max-width: 580px;">
+        <div class="modal-dialog-header">
+            <div>
+                <h3 id="photoModalTitle" style="margin: 0; font-size: 16px;">Foto Armada</h3>
+                <span id="photoModalSub" style="font-size: 12px; color: #64748b;"></span>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeVehiclePhotoModal()">&times;</button>
+        </div>
+        <div class="modal-dialog-body" style="text-align: center; padding: 20px;">
+            <div style="background: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 14px;">
+                <img id="photoModalImg" src="" alt="Foto Minibus" style="max-width: 100%; height: auto; display: block; margin: 0 auto; max-height: 320px; object-fit: contain;">
+            </div>
+            <div id="photoModalDetails" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; font-size: 12px;"></div>
+        </div>
+        <div class="modal-dialog-footer">
+            <button type="button" class="btn-action-cancel" onclick="closeVehiclePhotoModal()">Tutup</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    function openVehiclePhotoModal(photoUrl, name, plate, type, capacity) {
+        document.getElementById('photoModalImg').src = photoUrl;
+        document.getElementById('photoModalTitle').innerText = name;
+        document.getElementById('photoModalSub').innerText = `${plate} • ${type}`;
+        document.getElementById('photoModalDetails').innerHTML = `
+            <span style="background: #e3f5ee; color: #087f55; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Pelat: ${plate}</span>
+            <span style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Tipe: ${type}</span>
+            <span style="background: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Kapasitas: ${capacity} Kursi</span>
+        `;
+        document.getElementById('vehiclePhotoModal').classList.add('show');
+    }
+
+    function closeVehiclePhotoModal() {
+        document.getElementById('vehiclePhotoModal').classList.remove('show');
+    }
+
     function openStatusModal(vehicleId, plateNumber, currentStatus) {
         const modal = document.getElementById('statusModal');
         const form = document.getElementById('quickStatusForm');
@@ -1089,8 +1125,12 @@
     // Close when clicking backdrop
     window.addEventListener('click', function(e) {
         const modal = document.getElementById('statusModal');
+        const photoModal = document.getElementById('vehiclePhotoModal');
         if (e.target === modal) {
             closeStatusModal();
+        }
+        if (e.target === photoModal) {
+            closeVehiclePhotoModal();
         }
     });
 </script>

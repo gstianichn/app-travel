@@ -221,8 +221,8 @@
                                     </select>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label for="account-{{ $booking->id }}" class="block font-semibold text-slate-900">Nomor rekening atau HP</label>
-                                    <input id="account-{{ $booking->id }}" type="text" name="account_number" required maxlength="50" inputmode="numeric" class="{{ $fieldClass }}">
+                                    <label for="account-{{ $booking->id }}" class="block font-semibold text-slate-900">Nomor rekening atau HP (angka saja)</label>
+                                    <input id="account-{{ $booking->id }}" type="text" name="account_number" required maxlength="50" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Hanya angka, contoh: 1234567890" class="{{ $fieldClass }}">
                                 </div>
                                 <div class="space-y-1.5 sm:col-span-2">
                                     <label for="holder-{{ $booking->id }}" class="block font-semibold text-slate-900">Nama pemilik rekening</label>

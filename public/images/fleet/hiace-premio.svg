@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bodyGradPremio" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F1F5F3"/>
+      <stop offset="100%" stop-color="#DDE6E2"/>
+    </linearGradient>
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="stripeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#087F55"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="400" height="240" rx="16" fill="#F8FAFC"/>
+  <rect x="1" y="1" width="398" height="238" rx="15" fill="none" stroke="#E2E8F0" stroke-width="2"/>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="200" cy="195" rx="165" ry="12" fill="#000000" opacity="0.12"/>
+  <ellipse cx="200" cy="195" rx="140" ry="7" fill="#000000" opacity="0.18"/>
+
+  <!-- Minibus Body (HiAce Premio Style) -->
+  <!-- Main Shell -->
+  <path d="M 50 165 L 50 115 Q 52 82 85 78 L 260 76 Q 315 76 345 110 L 360 135 Q 365 145 365 165 L 340 165 A 25 25 0 0 0 290 165 L 140 165 A 25 25 0 0 0 90 165 Z" fill="url(#bodyGradPremio)" stroke="#94A3B8" stroke-width="2"/>
+
+  <!-- Front Hood & Bumper -->
+  <path d="M 330 135 L 362 142 Q 366 150 366 168 L 345 168 Q 340 160 330 160 Z" fill="#E2E8F0"/>
+  <rect x="342" y="148" width="20" height="12" rx="3" fill="#1E293B"/>
+  <!-- Headlight -->
+  <polygon points="340,126 360,134 354,142 334,136" fill="#38BDF8" opacity="0.9"/>
+  <polygon points="340,126 360,134 354,142 334,136" stroke="#0284C7" stroke-width="1" fill="none"/>
+
+  <!-- TravelKu Executive Livery Stripe -->
+  <path d="M 52 145 Q 120 142 200 142 L 348 142 L 344 150 L 52 150 Z" fill="url(#stripeGrad)"/>
+  <path d="M 52 152 L 340 152 L 338 155 L 52 155 Z" fill="#F59E0B"/>
+
+  <!-- Tinted Executive Windows -->
+  <!-- Window 1 (Rear) -->
+  <path d="M 62 86 L 115 86 L 115 125 L 62 125 Q 58 105 62 86 Z" fill="url(#glassGrad)"/>
+  <!-- Window 2 (Middle Cabin) -->
+  <rect x="122" y="86" width="65" height="39" rx="2" fill="url(#glassGrad)"/>
+  <!-- Window 3 (Passenger Door) -->
+  <rect x="194" y="86" width="65" height="39" rx="2" fill="url(#glassGrad)"/>
+  <!-- Window 4 (Front Driver Cabin & Windshield Angle) -->
+  <path d="M 266 86 L 305 86 L 332 124 L 266 125 Z" fill="url(#glassGrad)"/>
+
+  <!-- Window Reflections -->
+  <polygon points="75,88 95,88 80,123 65,123" fill="#FFFFFF" opacity="0.12"/>
+  <polygon points="140,88 160,88 145,123 130,123" fill="#FFFFFF" opacity="0.12"/>
+  <polygon points="210,88 230,88 215,123 200,123" fill="#FFFFFF" opacity="0.12"/>
+  <polygon points="280,88 300,88 290,123 275,123" fill="#FFFFFF" opacity="0.12"/>
+
+  <!-- Door Outline & Handles -->
+  <line x1="190" y1="84" x2="190" y2="164" stroke="#94A3B8" stroke-width="1.5"/>
+  <line x1="262" y1="84" x2="262" y2="164" stroke="#94A3B8" stroke-width="1.5"/>
+  <rect x="200" y="132" width="12" height="4" rx="2" fill="#334155"/>
+  <rect x="270" y="132" width="12" height="4" rx="2" fill="#334155"/>
+
+  <!-- Rear Light -->
+  <rect x="49" y="125" width="4" height="20" rx="2" fill="#EF4444"/>
+
+  <!-- Front Wheel -->
+  <g transform="translate(315, 165)">
+    <circle cx="0" cy="0" r="23" fill="#1E293B"/>
+    <circle cx="0" cy="0" r="15" fill="#475569"/>
+    <circle cx="0" cy="0" r="9" fill="#94A3B8"/>
+    <circle cx="0" cy="0" r="3" fill="#1E293B"/>
+    <!-- Rim Spokes -->
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+
+  <!-- Rear Wheel -->
+  <g transform="translate(115, 165)">
+    <circle cx="0" cy="0" r="23" fill="#1E293B"/>
+    <circle cx="0" cy="0" r="15" fill="#475569"/>
+    <circle cx="0" cy="0" r="9" fill="#94A3B8"/>
+    <circle cx="0" cy="0" r="3" fill="#1E293B"/>
+    <!-- Rim Spokes -->
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#CBD5E1" stroke-width="2"/>
+    <line x1="0" y1="-12" x2="0" y2="12" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+
+  <!-- TravelKu Emblem Badge -->
+  <rect x="90" y="130" width="55" height="11" rx="3" fill="#065F46"/>
+  <text x="117" y="138" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="7" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">TRAVELKU</text>
+
+  <!-- Tag / Model Label -->
+  <rect x="18" y="16" width="105" height="22" rx="6" fill="#E3F5EE"/>
+  <text x="70" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="800" fill="#087F55" text-anchor="middle">HIACE PREMIO</text>
+</svg>
+

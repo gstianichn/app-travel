@@ -96,21 +96,39 @@ Route::middleware('guest')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Forgot Password
+    | Forgot & Reset Password (OTP Flow)
     |--------------------------------------------------------------------------
     */
 
-    // Menampilkan halaman Forgot Password
+    // Menampilkan halaman Forgot Password (Input Email)
     Route::get('/forgot-password', [
         ForgotPasswordController::class,
         'create',
     ])->name('password.request');
 
-    // Memproses permintaan Forgot Password
+    // Endpoint Request OTP
     Route::post('/forgot-password', [
         ForgotPasswordController::class,
         'store',
     ])->name('password.email');
+
+    // Halaman Verifikasi OTP
+    Route::get('/forgot-password/verify', [
+        ForgotPasswordController::class,
+        'showVerifyOtp',
+    ])->name('password.otp.verify');
+
+    // Endpoint Validasi OTP
+    Route::post('/forgot-password/verify', [
+        ForgotPasswordController::class,
+        'verifyOtp',
+    ])->name('password.otp.check');
+
+    // Kirim Ulang OTP
+    Route::post('/forgot-password/resend-otp', [
+        ForgotPasswordController::class,
+        'resendOtp',
+    ])->name('password.otp.resend');
 
 });
 

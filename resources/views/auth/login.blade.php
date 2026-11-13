@@ -17,6 +17,10 @@
     <h1 class="au-title">Masuk sebagai petugas</h1>
     <p class="au-lead">Untuk admin, staf pool, customer service, dan driver. Kode akses dibuat oleh admin utama.</p>
 
+    @if (session('status'))
+        <p class="au-alert au-alert--ok" role="status">{{ session('status') }}</p>
+    @endif
+
     <form method="POST" action="{{ route('login.process') }}" class="au-form" data-auth-form>
         @csrf
 

@@ -437,15 +437,19 @@
         </div>
 
         <div class="nav-actions">
-            <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-back">
-                &larr; Daftar Pembayaran
+            <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-back" style="display: inline-flex; align-items: center; gap: 5px;">
+                <span>&larr;</span>
+                <span>Daftar Pembayaran</span>
             </a>
             @if($payment->booking)
-                <a href="{{ route('dashboard.admin.pemesanan.show', $payment->booking->id) }}" class="btn-back">
-                    Lihat E-Ticket</a>
+                <a href="{{ route('dashboard.admin.pemesanan.show', $payment->booking->id) }}" class="btn-back" style="display: inline-flex; align-items: center; gap: 5px;">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <span>Lihat E-Ticket</span>
+                </a>
             @endif
             <button type="button" class="btn-print" onclick="window.print()">
-                Cetak Faktur (Print / PDF)
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>Cetak Faktur (Print / PDF)</span>
             </button>
         </div>
     </div>
@@ -710,7 +714,7 @@
                             <input type="file" name="proof_image" accept="image/*,.pdf" class="filter-input">
                             <input type="text" name="bank_name" placeholder="Nama Bank (misal BCA)" value="{{ $payment->bank_name }}" class="filter-input">
                             <input type="text" name="account_name" placeholder="Atas Nama Pemilik Rekening" value="{{ $payment->account_name }}" class="filter-input">
-                            <input type="text" name="account_number" placeholder="Nomor Rekening" value="{{ $payment->account_number }}" class="filter-input">
+                            <input type="text" name="account_number" placeholder="Nomor Rekening (Angka saja)" value="{{ $payment->account_number }}" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="filter-input">
                             <button type="submit" class="btn-approve" style="align-self: flex-start; padding: 8px 16px;">
                                 Simpan Bukti Transfer
                             </button>

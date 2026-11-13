@@ -379,19 +379,18 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 8px;
-        border: none;
+        border: 1px solid transparent;
         cursor: pointer;
-        font-size: 14px;
-        transition: all 0.15s ease;
+        transition: all 0.2s ease;
     }
 
-    .btn-edit-loc { background: #e3f5ee; color: #087f55; }
-    .btn-edit-loc:hover { background: #087f55; color: #fff; }
-    .btn-del-loc { background: #fff1f2; color: #dc3545; }
-    .btn-del-loc:hover { background: #dc3545; color: #fff; }
+    .btn-edit-loc { background: #e3f5ee; color: #087f55; border-color: #c8ebd8; }
+    .btn-edit-loc:hover { background: #087f55; color: #fff; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(8, 127, 85, 0.25); }
+    .btn-del-loc { background: #fff1f2; color: #dc3545; border-color: #fecdd3; }
+    .btn-del-loc:hover { background: #dc3545; color: #fff; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(220, 53, 69, 0.25); }
 
     .empty-locations { text-align: center; padding: 40px 20px; color: #8a9990; }
     .empty-locations .empty-icon { font-size: 40px; margin-bottom: 8px; }
@@ -574,18 +573,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Nomor Telepon Kantor</label>
+                            <label class="form-label">Nomor Telepon Kantor (Angka saja)</label>
                             <div class="form-input-icon">
                                 <span class="icon-prefix"></span>
-                                <input type="text" name="company_phone" class="form-input @error('company_phone') is-invalid @enderror" value="{{ old('company_phone', $settings->get('company_phone')) }}" placeholder="cth: (022) 1234-5678" id="input-company-phone">
+                                <input type="text" name="company_phone" class="form-input @error('company_phone') is-invalid @enderror" value="{{ old('company_phone', $settings->get('company_phone')) }}" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="cth: 02212345678" id="input-company-phone">
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Kontak WhatsApp Darurat (Call Center)</label>
+                            <label class="form-label">Kontak WhatsApp Darurat (Angka saja)</label>
                             <div class="form-input-icon">
                                 <span class="icon-prefix"></span>
-                                <input type="text" name="company_whatsapp" class="form-input @error('company_whatsapp') is-invalid @enderror" value="{{ old('company_whatsapp', $settings->get('company_whatsapp')) }}" placeholder="cth: 0812-3456-7890" id="input-company-whatsapp">
+                                <input type="text" name="company_whatsapp" class="form-input @error('company_whatsapp') is-invalid @enderror" value="{{ old('company_whatsapp', $settings->get('company_whatsapp')) }}" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="cth: 081234567890" id="input-company-whatsapp">
                             </div>
                         </div>
 
@@ -604,7 +603,10 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-save" id="btn-save-profil">Simpan Profil Perusahaan</button>
+                        <button type="submit" class="btn-save" id="btn-save-profil">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Simpan Profil Perusahaan</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -739,7 +741,10 @@
                 </div>
 
                 <div class="form-actions" style="margin-top:0;">
-                    <button type="submit" class="btn-save" id="btn-save-kebijakan">Simpan Kebijakan</button>
+                    <button type="submit" class="btn-save" id="btn-save-kebijakan">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Simpan Kebijakan</span>
+                    </button>
                 </div>
             </div>
         </form>
@@ -768,8 +773,8 @@
                                 <input type="text" name="bank_name" class="form-input @error('bank_name') is-invalid @enderror" value="{{ old('bank_name', $settings->get('bank_name')) }}" placeholder="cth: BCA, BRI, BNI, Mandiri" id="input-bank-name">
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Nomor Rekening</label>
-                                <input type="text" name="bank_account_number" class="form-input @error('bank_account_number') is-invalid @enderror" value="{{ old('bank_account_number', $settings->get('bank_account_number')) }}" placeholder="cth: 1234567890" id="input-bank-account">
+                                <label class="form-label">Nomor Rekening (Angka saja)</label>
+                                <input type="text" name="bank_account_number" class="form-input @error('bank_account_number') is-invalid @enderror" value="{{ old('bank_account_number', $settings->get('bank_account_number')) }}" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="cth: 1234567890" id="input-bank-account">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Nama Pemilik Rekening</label>
@@ -829,7 +834,10 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn-save" id="btn-save-pembayaran">Simpan Integrasi Pembayaran</button>
+                            <button type="submit" class="btn-save" id="btn-save-pembayaran">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                <span>Simpan Integrasi Pembayaran</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -898,14 +906,18 @@
                                                 <button
                                                     type="button"
                                                     class="btn-edit-loc"
-                                                    title="Edit"
+                                                    title="Ubah Titik Operasional"
                                                     onclick="openEditModal({{ $loc->id }}, {{ json_encode($loc->name) }}, {{ json_encode($loc->address) }}, {{ json_encode($loc->maps_url) }}, {{ json_encode($loc->coordinates) }}, {{ json_encode($loc->phone) }})"
                                                     id="btn-edit-loc-{{ $loc->id }}"
-                                                >Ubah</button>
+                                                >
+                                                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                                </button>
                                                 <form action="{{ route('dashboard.admin.pengaturan.lokasi.destroy', $loc->id) }}" method="POST" onsubmit="return confirm('Hapus {{ addslashes($loc->name) }}?')" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn-del-loc" title="Hapus" id="btn-del-loc-{{ $loc->id }}">Hapus</button>
+                                                    <button type="submit" class="btn-del-loc" title="Hapus Titik Operasional" id="btn-del-loc-{{ $loc->id }}">
+                                                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
@@ -981,7 +993,10 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn-save" id="btn-save-keamanan">Perbarui Keamanan</button>
+                            <button type="submit" class="btn-save" id="btn-save-keamanan">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                <span>Perbarui Keamanan</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -1074,14 +1089,17 @@
                         <input type="text" name="coordinates" class="form-input" placeholder="cth: -6.914744, 107.609810" id="modal-loc-coords">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Nomor Telepon Pengurus</label>
-                        <input type="text" name="phone" class="form-input" placeholder="cth: 0812-3456-7890" id="modal-loc-phone">
+                        <label class="form-label">Nomor Telepon Pengurus (Angka saja)</label>
+                        <input type="text" name="phone" class="form-input" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="cth: 081234567890" id="modal-loc-phone">
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-cancel" onclick="closeLocationModal()">Batal</button>
-                <button type="submit" class="btn-save" id="modal-loc-submit">Simpan Titik</button>
+                <button type="submit" class="btn-save" id="modal-loc-submit">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Simpan Titik</span>
+                </button>
             </div>
         </form>
     </div>

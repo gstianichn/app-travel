@@ -123,6 +123,7 @@
     @endif
 
     @include('dashboard.user.partials.feedback-taxonomy')
+    @include('components.numeric-input-enforcer')
     @stack('scripts')
 </body>
 </html>

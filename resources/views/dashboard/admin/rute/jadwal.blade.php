@@ -435,12 +435,15 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.55);
-        backdrop-filter: blur(3px);
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         z-index: 9999;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 24px 16px;
+        overflow-y: auto;
+        box-sizing: border-box;
     }
 
     .custom-modal.show {
@@ -449,44 +452,76 @@
 
     .modal-dialog {
         background: white;
-        border-radius: 16px;
+        border-radius: 18px;
         width: 100%;
-        max-width: 650px;
+        max-width: 680px;
         max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        margin: auto;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
         display: flex;
         flex-direction: column;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .modal-dialog form {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+        box-sizing: border-box;
+        overflow: hidden;
     }
 
     .modal-dialog-header {
-        padding: 18px 24px;
+        padding: 20px 24px;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        background: #ffffff;
+        flex-shrink: 0;
+        box-sizing: border-box;
     }
 
     .modal-dialog-header h3 {
         margin: 0;
-        font-size: 17px;
+        font-size: 18px;
         font-weight: 800;
         color: #0f172a;
+        letter-spacing: -0.2px;
     }
 
     .btn-close-modal {
         background: transparent;
         border: none;
-        font-size: 20px;
+        font-size: 24px;
+        line-height: 1;
         color: #94a3b8;
         cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .btn-close-modal:hover {
+        color: #0f172a;
+        background: #f1f5f9;
     }
 
     .modal-dialog-body {
-        padding: 20px 24px;
+        padding: 22px 24px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 18px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: calc(90vh - 140px);
+        width: 100%;
     }
 
     .modal-dialog-footer {
@@ -496,41 +531,108 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        gap: 10px;
+        gap: 12px;
+        flex-shrink: 0;
+        box-sizing: border-box;
     }
 
     .grid-2 {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .form-group {
         display: flex;
         flex-direction: column;
         gap: 6px;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
     }
 
     .form-label {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
         color: #334155;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.35;
     }
 
     .form-input,
-    .form-select {
-        padding: 9px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        font-size: 13px;
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        padding: 10px 13px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 13.5px;
         outline: none;
-        background: #fbfdfc;
+        background: #ffffff;
+        color: #0f172a;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-select {
+        text-overflow: ellipsis;
+        cursor: pointer;
     }
 
     .form-input:focus,
-    .form-select:focus {
+    .form-select:focus,
+    .form-textarea:focus {
         border-color: #087f55;
+        box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.12);
         background: white;
+    }
+
+    .btn-modal-cancel {
+        padding: 10px 18px;
+        background: white;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+
+    .btn-modal-cancel:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        color: #1e293b;
+    }
+
+    .btn-modal-submit {
+        padding: 10px 22px;
+        background: #087f55;
+        border: 1.5px solid #087f55;
+        border-radius: 10px;
+        color: white;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(8, 127, 85, 0.25);
+        transition: all 0.15s ease;
+    }
+
+    .btn-modal-submit:hover {
+        background: #066b47;
+        border-color: #066b47;
     }
 
     @media (max-width: 1024px) {
@@ -566,10 +668,12 @@
                 &larr; Daftar Rute
             </a>
             <button type="button" class="btn-create-single" onclick="openSingleScheduleModal()">
-                + Buat Jadwal Tunggal
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                <span>+ Buat Jadwal Tunggal</span>
             </button>
             <button type="button" class="btn-batch-generator" onclick="openBatchModal()">
-                Batch Generator Jam Jalan
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span>Batch Generator Jam Jalan</span>
             </button>
         </div>
     </div>
@@ -594,12 +698,18 @@
                 <div class="stat-box-label">Total Jadwal Mendatang</div>
                 <div class="stat-box-num">{{ number_format($totalSchedulesCount) }}</div>
             </div>
+            <div class="stat-box-icon" style="background: #e0f2fe; color: #0284c7;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
         </div>
 
         <div class="stat-box">
             <div class="stat-box-info">
                 <div class="stat-box-label">Sedang di Jalan (Active)</div>
                 <div class="stat-box-num" style="color: #15803d;">{{ number_format($activeTripsCount) }}</div>
+            </div>
+            <div class="stat-box-icon" style="background: #dcfce7; color: #15803d;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
         </div>
 
@@ -609,7 +719,7 @@
                 <div class="stat-box-num" style="color: #d97706;">{{ number_format($scheduledCount) }}</div>
             </div>
             <div class="stat-box-icon" style="background: #fef3c7; color: #d97706;">
-                ⏳
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
     </div>
@@ -657,9 +767,15 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-filter-submit">
-                Terapkan Filter
-            </button>
+            <div class="filter-buttons" style="display: flex; gap: 8px; align-items: flex-end;">
+                <button type="submit" class="btn-filter-submit" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    <span>Terapkan</span>
+                </button>
+                <a href="{{ route('dashboard.admin.rute.jadwal') }}" title="Reset Filter" style="height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d4dfda; border-radius: 8px; background: white; color: #4b5852; font-size: 13px; text-decoration: none; font-weight: 600; transition: background 0.2s;">
+                    ↺ Reset
+                </a>
+            </div>
         </form>
     </div>
 
@@ -722,9 +838,14 @@
                                     <span class="driver-name">
                                         {{ $sch->driver?->user?->name ?? 'Belum ada sopir' }}
                                     </span>
-                                    <span class="assigned-sub">
-                                        {{ $sch->driver?->user?->phone ? '' . $sch->driver->user->phone : 'Standby' }}
-                                    </span>
+                                    @if($sch->driver?->user?->phone)
+                                        <span class="assigned-sub" style="display: inline-flex; align-items: center; gap: 4px;">
+                                            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                                            <span>{{ $sch->driver->user->phone }}</span>
+                                        </span>
+                                    @else
+                                        <span class="assigned-sub">Standby</span>
+                                    @endif
                                 </div>
                             </td>
 
@@ -770,7 +891,8 @@
                                         onclick="openAssignModal({{ $sch->id }}, @js((string) $sch->vehicle_id), @js((string) ($sch->driver_id ?? '')), @js($dDate.' '.$dTime), @js($sch->route?->routeTitle() ?? ''))"
                                         title="Tetapkan atau Ganti Armada & Sopir"
                                     >
-                                        Pasang Sopir/Armada
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        <span>Pasang Sopir/Armada</span>
                                     </button>
 
                                     {{-- Edit Schedule --}}
@@ -779,7 +901,8 @@
                                         class="btn-action-icon"
                                         onclick="openEditScheduleModal({{ $sch->id }}, @js((string) $sch->route_id), @js((string) $sch->vehicle_id), @js((string) ($sch->driver_id ?? '')), @js(\Carbon\Carbon::parse($sch->departure_date)->format('Y-m-d')), @js(\Carbon\Carbon::parse($sch->departure_time)->format('H:i')), @js($sch->price ?? ''), @js($sch->notes ?? ''))"
                                         title="Edit Jadwal Keberangkatan"
-                                    >Edit
+                                    >
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                                     </button>
 
                                     {{-- Seat Map Link --}}
@@ -787,16 +910,18 @@
                                         href="{{ route('dashboard.admin.pemesanan.seat-map', $sch->id) }}"
                                         class="btn-action-icon"
                                         title="Denah Kursi Visual"
-                                    >Kursi
-                                                                            </a>
+                                    >
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                    </a>
 
                                     {{-- Manifest Link --}}
                                     <a
                                         href="{{ route('dashboard.admin.pemesanan.manifes', $sch->id) }}"
                                         class="btn-action-icon"
                                         title="Manifes Perjalanan"
-                                    >Manifes
-                                                                            </a>
+                                    >
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                                    </a>
 
                                     {{-- Delete Schedule --}}
                                     <form
@@ -807,8 +932,9 @@
                                     >
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-action-icon" style="color: #b91c1c;" title="Hapus Jadwal">Hapus
-                                                                                    </button>
+                                        <button type="submit" class="btn-action-icon" style="color: #b91c1c;" title="Hapus Jadwal">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
                                     </form>
                                 </div>
                             </td>
@@ -816,7 +942,9 @@
                     @empty
                         <tr>
                             <td colspan="8" style="text-align: center; padding: 40px 20px; color: #64748b;">
-                                <div style="font-size: 36px; margin-bottom: 8px;"></div>
+                                <div style="width: 56px; height: 56px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #94a3b8;">
+                                    <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </div>
                                 <div style="font-weight: 700; font-size: 15px; color: #17221d;">Tidak Ada Jadwal Keberangkatan</div>
                                 <p style="margin: 4px 0 12px; font-size: 13px;">Gunakan Batch Generator untuk membuat jadwal harian secara otomatis.</p>
                                 <button type="button" class="btn-batch-generator" onclick="openBatchModal()">

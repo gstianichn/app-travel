@@ -560,7 +560,7 @@ class DriverDashboardController extends Controller
         $newStatus = $request->input('status');
         $now = Carbon::now();
 
-        $currentTripStatus = $schedule->trip_status ?: 'scheduled';
+        $currentTripStatus = strtolower((string) ($schedule->trip_status ?: 'scheduled'));
         $validTransitions = [
             'scheduled' => ['pickup', 'departed'],
             'pickup' => ['departed'],

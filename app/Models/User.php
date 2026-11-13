@@ -112,6 +112,19 @@ class User extends Authenticatable
             return true;
         }
 
+        // Jika permissions belum pernah diatur (null), berikan hak akses standar staf operasional
+        if ($this->permissions === null && $this->isStaff()) {
+            return in_array($permission, [
+                'create_booking',
+                'view_routes',
+                'view_passengers',
+                'checkin_ticket',
+                'manage_bookings',
+                'cancel_booking',
+                'reschedule_booking',
+            ], true);
+        }
+
         $perms = $this->permissions ?? [];
 
         return in_array($permission, $perms, true);

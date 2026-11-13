@@ -23,6 +23,7 @@
 
     @include('components.footer')
     @include('dashboard.user.partials.feedback-taxonomy')
+    @include('components.numeric-input-enforcer')
 
 </body>
 </html>

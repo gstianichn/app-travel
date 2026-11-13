@@ -5,470 +5,306 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Manajemen Booking (Manifes Penumpang) - Travel</title>
+    <title>Semua Booking (Manajemen Booking) - TravelKu</title>
 
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'
     ])
 
+    @include('dashboard.admin-biasa.partials.styles')
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         :root {
-            --primary: #087f55;
-            --primary-dark: #066b47;
-            --primary-light: #e3f5ee;
-            --accent: #066b47;
-            --accent-light: #e8f8fc;
+            /* Type Badges */
+            --online-bg: #e6fcf5;
+            --online-text: #087f55;
+            --online-border: #96f2d7;
 
-            --white: #ffffff;
-            --background: #f4f8fb;
-            --border: #e3edf4;
-
-            --text-dark: #102a43;
-            --text: #334e68;
-            --text-light: #829ab1;
-
-            --success: #16825d;
-            --success-bg: #eaf8f2;
-
-            --warning: #c77b00;
-            --warning-bg: #fff7e6;
-
-            --danger: #c0392b;
-            --danger-bg: #fff0ee;
+            --offline-bg: #e7f5ff;
+            --offline-text: #1971c2;
+            --offline-border: #a5d8ff;
         }
 
-        body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: var(--background);
-            color: var(--text-dark);
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        button, input, select {
-            font-family: inherit;
-        }
-
-        /* LAYOUT */
-        .dashboard-wrapper {
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
-            color: var(--white);
-            z-index: 100;
-            box-shadow: 4px 0 20px rgba(10, 53, 93, 0.10);
-        }
-
-        .logo-area {
-            height: 82px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-        }
-
-        .logo-icon {
-            width: 43px;
-            height: 43px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--white);
-            color: var(--primary);
-            border-radius: 13px;
-            font-size: 20px;
-            font-weight: 800;
-            margin-right: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.10);
-        }
-
-        .logo-text h2 {
-            color: var(--white);
-            font-size: 19px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .logo-text span {
-            color: rgba(255, 255, 255, 0.65);
-            font-size: 10px;
-        }
-
-        .menu {
-            flex: 1;
-            padding: 25px 15px;
-        }
-
-        .menu-title {
-            padding: 0 12px;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.45);
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .menu a {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            padding: 12px 14px;
-            margin-bottom: 6px;
-            color: rgba(255, 255, 255, 0.72);
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .menu a:hover {
-            background: rgba(255, 255, 255, 0.10);
-            color: var(--white);
-        }
-
-        .menu a.active {
-            background: var(--white);
-            color: var(--primary);
-            font-weight: 700;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .menu-icon {
-            width: 21px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .sidebar-bottom {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
-        }
-
-        .logout-btn {
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.07);
-            color: rgba(255, 255, 255, 0.80);
-            padding: 11px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 0, 0, 1);
-            color: var(--white);
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            width: calc(100% - 260px);
-            margin-left: 260px;
-            min-height: 100vh;
-        }
-
-        /* TOPBAR */
-        .topbar {
-            height: 82px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 36px;
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .page-title h1 {
-            color: var(--text-dark);
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .page-title p {
-            color: var(--text-light);
-            font-size: 13px;
-        }
-
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--primary-light);
-            color: var(--primary);
-            border: 2px solid #d7eaf7;
-            border-radius: 50%;
-            font-weight: 700;
-        }
-
-        .profile-info strong {
-            display: block;
-            color: var(--text-dark);
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-
-        .profile-info span {
-            color: var(--text-light);
-            font-size: 11px;
-        }
-
-        /* CONTENT */
         .content {
-            padding: 30px 36px 50px;
+            padding: 24px 28px 48px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
         }
 
-        /* TRIP SELECTOR & SUMMARY BANNER */
-        .trip-header-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 24px 28px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-        }
-
-        .trip-header-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            padding-bottom: 18px;
-            border-bottom: 1px solid #f1f5f9;
-            margin-bottom: 18px;
-        }
-
-        .trip-select-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .trip-select-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .trip-dropdown {
-            padding: 9px 14px;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            font-size: 13px;
-            color: var(--text-dark);
-            background: #f8fafc;
-            outline: none;
-            cursor: pointer;
-            min-width: 280px;
-            transition: border-color 0.2s;
-        }
-
-        .trip-dropdown:focus {
-            border-color: var(--primary);
-        }
-
-        .trip-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .btn-print {
-            background: #f1f5f9;
-            color: #334155;
-            border-color: #cbd5e1;
-        }
-
-        .btn-print:hover {
-            background: #e2e8f0;
-        }
-
-        .btn-driver-wa {
-            background: #16a34a;
-            color: #ffffff;
-        }
-
-        .btn-driver-wa:hover {
-            background: #15803d;
-        }
-
-        .trip-summary-grid {
+        /* STATS CARDS */
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
             gap: 16px;
+            margin-bottom: 24px;
         }
 
-        .trip-summary-box {
-            background: #f8fafc;
-            border: 1px solid #eef2f6;
+        .stat-card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
             border-radius: 12px;
-            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .trip-summary-box span {
+        .stat-icon.total { background: #f1f5f9; color: #475569; }
+        .stat-icon.online { background: var(--online-bg); color: var(--online-text); border: 1px solid var(--online-border); }
+        .stat-icon.offline { background: var(--offline-bg); color: var(--offline-text); border: 1px solid var(--offline-border); }
+        .stat-icon.paid { background: #ecfdf5; color: #059669; }
+        .stat-icon.cancelled { background: #fef2f2; color: #dc2626; }
+
+        .stat-info span {
             display: block;
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 600;
             color: var(--text-light);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
-        .trip-summary-box strong {
-            display: block;
-            font-size: 15px;
-            color: var(--text-dark);
+        .stat-info strong {
+            font-size: 24px;
             font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
         }
 
-        .trip-summary-box small {
-            display: block;
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 2px;
+        /* FILTER & TOOLBAR CARD */
+        .filter-panel {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+            margin-bottom: 20px;
         }
 
-        /* MANIFEST TOOLBAR & SEARCH BOX */
-        .manifest-toolbar {
+        .filter-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        /* TYPE PILL TABS */
+        .type-pills {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 4px;
+        }
+
+        .type-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .type-pill:hover {
+            color: var(--text-dark);
+        }
+
+        .type-pill.active {
             background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 18px 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            color: var(--text-dark);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
 
-        .search-container {
+        .type-pill.active-online {
+            background: var(--online-bg);
+            color: var(--online-text);
+            box-shadow: 0 2px 6px rgba(8, 127, 85, 0.15);
+        }
+
+        .type-pill.active-offline {
+            background: var(--offline-bg);
+            color: var(--offline-text);
+            box-shadow: 0 2px 6px rgba(25, 113, 194, 0.15);
+        }
+
+        .pill-counter {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.06);
+            font-weight: 700;
+        }
+
+        /* FILTER FORM GRID */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1.2fr 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        @media (max-width: 1024px) {
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .search-box {
             position: relative;
-            flex: 1;
-            max-width: 480px;
-            min-width: 280px;
         }
 
-        .search-icon {
+        .search-box svg {
             position: absolute;
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 15px;
             color: var(--text-light);
             pointer-events: none;
         }
 
         .search-input {
             width: 100%;
-            padding: 11px 16px 11px 40px;
+            height: 42px;
+            padding: 0 14px 0 42px;
             border: 1.5px solid var(--border);
-            border-radius: 12px;
-            font-size: 13px;
-            outline: none;
+            border-radius: 10px;
+            font-size: 13.5px;
+            color: var(--text-dark);
             background: #ffffff;
             transition: all 0.2s;
         }
 
-        .search-input:focus {
+        .search-input:focus, .filter-select:focus {
+            outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.12);
         }
 
-        .search-count-badge {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-light);
+        .filter-select {
+            width: 100%;
+            height: 42px;
+            padding: 0 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 13.5px;
+            color: var(--text-dark);
+            background: #ffffff;
+            transition: all 0.2s;
         }
 
-        .status-filter-buttons {
+        .btn-filter-apply {
+            height: 42px;
+            padding: 0 18px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-filter-apply:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-filter-reset {
+            height: 42px;
+            padding: 0 14px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-filter-reset:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        /* BIG TABLE CARD */
+        .table-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+        }
+
+        .table-card-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafcfb;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-card-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .filter-btn {
-            padding: 7px 14px;
-            border-radius: 8px;
+        .table-card-badge {
             font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid var(--border);
-            background: #ffffff;
-            color: var(--text);
-            transition: all 0.2s;
-        }
-
-        .filter-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-        }
-
-        /* MANIFEST PASSENGERS TABLE CARD */
-        .manifest-table-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            margin-bottom: 25px;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 3px 10px;
+            border-radius: 999px;
         }
 
         .table-responsive {
@@ -476,333 +312,342 @@
             overflow-x: auto;
         }
 
-        .manifest-table {
+        .booking-table {
             width: 100%;
             border-collapse: collapse;
-            text-align: left;
             font-size: 13px;
+            text-align: left;
         }
 
-        .manifest-table th {
+        .booking-table th {
             background: #f8fafc;
-            padding: 14px 18px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
+            padding: 13px 16px;
+            font-weight: 800;
             color: #475569;
             border-bottom: 1.5px solid var(--border);
+            white-space: nowrap;
+            letter-spacing: 0.3px;
         }
 
-        .manifest-table td {
-            padding: 16px 18px;
-            border-bottom: 1px solid #f1f5f9;
+        .booking-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf2f7;
             vertical-align: middle;
             color: var(--text-dark);
         }
 
-        .manifest-table tr:hover td {
+        .booking-table tr:hover td {
             background: #fafcfb;
         }
 
-        /* KURSI BADGE */
-        .seat-badge {
+        /* SPECIAL COLUMN BADGES: TIPE PESANAN */
+        .badge-type-online {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: var(--online-bg);
+            color: var(--online-text);
+            border: 1.5px solid var(--online-border);
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .badge-type-offline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: var(--offline-bg);
+            color: var(--offline-text);
+            border: 1.5px solid var(--offline-border);
+            font-weight: 800;
+            font-size: 12px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        /* STATUS BADGES */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-status-paid {
+            background: #e6fcf5;
+            color: #087f55;
+            border: 1px solid #96f2d7;
+        }
+
+        .badge-status-pending {
+            background: #fff9db;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .badge-status-cancelled {
+            background: #ffe3e3;
+            color: #e03131;
+            border: 1px solid #ffc9c9;
+        }
+
+        .badge-status-completed {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* SEAT PILLS */
+        .seat-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 44px;
-            height: 44px;
-            background: #eefbf5;
-            color: #087f55;
-            border: 1.5px solid #b1eed1;
-            border-radius: 12px;
-            font-size: 15px;
+            padding: 2px 7px;
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
             font-weight: 800;
-            font-family: monospace;
-            box-shadow: 0 2px 6px rgba(8, 127, 85, 0.08);
-        }
-
-        /* NAMA & TIKET */
-        .passenger-info strong {
-            display: block;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 3px;
-        }
-
-        .passenger-code {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
             font-size: 11px;
             font-family: monospace;
-            color: #64748b;
-            background: #f1f5f9;
-            padding: 2px 6px;
-            border-radius: 4px;
+            margin: 1px;
         }
 
-        /* KONTAK & TOMBOL WHATSAPP / TELEPON LANGSUNG */
-        .contact-group {
+        /* ACTION BUTTONS */
+        .action-group {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .contact-number {
-            font-weight: 700;
-            color: #1e293b;
-            font-size: 13px;
-            letter-spacing: 0.2px;
-        }
-
-        .contact-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-wa-direct {
-            display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 5px 10px;
-            background: #25d366;
-            color: #ffffff;
-            border-radius: 7px;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s;
+            flex-wrap: nowrap;
         }
 
-        .btn-wa-direct:hover {
-            background: #1ebc59;
+        .btn-tbl-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+
+        .btn-tbl-action:hover {
             transform: translateY(-1px);
         }
 
-        .btn-call-direct {
-            display: inline-flex;
+        .btn-tbl-action.detail:hover {
+            background: #e0f2fe;
+            color: #0284c7;
+            border-color: #7dd3fc;
+        }
+
+        .btn-tbl-action.print:hover {
+            background: #eefbf5;
+            color: #087f55;
+            border-color: #8fd3b4;
+        }
+
+        .btn-tbl-action.reschedule:hover {
+            background: #fff7ed;
+            color: #ea580c;
+            border-color: #fed7aa;
+        }
+
+        .btn-tbl-action.cancel:hover {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        /* MODAL STYLES */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
             align-items: center;
-            gap: 4px;
-            padding: 5px 10px;
+            justify-content: center;
+            z-index: 1050;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-dialog {
+            background: #ffffff;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.96);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-dialog {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 10;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
             background: #f1f5f9;
-            color: #334155;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            font-size: 11px;
-            font-weight: 600;
-            text-decoration: none;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
             transition: all 0.2s;
         }
 
-        .btn-call-direct:hover {
+        .modal-close:hover {
             background: #e2e8f0;
-            color: #0f172a;
+            color: var(--text-dark);
         }
 
-        /* TITIK NAIK & TURUN (DROP POINT) */
-        .route-stops {
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-width: 250px;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fafcfb;
+            position: sticky;
+            bottom: 0;
         }
 
-        .stop-item {
+        .modal-section-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            margin-top: 18px;
             display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            font-size: 12px;
-            line-height: 1.35;
-        }
-
-        .stop-icon {
-            font-size: 10px;
-            margin-top: 2px;
-        }
-
-        .stop-item.pickup {
-            color: #087f55;
-        }
-
-        .stop-item.dropoff {
-            color: #b45309;
-        }
-
-        .stop-item strong {
-            font-weight: 700;
-        }
-
-        /* CATATAN KHUSUS PENUMPANG */
-        .special-note-box {
-            display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 11px;
-            border-radius: 8px;
-            font-size: 12px;
-            line-height: 1.4;
-            max-width: 260px;
         }
 
-        .note-luggage {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
+        .modal-section-title:first-child {
+            margin-top: 0;
         }
 
-        .note-child {
-            background: #fdf4ff;
-            color: #a21caf;
-            border: 1px solid #f0abfc;
-        }
-
-        .note-elderly {
-            background: #fff8eb;
-            color: #b45309;
-            border: 1px solid #fde68a;
-        }
-
-        .note-standard {
+        .detail-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             background: #f8fafc;
-            color: #64748b;
+            padding: 14px 16px;
+            border-radius: 12px;
             border: 1px solid #e2e8f0;
         }
 
-        /* STATUS BOARDING TOGGLE */
-        .status-badge-boarded {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
-            background: #eaf8f2;
-            color: #087f55;
-            border: 1px solid #b1eed1;
-            border-radius: 20px;
-            font-size: 11px;
+        .detail-item span {
+            display: block;
+            font-size: 11.5px;
+            color: var(--text-light);
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .detail-item strong {
+            font-size: 13.5px;
+            color: var(--text-dark);
             font-weight: 700;
         }
 
-        .status-badge-pending {
-            display: inline-flex;
+        /* PAGINATION */
+        .pagination-container {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
-            background: #fff8eb;
-            color: #b45309;
-            border: 1px solid #fde68a;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #fafcfb;
         }
 
-        .btn-toggle-boarding {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-            margin-top: 4px;
+        .pagination-container svg {
+            width: 16px;
+            height: 16px;
             display: inline-block;
+            vertical-align: middle;
         }
 
-        .btn-toggle-boarded {
-            background: #e2e8f0;
-            color: #475569;
-        }
-
-        .btn-toggle-boarded:hover {
-            background: #cbd5e1;
-        }
-
-        .btn-toggle-not-yet {
-            background: #087f55;
-            color: #ffffff;
-        }
-
-        .btn-toggle-not-yet:hover {
-            background: #066b47;
-        }
-
-        /* PRINT STYLES */
-        @media print {
-            .sidebar, .topbar, .manifest-toolbar, .btn-action, .contact-actions, .btn-toggle-boarding {
-                display: none !important;
-            }
-
-            .main-content {
-                width: 100% !important;
-                margin-left: 0 !important;
-            }
-
-            .content {
-                padding: 0 !important;
-            }
-
-            .manifest-table-card, .trip-header-card {
-                border: 1px solid #94a3b8 !important;
-                box-shadow: none !important;
-            }
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1100px) {
-            .trip-summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .pagination-container nav {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         @media (max-width: 800px) {
             .sidebar {
                 width: 72px;
             }
-
-            .logo-area {
-                justify-content: center;
-                padding: 0;
-            }
-
-            .logo-icon {
-                margin-right: 0;
-            }
-
-            .logo-text, .menu-title, .menu a span, .sidebar-bottom span, .profile-info {
-                display: none;
-            }
-
-            .menu a {
-                justify-content: center;
-                padding: 13px;
-            }
-
-            .logout-btn {
-                justify-content: center;
-            }
-
             .main-content {
-                width: calc(100% - 72px);
                 margin-left: 72px;
             }
-
-            .topbar {
-                padding: 0 20px;
-            }
-
             .content {
-                padding: 20px 16px;
-            }
-
-            .trip-summary-grid {
-                grid-template-columns: 1fr;
+                padding: 16px;
             }
         }
     </style>
     @fonts('overpass')
-    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
     @vite(['resources/css/dashboard-staff.css'])
 </head>
 
@@ -810,391 +655,459 @@
 
 <div class="dashboard-wrapper">
 
-    <!-- =========================================
-         SIDEBAR STAF
-    ========================================== -->
+    <!-- SIDEBAR STAF -->
     @include('dashboard.admin-biasa.partials.sidebar')
 
-
-    <!-- =========================================
-         MAIN CONTENT
-    ========================================== -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
 
         <!-- TOPBAR -->
         @include('dashboard.admin-biasa.partials.topbar', [
-            'topbarTitle' => 'Manajemen Booking (Manifes Penumpang)',
-            'topbarSubtitle' => 'Manifes penumpang gabungan Online (Web/App) & Offline (Loket/WA/Telp), pelunasan & status boarding.',
+            'topbarTitle' => 'Semua Booking (Manajemen Booking)',
+            'topbarSubtitle' => 'Pusat pemantauan seluruh data transaksi tanpa membedakan asal usul pesanan (Online & Offline).',
         ])
-
 
         <!-- CONTENT SECTION -->
         <section class="content">
 
+            <!-- FLASH ALERTS -->
             @if (session('success'))
-                <div class="ds-alert ds-alert--success" role="status">
+                <div class="ds-alert ds-alert--success" role="status" style="margin-bottom: 20px;">
                     <span>{{ session('success') }}</span>
                 </div>
             @endif
             @if (session('error'))
-                <div class="ds-alert ds-alert--error" role="alert">
+                <div class="ds-alert ds-alert--error" role="alert" style="margin-bottom: 20px;">
                     <span>{{ session('error') }}</span>
                 </div>
             @endif
 
-            @if (!$activeTripInfo)
-                <section class="ds-panel">
-                    <p class="ds-empty">
-                        <b>Belum ada jadwal keberangkatan yang tersedia.</b>
-                        Jadwal muncul di sini setelah dibuat oleh Admin Utama.
-                    </p>
-                </section>
-            @else
-
-            <!-- 1. HEADER PERJALANAN & FILTER TRIP -->
-            <div class="trip-header-card">
-
-                <div class="trip-header-top">
-                    <!-- Dropdown Pemilihan Jadwal Perjalanan -->
-                    <form method="GET" action="{{ route('dashboard.admin-biasa.booking') }}" class="trip-select-group">
-                        <label for="scheduleSelect" class="trip-select-label">
-                            Pilih Perjalanan:
-                        </label>
-
-                        <select id="scheduleSelect" name="schedule_id" class="trip-dropdown" onchange="this.form.submit()">
-                            @foreach($scheduleList as $sched)
-                                @php
-                                    $bCount = $sched->bookings ? $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled', 'Expired', 'expired', 'Failed', 'failed'])->sum(fn($b) => $b->passengers->count() ?: $b->total_passenger) : 0;
-                                    $starTag = $bCount > 0 ? " • ({$bCount} Terdaftar)" : "";
-                                    $dateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M') . ' | ' : '';
-                                @endphp
-                                <option value="{{ $sched->id }}" {{ ($selectedSchedule && $selectedSchedule->id == $sched->id) ? 'selected' : '' }}>
-                                    {{ $dateText }}{{ $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '-' }} WIB — {{ $sched->route?->origin?->name ?? 'Asal' }} ke {{ $sched->route?->destination?->name ?? 'Tujuan' }} ({{ $sched->vehicle?->plate_number ?? '-' }}){{ $starTag }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </form>
-
-                    <!-- Tombol Aksi: Pesan Loket, Cetak & WhatsApp Driver -->
-                    <div class="trip-header-actions">
-                        <a href="{{ route('dashboard.admin-biasa.offline-booking', ['schedule_id' => $activeTripInfo->id]) }}" class="btn-action btn-print" style="background: #0C7950; color: #FFFFFF; border-color: #0C7950; display: inline-flex; align-items: center; gap: 6px;">
-                            <span>+ Input Pesanan Offline (Loket)</span>
-                        </a>
-
-                        <button type="button" class="btn-action btn-print" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 6px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 6 2 18 2 18 9" />
-                                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                                <rect width="12" height="8" x="6" y="14" />
-                            </svg>
-                            <span>Cetak Manifes</span>
-                        </button>
-
-                        @if ($activeTripInfo->driver_wa_clean !== '')
-                            @php
-                                $waDriverText = urlencode("Halo Pak {$activeTripInfo->driver_name}, berikut ringkasan manifes trip {$activeTripInfo->time} ({$activeTripInfo->route_name}) armada {$activeTripInfo->plate_number}: Terisi {$totalBooked}/{$activeTripInfo->capacity} kursi, Sudah Boarding: {$boardedCount} orang. Mohon standby di pool.");
-                            @endphp
-                            <a
-                                href="https://wa.me/{{ $activeTripInfo->driver_wa_clean }}?text={{ $waDriverText }}"
-                                target="_blank"
-                                class="btn-action btn-driver-wa"
-                                style="display: inline-flex; align-items: center; gap: 6px;"
-                            >
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m22 2-7 20-4-9-9-4Z" />
-                                    <path d="M22 2 11 13" />
-                                </svg>
-                                <span>Kirim Manifes ke Driver</span>
-                            </a>
-                        @endif
+            <!-- 1. KARTU STATISTIK RINGKASAN -->
+            <div class="stats-grid">
+                <!-- Total Booking -->
+                <div class="stat-card">
+                    <div class="stat-icon total">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                            <path d="M3 9h18M9 21V9" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span>Semua Booking</span>
+                        <strong>{{ number_format($stats['total']) }}</strong>
                     </div>
                 </div>
 
-                <!-- Ringkasan Info Perjalanan -->
-                <div class="trip-summary-grid">
-                    <div class="trip-summary-box">
-                        <span>Rute & Waktu</span>
-                        <strong>{{ $activeTripInfo->route_name }}</strong>
-                        <small style="display: inline-flex; align-items: center; gap: 4px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            {{ $activeTripInfo->time }} • {{ $activeTripInfo->date }}
-                        </small>
+                <!-- Booking Online (Hijau) -->
+                <div class="stat-card">
+                    <div class="stat-icon online">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20" />
+                        </svg>
                     </div>
-
-                    <div class="trip-summary-box">
-                        <span>Armada & Pelat</span>
-                        <strong style="display: inline-flex; align-items: center; gap: 5px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="5" width="20" height="13" rx="2" />
-                                <circle cx="7" cy="18" r="2" />
-                                <circle cx="17" cy="18" r="2" />
-                                <path d="M2 10h20" />
-                            </svg>
-                            {{ $activeTripInfo->plate_number }}
-                        </strong>
-                        <small>{{ $activeTripInfo->vehicle_name }}</small>
-                    </div>
-
-                    <div class="trip-summary-box">
-                        <span>Driver Bertugas</span>
-                        <strong style="display: inline-flex; align-items: center; gap: 5px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                            </svg>
-                            {{ $activeTripInfo->driver_name }}
-                        </strong>
-                        <small style="display: inline-flex; align-items: center; gap: 4px;">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                            </svg>
-                            {{ $activeTripInfo->driver_phone }} (Standby)
-                        </small>
-                    </div>
-
-                    <div class="trip-summary-box">
-                        <span>Status Boarding</span>
-                        <strong style="color: #087f55;">
-                            {{ $boardedCount }}/{{ $totalBooked }} Naik
-                        </strong>
-                        <small>{{ $pendingCount }} Penumpang belum tiba</small>
+                    <div class="stat-info">
+                        <span style="color: var(--online-text);">Tipe Online</span>
+                        <strong style="color: var(--online-text);">{{ number_format($stats['online']) }}</strong>
                     </div>
                 </div>
 
+                <!-- Booking Offline / Loket (Biru) -->
+                <div class="stat-card">
+                    <div class="stat-icon offline">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                            <polyline points="9 22 9 12 15 12 15 22" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span style="color: var(--offline-text);">Tipe Offline / Loket</span>
+                        <strong style="color: var(--offline-text);">{{ number_format($stats['offline']) }}</strong>
+                    </div>
+                </div>
+
+                <!-- Lunas / Berbayar -->
+                <div class="stat-card">
+                    <div class="stat-icon paid">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span>Sudah Lunas</span>
+                        <strong style="color: #059669;">{{ number_format($stats['paid']) }}</strong>
+                    </div>
+                </div>
+
+                <!-- Dibatalkan -->
+                <div class="stat-card">
+                    <div class="stat-icon cancelled">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span>Dibatalkan</span>
+                        <strong style="color: #dc2626;">{{ number_format($stats['cancelled']) }}</strong>
+                    </div>
+                </div>
             </div>
 
+            <!-- 2. FILTER & PENCARIAN -->
+            <div class="filter-panel">
+                <div class="filter-header">
+                    <!-- Tab Pill Tipe Pesanan: Semua, Online, Offline -->
+                    <div class="type-pills" role="tablist">
+                        <a
+                            href="{{ route('dashboard.admin-biasa.booking', array_merge(request()->except('page'), ['type' => 'all'])) }}"
+                            class="type-pill {{ $type === 'all' ? 'active' : '' }}"
+                        >
+                            <span>Semua Tipe</span>
+                            <span class="pill-counter">{{ $stats['total'] }}</span>
+                        </a>
 
-            <!-- 2. TOOLBAR & KOLOM PENCARIAN CEPAT -->
-            <div class="manifest-toolbar">
+                        <a
+                            href="{{ route('dashboard.admin-biasa.booking', array_merge(request()->except('page'), ['type' => 'online'])) }}"
+                            class="type-pill {{ $type === 'online' ? 'active-online' : '' }}"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+                            <span>Online (App / Web)</span>
+                            <span class="pill-counter">{{ $stats['online'] }}</span>
+                        </a>
 
-                <!-- KOLOM PENCARIAN (Berdasarkan Nama atau Nomor Kursi) -->
-                <div class="search-container">
-                    <span class="search-icon">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <a
+                            href="{{ route('dashboard.admin-biasa.booking', array_merge(request()->except('page'), ['type' => 'offline'])) }}"
+                            class="type-pill {{ $type === 'offline' ? 'active-offline' : '' }}"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            <span>Offline (Loket / Kasir)</span>
+                            <span class="pill-counter">{{ $stats['offline'] }}</span>
+                        </a>
+                    </div>
+
+                    <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="btn-filter-apply" style="text-decoration: none;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>Buat Pesanan Baru (Kasir)</span>
+                    </a>
+                </div>
+
+                <!-- Form Search & Dropdown Filter -->
+                <form method="GET" action="{{ route('dashboard.admin-biasa.booking') }}" class="filter-grid">
+                    <input type="hidden" name="type" value="{{ $type }}">
+
+                    <!-- Kolom Pencarian Cepat -->
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
-                    </span>
-                    <input
-                        type="text"
-                        id="passengerSearch"
-                        class="search-input"
-                        placeholder="Cari cepat nama penumpang atau nomor kursi (misal: Budi, Siti, atau 1A)..."
-                        onkeyup="filterPassengers()"
-                    >
-                </div>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ $search }}"
+                            placeholder="Cari kode booking, nama pemesan, no HP, rute..."
+                            class="search-input"
+                        >
+                    </div>
 
-                <!-- Filter Tombol Status -->
-                <div class="status-filter-buttons">
-                    <button type="button" class="filter-btn active" onclick="setFilter('all', this)">
-                        Semua (<span id="countAll">{{ $totalBooked }}</span>)
-                    </button>
-                    <button type="button" class="filter-btn" onclick="setFilter('boarded', this)">
-                        Sudah Boarding (<span id="countBoarded">{{ $boardedCount }}</span>)
-                    </button>
-                    <button type="button" class="filter-btn" onclick="setFilter('pending', this)">
-                        Belum Naik (<span id="countPending">{{ $pendingCount }}</span>)
-                    </button>
-                </div>
+                    <!-- Filter Status Transaksi -->
+                    <div>
+                        <select name="status" class="filter-select">
+                            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Semua Status</option>
+                            <option value="paid" {{ $status === 'paid' ? 'selected' : '' }}>Sudah Lunas</option>
+                            <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Pending (Menunggu Bayar)</option>
+                            <option value="checked_in" {{ in_array($status, ['checked_in', 'boarded']) ? 'selected' : '' }}>Sudah Boarding / Check-in</option>
+                            <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Selesai</option>
+                            <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                        </select>
+                    </div>
 
-                <div class="search-count-badge" id="searchCountIndicator">
-                    Menampilkan <span id="visibleCount">{{ $totalBooked }}</span> dari {{ $totalBooked }} penumpang
-                </div>
+                    <!-- Filter Tanggal Keberangkatan -->
+                    <div>
+                        <input
+                            type="date"
+                            name="date"
+                            value="{{ $date }}"
+                            class="filter-select"
+                            title="Filter Tanggal Keberangkatan"
+                        >
+                    </div>
 
+                    <!-- Filter Jadwal / Rute Spesifik -->
+                    <div>
+                        <select name="schedule_id" class="filter-select">
+                            <option value="">Semua Jadwal Trip</option>
+                            @foreach($scheduleList as $sched)
+                                @php
+                                    $sDate = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->format('d/m') : '';
+                                    $sTime = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '';
+                                    $sOrigin = $sched->route?->origin?->name ?? 'Asal';
+                                    $sDest = $sched->route?->destination?->name ?? 'Tujuan';
+                                @endphp
+                                <option value="{{ $sched->id }}" {{ ($scheduleId == $sched->id) ? 'selected' : '' }}>
+                                    {{ $sDate }} {{ $sTime }} — {{ $sOrigin }} ke {{ $sDest }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tombol Aksi Filter -->
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="btn-filter-apply">
+                            <span>Filter</span>
+                        </button>
+                        @if ($search || $type !== 'all' || $status !== 'all' || $scheduleId || $date)
+                            <a href="{{ route('dashboard.admin-biasa.booking') }}" class="btn-filter-reset" title="Reset Filter">
+                                Reset
+                            </a>
+                        @endif
+                    </div>
+                </form>
             </div>
 
+            <!-- 3. TABEL BESAR: SEMUA BOOKING -->
+            <div class="table-card">
+                <div class="table-card-header">
+                    <div class="table-card-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                            <rect width="18" height="18" x="3" y="3" rx="2" />
+                            <path d="M3 9h18" />
+                            <path d="M9 21V9" />
+                        </svg>
+                        <span>Daftar Seluruh Transaksi Booking</span>
+                        <span class="table-card-badge">{{ $bookings->total() }} Data Ditemukan</span>
+                    </div>
 
-            <!-- 3. TABEL MANIFES PENUMPANG -->
-            <div class="manifest-table-card">
+                    <div style="font-size: 12.5px; color: var(--text-light);">
+                        Menampilkan halaman {{ $bookings->currentPage() }} dari {{ $bookings->lastPage() }}
+                    </div>
+                </div>
 
                 <div class="table-responsive">
-                    <table class="manifest-table" id="manifestTable">
+                    <table class="booking-table" id="allBookingsTable">
                         <thead>
                             <tr>
-                                <th style="width: 80px; text-align: center;">Kursi</th>
-                                <th style="min-width: 170px;">Nama Penumpang</th>
-                                <th style="min-width: 190px;">Kontak & Panggilan</th>
-                                <th style="min-width: 240px;">Titik Naik & Turun (Drop Point)</th>
-                                <th style="min-width: 230px;">Catatan Khusus Penumpang</th>
-                                <th style="width: 130px; text-align: center;">Status Boarding</th>
+                                <th style="width: 140px;">Kode Booking</th>
+                                <th style="min-width: 150px; text-align: center;">Tipe Pesanan</th>
+                                <th style="min-width: 180px;">Pemesan &amp; Kontak</th>
+                                <th style="min-width: 220px;">Rute &amp; Jadwal</th>
+                                <th style="min-width: 160px;">Penumpang &amp; Kursi</th>
+                                <th style="min-width: 150px;">Total &amp; Status</th>
+                                <th style="min-width: 150px; text-align: center;">Aksi</th>
                             </tr>
                         </thead>
 
-                        <tbody id="passengerTableBody">
-                            @forelse($sortedPassengers as $p)
+                        <tbody>
+                            @forelse($bookings as $b)
                                 @php
-                                    $isBoarded = $p->boarded;
-                                    $specialClass = 'note-standard';
-                                    if (str_contains(strtolower($p->special_request), 'koper') || str_contains(strtolower($p->special_request), 'bagasi')) {
-                                        $specialClass = 'note-luggage';
-                                    } elseif (str_contains(strtolower($p->special_request), 'anak') || str_contains(strtolower($p->special_request), 'balita')) {
-                                        $specialClass = 'note-child';
-                                    } elseif (str_contains(strtolower($p->special_request), 'lansia') || str_contains(strtolower($p->special_request), 'tua')) {
-                                        $specialClass = 'note-elderly';
+                                    $isOffline = $b->isOffline();
+                                    $sched = $b->schedule;
+                                    $originName = $sched?->route?->origin?->name ?? 'Asal';
+                                    $destName = $sched?->route?->destination?->name ?? 'Tujuan';
+                                    $depDate = $sched?->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M Y') : '-';
+                                    $depTime = $sched?->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') . ' WIB' : '-';
+                                    $phoneRaw = $b->customerPhone();
+                                    $cleanPhone = preg_replace('/[^0-9]/', '', (string)$phoneRaw);
+                                    if (str_starts_with($cleanPhone, '0')) {
+                                        $cleanPhone = '62' . substr($cleanPhone, 1);
                                     }
+                                    $statusLower = strtolower((string)$b->status);
+                                    $isCancelled = in_array($statusLower, ['cancelled', 'batal']);
+                                    $isPaid = in_array($statusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']);
                                 @endphp
 
-                                <tr
-                                    class="passenger-row"
-                                    data-name="{{ strtolower($p->name) }}"
-                                    data-seat="{{ strtolower($p->seat_number) }}"
-                                    data-boarded="{{ $isBoarded ? 'true' : 'false' }}"
-                                    id="row-passenger-{{ $p->id }}"
-                                >
-                                    <!-- 1. NOMOR KURSI -->
-                                    <td style="text-align: center;">
-                                        <div class="seat-badge">
-                                            {{ $p->seat_number }}
-                                        </div>
-                                    </td>
-
-                                    <!-- 2. NAMA PENUMPANG & SALURAN PEMESANAN -->
+                                <tr id="row-booking-{{ $b->id }}">
+                                    <!-- 1. KODE BOOKING & TANGGAL TRANSAKSI -->
                                     <td>
-                                        <div class="passenger-info">
-                                            <strong class="passenger-name-text">{{ $p->name }}</strong>
-                                            <span class="passenger-code" style="display: inline-flex; align-items: center; gap: 4px;">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-                                                </svg>
-                                                {{ $p->booking_code }}
+                                        <div style="font-family: monospace; font-weight: 800; font-size: 13.5px; color: var(--text-dark);">
+                                            {{ $b->booking_code }}
+                                        </div>
+                                        <small style="color: var(--text-light); font-size: 11px; display: block; margin-top: 2px;">
+                                            {{ $b->created_at ? $b->created_at->format('d/m/Y H:i') : '-' }} WIB
+                                        </small>
+                                        @if($b->ticket)
+                                            <span style="font-family: monospace; font-size: 10px; color: #0C5A3E; background: #eefbf5; padding: 1px 5px; border-radius: 4px; display: inline-block; margin-top: 3px;">
+                                                {{ $b->ticket->ticket_number }}
                                             </span>
-                                            <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                                                <span class="ds-channel-badge {{ $p->is_offline ? 'ds-channel-badge--offline' : 'ds-channel-badge--online' }}">
-                                                    {{ $p->source_label }}
-                                                </span>
-                                                <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; {{ $p->is_paid ? 'background: #eaf8f2; color: #087f55;' : 'background: #fff7e6; color: #b45309;' }}">
-                                                    {{ $p->is_paid ? 'Lunas' : 'Belum Bayar' }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                        @endif
                                     </td>
 
-                                    <!-- 3. NOMOR TELEPON AKTIF + TOMBOL PANGGIL / WHATSAPP LANGSUNG -->
-                                    <td>
-                                        <div class="contact-group">
-                                            <div class="contact-number" style="display: flex; align-items: center; gap: 5px;">
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-light);">
-                                                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-                                                    <path d="M12 18h.01" />
-                                                </svg>
-                                                <span>{{ $p->phone }}</span>
-                                            </div>
-
-                                            <div class="contact-actions">
-                                                <!-- Tombol WhatsApp Langsung -->
-                                                <a
-                                                    href="{{ $p->phone_wa_url }}"
-                                                    target="_blank"
-                                                    class="btn-wa-direct"
-                                                    title="Kirim Pesan WhatsApp Langsung"
-                                                    style="display: inline-flex; align-items: center; gap: 4px;"
-                                                >
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                                    </svg>
-                                                    <span>WhatsApp</span>
-                                                </a>
-
-                                                <!-- Tombol Panggil Langsung -->
-                                                <a
-                                                    href="{{ $p->phone_tel_url }}"
-                                                    class="btn-call-direct"
-                                                    title="Hubungi Nomor Telepon"
-                                                    style="display: inline-flex; align-items: center; gap: 4px;"
-                                                >
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                                    </svg>
-                                                    <span>Panggil</span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- 4. TITIK NAIK & TURUN (KETERANGAN DROP POINT) -->
-                                    <td>
-                                        <div class="route-stops">
-                                            <div class="stop-item pickup">
-                                                <span class="stop-icon" style="color: #087f55;">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                                                        <circle cx="12" cy="12" r="8" />
-                                                    </svg>
-                                                </span>
-                                                <div>
-                                                    <strong>Naik:</strong> {{ $p->pickup_point }}
-                                                </div>
-                                            </div>
-
-                                            <div class="stop-item dropoff">
-                                                <span class="stop-icon" style="color: #d97706;">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                                        <circle cx="12" cy="10" r="3" />
-                                                    </svg>
-                                                </span>
-                                                <div>
-                                                    <strong>Turun:</strong> {{ $p->drop_point }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    <!-- 5. CATATAN KHUSUS PENUMPANG -->
-                                    <td>
-                                        <div class="special-note-box {{ $specialClass }}">
-                                            <span>{{ $p->special_request }}</span>
-                                        </div>
-                                    </td>
-
-                                    <!-- 6. STATUS BOARDING & AKSI TOGGLE / PELUNASAN -->
+                                    <!-- 2. INDIKATOR KOLOM KHUSUS: TIPE PESANAN (HIJAU = ONLINE, BIRU = OFFLINE/LOKET) -->
                                     <td style="text-align: center;">
-                                        <div id="badge-status-{{ $p->id }}">
-                                            @if($isBoarded)
-                                                <span class="status-badge-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                        <polyline points="20 6 9 17 4 12" />
-                                                    </svg>
-                                                    <span>Sudah Boarding</span>
+                                        @if($isOffline)
+                                            <span class="badge-type-offline" title="Pemesanan langsung di Loket / Kasir Fisik">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                    <polyline points="9 22 9 12 15 12 15 22" />
+                                                </svg>
+                                                <span>Offline (Loket)</span>
+                                            </span>
+                                        @else
+                                            <span class="badge-type-online" title="Pemesanan online melalui Aplikasi Mobile atau Web">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20" />
+                                                </svg>
+                                                <span>Online (App)</span>
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <!-- 3. PEMESAN & KONTAK -->
+                                    <td>
+                                        <strong style="display: block; font-size: 13.5px; color: var(--text-dark);">
+                                            {{ $b->customerName() }}
+                                        </strong>
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                            <span style="font-size: 12px; color: var(--text-light); font-family: monospace;">{{ $phoneRaw }}</span>
+                                            @if($cleanPhone !== '')
+                                                <a
+                                                    href="https://wa.me/{{ $cleanPhone }}?text={{ urlencode("Halo Kak {$b->customerName()}, konfirmasi pesanan tiket TravelKu #{$b->booking_code} rute {$originName} - {$destName}.") }}"
+                                                    target="_blank"
+                                                    style="display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 4px; background: #25d366; color: #ffffff; font-size: 10px; font-weight: 700;"
+                                                    title="Hubungi WhatsApp"
+                                                >
+                                                    WA
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+
+                                    <!-- 4. RUTE & JADWAL PERJALANAN -->
+                                    <td>
+                                        <div style="font-weight: 800; color: #0C5A3E; font-size: 13px;">
+                                            {{ $originName }} &rarr; {{ $destName }}
+                                        </div>
+                                        <div style="font-size: 11.5px; color: var(--text); margin-top: 2px;">
+                                            {{ $depDate }} &bull; <strong>{{ $depTime }}</strong>
+                                        </div>
+                                        <small style="color: var(--text-light); font-size: 11px;">
+                                            {{ $sched?->vehicle?->name ?? 'Armada' }} ({{ $sched?->vehicle?->plate_number ?? '-' }})
+                                        </small>
+                                    </td>
+
+                                    <!-- 5. PENUMPANG & NOMOR KURSI -->
+                                    <td>
+                                        <div style="font-weight: 700; font-size: 12.5px; color: var(--text-dark); margin-bottom: 3px;">
+                                            {{ $b->total_passenger }} Penumpang
+                                        </div>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                            @foreach($b->passengers as $p)
+                                                <span class="seat-pill" title="{{ $p->name }} (Kursi {{ $p->seat?->seat_number ?? '-' }})">
+                                                    {{ $p->seat?->seat_number ?? '-' }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                        @if($b->passengers->first())
+                                            <small style="display: block; font-size: 11px; color: var(--text-light); margin-top: 3px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ $b->passengers->first()->name }}
+                                                @if($b->passengers->count() > 1)
+                                                    +{{ $b->passengers->count() - 1 }} lainnya
+                                                @endif
+                                            </small>
+                                        @endif
+                                    </td>
+
+                                    <!-- 6. TOTAL HARGA & STATUS PEMBAYARAN -->
+                                    <td>
+                                        <div style="font-weight: 800; font-size: 14px; color: var(--text-dark);">
+                                            Rp {{ number_format((float)$b->total_price, 0, ',', '.') }}
+                                        </div>
+                                        <div style="margin-top: 4px;">
+                                            @if($isCancelled)
+                                                <span class="status-badge badge-status-cancelled">
+                                                    Dibatalkan
+                                                </span>
+                                            @elseif($isPaid)
+                                                <span class="status-badge badge-status-paid">
+                                                    &check; Lunas
                                                 </span>
                                             @else
-                                                <span class="status-badge-pending" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <polyline points="12 6 12 12 16 14" />
-                                                    </svg>
-                                                    <span>Belum Naik</span>
+                                                <span class="status-badge badge-status-pending">
+                                                    Pending
                                                 </span>
                                             @endif
                                         </div>
+                                    </td>
 
-                                        @if(!$p->is_paid)
-                                            <form method="POST" action="{{ route('dashboard.admin-biasa.booking.settle', $p->booking_id) }}" style="margin-top: 6px;">
-                                                @csrf
-                                                <input type="hidden" name="payment_method" value="Cash">
-                                                <input type="hidden" name="mark_boarded" value="1">
-                                                <button type="submit" class="btn-toggle-boarding" style="background: #fff7e6; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">
-                                                    Lunasi Cash &amp; Boarding
-                                                </button>
-                                            </form>
-                                        @else
+                                    <!-- 7. AKSI: DETAIL, CETAK ULANG TIKET, RESCHEDULE, BATALKAN -->
+                                    <td style="text-align: center;">
+                                        <div class="action-group" style="justify-content: center;">
+                                            <!-- 1. LIHAT DETAIL PESANAN -->
                                             <button
                                                 type="button"
-                                                class="btn-toggle-boarding {{ $isBoarded ? 'btn-toggle-boarded' : 'btn-toggle-not-yet' }}"
-                                                onclick="togglePassengerBoarding({{ $p->id }}, '{{ $p->name }}', '{{ $p->seat_number }}')"
-                                                id="btn-toggle-{{ $p->id }}"
+                                                class="btn-tbl-action detail"
+                                                onclick="openDetailModal({{ $b->id }})"
+                                                title="Lihat Detail Lengkap Transaksi"
                                             >
-                                                {{ $isBoarded ? 'Batalkan' : 'Masuk Armada' }}
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                                    <circle cx="12" cy="12" r="3" />
+                                                </svg>
                                             </button>
-                                        @endif
+
+                                            <!-- 2. CETAK ULANG TIKET / STRUK FISIK -->
+                                            <a
+                                                href="{{ route('dashboard.admin-biasa.booking.print-ticket', $b->id) }}"
+                                                target="_blank"
+                                                class="btn-tbl-action print"
+                                                title="Cetak Ulang Tiket / Struk Fisik"
+                                            >
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="6 9 6 2 18 2 18 9" />
+                                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                                    <rect width="12" height="8" x="6" y="14" />
+                                                </svg>
+                                            </a>
+
+                                            <!-- 3. UBAH JADWAL (RESCHEDULE) -->
+                                            @if(!$isCancelled && $sched && $sched->departureCarbon()->isFuture())
+                                                <button
+                                                    type="button"
+                                                    class="btn-tbl-action reschedule"
+                                                    onclick="openRescheduleModal({{ $b->id }}, '{{ $b->booking_code }}')"
+                                                    title="Ubah Jadwal Keberangkatan (Reschedule)"
+                                                >
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                                        <path d="M3 3v5h5" />
+                                                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                                                        <path d="M16 21h5v-5" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+
+                                            <!-- 4. MEMBATALKAN PESANAN -->
+                                            @if(!$isCancelled)
+                                                <button
+                                                    type="button"
+                                                    class="btn-tbl-action cancel"
+                                                    onclick="openCancelModal({{ $b->id }}, '{{ $b->booking_code }}', '{{ $b->customerName() }}')"
+                                                    title="Batalkan Pesanan Ini"
+                                                >
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <line x1="15" y1="9" x2="9" y2="15" />
+                                                        <line x1="9" y1="9" x2="15" y2="15" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-light);">
-                                        Belum ada penumpang terdaftar pada perjalanan ini.
+                                    <td colspan="7" style="padding: 50px 20px; text-align: center; color: var(--text-light);">
+                                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="11" cy="11" r="8" />
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                            </svg>
+                                            <strong style="font-size: 15px; color: var(--text-dark);">Tidak ada data transaksi booking ditemukan</strong>
+                                            <span style="font-size: 13px;">Silakan sesuaikan kata kunci pencarian atau ganti filter tipe pesanan.</span>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse
@@ -1202,23 +1115,18 @@
                     </table>
                 </div>
 
-                <!-- Pesan jika hasil pencarian nihil -->
-                <div id="noResultsMessage" style="display: none; padding: 40px; text-align: center;">
-                    <p style="font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        <span>Penumpang Tidak Ditemukan</span>
-                    </p>
-                    <p style="font-size: 13px; color: var(--text-light);">
-                        Tidak ada penumpang atau nomor kursi yang cocok dengan kata kunci tersebut.
-                    </p>
-                </div>
-
+                <!-- PAGINATION CONTROLS -->
+                @if($bookings->hasPages())
+                    <div class="pagination-container">
+                        <div style="font-size: 13px; color: var(--text-light);">
+                            Menampilkan {{ $bookings->firstItem() ?? 0 }} - {{ $bookings->lastItem() ?? 0 }} dari {{ $bookings->total() }} pesanan
+                        </div>
+                        <div>
+                            {{ $bookings->links() }}
+                        </div>
+                    </div>
+                @endif
             </div>
-
-            @endif
 
         </section>
 
@@ -1226,137 +1134,464 @@
 
 </div>
 
+<!-- =====================================================================================
+     MODAL 1: LIHAT DETAIL PESANAN
+====================================================================================== -->
+<div class="modal-overlay" id="detailModalOverlay" onclick="if (event.target === this) closeModal('detailModalOverlay')">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <span id="detailModalTitle">Detail Pesanan #TRV-</span>
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('detailModalOverlay')">&times;</button>
+        </div>
 
-<!-- =========================================
-     INTERACTIVE JAVASCRIPT LOGIC
-========================================== -->
+        <div class="modal-body" id="detailModalBody">
+            <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                Memuat rincian transaksi...
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-filter-reset" onclick="closeModal('detailModalOverlay')">Tutup</button>
+            <a href="#" id="detailPrintBtn" target="_blank" class="btn-filter-apply" style="text-decoration: none;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                <span>Cetak Tiket / Struk</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================================
+     MODAL 2: UBAH JADWAL (RESCHEDULE)
+====================================================================================== -->
+<div class="modal-overlay" id="rescheduleModalOverlay" onclick="if (event.target === this) closeModal('rescheduleModalOverlay')">
+    <div class="modal-dialog">
+        <form id="rescheduleForm" method="POST" onsubmit="submitReschedule(event)">
+            @csrf
+            <div class="modal-header">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ea580c;">
+                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                        <path d="M16 21h5v-5" />
+                    </svg>
+                    <span>Ubah Jadwal Tiket (Reschedule)</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('rescheduleModalOverlay')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div id="rescheduleCurrentInfo" style="background: #fff7ed; border: 1px solid #fed7aa; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 13px;">
+                    <!-- Diisi via JS -->
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label for="newScheduleSelect" style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+                        Pilih Jadwal Keberangkatan Baru:
+                    </label>
+                    <select id="newScheduleSelect" name="new_schedule_id" class="filter-select" required>
+                        <option value="">-- Memuat Jadwal Alternatif... --</option>
+                    </select>
+                    <small style="color: var(--text-light); font-size: 11px; display: block; margin-top: 4px;">
+                        Hanya jadwal aktif mendatang dengan rute yang sama dan kursi mencukupi yang ditampilkan.
+                    </small>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label for="rescheduleReasonInput" style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+                        Alasan Reschedule:
+                    </label>
+                    <input
+                        type="text"
+                        id="rescheduleReasonInput"
+                        name="reschedule_reason"
+                        class="search-input"
+                        placeholder="Contoh: Permintaan pelanggan via telepon karena ada urusan mendadak"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-filter-reset" onclick="closeModal('rescheduleModalOverlay')">Batal</button>
+                <button type="submit" id="rescheduleSubmitBtn" class="btn-filter-apply" style="background: #ea580c;">
+                    <span>Konfirmasi Ubah Jadwal</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =====================================================================================
+     MODAL 3: MEMBATALKAN PESANAN
+====================================================================================== -->
+<div class="modal-overlay" id="cancelModalOverlay" onclick="if (event.target === this) closeModal('cancelModalOverlay')">
+    <div class="modal-dialog" style="max-width: 480px;">
+        <form id="cancelBookingForm" method="POST" onsubmit="submitCancelBooking(event)">
+            @csrf
+            <div class="modal-header">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #dc2626;">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="15" y1="9" x2="9" y2="15" />
+                        <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                    <span>Batalkan Pemesanan</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('cancelModalOverlay')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div style="background: #fef2f2; border: 1.5px solid #fecaca; padding: 14px 16px; border-radius: 12px; margin-bottom: 16px;">
+                    <p style="font-weight: 700; color: #991b1b; font-size: 13.5px; margin-bottom: 4px;">
+                        Peringatan Pembatalan Tiket
+                    </p>
+                    <p style="font-size: 12.5px; color: #b91c1c; line-height: 1.4;">
+                        Pesanan <strong id="cancelBookingCodeText">#TRV-</strong> atas nama <strong id="cancelCustomerNameText">-</strong> akan dibatalkan.
+                        Kursi yang dipesan akan otomatis dilepaskan kembali ke sistem kuota armada.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label for="cancelReasonInput" style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+                        Alasan Pembatalan:
+                    </label>
+                    <textarea
+                        id="cancelReasonInput"
+                        name="reason"
+                        rows="3"
+                        class="filter-select"
+                        style="height: auto; padding: 10px; font-size: 13px;"
+                        placeholder="Contoh: Penumpang membatalkan perjalanan secara langsung di loket pool..."
+                        required
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-filter-reset" onclick="closeModal('cancelModalOverlay')">Kembali</button>
+                <button type="submit" id="cancelSubmitBtn" class="btn-filter-apply" style="background: #dc2626;">
+                    <span>Ya, Batalkan Pesanan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =====================================================================================
+     SCRIPTS
+====================================================================================== -->
 <script>
-    let currentFilter = 'all';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    // 1. KOLOM PENCARIAN CEPAT (Berdasarkan Nama atau Nomor Kursi)
-    function filterPassengers() {
-        const query = document.getElementById('passengerSearch').value.toLowerCase().trim();
-        const rows = document.querySelectorAll('.passenger-row');
-        let visibleCount = 0;
+    function closeModal(modalId) {
+        document.getElementById(modalId)?.classList.remove('active');
+    }
 
-        rows.forEach(row => {
-            const name = row.getAttribute('data-name') || '';
-            const seat = row.getAttribute('data-seat') || '';
-            const isBoarded = row.getAttribute('data-boarded') === 'true';
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeModal('detailModalOverlay');
+            closeModal('rescheduleModalOverlay');
+            closeModal('cancelModalOverlay');
+        }
+    });
 
-            // Cek kondisi pencarian
-            const matchesSearch = name.includes(query) || seat.includes(query);
+    // 1. DETAIL PESANAN
+    async function openDetailModal(bookingId) {
+        const overlay = document.getElementById('detailModalOverlay');
+        const body = document.getElementById('detailModalBody');
+        const title = document.getElementById('detailModalTitle');
+        const printBtn = document.getElementById('detailPrintBtn');
 
-            // Cek kondisi filter status
-            let matchesFilter = true;
-            if (currentFilter === 'boarded' && !isBoarded) matchesFilter = false;
-            if (currentFilter === 'pending' && isBoarded) matchesFilter = false;
+        overlay.classList.add('active');
+        body.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light);">Memuat rincian transaksi...</div>';
 
-            if (matchesSearch && matchesFilter) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
+        try {
+            const res = await fetch("{{ url('/admin/booking') }}/" + bookingId + "/detail", {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                body.innerHTML = '<div style="color: #dc2626; padding: 20px; text-align: center;">Gagal memuat rincian pesanan.</div>';
+                return;
             }
-        });
 
-        document.getElementById('visibleCount').innerText = visibleCount;
+            const b = data.booking;
+            const sched = data.schedule;
+            const pay = data.payment;
+            const tkt = data.ticket;
+            const passengers = data.passengers || [];
 
-        const noResults = document.getElementById('noResultsMessage');
-        const table = document.getElementById('manifestTable');
+            title.innerText = `Detail Pesanan #${b.booking_code}`;
+            printBtn.href = b.print_url;
 
-        if (visibleCount === 0 && rows.length > 0) {
-            noResults.style.display = 'block';
-            table.style.display = 'none';
-        } else {
-            noResults.style.display = 'none';
-            table.style.display = 'table';
+            const badgeHtml = b.is_offline
+                ? '<span class="badge-type-offline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Offline (Loket)</span>'
+                : '<span class="badge-type-online"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg> Online (App / Web)</span>';
+
+            let passHtml = passengers.map((p, i) => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 6px; font-size: 13px;">
+                    <div>
+                        <strong>${escapeHtml(p.name)}</strong>
+                        <small style="color: #64748b; display: block;">Telp: ${escapeHtml(p.phone)}</small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="seat-pill" style="font-size: 13px; padding: 3px 10px;">Kursi ${escapeHtml(p.seat_number)}</span>
+                        <span style="font-size: 11px; font-weight: 700; color: ${p.is_boarded ? '#087f55' : '#b45309'};">
+                            ${p.is_boarded ? '&check; Sudah Naik' : 'Belum Naik'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+
+            body.innerHTML = `
+                <div class="modal-section-title">Informasi Pemesanan &amp; Asal Saluran</div>
+                <div class="detail-info-grid">
+                    <div class="detail-item">
+                        <span>Kode Booking:</span>
+                        <strong style="font-family: monospace;">${escapeHtml(b.booking_code)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Tipe Pesanan:</span>
+                        <div>${badgeHtml}</div>
+                    </div>
+                    <div class="detail-item">
+                        <span>Nama Pemesan:</span>
+                        <strong>${escapeHtml(b.customer_name)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Nomor Telepon:</span>
+                        <strong>${escapeHtml(b.customer_phone)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Status Transaksi:</span>
+                        <strong style="color: ${b.status === 'Cancelled' ? '#dc2626' : '#087f55'};">${escapeHtml(b.status_label)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Waktu Transaksi:</span>
+                        <strong style="font-size: 12px;">${escapeHtml(b.created_at)}</strong>
+                    </div>
+                </div>
+
+                <div class="modal-section-title">Rute &amp; Jadwal Perjalanan</div>
+                <div class="detail-info-grid">
+                    <div class="detail-item">
+                        <span>Rute:</span>
+                        <strong style="color: #0C5A3E;">${escapeHtml(sched.route_name)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Waktu Keberangkatan:</span>
+                        <strong>${escapeHtml(sched.departure_date)} &bull; ${escapeHtml(sched.departure_time)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Armada &amp; Plat:</span>
+                        <strong>${escapeHtml(sched.vehicle_name)} (${escapeHtml(sched.plate_number)})</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Driver Bertugas:</span>
+                        <strong>${escapeHtml(sched.driver_name)} (${escapeHtml(sched.driver_phone)})</strong>
+                    </div>
+                </div>
+
+                <div class="modal-section-title">Manifes Penumpang (${passengers.length} Orang)</div>
+                <div>${passHtml || '<p style="color: #64748b;">Belum ada manifes penumpang.</p>'}</div>
+
+                <div class="modal-section-title">Rincian Pembayaran &amp; Tiket</div>
+                <div class="detail-info-grid">
+                    <div class="detail-item">
+                        <span>Nomor Tiket Fisik:</span>
+                        <strong style="font-family: monospace; color: #0C5A3E;">${escapeHtml(tkt.ticket_number)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Metode Pembayaran:</span>
+                        <strong>${escapeHtml(pay.method)} (${escapeHtml(pay.status)})</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Total Pembayaran:</span>
+                        <strong style="font-size: 16px; color: #087f55;">${escapeHtml(b.formatted_total)}</strong>
+                    </div>
+                    <div class="detail-item">
+                        <span>Catatan Khusus:</span>
+                        <strong style="font-size: 12px; font-weight: normal;">${escapeHtml(b.notes)}</strong>
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            console.error(err);
+            body.innerHTML = '<div style="color: #dc2626; padding: 20px; text-align: center;">Gagal menghubungi server.</div>';
         }
     }
 
-    // 2. FILTER TAB (Semua, Sudah Boarding, Belum Naik)
-    function setFilter(status, buttonElement) {
-        currentFilter = status;
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        buttonElement.classList.add('active');
-        filterPassengers();
-    }
+    // 2. RESCHEDULE MODAL
+    let currentRescheduleBookingId = null;
 
-    // 3. TOGGLE STATUS BOARDING DENGAN SINKRONISASI DATABASE BACKEND
-    async function togglePassengerBoarding(id, name, seat) {
-        const row = document.getElementById('row-passenger-' + id);
-        const badgeContainer = document.getElementById('badge-status-' + id);
-        const toggleBtn = document.getElementById('btn-toggle-' + id);
-        const currentStatus = row.getAttribute('data-boarded') === 'true';
-        const newStatus = currentStatus ? 'belum_hadir' : 'boarded';
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    async function openRescheduleModal(bookingId, bookingCode) {
+        currentRescheduleBookingId = bookingId;
+        const overlay = document.getElementById('rescheduleModalOverlay');
+        const form = document.getElementById('rescheduleForm');
+        const currentInfo = document.getElementById('rescheduleCurrentInfo');
+        const select = document.getElementById('newScheduleSelect');
 
-        toggleBtn.disabled = true;
-        toggleBtn.style.opacity = '0.6';
+        overlay.classList.add('active');
+        form.action = "{{ url('/admin/booking') }}/" + bookingId + "/reschedule";
+        currentInfo.innerHTML = `Memuat informasi jadwal tiket <strong>#${escapeHtml(bookingCode)}</strong>...`;
+        select.innerHTML = '<option value="">-- Memuat Jadwal Alternatif... --</option>';
 
         try {
-            const response = await fetch("{{ url('/admin/validasi-tiket/passenger') }}/" + id + "/status", {
-                method: 'PATCH',
+            const res = await fetch("{{ url('/admin/booking') }}/" + bookingId + "/reschedule-data", {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                currentInfo.innerHTML = '<span style="color: #dc2626;">Gagal memuat opsi reschedule.</span>';
+                return;
+            }
+
+            const b = data.booking;
+            const schedules = data.available_schedules || [];
+
+            currentInfo.innerHTML = `
+                <div><strong>Kode Booking:</strong> #${escapeHtml(b.booking_code)} (${b.total_passenger} Penumpang)</div>
+                <div><strong>Jadwal Saat Ini:</strong> ${escapeHtml(b.current_schedule)}</div>
+                <div><strong>Kursi Saat Ini:</strong> ${escapeHtml(b.current_seats)}</div>
+            `;
+
+            if (schedules.length === 0) {
+                select.innerHTML = '<option value="">-- Tidak ada jadwal alternatif rute yang sama di masa mendatang --</option>';
+                select.disabled = true;
+            } else {
+                select.disabled = false;
+                select.innerHTML = '<option value="">-- Pilih Jadwal Baru --</option>' + schedules.map(s => `
+                    <option value="${s.id}">
+                        ${escapeHtml(s.date)} ${escapeHtml(s.time)} — ${escapeHtml(s.route_name)} (${escapeHtml(s.vehicle_name)} - Sisa ${s.available_seats} Kursi)
+                    </option>
+                `).join('');
+            }
+        } catch (err) {
+            console.error(err);
+            currentInfo.innerHTML = '<span style="color: #dc2626;">Gagal menghubungi server.</span>';
+        }
+    }
+
+    async function submitReschedule(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('rescheduleSubmitBtn');
+        const select = document.getElementById('newScheduleSelect');
+        const reason = document.getElementById('rescheduleReasonInput').value;
+
+        if (!select.value) {
+            alert('Silakan pilih jadwal keberangkatan baru terlebih dahulu.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = 'Menyimpan...';
+
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
                 body: JSON.stringify({
-                    status: newStatus
+                    new_schedule_id: select.value,
+                    reschedule_reason: reason
                 })
             });
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                if (newStatus === 'boarded') {
-                    // Ubah menjadi Sudah Boarding
-                    row.setAttribute('data-boarded', 'true');
-                    badgeContainer.innerHTML = '<span class="status-badge-boarded" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>Sudah Boarding</span></span>';
-                    toggleBtn.className = 'btn-toggle-boarding btn-toggle-boarded';
-                    toggleBtn.innerText = 'Batalkan';
-                } else {
-                    // Ubah menjadi Belum Naik
-                    row.setAttribute('data-boarded', 'false');
-                    badgeContainer.innerHTML = '<span class="status-badge-pending" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>Belum Naik</span></span>';
-                    toggleBtn.className = 'btn-toggle-boarding btn-toggle-not-yet';
-                    toggleBtn.innerText = 'Masuk Armada';
-                }
-
-                updateCounters();
-                filterPassengers();
+            const data = await res.json();
+            if (res.ok && data.success) {
+                alert(data.message || 'Jadwal tiket berhasil diubah!');
+                window.location.reload();
             } else {
-                alert('Gagal memperbarui status boarding: ' + (data.message || 'Terjadi kesalahan server'));
+                alert(data.message || 'Gagal mengubah jadwal tiket.');
+                btn.disabled = false;
+                btn.innerText = 'Konfirmasi Ubah Jadwal';
             }
         } catch (err) {
-            console.error('Error toggle boarding:', err);
-            alert('Gagal menghubungi server. Pastikan koneksi aktif.');
-        } finally {
-            toggleBtn.disabled = false;
-            toggleBtn.style.opacity = '1';
+            console.error(err);
+            alert('Terjadi kesalahan koneksi.');
+            btn.disabled = false;
+            btn.innerText = 'Konfirmasi Ubah Jadwal';
         }
     }
 
-    function updateCounters() {
-        const rows = document.querySelectorAll('.passenger-row');
-        let boarded = 0;
-        let pending = 0;
+    // 3. CANCEL MODAL
+    let currentCancelBookingId = null;
 
-        rows.forEach(row => {
-            if (row.getAttribute('data-boarded') === 'true') {
-                boarded++;
+    function openCancelModal(bookingId, bookingCode, customerName) {
+        currentCancelBookingId = bookingId;
+        const overlay = document.getElementById('cancelModalOverlay');
+        const form = document.getElementById('cancelBookingForm');
+        document.getElementById('cancelBookingCodeText').innerText = `#${bookingCode}`;
+        document.getElementById('cancelCustomerNameText').innerText = customerName;
+        document.getElementById('cancelReasonInput').value = '';
+        form.action = "{{ url('/admin/booking') }}/" + bookingId + "/batal";
+        overlay.classList.add('active');
+    }
+
+    async function submitCancelBooking(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('cancelSubmitBtn');
+        const reason = document.getElementById('cancelReasonInput').value;
+
+        btn.disabled = true;
+        btn.innerText = 'Membatalkan...';
+
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ reason: reason })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                alert(data.message || 'Pesanan berhasil dibatalkan.');
+                window.location.reload();
             } else {
-                pending++;
+                alert(data.message || 'Gagal membatalkan pesanan.');
+                btn.disabled = false;
+                btn.innerText = 'Ya, Batalkan Pesanan';
             }
-        });
+        } catch (err) {
+            console.error(err);
+            alert('Terjadi kesalahan koneksi.');
+            btn.disabled = false;
+            btn.innerText = 'Ya, Batalkan Pesanan';
+        }
+    }
 
-        document.getElementById('countAll').innerText = rows.length;
-        document.getElementById('countBoarded').innerText = boarded;
-        document.getElementById('countPending').innerText = pending;
+    function escapeHtml(text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 </script>
 
+@include('components.numeric-input-enforcer')
 </body>
 
 </html>

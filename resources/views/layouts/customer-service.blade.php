@@ -109,6 +109,7 @@
     @include('dashboard.customer-service.partials.scripts')
 
     @stack('scripts')
+    @include('components.numeric-input-enforcer')
 
 </body>
 </html>

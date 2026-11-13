@@ -375,7 +375,7 @@ test('generate massal dengan tanggal akhir kurang dari awal ditolak', function (
     $response->assertSessionHasErrors(['end_date']);
 });
 
-test('generate massal tidak memeriksa bentrok armada/sopir di rute lain (BUG-13)', function () {
+test('generate massal bentrok armada/sopir di rute lain dilewati (BUG-13)', function () {
     $routeA = ($this->makeRoute)([]);
     $routeB = ($this->makeRoute)([]);
     $today = Carbon::today()->toDateString();
@@ -403,12 +403,12 @@ test('generate massal tidak memeriksa bentrok armada/sopir di rute lain (BUG-13)
 
     $response->assertRedirect();
     $response->assertSessionHas('success', function (string $message): bool {
-        return str_contains($message, 'Berhasil membuat 1 slot');
+        return str_contains($message, 'dilewati');
     });
 
     expect(Schedule::where('route_id', $routeB->id)
         ->where('vehicle_id', $this->vehicle->id)
-        ->count())->toBe(1);
+        ->count())->toBe(0);
 });
 
 test('ganti armada dan sopir pada jadwal kosong tersimpan dan kapasitas dihitung ulang', function () {
@@ -428,7 +428,7 @@ test('ganti armada dan sopir pada jadwal kosong tersimpan dan kapasitas dihitung
         ->and($schedule->available_seats)->toBe($this->otherVehicle->capacity);
 });
 
-test('ganti armada pada jadwal yang sudah ada penumpang atau armada sedang dipakai (BUG-13)', function () {
+test('ganti armada pada jadwal yang armada sedang dipakai ditolak (BUG-13)', function () {
     $schedule = ($this->makeSchedule)([], []);
     ($this->makeBooking)($schedule);
 
@@ -444,9 +444,9 @@ test('ganti armada pada jadwal yang sudah ada penumpang atau armada sedang dipak
     ]);
 
     $response->assertRedirect();
-    $response->assertSessionHas('success');
+    $response->assertSessionHas('error');
 
-    expect($schedule->fresh()->vehicle_id)->toBe($this->otherVehicle->id);
+    expect($schedule->fresh()->vehicle_id)->toBe($schedule->vehicle_id);
 });
 
 test('ubah status jadwal (Scheduled/Active/Completed) tersimpan', function () {

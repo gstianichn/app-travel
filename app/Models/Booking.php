@@ -80,12 +80,20 @@ class Booking extends Model
     }
 
     /**
+     * Cek apakah pemesanan berasal dari kasir / loket / offline.
+     */
+    public function isOffline(): bool
+    {
+        return in_array(strtolower((string) $this->source), ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone'], true);
+    }
+
+    /**
      * Label ramah tampilan untuk asal / saluran pemesanan.
      */
     public function sourceLabel(): string
     {
         return match ($this->source) {
-            'walk_in', 'loket' => 'Loket / Walk-in',
+            'offline', 'walk_in', 'loket' => 'Loket / Offline',
             'whatsapp', 'wa' => 'WhatsApp CS',
             'phone' => 'Telepon',
             default => 'Website Online',
@@ -98,7 +106,7 @@ class Booking extends Model
     public function sourceBadgeClass(): string
     {
         return match ($this->source) {
-            'walk_in', 'loket' => 'badge-source-walkin',
+            'offline', 'walk_in', 'loket' => 'badge-source-walkin',
             'whatsapp', 'wa' => 'badge-source-wa',
             'phone' => 'badge-source-phone',
             default => 'badge-source-online',

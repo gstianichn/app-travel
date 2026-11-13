@@ -1837,6 +1837,16 @@ class AdminDashboardController extends Controller
 
             Seat::whereIn('id', $validated['selected_seats'])->lockForUpdate()->get();
 
+            // Validasi kepemilikan kursi terhadap armada jadwal
+            $validSeatsCount = Seat::where('vehicle_id', $schedule->vehicle_id)
+                ->whereIn('id', $validated['selected_seats'])
+                ->count();
+            if ($validSeatsCount !== count($validated['selected_seats'])) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Kursi yang dipilih bukan merupakan bagian dari armada jadwal ini.');
+            }
+
             // Validasi tabrakan kursi: pastikan kursi belum terisi di jadwal ini
             $alreadyBooked = BookingPassenger::whereHas('booking', function ($q) use ($schedule) {
                 $q->where('schedule_id', $schedule->id)
@@ -1849,17 +1859,21 @@ class AdminDashboardController extends Controller
                     ->with('error', 'Salah satu atau lebih kursi yang Anda pilih telah dipesan oleh penumpang lain. Silakan pilih kursi kosong.');
             }
 
-            // Cari atau buat akun user pelanggan
+            // Cari atau buat akun user pelanggan (khusus role user agar tidak menempel ke akun staf/driver)
             $phone = trim($validated['customer_phone']);
-            $customerUser = User::where('phone', $phone)->first();
+            $customerUser = User::where('role', 'user')->where('phone', $phone)->first();
             if (! $customerUser && ! empty($validated['customer_email'])) {
-                $customerUser = User::where('email', $validated['customer_email'])->first();
+                $customerUser = User::where('role', 'user')->where('email', $validated['customer_email'])->first();
             }
 
             if (! $customerUser) {
                 $email = ! empty($validated['customer_email'])
                     ? $validated['customer_email']
                     : ('guest_'.time().'_'.rand(100, 999).'@travel.test');
+
+                if (User::where('email', $email)->exists()) {
+                    $email = 'guest_'.time().'_'.rand(100, 999).'@travel.test';
+                }
 
                 $customerUser = User::create([
                     'name' => $validated['customer_name'],
@@ -1871,10 +1885,10 @@ class AdminDashboardController extends Controller
                 ]);
             }
 
-            // Hitung tarif tiket
-            $routePrice = $schedule->route?->price ?? 100000;
+            // Hitung tarif tiket (mengikuti harga khusus jadwal / akhir pekan seperti booking online)
+            $unitPrice = $schedule->effectivePrice();
             $passengerCount = count($validated['selected_seats']);
-            $totalPrice = $routePrice * $passengerCount;
+            $totalPrice = $unitPrice * $passengerCount;
 
             // Generate kode booking unik
             $bookingCode = 'TRV-'.strtoupper(Str::random(4)).'-'.rand(1000, 9999);
@@ -2119,6 +2133,12 @@ class AdminDashboardController extends Controller
      */
     public function updateRescheduleBooking(Request $request, Booking $booking)
     {
+        if (strtolower($booking->status) === 'cancelled') {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Pemesanan yang telah dibatalkan tidak dapat diubah jadwalnya (reschedule).');
+        }
+
         $validated = $request->validate([
             'new_schedule_id' => ['required', 'exists:schedules,id'],
             'new_seats' => ['required', 'array'],
@@ -2135,6 +2155,30 @@ class AdminDashboardController extends Controller
         $newSchedule = Schedule::with(['route', 'vehicle'])->findOrFail($validated['new_schedule_id']);
         $oldSchedule = $booking->schedule;
 
+        // Cek status jadwal tujuan
+        if (in_array(strtolower($newSchedule->status ?? ''), ['cancelled', 'completed'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Jadwal tujuan reschedule tidak aktif atau telah dibatalkan.');
+        }
+
+        // Cek apakah jadwal tujuan sudah lampau
+        if ($newSchedule->departureCarbon()->isPast()) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Jadwal tujuan reschedule sudah lewat dari waktu saat ini.');
+        }
+
+        // Cek apakah kursi yang dipilih merupakan milik armada jadwal tujuan
+        $validSeatsCount = Seat::where('vehicle_id', $newSchedule->vehicle_id)
+            ->whereIn('id', $validated['new_seats'])
+            ->count();
+        if ($validSeatsCount !== count($validated['new_seats'])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Kursi yang dipilih bukan merupakan bagian dari armada jadwal tujuan.');
+        }
+
         return DB::transaction(function () use ($validated, $booking, $newSchedule, $oldSchedule) {
             // Pastikan kursi baru belum terisi di jadwal baru
             $alreadyBooked = BookingPassenger::whereHas('booking', function ($q) use ($newSchedule) {
@@ -2148,11 +2192,24 @@ class AdminDashboardController extends Controller
                     ->with('error', 'Salah satu kursi yang dipilih pada jadwal baru sudah terisi. Silakan pilih kursi lain.');
             }
 
+            // Hitung selisih harga antara jadwal lama dan jadwal baru
+            $oldPricePerSeat = $oldSchedule ? $oldSchedule->effectivePrice() : ((float) $booking->subtotal / max(1, $booking->total_passenger));
+            $newPricePerSeat = $newSchedule->effectivePrice();
+            $priceDiff = ($newPricePerSeat - $oldPricePerSeat) * $booking->total_passenger;
+            $priceDiffNote = '';
+            if ($priceDiff > 0) {
+                $priceDiffNote = ' | Selisih biaya tambahan: Rp '.number_format($priceDiff, 0, ',', '.');
+                $booking->total_price = (float) $booking->total_price + $priceDiff;
+                $booking->subtotal = (float) $booking->subtotal + $priceDiff;
+            } elseif ($priceDiff < 0) {
+                $priceDiffNote = ' | Selisih lebih: Rp '.number_format(abs($priceDiff), 0, ',', '.');
+            }
+
             // Catat log reschedule
             $oldInfo = ($oldSchedule->route?->origin?->name ?? '').' → '.($oldSchedule->route?->destination?->name ?? '').', '.($oldSchedule->departure_date ? $oldSchedule->departure_date->format('d/m/Y') : '').' '.$oldSchedule->departure_time;
             $newInfo = ($newSchedule->route?->origin?->name ?? '').' → '.($newSchedule->route?->destination?->name ?? '').', '.($newSchedule->departure_date ? $newSchedule->departure_date->format('d/m/Y') : '').' '.$newSchedule->departure_time;
 
-            $notesLog = trim(($booking->notes ? $booking->notes."\n" : '').'[Reschedule '.now()->format('d/m/Y H:i')."] Dari: {$oldInfo} Menjadi: {$newInfo}. Alasan: {$validated['reschedule_reason']}");
+            $notesLog = trim(($booking->notes ? $booking->notes."\n" : '').'[Reschedule '.now()->format('d/m/Y H:i')."] Dari: {$oldInfo} Menjadi: {$newInfo}. Alasan: {$validated['reschedule_reason']}{$priceDiffNote}");
 
             // Update kursi penumpang ke kursi baru
             foreach ($booking->passengers as $idx => $passenger) {
@@ -2515,8 +2572,10 @@ class AdminDashboardController extends Controller
             'proof_image_url' => ['nullable', 'string', 'max:500'],
             'bank_name' => ['nullable', 'string', 'max:100'],
             'account_name' => ['nullable', 'string', 'max:100'],
-            'account_number' => ['nullable', 'string', 'max:50'],
+            'account_number' => ['nullable', 'string', 'max:50', 'regex:/^[0-9]*$/'],
             'notes' => ['nullable', 'string', 'max:500'],
+        ], [
+            'account_number.regex' => 'Nomor rekening hanya boleh berisi angka.',
         ]);
 
         if ($request->hasFile('proof_image')) {
@@ -3016,29 +3075,41 @@ class AdminDashboardController extends Controller
                 $dateStr = $current->toDateString();
 
                 foreach ($times as $time) {
-                    $exists = Schedule::where('route_id', $validated['route_id'])
-                        ->where('vehicle_id', $vehicle->id)
+                    // Cek bentrok armada di rute mana pun pada tanggal & jam yang sama
+                    $vehicleClash = Schedule::where('vehicle_id', $vehicle->id)
                         ->whereDate('departure_date', $dateStr)
                         ->where('departure_time', $time)
                         ->whereNotIn('status', ['Cancelled', 'cancelled'])
                         ->exists();
 
-                    if (! $exists) {
-                        Schedule::create([
-                            'route_id' => $validated['route_id'],
-                            'vehicle_id' => $vehicle->id,
-                            'driver_id' => $validated['driver_id'] ?? null,
-                            'departure_date' => $dateStr,
-                            'departure_time' => $time,
-                            'available_seats' => $vehicle->capacity,
-                            'price' => $validated['price'] ?? null,
-                            'notes' => $validated['notes'] ?? null,
-                            'status' => 'Scheduled',
-                        ]);
-                        $createdCount++;
-                    } else {
-                        $skippedCount++;
+                    // Cek bentrok sopir jika dipilih pada tanggal & jam yang sama
+                    $driverClash = false;
+                    if (! empty($validated['driver_id'])) {
+                        $driverClash = Schedule::where('driver_id', $validated['driver_id'])
+                            ->whereDate('departure_date', $dateStr)
+                            ->where('departure_time', $time)
+                            ->whereNotIn('status', ['Cancelled', 'cancelled'])
+                            ->exists();
                     }
+
+                    if ($vehicleClash || $driverClash) {
+                        $skippedCount++;
+
+                        continue;
+                    }
+
+                    Schedule::create([
+                        'route_id' => $validated['route_id'],
+                        'vehicle_id' => $vehicle->id,
+                        'driver_id' => $validated['driver_id'] ?? null,
+                        'departure_date' => $dateStr,
+                        'departure_time' => $time,
+                        'available_seats' => $vehicle->capacity,
+                        'price' => $validated['price'] ?? null,
+                        'notes' => $validated['notes'] ?? null,
+                        'status' => 'Scheduled',
+                    ]);
+                    $createdCount++;
                 }
 
                 $current->addDay();
@@ -3067,6 +3138,53 @@ class AdminDashboardController extends Controller
         $newVehicle = Vehicle::findOrFail($validated['vehicle_id']);
         $newVehicle->ensureSeatsExist();
 
+        $departureDate = $schedule->departure_date ? Carbon::parse($schedule->departure_date)->toDateString() : null;
+        $departureTimeRaw = $schedule->departure_time instanceof Carbon ? $schedule->departure_time->format('H:i') : (string) $schedule->departure_time;
+        $parts = explode(' ', trim($departureTimeRaw));
+        $departureTime = substr(end($parts), 0, 5);
+
+        // Cek bentrok jam jalan armada selain jadwal ini sendiri
+        $vehicleClash = Schedule::where('vehicle_id', $newVehicle->id)
+            ->where('id', '!=', $schedule->id)
+            ->whereDate('departure_date', $departureDate)
+            ->where('departure_time', 'like', $departureTime.'%')
+            ->whereNotIn('status', ['Cancelled', 'cancelled'])
+            ->exists();
+
+        if ($vehicleClash) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Armada {$newVehicle->name} [{$newVehicle->plate_number}] sudah memiliki jadwal keberangkatan lain pada tanggal dan jam tersebut.");
+        }
+
+        // Cek bentrok sopir jika dipilih
+        if (! empty($validated['driver_id'])) {
+            $driverClash = Schedule::where('driver_id', $validated['driver_id'])
+                ->where('id', '!=', $schedule->id)
+                ->whereDate('departure_date', $departureDate)
+                ->where('departure_time', 'like', $departureTime.'%')
+                ->whereNotIn('status', ['Cancelled', 'cancelled'])
+                ->exists();
+
+            if ($driverClash) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Sopir yang dipilih sudah ditugaskan pada jadwal lain di tanggal dan jam yang sama.');
+            }
+        }
+
+        // Cek kecukupan kapasitas armada baru terhadap penumpang yang sudah terdaftar
+        $passengers = BookingPassenger::whereHas('booking', function ($q) use ($schedule) {
+            $q->where('schedule_id', $schedule->id)
+                ->whereNotIn('status', ['Cancelled', 'cancelled']);
+        })->with('seat')->get();
+
+        if ($passengers->count() > $newVehicle->capacity) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', "Kapasitas armada baru ({$newVehicle->capacity} kursi) tidak mencukupi untuk jumlah penumpang terdaftar ({$passengers->count()} orang).");
+        }
+
         $schedule->vehicle_id = $newVehicle->id;
         $schedule->driver_id = $validated['driver_id'] ?? null;
         $schedule->save();
@@ -3075,18 +3193,19 @@ class AdminDashboardController extends Controller
         if ($oldVehicleId !== $newVehicle->id) {
             $newSeatsByNumber = $newVehicle->seats()->get()->keyBy('seat_number');
             $newSeatsList = $newSeatsByNumber->values();
-            $passengers = BookingPassenger::whereHas('booking', function ($q) use ($schedule) {
-                $q->where('schedule_id', $schedule->id)
-                    ->whereNotIn('status', ['Cancelled', 'cancelled']);
-            })->with('seat')->get();
+            $assignedSeatIds = [];
 
             foreach ($passengers as $idx => $passenger) {
                 $oldSeatNumber = $passenger->seat?->seat_number;
-                $mappedSeat = ($oldSeatNumber && $newSeatsByNumber->has($oldSeatNumber))
-                    ? $newSeatsByNumber->get($oldSeatNumber)
-                    : ($newSeatsList->get($idx) ?? $newSeatsList->first());
+                $mappedSeat = null;
+                if ($oldSeatNumber && $newSeatsByNumber->has($oldSeatNumber) && ! in_array($newSeatsByNumber->get($oldSeatNumber)->id, $assignedSeatIds, true)) {
+                    $mappedSeat = $newSeatsByNumber->get($oldSeatNumber);
+                } else {
+                    $mappedSeat = $newSeatsList->first(fn ($s) => ! in_array($s->id, $assignedSeatIds, true)) ?? $newSeatsList->first();
+                }
 
                 if ($mappedSeat) {
+                    $assignedSeatIds[] = $mappedSeat->id;
                     $passenger->update(['seat_id' => $mappedSeat->id]);
                 }
             }
@@ -3188,13 +3307,13 @@ class AdminDashboardController extends Controller
     public function updateScheduleStatus(Request $request, Schedule $schedule)
     {
         $validated = $request->validate([
-            'status' => ['required', 'in:Scheduled,Active,Completed,Cancelled'],
+            'status' => ['required', 'in:Scheduled,Active,Completed,Cancelled,scheduled,active,completed,cancelled'],
         ]);
 
-        $schedule->status = $validated['status'];
+        $schedule->status = ucfirst(strtolower($validated['status']));
         $schedule->save();
 
-        if ($schedule->status === 'Cancelled') {
+        if (strtolower($schedule->status) === 'cancelled') {
             $activeBookings = $schedule->bookings()
                 ->whereNotIn('status', ['Cancelled', 'cancelled'])
                 ->get();
@@ -3373,13 +3492,14 @@ class AdminDashboardController extends Controller
             'fee_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'cancellation_fee' => ['nullable', 'numeric', 'min:0'],
             'bank_name' => ['required', 'string', 'max:50'],
-            'account_number' => ['required', 'string', 'max:50'],
+            'account_number' => ['required', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'account_holder' => ['required', 'string', 'max:100'],
         ], [
             'booking_id.required' => 'Pemesanan yang ingin dibatalkan wajib dipilih.',
             'reason.required' => 'Alasan pembatalan tiket wajib diisi.',
             'bank_name.required' => 'Nama bank tujuan transfer balik wajib diisi.',
             'account_number.required' => 'Nomor rekening wajib diisi.',
+            'account_number.regex' => 'Nomor rekening hanya boleh berisi angka.',
             'account_holder.required' => 'Nama pemilik rekening wajib diisi.',
         ]);
 

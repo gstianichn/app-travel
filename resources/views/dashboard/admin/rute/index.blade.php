@@ -462,12 +462,15 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.55);
-        backdrop-filter: blur(3px);
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         z-index: 9999;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 24px 16px;
+        overflow-y: auto;
+        box-sizing: border-box;
     }
 
     .custom-modal.show {
@@ -476,44 +479,76 @@
 
     .modal-dialog {
         background: white;
-        border-radius: 16px;
+        border-radius: 18px;
         width: 100%;
-        max-width: 650px;
+        max-width: 720px;
         max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        margin: auto;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
         display: flex;
         flex-direction: column;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .modal-dialog form {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+        box-sizing: border-box;
+        overflow: hidden;
     }
 
     .modal-dialog-header {
-        padding: 18px 24px;
+        padding: 20px 24px;
         border-bottom: 1px solid #e2e8f0;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        background: #ffffff;
+        flex-shrink: 0;
+        box-sizing: border-box;
     }
 
     .modal-dialog-header h3 {
         margin: 0;
-        font-size: 17px;
+        font-size: 18px;
         font-weight: 800;
         color: #0f172a;
+        letter-spacing: -0.2px;
     }
 
     .btn-close-modal {
         background: transparent;
         border: none;
-        font-size: 20px;
+        font-size: 24px;
+        line-height: 1;
         color: #94a3b8;
         cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .btn-close-modal:hover {
+        color: #0f172a;
+        background: #f1f5f9;
     }
 
     .modal-dialog-body {
-        padding: 20px 24px;
+        padding: 22px 24px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 18px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        overflow-x: hidden;
+        max-height: calc(90vh - 140px);
+        width: 100%;
     }
 
     .modal-dialog-footer {
@@ -523,43 +558,108 @@
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        gap: 10px;
+        gap: 12px;
+        flex-shrink: 0;
+        box-sizing: border-box;
     }
 
     .grid-2 {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .form-group {
         display: flex;
         flex-direction: column;
         gap: 6px;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
     }
 
     .form-label {
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
         color: #334155;
+        white-space: normal;
+        word-break: break-word;
+        line-height: 1.35;
     }
 
     .form-input,
     .form-select,
     .form-textarea {
-        padding: 9px 12px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        font-size: 13px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        padding: 10px 13px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 13.5px;
         outline: none;
-        background: #fbfdfc;
+        background: #ffffff;
+        color: #0f172a;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-select {
+        text-overflow: ellipsis;
+        cursor: pointer;
     }
 
     .form-input:focus,
     .form-select:focus,
     .form-textarea:focus {
         border-color: #087f55;
+        box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.12);
         background: white;
+    }
+
+    .btn-modal-cancel {
+        padding: 10px 18px;
+        background: white;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+
+    .btn-modal-cancel:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        color: #1e293b;
+    }
+
+    .btn-modal-submit {
+        padding: 10px 22px;
+        background: #087f55;
+        border: 1.5px solid #087f55;
+        border-radius: 10px;
+        color: white;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(8, 127, 85, 0.25);
+        transition: all 0.15s ease;
+    }
+
+    .btn-modal-submit:hover {
+        background: #066b47;
+        border-color: #066b47;
     }
 
     /* RESPONSIVE */
@@ -600,13 +700,17 @@
 
         <div class="header-actions">
             <button type="button" class="btn-create-location" onclick="openLocationModal()">
-                + Titik Pool / Drop Point
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>+ Titik Pool / Drop Point</span>
             </button>
             <button type="button" class="btn-create-route" onclick="openCreateRouteModal()">
-                + Tambah Rute Baru
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                <span>+ Tambah Rute Baru</span>
             </button>
             <a href="{{ route('dashboard.admin.rute.jadwal') }}" class="btn-schedule-nav">
-                Kelola Jadwal Harian</a>
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span>Kelola Jadwal Harian</span>
+            </a>
         </div>
     </div>
 
@@ -631,6 +735,9 @@
                 <div class="stat-box-label">Total Rute Jalur</div>
                 <div class="stat-box-num">{{ number_format($totalRoutes) }}</div>
             </div>
+            <div class="stat-box-icon routes">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            </div>
         </div>
 
         {{-- Titik Pool / Drop Point --}}
@@ -638,6 +745,9 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Titik Pool & Shuttle</div>
                 <div class="stat-box-num" style="color: #0284c7;">{{ number_format($totalLocations) }}</div>
+            </div>
+            <div class="stat-box-icon pools">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             </div>
         </div>
 
@@ -647,6 +757,9 @@
                 <div class="stat-box-label">Jadwal Aktif</div>
                 <div class="stat-box-num" style="color: #d97706;">{{ number_format($activeSchedulesCount) }}</div>
             </div>
+            <div class="stat-box-icon schedules">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
         </div>
 
         {{-- Rute Aktif Beroperasi --}}
@@ -654,6 +767,9 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Rute Status Aktif</div>
                 <div class="stat-box-num" style="color: #15803d;">{{ number_format($activeRoutesCount) }}</div>
+            </div>
+            <div class="stat-box-icon" style="background: #dcfce7; color: #15803d;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
     </div>
@@ -707,7 +823,7 @@
                         <tr>
                             {{-- ORIGIN & DESTINATION --}}
                             <td>
-                                <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
                                     <div class="point-cell">
                                         <div class="point-title">{{ $route->origin?->name ?? 'Asal' }}</div>
                                         <div class="point-city">
@@ -716,7 +832,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="route-arrow"></div>
+                                    <div class="route-arrow" style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #e3f5ee; color: #087f55; flex-shrink: 0;">
+                                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                    </div>
 
                                     <div class="point-cell">
                                         <div class="point-title">{{ $route->destination?->name ?? 'Tujuan' }}</div>
@@ -730,8 +848,9 @@
 
                             {{-- DURATION & DISTANCE --}}
                             <td>
-                                <div style="font-weight: 600; color: #17221d;">
-                                    ⏱{{ $route->duration }}
+                                <div style="display: inline-flex; align-items: center; gap: 5px; font-weight: 700; color: #17221d;">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span>{{ $route->duration }}</span>
                                 </div>
                                 <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
                                     {{ $route->distance_km ? $route->distance_km . ' km' : 'Jalur Reguler' }}
@@ -756,7 +875,9 @@
                             {{-- JADWAL TERDAFTAR --}}
                             <td>
                                 <a href="{{ route('dashboard.admin.rute.jadwal', ['route_id' => $route->id]) }}" class="badge-schedules">
-                                    {{ $route->schedules->count() }} Jadwal Tersedia</a>
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span>{{ $route->schedules->count() }} Jadwal Tersedia</span>
+                                </a>
                             </td>
 
                             {{-- STATUS --}}
@@ -956,10 +1077,10 @@
             </div>
 
             <div class="modal-dialog-footer">
-                <button type="button" class="btn-create-location" onclick="closeCreateRouteModal()" style="border-color: #cbd5e1; color: #475569;">
+                <button type="button" class="btn-modal-cancel" onclick="closeCreateRouteModal()">
                     Batal
                 </button>
-                <button type="submit" class="btn-create-route">
+                <button type="submit" class="btn-modal-submit">
                     Simpan Rute Baru
                 </button>
             </div>
@@ -1044,10 +1165,10 @@
             </div>
 
             <div class="modal-dialog-footer">
-                <button type="button" class="btn-create-location" onclick="closeEditRouteModal()" style="border-color: #cbd5e1; color: #475569;">
+                <button type="button" class="btn-modal-cancel" onclick="closeEditRouteModal()">
                     Batal
                 </button>
-                <button type="submit" class="btn-create-route">
+                <button type="submit" class="btn-modal-submit">
                     Simpan Perubahan
                 </button>
             </div>
@@ -1102,16 +1223,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label" for="loc_phone">Nomor Telepon / WhatsApp Loket</label>
-                    <input type="text" name="phone" id="loc_phone" class="form-input" placeholder="Contoh: 081234567890">
+                    <label class="form-label" for="loc_phone">Nomor Telepon / WhatsApp Loket (Angka saja)</label>
+                    <input type="text" name="phone" id="loc_phone" class="form-input" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Contoh: 081234567890">
                 </div>
             </div>
 
             <div class="modal-dialog-footer">
-                <button type="button" class="btn-create-location" onclick="closeLocationModal()" style="border-color: #cbd5e1; color: #475569;">
+                <button type="button" class="btn-modal-cancel" onclick="closeLocationModal()">
                     Batal
                 </button>
-                <button type="submit" class="btn-create-route">
+                <button type="submit" class="btn-modal-submit">
                     Simpan Titik Lokasi
                 </button>
             </div>

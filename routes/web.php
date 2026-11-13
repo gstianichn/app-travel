@@ -23,7 +23,7 @@ Route::get('/', [HomeController::class, 'index'])
 Route::get('/search', [SearchController::class, 'index'])
     ->name('search');
 
-Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
+Route::get('/reset-password/{token?}', [ResetPasswordController::class, 'create'])
     ->middleware('guest')
     ->name('password.reset');
 
@@ -560,6 +560,11 @@ Route::middleware(['auth', 'role:staff'])
             'informasiPerjalanan',
         ])->name('dashboard.admin-biasa.perjalanan');
 
+        Route::get('/admin/informasi-perjalanan/jadwal/{schedule}/manifes', [
+            AdminBiasaDashboardController::class,
+            'scheduleManifest',
+        ])->name('dashboard.admin-biasa.perjalanan.manifest');
+
         Route::get('/admin/validasi-tiket', [
             AdminBiasaDashboardController::class,
             'validasiTiket',
@@ -574,6 +579,11 @@ Route::middleware(['auth', 'role:staff'])
             AdminBiasaDashboardController::class,
             'ajaxUpdatePassengerBoardingStatus',
         ])->name('dashboard.admin-biasa.validasi-tiket.update-status');
+
+        Route::get('/admin/validasi-tiket/boarded-passengers', [
+            AdminBiasaDashboardController::class,
+            'ajaxBoardedPassengers',
+        ])->name('dashboard.admin-biasa.validasi-tiket.boarded');
 
         Route::get('/admin/pemesanan-loket', [
             AdminBiasaDashboardController::class,
@@ -594,6 +604,31 @@ Route::middleware(['auth', 'role:staff'])
             AdminBiasaDashboardController::class,
             'settlePayment',
         ])->name('dashboard.admin-biasa.booking.settle');
+
+        Route::get('/admin/booking/{booking}/detail', [
+            AdminBiasaDashboardController::class,
+            'bookingDetail',
+        ])->name('dashboard.admin-biasa.booking.detail');
+
+        Route::post('/admin/booking/{booking}/batal', [
+            AdminBiasaDashboardController::class,
+            'cancelBooking',
+        ])->name('dashboard.admin-biasa.booking.cancel');
+
+        Route::get('/admin/booking/{booking}/reschedule-data', [
+            AdminBiasaDashboardController::class,
+            'rescheduleData',
+        ])->name('dashboard.admin-biasa.booking.reschedule-data');
+
+        Route::post('/admin/booking/{booking}/reschedule', [
+            AdminBiasaDashboardController::class,
+            'updateReschedule',
+        ])->name('dashboard.admin-biasa.booking.reschedule');
+
+        Route::get('/admin/booking/{booking}/cetak-tiket', [
+            AdminBiasaDashboardController::class,
+            'printTicket',
+        ])->name('dashboard.admin-biasa.booking.print-ticket');
 
     });
 

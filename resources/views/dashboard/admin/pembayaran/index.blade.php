@@ -654,15 +654,21 @@
                 <div class="stat-box-label">Total Transaksi</div>
                 <div class="stat-box-num">{{ number_format($totalTransactions) }}</div>
             </div>
+            <div class="stat-box-icon" style="background: #e3f5ee; color: #087f55;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
         </div>
 
         {{-- Total Omzet Lunas --}}
         <div class="stat-box">
             <div class="stat-box-info">
                 <div class="stat-box-label">Omzet Lunas</div>
-                <div class="stat-box-num" style="color: #0284c7; font-size: 19px;">
+                <div class="stat-box-num" style="color: #087f55; font-size: 19px;">
                     Rp {{ number_format($totalRevenue, 0, ',', '.') }}
                 </div>
+            </div>
+            <div class="stat-box-icon" style="background: #e0f2fe; color: #0284c7;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
 
@@ -672,8 +678,8 @@
                 <div class="stat-box-label">Verifikasi Manual</div>
                 <div class="stat-box-num" style="color: #d97706;">{{ number_format($pendingVerificationCount) }}</div>
             </div>
-            <div class="stat-box-icon pending">
-                ⏳
+            <div class="stat-box-icon pending" style="background: #fef3c7; color: #d97706;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
         </div>
 
@@ -682,6 +688,9 @@
             <div class="stat-box-info">
                 <div class="stat-box-label">Gagal & Kedaluwarsa</div>
                 <div class="stat-box-num" style="color: #b91c1c;">{{ number_format($failedOrExpiredCount) }}</div>
+            </div>
+            <div class="stat-box-icon" style="background: #fee2e2; color: #b91c1c;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
         </div>
     </div>
@@ -752,7 +761,11 @@
             </div>
 
             <div class="filter-buttons" style="display:flex; align-items:flex-end; gap:8px;">
-                <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter">
+                <button type="submit" class="btn-filter-submit" style="height: 40px; padding: 0 18px; border: none; border-radius: 8px; background: #087f55; color: white; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(8, 127, 85, 0.2);">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                    <span>Terapkan Filter</span>
+                </button>
+                <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter" style="height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d4dfda; border-radius: 8px; background: white; color: #4b5852; font-size: 13px; text-decoration: none; font-weight: 600;">
                     ↺ Reset
                 </a>
             </div>
@@ -824,11 +837,15 @@
                             <td>
                                 <span class="badge-method {{ $payment->methodBadgeClass() }}">
                                     @if(stripos($payment->payment_method, 'qris') !== false)
-                                                                            @elseif(stripos($payment->payment_method, 'cash') !== false || stripos($payment->payment_method, 'tunai') !== false)
-                                                                            @elseif(stripos($payment->payment_method, 'transfer') !== false || stripos($payment->payment_method, 'bank') !== false)
-                                                                            @else
-                                                                            @endif
-                                    {{ $payment->methodLabel() }}
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                                    @elseif(stripos($payment->payment_method, 'cash') !== false || stripos($payment->payment_method, 'tunai') !== false)
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                    @elseif(stripos($payment->payment_method, 'transfer') !== false || stripos($payment->payment_method, 'bank') !== false)
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                    @else
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                    @endif
+                                    <span>{{ $payment->methodLabel() }}</span>
                                 </span>
                                 @if($payment->gateway_provider && $payment->gateway_provider !== 'manual')
                                     <div style="font-size: 10px; color: #64748b; font-weight: 600; margin-top: 2px;">
@@ -865,7 +882,8 @@
                                         class="proof-btn"
                                         onclick="openProofModal('{{ asset('storage/' . $payment->proof_image) }}', '{{ $payment->order_id }}', '{{ $payment->bank_name }}', '{{ $payment->account_name }}')"
                                     >
-                                        Ada Bukti
+                                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>Lihat Bukti</span>
                                     </button>
                                 @elseif($payment->isManualTransfer())
                                     <span style="font-size: 11px; color: #94a3b8; font-style: italic;">

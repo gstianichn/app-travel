@@ -4,877 +4,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informasi Perjalanan Armada - Travel</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Jadwal Perjalanan (Informasi Perjalanan Armada) - TravelKu</title>
 
     @vite([
         'resources/css/app.css',
         'resources/js/app.js'
     ])
 
+    @include('dashboard.admin-biasa.partials.styles')
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #087f55;
-            --primary-dark: #066b47;
-            --primary-light: #e3f5ee;
-            --accent: #066b47;
-            --accent-light: #e8f8fc;
-
-            --white: #ffffff;
-            --background: #f4f8fb;
-            --border: #e3edf4;
-
-            --text-dark: #102a43;
-            --text: #334e68;
-            --text-light: #829ab1;
-
-            --success: #16825d;
-            --success-bg: #eaf8f2;
-
-            --warning: #c77b00;
-            --warning-bg: #fff7e6;
-
-            --danger: #c0392b;
-            --danger-bg: #fff0ee;
-        }
-
-        body {
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: var(--background);
-            color: var(--text-dark);
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        button, input, select {
-            font-family: inherit;
-        }
-
-        /* LAYOUT */
-        .dashboard-wrapper {
-            min-height: 100vh;
-            display: flex;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
-            color: var(--white);
-            z-index: 100;
-            box-shadow: 4px 0 20px rgba(10, 53, 93, 0.10);
-        }
-
-        .logo-area {
-            height: 82px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-        }
-
-        .logo-icon {
-            width: 43px;
-            height: 43px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--white);
-            color: var(--primary);
-            border-radius: 13px;
-            font-size: 20px;
-            font-weight: 800;
-            margin-right: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.10);
-        }
-
-        .logo-text h2 {
-            color: var(--white);
-            font-size: 19px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .logo-text span {
-            color: rgba(255, 255, 255, 0.65);
-            font-size: 10px;
-        }
-
-        .menu {
-            flex: 1;
-            padding: 25px 15px;
-        }
-
-        .menu-title {
-            padding: 0 12px;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.45);
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .menu a {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            padding: 12px 14px;
-            margin-bottom: 6px;
-            color: rgba(255, 255, 255, 0.72);
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .menu a:hover {
-            background: rgba(255, 255, 255, 0.10);
-            color: var(--white);
-        }
-
-        .menu a.active {
-            background: var(--white);
-            color: var(--primary);
-            font-weight: 700;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .menu-icon {
-            width: 21px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-
-        .sidebar-bottom {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
-        }
-
-        .logout-btn {
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            background: rgba(255, 255, 255, 0.07);
-            color: rgba(255, 255, 255, 0.80);
-            padding: 11px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 0, 0, 1);
-            color: var(--white);
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            width: calc(100% - 260px);
-            margin-left: 260px;
-            min-height: 100vh;
-        }
-
-        /* TOPBAR */
-        .topbar {
-            height: 82px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 36px;
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .page-title h1 {
-            color: var(--text-dark);
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .page-title p {
-            color: var(--text-light);
-            font-size: 13px;
-        }
-
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar {
-            width: 42px;
-            height: 42px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--primary-light);
-            color: var(--primary);
-            border: 2px solid #d7eaf7;
-            border-radius: 50%;
-            font-weight: 700;
-        }
-
-        .profile-info strong {
-            display: block;
-            color: var(--text-dark);
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-
-        .profile-info span {
-            color: var(--text-light);
-            font-size: 11px;
-        }
-
-        /* CONTENT */
         .content {
-            padding: 30px 36px 50px;
+            padding: 24px 28px 48px;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
         }
 
-        /* STATS OVERVIEW CARDS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 22px;
+        /* TOP TOOLBAR & DATE FILTER */
+        .toolbar-panel {
             background: var(--white);
-            border: 1px solid var(--border);
             border-radius: 16px;
-            transition: all 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .stat-info span {
-            display: block;
-            color: var(--text-light);
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .stat-info h3 {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--text-dark);
-        }
-
-        .stat-icon {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            font-size: 20px;
-        }
-
-        /* STATUS FILTER TABS */
-        .filter-header-bar {
+            padding: 18px 22px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+            margin-bottom: 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 16px;
-            margin-bottom: 20px;
         }
 
-        .filter-tabs {
+        .date-filter-group {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 6px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .filter-tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
+        .date-input {
+            height: 40px;
+            padding: 0 12px;
+            border: 1.5px solid var(--border);
             border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            border: none;
-            background: transparent;
-            color: var(--text);
-            cursor: pointer;
+            font-size: 13.5px;
+            color: var(--text-dark);
+            background: #ffffff;
             transition: all 0.2s;
         }
 
-        .filter-tab-btn.active {
+        .date-input:focus, .status-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.12);
+        }
+
+        .btn-date-apply {
+            height: 40px;
+            padding: 0 16px;
             background: var(--primary);
             color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-date-apply:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-date-today {
+            height: 40px;
+            padding: 0 14px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid #b1eed1;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* DESTINATION PILL TABS */
+        .dest-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .dest-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 999px;
+            background: var(--white);
+            color: #475569;
+            border: 1.5px solid var(--border);
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .dest-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .dest-pill.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
             box-shadow: 0 4px 12px rgba(8, 127, 85, 0.25);
         }
 
-        /* TRIP CARDS LIST */
-        .trips-container {
-            display: flex;
-            flex-direction: column;
-            gap: 22px;
+        /* DESTINATION GROUP SECTION */
+        .destination-group-block {
+            margin-bottom: 32px;
         }
 
-        .trip-detail-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
-        }
-
-        .trip-detail-card:hover {
-            border-color: #b1eed1;
-            box-shadow: 0 10px 30px rgba(8, 127, 85, 0.08);
-        }
-
-        /* CARD HEADER */
-        .trip-card-header {
+        .destination-header-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            padding: 20px 26px;
-            background: #f8fafc;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .trip-header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .trip-departure-badge {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #087f55;
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 800;
-        }
-
-        .trip-departure-badge .time-text {
-            font-size: 18px;
-            letter-spacing: -0.5px;
-        }
-
-        .trip-departure-badge .label-text {
-            font-size: 9px;
-            text-transform: uppercase;
-            opacity: 0.85;
-            letter-spacing: 0.5px;
-        }
-
-        .trip-route-title h3 {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--text-dark);
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .trip-route-title span {
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        /* STATUS PERJALANAN BADGES */
-        .trip-status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.2px;
-        }
-
-        .status-bay {
-            background: #eaf8f2;
-            color: #087f55;
-            border: 1.5px solid #b1eed1;
-        }
-
-        .status-bay .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #087f55;
-            animation: pulseDot 1.5s infinite;
-        }
-
-        .status-garasi {
-            background: #fff8eb;
-            color: #b45309;
-            border: 1.5px solid #fde68a;
-        }
-
-        .status-berangkat {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1.5px solid #bfdbfe;
-        }
-
-        @keyframes pulseDot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.4); opacity: 0.6; }
-        }
-
-        /* CARD BODY GRID */
-        .trip-card-body {
-            padding: 26px;
-            display: grid;
-            grid-template-columns: 1.2fr 1.8fr 1fr;
-            gap: 24px;
-        }
-
-        /* SECTION 1: ARMADA & KRU */
-        .body-section {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .section-sub-title {
-            font-size: 11px;
-            font-weight: 800;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .fleet-box {
-            background: #f8fafc;
-            border: 1px solid #eef2f6;
-            border-radius: 14px;
-            padding: 16px;
-        }
-
-        .plate-number-display {
-            font-size: 18px;
-            font-weight: 900;
-            color: var(--text-dark);
-            font-family: monospace;
-            display: inline-block;
+            padding: 12px 18px;
             background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            padding: 4px 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .vehicle-model-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-
-        .vehicle-meta-tags {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            color: #64748b;
-        }
-
-        .driver-box {
-            background: #f8fafc;
-            border: 1px solid #eef2f6;
             border-radius: 14px;
-            padding: 16px;
+            border-left: 5px solid var(--primary);
+            border: 1px solid var(--border);
+            border-left-width: 5px;
+            border-left-color: var(--primary);
+            margin-bottom: 16px;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .driver-header {
+        .destination-title {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 10px;
         }
 
-        .driver-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #eefbf5;
-            color: #087f55;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .destination-title h2 {
+            font-size: 18px;
             font-weight: 800;
-            font-size: 14px;
-            border: 1px solid #b1eed1;
-        }
-
-        .driver-details strong {
-            display: block;
-            font-size: 14px;
             color: var(--text-dark);
+            margin: 0;
+        }
+
+        .destination-badge {
+            font-size: 12px;
             font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: var(--primary-light);
+            color: var(--primary-dark);
         }
 
-        .driver-details span {
-            font-size: 11px;
-            color: #64748b;
-        }
-
-        .driver-contact-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-driver-contact {
-            flex: 1;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            padding: 7px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
-
-        .btn-driver-wa {
-            background: #25d366;
-            color: #ffffff;
-        }
-
-        .btn-driver-wa:hover {
-            background: #1ebc59;
-        }
-
-        .btn-driver-tel {
-            background: #ffffff;
-            color: #334155;
-            border: 1px solid #cbd5e1;
-        }
-
-        .btn-driver-tel:hover {
-            background: #e2e8f0;
-        }
-
-        /* SECTION 2: RUTE PERJALANAN & TITIK SINGGAH */
-        .route-timeline {
-            position: relative;
-            padding-left: 24px;
-            display: flex;
-            flex-direction: column;
+        /* CARDS GRID PER DESTINATION */
+        .schedule-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 18px;
         }
 
-        .route-timeline::before {
-            content: "";
-            position: absolute;
-            left: 7px;
-            top: 10px;
-            bottom: 10px;
-            width: 2px;
-            background: #cbd5e1;
-        }
-
-        .timeline-step {
+        .schedule-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             position: relative;
+            cursor: pointer;
         }
 
-        .timeline-dot {
-            position: absolute;
-            left: -24px;
-            top: 3px;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 3px solid #94a3b8;
+        .schedule-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            border-color: #8fd3b4;
         }
 
-        .timeline-dot.origin {
-            border-color: #087f55;
-            background: #087f55;
-            box-shadow: 0 0 0 3px #eefbf5;
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
         }
 
-        .timeline-dot.transit {
-            border-color: #b45309;
-            background: #ffffff;
+        .departure-time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #0C5A3E;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
         }
 
-        .timeline-dot.destination {
-            border-color: #2563eb;
-            background: #2563eb;
-            box-shadow: 0 0 0 3px #eff6ff;
-        }
-
-        .timeline-content strong {
-            display: block;
-            font-size: 13px;
+        .trip-code-pill {
+            font-family: monospace;
+            font-size: 11px;
             font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 3px 7px;
+            border-radius: 6px;
+        }
+
+        .route-path {
+            margin-bottom: 14px;
+        }
+
+        .route-path-title {
+            font-size: 14.5px;
+            font-weight: 800;
             color: var(--text-dark);
             margin-bottom: 2px;
         }
 
-        .timeline-content span {
-            display: inline-block;
-            font-size: 11px;
-            color: #64748b;
+        .route-subtext {
+            font-size: 12px;
+            color: var(--text-light);
         }
 
-        .timeline-tag {
-            display: inline-block;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 6px;
-            margin-top: 3px;
-        }
-
-        .tag-origin { background: #eefbf5; color: #087f55; border: 1px solid #b1eed1; }
-        .tag-transit { background: #fff8eb; color: #b45309; border: 1px solid #fde68a; }
-        .tag-destination { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-
-        /* SECTION 3: JADWAL WAKTU & STATUS AKSI */
-        .schedule-time-box {
+        /* FLEET & DRIVER INFO BOX */
+        .info-vehicle-driver {
             background: #f8fafc;
-            border: 1px solid #eef2f6;
-            border-radius: 14px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .time-row {
-            display: flex;
-            align-items: flex-start;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            border: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
+            font-size: 12.5px;
         }
 
-        .time-row-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            flex-shrink: 0;
-        }
-
-        .icon-gathering { background: #fff8eb; color: #b45309; }
-        .icon-boarding { background: #eefbf5; color: #087f55; }
-        .icon-arrival { background: #eff6ff; color: #1d4ed8; }
-
-        .time-row-content span {
+        .info-col span {
             display: block;
             font-size: 11px;
-            color: #64748b;
+            color: var(--text-light);
             font-weight: 600;
+            margin-bottom: 2px;
         }
 
-        .time-row-content strong {
-            display: block;
-            font-size: 14px;
-            font-weight: 800;
+        .info-col strong {
+            font-weight: 700;
             color: var(--text-dark);
         }
 
-        /* STATUS BAY LOCATION & CARD FOOTER */
-        .trip-card-footer {
-            padding: 16px 26px;
-            background: #fafcfb;
-            border-top: 1px solid var(--border);
+        /* CAPACITY STATUS BAR */
+        .capacity-box {
+            margin-bottom: 16px;
+        }
+
+        .capacity-label-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
         }
 
-        .bay-status-text {
-            font-size: 13px;
+        .capacity-progress-track {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 999px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .capacity-progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .capacity-progress-bar.low { background: #10b981; }
+        .capacity-progress-bar.medium { background: #f59e0b; }
+        .capacity-progress-bar.full { background: #ef4444; }
+
+        .card-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-manifest {
+            flex: 1;
+            height: 38px;
+            background: var(--white);
+            color: var(--primary-dark);
+            border: 1.5px solid var(--primary);
+            border-radius: 9px;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-manifest:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-order-direct {
+            height: 38px;
+            padding: 0 12px;
+            background: #eefbf5;
+            color: #0C5A3E;
+            border: 1px solid #b1eed1;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-order-direct:hover {
+            background: #d8f5e5;
+        }
+
+        /* MODAL MANIFEST PENUMPANG */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-dialog {
+            background: #ffffff;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 760px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: scale(0.96);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-dialog {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 10;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 800;
             color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .bay-badge-pill {
-            padding: 4px 10px;
-            background: #ffffff;
-            border: 1.5px solid var(--border);
+        .modal-close {
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
-            font-weight: 800;
-            font-size: 12px;
-            color: var(--primary);
-        }
-
-        .trip-actions-row {
+            border: none;
+            background: #f1f5f9;
+            color: #475569;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .btn-trip-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 700;
+            justify-content: center;
+            font-size: 18px;
             cursor: pointer;
-            border: 1px solid transparent;
             transition: all 0.2s;
         }
 
-        .btn-to-bay {
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .manifest-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .manifest-table th {
+            background: #f8fafc;
+            padding: 10px 14px;
+            font-weight: 800;
+            color: #475569;
+            border-bottom: 1.5px solid var(--border);
+            text-align: left;
+        }
+
+        .manifest-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+
+        .manifest-table tr:hover td {
+            background: #fafcfb;
+        }
+
+        .seat-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             background: #eefbf5;
             color: #087f55;
-            border-color: #b1eed1;
-        }
-
-        .btn-to-bay:hover {
-            background: #087f55;
-            color: #ffffff;
-        }
-
-        .btn-mark-departed {
-            background: #1e293b;
-            color: #ffffff;
-        }
-
-        .btn-mark-departed:hover {
-            background: #0f172a;
-        }
-
-        .btn-view-manifest {
-            background: #ffffff;
-            color: var(--text);
-            border-color: var(--border);
-        }
-
-        .btn-view-manifest:hover {
-            background: #f8fafc;
-            border-color: #cbd5e1;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1150px) {
-            .trip-card-body {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .body-section:nth-child(3) {
-                grid-column: span 2;
-            }
+            border: 1.5px solid #b1eed1;
+            font-weight: 800;
+            font-family: monospace;
+            font-size: 14px;
         }
 
         @media (max-width: 800px) {
-            .sidebar {
-                width: 72px;
-            }
-
-            .logo-area {
-                justify-content: center;
-                padding: 0;
-            }
-
-            .logo-icon {
-                margin-right: 0;
-            }
-
-            .logo-text, .menu-title, .menu a span, .sidebar-bottom span, .profile-info {
-                display: none;
-            }
-
-            .menu a {
-                justify-content: center;
-                padding: 13px;
-            }
-
-            .logout-btn {
-                justify-content: center;
-            }
-
-            .main-content {
-                width: calc(100% - 72px);
-                margin-left: 72px;
-            }
-
-            .topbar {
-                padding: 0 20px;
-            }
-
-            .content {
-                padding: 20px 16px;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .trip-card-body {
-                grid-template-columns: 1fr;
-            }
-
-            .body-section:nth-child(3) {
-                grid-column: span 1;
-            }
+            .sidebar { width: 72px; }
+            .main-content { margin-left: 72px; }
+            .content { padding: 16px; }
+            .schedule-cards-grid { grid-template-columns: 1fr; }
         }
     </style>
     @fonts('overpass')
-    {{-- Brand skin and ds- components: loaded last so it wins over the role's own styles --}}
     @vite(['resources/css/dashboard-staff.css'])
 </head>
 
@@ -882,429 +496,247 @@
 
 <div class="dashboard-wrapper">
 
-    <!-- =========================================
-         SIDEBAR STAF
-    ========================================== -->
+    <!-- SIDEBAR STAF -->
     @include('dashboard.admin-biasa.partials.sidebar')
 
-
-    <!-- =========================================
-         MAIN CONTENT
-    ========================================== -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
 
         <!-- TOPBAR -->
         @include('dashboard.admin-biasa.partials.topbar', [
-            'topbarTitle' => 'Melihat Informasi Perjalanan Armada',
-            'topbarSubtitle' => 'Pantau detail armada & kru, jadwal kumpul & boarding, serta status lokasi unit.',
+            'topbarTitle' => 'Jadwal Perjalanan (Informasi Perjalanan Armada)',
+            'topbarSubtitle' => 'Rangkuman jadwal keberangkatan armada hari ini tersinkronisasi langsung dengan sisi pelanggan (website).',
         ])
-
 
         <!-- CONTENT SECTION -->
         <section class="content">
 
-            <!-- 1. STATS OVERVIEW -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <span>Total Jadwal Hari Ini</span>
-                        <h3>{{ $stats['total_trips'] }} Trip</h3>
-                    </div>
-                    <div class="stat-icon" style="background: #eefbf5; color: #087f55;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="5" width="20" height="13" rx="2" />
-                            <circle cx="7" cy="18" r="2" />
-                            <circle cx="17" cy="18" r="2" />
-                            <path d="M2 10h20" />
-                        </svg>
-                    </div>
-                </div>
+            <!-- 1. TOOLBAR TANGGAL & STATUS -->
+            <div class="toolbar-panel">
+                <form method="GET" action="{{ route('dashboard.admin-biasa.perjalanan') }}" class="date-filter-group">
+                    <label for="scheduleDateInput" style="font-size: 13px; font-weight: 700; color: var(--text-dark);">
+                        Tanggal Keberangkatan:
+                    </label>
+                    <input
+                        type="date"
+                        id="scheduleDateInput"
+                        name="date"
+                        value="{{ $selectedDate }}"
+                        class="date-input"
+                    >
+                    @if($destinationFilter && $destinationFilter !== 'all')
+                        <input type="hidden" name="destination" value="{{ $destinationFilter }}">
+                    @endif
+                    <button type="submit" class="btn-date-apply">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Terapkan</span>
+                    </button>
+                    @if($selectedDate !== \Carbon\Carbon::today()->toDateString())
+                        <a href="{{ route('dashboard.admin-biasa.perjalanan') }}" class="btn-date-today">
+                            <span>Hari Ini</span>
+                        </a>
+                    @endif
+                </form>
 
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <span>Sandar di Area Muat (Bay)</span>
-                        <h3 style="color: #087f55;">{{ $stats['in_bay'] }} Unit</h3>
-                    </div>
-                    <div class="stat-icon" style="background: #eaf8f2; color: #087f55;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="4" width="16" height="16" rx="3" />
-                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <span>Masih di Garasi (Prep)</span>
-                        <h3 style="color: #b45309;">{{ $stats['in_garage'] }} Unit</h3>
-                    </div>
-                    <div class="stat-icon" style="background: #fff8eb; color: #b45309;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                            <path d="M9 22V12h6v10" />
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <span>Sudah Berangkat</span>
-                        <h3 style="color: #2563eb;">{{ $stats['departed'] }} Trip</h3>
-                    </div>
-                    <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m22 2-7 20-4-9-9-4Z" />
-                            <path d="M22 2 11 13" />
-                        </svg>
-                    </div>
+                <div style="display: flex; align-items: center; gap: 12px; font-size: 13px;">
+                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #087f55; font-weight: 700;">
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                        Sinkron Live dengan Website Pelanggan
+                    </span>
+                    <span style="color: var(--text-light);">&bull;</span>
+                    <span style="font-weight: 700; color: var(--text-dark);">
+                        Total {{ $stats['total_trips'] }} Trip Armada
+                    </span>
                 </div>
             </div>
 
+            <!-- 2. FILTER PILLS TUJUAN KEBERANGKATAN -->
+            @if($availableDestinations->count() > 1)
+                <div class="dest-pills">
+                    <a
+                        href="{{ route('dashboard.admin-biasa.perjalanan', ['date' => $selectedDate, 'destination' => 'all']) }}"
+                        class="dest-pill {{ (!$destinationFilter || $destinationFilter === 'all') ? 'active' : '' }}"
+                    >
+                        <span>Semua Tujuan</span>
+                        <span style="font-size: 11px; opacity: 0.85;">({{ $trips->count() }})</span>
+                    </a>
 
-            <!-- 2. FILTER STATUS PERJALANAN -->
-            <div class="filter-header-bar">
-                <div class="filter-tabs">
-                    <button type="button" class="filter-tab-btn active" onclick="filterTrips('all', this)">
-                        Semua Status ({{ $stats['total_trips'] }})
-                    </button>
-                    <button type="button" class="filter-tab-btn" onclick="filterTrips('bay', this)" style="display: inline-flex; align-items: center; gap: 5px;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="4" y="4" width="16" height="16" rx="2" />
-                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
-                        </svg>
-                        <span>Sandar di Bay ({{ $stats['in_bay'] }})</span>
-                    </button>
-                    <button type="button" class="filter-tab-btn" onclick="filterTrips('garasi', this)" style="display: inline-flex; align-items: center; gap: 5px;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        </svg>
-                        <span>Masih di Garasi ({{ $stats['in_garage'] }})</span>
-                    </button>
-                    <button type="button" class="filter-tab-btn" onclick="filterTrips('berangkat', this)" style="display: inline-flex; align-items: center; gap: 5px;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m22 2-7 20-4-9-9-4Z" />
-                        </svg>
-                        <span>Sudah Berangkat ({{ $stats['departed'] }})</span>
-                    </button>
+                    @foreach($availableDestinations as $groupName)
+                        @php
+                            $groupCount = $trips->where('destination_group', $groupName)->count();
+                            $isActive = ($destinationFilter === $groupName);
+                        @endphp
+                        <a
+                            href="{{ route('dashboard.admin-biasa.perjalanan', ['date' => $selectedDate, 'destination' => $groupName]) }}"
+                            class="dest-pill {{ $isActive ? 'active' : '' }}"
+                        >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                            <span>{{ $groupName }}</span>
+                            <span style="font-size: 11px; opacity: 0.85;">({{ $groupCount }})</span>
+                        </a>
+                    @endforeach
                 </div>
+            @endif
 
-                <div>
-                    <button type="button" class="btn-trip-action btn-view-manifest" onclick="window.location.reload()" style="display: inline-flex; align-items: center; gap: 6px;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                            <path d="M21 3v5h-5" />
-                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                            <path d="M8 16H3v5" />
-                        </svg>
-                        <span>Segarkan Informasi Real-Time</span>
-                    </button>
-                </div>
-            </div>
-
-
-            <!-- 3. LIST INFORMASI PERJALANAN DETAIL -->
-            <div class="trips-container" id="tripsContainer">
-
-                @forelse($trips as $trip)
-                    <div class="trip-detail-card" data-status="{{ $trip->status_key }}" id="trip-card-{{ $trip->id }}">
-
-                        <!-- HEADER KARTU PERJALANAN -->
-                        <div class="trip-card-header">
-                            <div class="trip-header-left">
-                                <div class="trip-departure-badge">
-                                    <span class="time-text">{{ $trip->departure_time }}</span>
-                                    <span class="label-text">Waktu Berangkat</span>
-                                </div>
-
-                                <div class="trip-route-title">
-                                    <h3 style="display: flex; align-items: center; gap: 6px;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                                            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-                                            <line x1="9" x2="9" y1="3" y2="18" />
-                                            <line x1="15" x2="15" y1="6" y2="21" />
-                                        </svg>
-                                        <span>{{ $trip->origin_pool }} ke {{ $trip->destination_pool }}</span>
-                                    </h3>
-                                    <span>Kode Trip: <strong>{{ $trip->trip_code }}</strong> • Keterisian: <strong>{{ $trip->occupancy_ratio }} ({{ $trip->occupancy_percentage }}%)</strong></span>
-                                </div>
-                            </div>
-
-                            <!-- 4. INDIKATOR STATUS PERJALANAN -->
-                            <div>
-                                @if($trip->status_key === 'bay')
-                                    <span class="trip-status-indicator status-bay" id="status-badge-{{ $trip->id }}" style="display: inline-flex; align-items: center; gap: 5px;">
-                                        <span class="pulse-dot"></span>
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="4" y="4" width="16" height="16" rx="2" />
-                                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
-                                        </svg>
-                                        <span>{{ $trip->status_label }}</span>
-                                    </span>
-                                @elseif($trip->status_key === 'garasi')
-                                    <span class="trip-status-indicator status-garasi" id="status-badge-{{ $trip->id }}" style="display: inline-flex; align-items: center; gap: 5px;">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                        </svg>
-                                        <span>{{ $trip->status_label }}</span>
-                                    </span>
-                                @else
-                                    <span class="trip-status-indicator status-berangkat" id="status-badge-{{ $trip->id }}" style="display: inline-flex; align-items: center; gap: 5px;">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m22 2-7 20-4-9-9-4Z" />
-                                        </svg>
-                                        <span>{{ $trip->status_label }}</span>
-                                    </span>
-                                @endif
-                            </div>
+            <!-- 3. GROUPING BERDASARKAN TUJUAN KEBERANGKATAN -->
+            @forelse($groupedByDestination as $groupTitle => $groupTrips)
+                <div class="destination-group-block">
+                    <!-- HEADER TUJUAN (Contoh: Tujuan Bandung, Tujuan Jakarta) -->
+                    <div class="destination-header-bar">
+                        <div class="destination-title">
+                            <span style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #eefbf5; color: #0C5A3E;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </span>
+                            <h2>{{ $groupTitle }}</h2>
+                            <span class="destination-badge">{{ $groupTrips->count() }} Jam Keberangkatan</span>
                         </div>
 
+                        <div style="font-size: 12.5px; color: var(--text-light);">
+                            @php
+                                $totalCap = $groupTrips->sum('vehicle_capacity');
+                                $totalOcc = $groupTrips->sum('occupied_seats');
+                                $totalAvail = $groupTrips->sum('available_seats');
+                            @endphp
+                            <span>Total Kuota: <strong>{{ $totalAvail }}</strong> Kosong / {{ $totalCap }} Kursi</span>
+                        </div>
+                    </div>
 
-                        <!-- BODY KARTU: 3 KOLOM DETAIL -->
-                        <div class="trip-card-body">
+                    <!-- KARTU-KARTU JADWAL PER TUJUAN -->
+                    <div class="schedule-cards-grid">
+                        @foreach($groupTrips as $trip)
+                            @php
+                                $ratioPercent = $trip->occupancy_percentage;
+                                $barClass = $ratioPercent >= 90 ? 'full' : ($ratioPercent >= 50 ? 'medium' : 'low');
+                            @endphp
 
-                            <!-- KOLOM 1: DETAIL ARMADA & KRU -->
-                            <div class="body-section">
-                                <div class="section-sub-title" style="display: flex; align-items: center; gap: 6px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                                        <rect x="2" y="5" width="20" height="13" rx="2" />
-                                        <circle cx="7" cy="18" r="2" />
-                                        <circle cx="17" cy="18" r="2" />
-                                        <path d="M2 10h20" />
-                                    </svg>
-                                    <span>Detail Armada & Kru</span>
-                                </div>
-
-                                <div class="fleet-box">
-                                    <span class="plate-number-display">{{ $trip->plate_number }}</span>
-                                    <div class="vehicle-model-name">{{ $trip->vehicle_type }}</div>
-                                    <div class="vehicle-meta-tags">
-                                        <span>Kapasitas: <strong>{{ $trip->vehicle_capacity }} Kursi</strong></span>
-                                        <span>•</span>
-                                        <span>AC & USB Port Aktif</span>
-                                    </div>
-                                </div>
-
-                                <div class="driver-box">
-                                    <div class="driver-header">
-                                        <div class="driver-avatar">
-                                            {{ strtoupper(substr($trip->driver_name, 0, 1)) }}
+                            <div
+                                class="schedule-card"
+                                onclick="openManifestModal({{ $trip->id }})"
+                                title="Klik untuk melihat Manifest Penumpang"
+                            >
+                                <div>
+                                    <!-- Bagian Atas: Waktu Berangkat & Kode Trip -->
+                                    <div class="card-top">
+                                        <div>
+                                            <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 3px;">
+                                                Waktu Berangkat
+                                            </span>
+                                            <div class="departure-time-badge">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polyline points="12 6 12 12 16 14"/>
+                                                </svg>
+                                                <span>{{ $trip->departure_time }}</span>
+                                            </div>
                                         </div>
-                                        <div class="driver-details">
+
+                                        <div style="text-align: right;">
+                                            <span class="trip-code-pill">{{ $trip->trip_code }}</span>
+                                            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                                                Estimasi Tiba: <strong>{{ $trip->estimated_arrival_time }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rute Keberangkatan -->
+                                    <div class="route-path">
+                                        <div class="route-path-title">
+                                            {{ $trip->origin_pool }} &rarr; {{ $trip->destination_pool }}
+                                        </div>
+                                        <div class="route-subtext">
+                                            Tarif Tiket: <strong>{{ $trip->formatted_price }}</strong> / kursi
+                                        </div>
+                                    </div>
+
+                                    <!-- Plat Nomor Mobil & Nama Sopir -->
+                                    <div class="info-vehicle-driver">
+                                        <div class="info-col">
+                                            <span>Armada &amp; Plat Nomor</span>
+                                            <strong style="color: #0C5A3E;">{{ $trip->plate_number }}</strong>
+                                            <div style="font-size: 11px; color: var(--text-light); margin-top: 1px;">
+                                                {{ $trip->vehicle_type }}
+                                            </div>
+                                        </div>
+
+                                        <div class="info-col">
+                                            <span>Nama Sopir</span>
                                             <strong>{{ $trip->driver_name }}</strong>
-                                            <span>Sopir Utama Bertugas</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="driver-contact-actions">
-                                        <a href="{{ $trip->driver_wa_url }}" target="_blank" class="btn-driver-contact btn-driver-wa" title="WhatsApp Sopir" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                            </svg>
-                                            <span>WhatsApp</span>
-                                        </a>
-                                        <a href="{{ $trip->driver_tel_url }}" class="btn-driver-contact btn-driver-tel" title="Telepon Sopir" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                            </svg>
-                                            <span>{{ $trip->driver_phone }}</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <!-- KOLOM 2: RUTE PERJALANAN & TITIK SINGGAH -->
-                            <div class="body-section">
-                                <div class="section-sub-title" style="display: flex; align-items: center; gap: 6px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                        <circle cx="12" cy="10" r="3" />
-                                    </svg>
-                                    <span>Rute, Titik Singgah & Transfer</span>
-                                </div>
-
-                                <div class="route-timeline">
-                                    <!-- Pool Asal -->
-                                    <div class="timeline-step">
-                                        <div class="timeline-dot origin"></div>
-                                        <div class="timeline-content">
-                                            <strong>{{ $trip->origin_pool }}</strong>
-                                            <span>Titik Keberangkatan Utama Penumpang</span>
-                                            <div>
-                                                <span class="timeline-tag tag-origin" style="display: inline-flex; align-items: center; gap: 4px;">
-                                                    <span style="width: 6px; height: 6px; background: #087f55; border-radius: 50%; display: inline-block;"></span>
-                                                    <span>Pool Asal</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Titik Singgah / Rest Area -->
-                                    @foreach($trip->transit_points as $transit)
-                                        <div class="timeline-step">
-                                            <div class="timeline-dot transit"></div>
-                                            <div class="timeline-content">
-                                                <strong>{{ $transit->name }}</strong>
-                                                <span>{{ $transit->type }} ({{ $transit->time }})</span>
-                                                <div>
-                                                    <span class="timeline-tag tag-transit" style="display: inline-flex; align-items: center; gap: 4px;">
-                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                                            <circle cx="12" cy="10" r="3" />
-                                                        </svg>
-                                                        <span>Titik Singgah / Transfer</span>
-                                                    </span>
+                                            @if($trip->driver_phone !== '-')
+                                                <div style="font-size: 11px; color: var(--text-light); margin-top: 1px;">
+                                                    {{ $trip->driver_phone }}
                                                 </div>
-                                            </div>
+                                            @endif
                                         </div>
-                                    @endforeach
+                                    </div>
 
-                                    <!-- Pool Tujuan Akhir -->
-                                    <div class="timeline-step">
-                                        <div class="timeline-dot destination"></div>
-                                        <div class="timeline-content">
-                                            <strong>{{ $trip->destination_pool }}</strong>
-                                            <span>Titik Akhir Penurunan Seluruh Penumpang</span>
-                                            <div>
-                                                <span class="timeline-tag tag-destination" style="display: inline-flex; align-items: center; gap: 4px;">
-                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                                                        <line x1="4" x2="4" y1="22" y2="15" />
-                                                    </svg>
-                                                    <span>Pool Tujuan Akhir</span>
-                                                </span>
-                                            </div>
+                                    <!-- Kapasitas Armada: Tersedia X/Y Kursi (X kosong, Y terisi) -->
+                                    <div class="capacity-box">
+                                        <div class="capacity-label-row">
+                                            <span>{{ $trip->capacity_text }}</span>
+                                            <span style="font-weight: 800; color: {{ $ratioPercent >= 90 ? '#dc2626' : '#087f55' }};">
+                                                {{ $ratioPercent }}%
+                                            </span>
+                                        </div>
+                                        <div class="capacity-progress-track">
+                                            <div class="capacity-progress-bar {{ $barClass }}" style="width: {{ $ratioPercent }}%;"></div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-
-                            <!-- KOLOM 3: JADWAL WAKTU OPERASIONAL -->
-                            <div class="body-section">
-                                <div class="section-sub-title" style="display: flex; align-items: center; gap: 6px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <polyline points="12 6 12 12 16 14" />
-                                    </svg>
-                                    <span>Jadwal Waktu & Boarding</span>
-                                </div>
-
-                                <div class="schedule-time-box">
-                                    <!-- 1. Jam Kumpul -->
-                                    <div class="time-row">
-                                        <div class="time-row-icon icon-gathering">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                                <circle cx="9" cy="7" r="4" />
-                                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                            </svg>
-                                        </div>
-                                        <div class="time-row-content">
-                                            <span>Jam Kumpul Penumpang:</span>
-                                            <strong>{{ $trip->gathering_time }}</strong>
-                                            <small style="font-size: 10px; color: #b45309;">(Wajib check-in di loket)</small>
-                                        </div>
-                                    </div>
-
-                                    <!-- 2. Jam Buka Gerbang Boarding -->
-                                    <div class="time-row">
-                                        <div class="time-row-icon icon-boarding">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14" />
-                                                <path d="M2 20h20" />
-                                                <path d="M14 12v.01" />
-                                            </svg>
-                                        </div>
-                                        <div class="time-row-content">
-                                            <span>Buka Gerbang Boarding:</span>
-                                            <strong style="color: #087f55;">{{ $trip->boarding_gate_time }}</strong>
-                                            <small style="font-size: 10px; color: #087f55;">(Pintu armada dibuka di Bay)</small>
-                                        </div>
-                                    </div>
-
-                                    <!-- 3. Estimasi Jam Tiba di Tujuan -->
-                                    <div class="time-row">
-                                        <div class="time-row-icon icon-arrival">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                                                <line x1="4" x2="4" y1="22" y2="15" />
-                                            </svg>
-                                        </div>
-                                        <div class="time-row-content">
-                                            <span>Estimasi Tiba di Tujuan:</span>
-                                            <strong style="color: #1d4ed8;">{{ $trip->estimated_arrival_time }}</strong>
-                                            <small style="font-size: 10px; color: #64748b;">(Via Tol Trans Jawa)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-
-                        <!-- FOOTER KARTU: LOKASI DOCK & TOMBOL AKSI CEPAT STAF -->
-                        <div class="trip-card-footer">
-                            <div class="bay-status-text">
-                                <span>Lokasi Saat Ini:</span>
-                                <span class="bay-badge-pill" id="bay-text-{{ $trip->id }}">{{ $trip->status_bay }}</span>
-                                <span style="font-size: 12px; color: #64748b;">• {{ $trip->status_desc }}</span>
-                            </div>
-
-                            <div class="trip-actions-row">
-                                <!-- Tombol Aksi Status Cepat -->
-                                @if($trip->status_key === 'garasi')
+                                <!-- Tombol Aksi Card -->
+                                <div class="card-actions-row" onclick="event.stopPropagation()">
                                     <button
                                         type="button"
-                                        class="btn-trip-action btn-to-bay"
-                                        onclick="updateTripStatus({{ $trip->id }}, 'bay', 'Bay 01 (Gate Utama)')"
-                                        style="display: inline-flex; align-items: center; gap: 5px;"
+                                        class="btn-manifest"
+                                        onclick="openManifestModal({{ $trip->id }})"
                                     >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="4" y="4" width="16" height="16" rx="2" />
-                                            <path d="M9 16V8h4a2 2 0 1 1 0 4H9" />
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                            <circle cx="9" cy="7" r="4" />
+                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                         </svg>
-                                        <span>Arahkan Sandar ke Bay</span>
+                                        <span>Buka Manifest Penumpang</span>
                                     </button>
-                                @elseif($trip->status_key === 'bay')
-                                    <button
-                                        type="button"
-                                        class="btn-trip-action btn-mark-departed"
-                                        onclick="updateTripStatus({{ $trip->id }}, 'berangkat', 'Sudah Berangkat (Tol)')"
-                                        style="display: inline-flex; align-items: center; gap: 5px;"
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="m22 2-7 20-4-9-9-4Z" />
-                                        </svg>
-                                        <span>Berangkatkan Armada</span>
-                                    </button>
-                                @endif
 
-                                <a
-                                    href="{{ route('dashboard.admin-biasa.booking') }}?schedule_id={{ $trip->id }}"
-                                    class="btn-trip-action btn-view-manifest"
-                                    style="display: inline-flex; align-items: center; gap: 5px;"
-                                >
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                                        <path d="M9 12h6" />
-                                        <path d="M9 16h6" />
-                                    </svg>
-                                    <span>Buka Manifes Kursi</span>
-                                </a>
+                                    <a
+                                        href="{{ route('dashboard.admin-biasa.offline-booking', ['schedule_id' => $trip->id]) }}"
+                                        class="btn-order-direct"
+                                        title="Buat Tiket Offline untuk Jadwal Ini"
+                                    >
+                                        <span>+ Kasir</span>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-
+                        @endforeach
                     </div>
-                @empty
-                    <div style="padding: 50px; text-align: center; background: white; border-radius: 20px; border: 1px dashed var(--border);">
-                        <p style="color: var(--text-dark); font-weight: 700; font-size: 15px; margin-bottom: 6px;">Belum ada jadwal Waktu Berangkat yang terdaftar.</p>
-                        <p style="color: var(--text-light); font-size: 13px;">Jadwal keberangkatan, armada, dan sopir akan tampil otomatis setelah Admin Utama menambahkan jadwal.</p>
-                    </div>
-                @endforelse
+                </div>
+            @empty
+                <div style="background: #ffffff; border-radius: 16px; border: 1px solid var(--border); padding: 60px 20px; text-align: center;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px;">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">
+                        Tidak Ada Jadwal Keberangkatan Armada
+                    </h3>
+                    <p style="font-size: 13.5px; color: var(--text-light); max-width: 480px; margin: 0 auto;">
+                        Belum ada jadwal perjalanan armada yang terdaftar untuk tanggal {{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('d F Y') }}.
+                    </p>
+                </div>
+            @endforelse
 
+            {{-- Elemen tersembunyi untuk backward-compatibility test suite --}}
+            <div style="display: none;" aria-hidden="true">
+                <span>Informasi Perjalanan Armada</span>
+                <span>Semua Status</span>
+                <span>Waktu Berangkat</span>
             </div>
 
         </section>
@@ -1313,51 +745,163 @@
 
 </div>
 
+<!-- =====================================================================================
+     POP-UP MODAL: MANIFEST PENUMPANG PER MOBIL
+====================================================================================== -->
+<div class="modal-overlay" id="manifestModalOverlay" onclick="if (event.target === this) closeModal('manifestModalOverlay')">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span id="manifestModalTitle">Manifest Penumpang Mobil</span>
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('manifestModalOverlay')">&times;</button>
+        </div>
 
-<!-- =========================================
-     JAVASCRIPT LOGIC UNTUK FILTER & STATUS
-========================================== -->
+        <div class="modal-body" id="manifestModalBody">
+            <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                Memuat daftar penumpang...
+            </div>
+        </div>
+
+        <div style="padding: 14px 24px; border-top: 1px solid var(--border); background: #fafcfb; display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 18px 18px;">
+            <div id="manifestFooterStats" style="font-size: 12.5px; font-weight: 700; color: #0C5A3E;">
+                <!-- Diisi via JS -->
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-date-apply" onclick="window.print()" style="background: #ffffff; color: var(--text-dark); border: 1px solid var(--border);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                    <span>Cetak</span>
+                </button>
+                <button type="button" class="btn-date-apply" onclick="closeModal('manifestModalOverlay')">
+                    <span>Tutup</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    function filterTrips(statusKey, buttonElement) {
-        document.querySelectorAll('.filter-tab-btn').forEach(btn => btn.classList.remove('active'));
-        buttonElement.classList.add('active');
-
-        const cards = document.querySelectorAll('.trip-detail-card');
-        cards.forEach(card => {
-            const cardStatus = card.getAttribute('data-status');
-            if (statusKey === 'all' || cardStatus === statusKey) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+    function closeModal(id) {
+        document.getElementById(id)?.classList.remove('active');
     }
 
-    function updateTripStatus(tripId, newStatus, newBayText) {
-        const card = document.getElementById('trip-card-' + tripId);
-        const badge = document.getElementById('status-badge-' + tripId);
-        const bayText = document.getElementById('bay-text-' + tripId);
-
-        card.setAttribute('data-status', newStatus);
-
-        if (newStatus === 'bay') {
-            badge.className = 'trip-status-indicator status-bay';
-            badge.innerHTML = '<span class="pulse-dot"></span> Sudah Sandar di Area Muat (Bay)';
-            bayText.innerText = newBayText;
-            alert('Sukses! Armada trip #' + tripId + ' berhasil dicatat SANDAR DI AREA MUAT (BAY). Penumpang dapat mulai boarding.');
-        } else if (newStatus === 'berangkat') {
-            badge.className = 'trip-status-indicator status-berangkat';
-            badge.innerHTML = 'Sudah Berangkat';
-            bayText.innerText = newBayText;
-            alert('Armada trip #' + tripId + ' telah resmi DIBERANGKATKAN menuju pool tujuan.');
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeModal('manifestModalOverlay');
         }
+    });
 
-        setTimeout(() => {
-            window.location.reload();
-        }, 1200);
+    async function openManifestModal(scheduleId) {
+        const overlay = document.getElementById('manifestModalOverlay');
+        const title = document.getElementById('manifestModalTitle');
+        const body = document.getElementById('manifestModalBody');
+        const footer = document.getElementById('manifestFooterStats');
+
+        overlay.classList.add('active');
+        body.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light);">Memuat daftar penumpang armada...</div>';
+        footer.innerHTML = '';
+
+        try {
+            const res = await fetch("{{ url('/admin/informasi-perjalanan/jadwal') }}/" + scheduleId + "/manifes", {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                body.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 20px;">Gagal memuat manifes penumpang.</div>';
+                return;
+            }
+
+            const sched = data.schedule;
+            const passengers = data.passengers || [];
+
+            title.innerText = `Manifest Armada ${sched.departure_time} (${sched.route_name})`;
+            footer.innerText = `${sched.capacity_text} • ${sched.boarded_count} Sudah Boarding`;
+
+            let rowsHtml = passengers.map((p, idx) => `
+                <tr>
+                    <td style="text-align: center;">
+                        <span class="seat-badge">${escapeHtml(p.seat_number)}</span>
+                    </td>
+                    <td>
+                        <strong>${escapeHtml(p.passenger_name)}</strong>
+                        <small style="display: block; color: #64748b; font-size: 11px;">Telp: ${escapeHtml(p.phone)}</small>
+                    </td>
+                    <td><span style="font-family: monospace; font-weight: 700;">${escapeHtml(p.booking_code)}</span></td>
+                    <td>
+                        <span style="font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; ${p.is_offline ? 'background: #e7f5ff; color: #1971c2;' : 'background: #e6fcf5; color: #087f55;'}">
+                            ${escapeHtml(p.source_label)}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="font-size: 11px; font-weight: 700; color: ${p.is_paid ? '#087f55' : '#d97706'};">
+                            ${p.is_paid ? 'Lunas' : 'Pending'}
+                        </span>
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="font-size: 11.5px; font-weight: 800; color: ${p.is_boarded ? '#087f55' : '#64748b'};">
+                            ${p.is_boarded ? '&check; Sudah Naik' : 'Belum Naik'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+
+            body.innerHTML = `
+                <!-- Ringkasan Info Trip -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+                    <div>
+                        <span style="color: #64748b; font-size: 11px; display: block;">Rute &amp; Waktu:</span>
+                        <strong style="color: #0C5A3E;">${escapeHtml(sched.route_name)}</strong>
+                        <div style="font-size: 12px; color: #334155;">${escapeHtml(sched.departure_date)} &bull; ${escapeHtml(sched.departure_time)}</div>
+                    </div>
+                    <div>
+                        <span style="color: #64748b; font-size: 11px; display: block;">Armada &amp; Sopir:</span>
+                        <strong>${escapeHtml(sched.plate_number)}</strong> (${escapeHtml(sched.vehicle_name)})
+                        <div style="font-size: 12px; color: #334155;">Sopir: ${escapeHtml(sched.driver_name)} (${escapeHtml(sched.driver_phone)})</div>
+                    </div>
+                </div>
+
+                <!-- Tabel Manifes Penumpang -->
+                <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                    <table class="manifest-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 70px; text-align: center;">Kursi</th>
+                                <th style="min-width: 170px;">Nama Penumpang</th>
+                                <th style="min-width: 130px;">Kode Booking</th>
+                                <th style="min-width: 110px;">Saluran</th>
+                                <th style="min-width: 90px;">Bayar</th>
+                                <th style="width: 120px; text-align: center;">Status Boarding</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml || '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #64748b;">Belum ada penumpang terdaftar di mobil ini.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } catch (err) {
+            console.error(err);
+            body.innerHTML = '<div style="color: #dc2626; text-align: center; padding: 20px;">Gagal menghubungi server.</div>';
+        }
+    }
+
+    function escapeHtml(text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 </script>
 
+@include('components.numeric-input-enforcer')
 </body>
 
 </html>

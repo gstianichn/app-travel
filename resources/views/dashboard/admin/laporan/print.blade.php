@@ -244,11 +244,21 @@
             color: #64748b;
         }
 
-        /* PRINT MEDIA STYLES */
+        /* PRINT MEDIA STYLES & PAGE SETUP */
+        @page {
+            size: A4 landscape;
+            margin: 10mm 12mm 12mm 12mm;
+        }
+
         @media print {
-            body {
-                background: white;
-                padding: 0;
+            html, body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                font-size: 11px !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
 
             .action-bar-top {
@@ -256,22 +266,60 @@
             }
 
             .print-container {
-                box-shadow: none;
-                border: none;
-                padding: 0;
-                max-width: 100%;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            thead {
+                display: table-header-group !important;
+            }
+
+            tfoot {
+                display: table-footer-group !important;
             }
 
             .report-table th {
                 background-color: #f1f5f9 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .report-table td {
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            .summary-row, .summary-box, .kop-surat, .report-title-box {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
 
             .summary-box {
                 background-color: #f8fafc !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .signature-grid {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-top: 32px !important;
             }
         }
     </style>
@@ -281,12 +329,13 @@
     {{-- TOP ACTION BAR (HIDDEN DURING PRINT) --}}
     <div class="action-bar-top">
         <div>
-            <strong>Mode Pratinjau Dokumen Cetak / PDF</strong>
-            <div style="font-size: 11px; color: #64748b;">Klik tombol cetak untuk menyimpan langsung sebagai file PDF atau cetak ke printer.</div>
+            <strong style="color: #087f55; font-size: 14px;">Mode Pratinjau Dokumen Cetak / PDF TravelKu</strong>
+            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Format dokumen telah disesuaikan dengan ukuran standar A4 Landscape. Klik tombol untuk mencetak atau simpan ke file PDF.</div>
         </div>
         <div style="display: flex; gap: 8px;">
             <button type="button" class="btn-print" onclick="window.print()">
-                <span></span> Cetak / Simpan sebagai PDF
+                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <span>Cetak / Simpan PDF</span>
             </button>
             <button type="button" class="btn-close-print" onclick="window.close()">
                 Tutup Jendela
@@ -299,18 +348,19 @@
 
         {{-- KOP SURAT RESMI --}}
         <div class="kop-surat">
-            <div class="company-identity">
+            <div class="company-identity" style="display: flex; align-items: center; gap: 16px;">
+                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 52px; width: auto; object-fit: contain;">
                 <div class="company-name">
-                    <h1>TRAVEL TRANS UTAMA</h1>
-                    <p>Layanan Shuttle Antarkota & Minibus Eksekutif Modern</p>
-                    <p>Kantor Pusat: Jl. Dr. Djunjunan No. 120, Bandung &bull; Telp: (022) 8765-4321 &bull; info@travel.test</p>
+                    <h1 style="font-size: 22px; font-weight: 800; color: #0C392F; letter-spacing: -0.5px; text-transform: uppercase;">TRAVELKU (PT MADTIVE STUDIO INDONESIA)</h1>
+                    <p style="font-size: 11px; color: #475569; margin-top: 2px;">Layanan Shuttle Antarkota, Minibus Eksekutif Modern & Tiket Online</p>
+                    <p style="font-size: 11px; color: #64748b; margin-top: 1px;">Kantor Operasional: Perumahan BTN Rancabali No. 93, Kel. Muka, Kec. Cianjur, Kab. Cianjur, Jawa Barat 43215 &bull; Hotline: 0812-3456-7890 &bull; Website: madtive.com</p>
                 </div>
             </div>
 
             <div class="doc-meta">
                 <div>No. Dokumen: <strong>DOC/LAP/{{ date('Ymd') }}/{{ strtoupper($tab) }}</strong></div>
-                <div>Tanggal Cetak: <strong>{{ now()->format('d/m/Y H:i') }}</strong></div>
-                <div>Oleh: <strong>{{ $user->name }} ({{ $user->role }})</strong></div>
+                <div>Tanggal Cetak: <strong>{{ now()->format('d/m/Y H:i') }} WIB</strong></div>
+                <div>Dicetak Oleh: <strong>{{ $user->name }} ({{ $user->role }})</strong></div>
             </div>
         </div>
 
@@ -595,5 +645,15 @@
 
     </div>
 
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('autoprint') === '1') {
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        });
+    </script>
 </body>
 </html>

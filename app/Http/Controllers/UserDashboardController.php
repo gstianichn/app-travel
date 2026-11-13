@@ -638,6 +638,12 @@ class UserDashboardController extends Controller
             'passengers.*.phone.regex' => 'Nomor HP penumpang hanya boleh berisi angka (minimal 8 digit).',
         ]);
 
+        // Tolak / redirect jika booking sudah lunas (mencegah reset status bayar ke pending)
+        if ($booking->isPaid() || in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas', 'completed'])) {
+            return redirect()->route('dashboard.user.booking.sukses', $booking)
+                ->with('info', 'Pemesanan ini sudah lunas.');
+        }
+
         // Cek apakah waktu lock habis
         if ($booking->status === 'pending' && $booking->expired_at && $booking->expired_at->isPast()) {
             $booking->update(['status' => 'cancelled']);
@@ -840,6 +846,15 @@ class UserDashboardController extends Controller
         $booking = Booking::with('user', 'schedule.route.origin', 'schedule.route.destination')->findOrFail($validated['booking_id']);
         if (! $this->bookingAccess->canAccess($booking)) {
             return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+        }
+
+        // Tolak jika booking sudah lunas
+        if ($booking->isPaid() || in_array(strtolower($booking->status), ['paid', 'confirmed', 'success', 'lunas', 'completed'])) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Pemesanan ini sudah lunas dan tidak dapat ditagihkan kembali.',
+                'redirect_url' => route('dashboard.user.booking.sukses', $booking),
+            ], 422);
         }
 
         $midtransService = app(MidtransService::class);
@@ -1177,6 +1192,11 @@ class UserDashboardController extends Controller
             $expiry = $booking->expired_at;
         }
 
+        // Jika pembayaran saat ini sudah berstatus lunas, jangan reset status ke pending
+        $existingPayment = Payment::where('booking_id', $booking->id)->first();
+        $isExistingPaid = $existingPayment && in_array(strtolower((string) $existingPayment->status), ['success', 'settlement', 'paid', 'capture']);
+        $newPaymentStatus = $isExistingPaid ? $existingPayment->status : 'pending';
+
         return Payment::updateOrCreate(
             ['booking_id' => $booking->id],
             [
@@ -1190,7 +1210,7 @@ class UserDashboardController extends Controller
                 'notes' => $notes,
                 'gateway_provider' => 'midtrans',
                 'gateway_status' => $status,
-                'status' => 'pending',
+                'status' => $newPaymentStatus,
                 'expired_at' => $expiry,
                 'raw_response' => $chargeResponse,
             ]
@@ -1440,8 +1460,10 @@ class UserDashboardController extends Controller
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:500'],
             'bank_name' => ['required', 'string', 'max:50'],
-            'account_number' => ['required', 'string', 'max:50'],
+            'account_number' => ['required', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'account_holder' => ['required', 'string', 'max:100'],
+        ], [
+            'account_number.regex' => 'Nomor rekening hanya boleh berisi angka.',
         ]);
 
         $originalAmount = (float) $booking->total_price;

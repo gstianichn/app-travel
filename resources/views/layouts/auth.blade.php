@@ -51,5 +51,6 @@
             </div>
         </section>
     </main>
+    @include('components.numeric-input-enforcer')
 </body>
 </html>

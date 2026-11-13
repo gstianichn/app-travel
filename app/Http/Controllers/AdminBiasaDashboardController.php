@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingPassenger;
+use App\Models\Location;
 use App\Models\Payment;
+use App\Models\Refund;
 use App\Models\Schedule;
 use App\Models\Seat;
 use App\Models\Ticket;
@@ -13,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -175,199 +178,594 @@ class AdminBiasaDashboardController extends Controller
     }
 
     /**
-     * Melihat Booking (Manifes Penumpang per Perjalanan)
+     * Modul Manajemen Booking (Semua Booking):
+     * Pusat pemantauan seluruh data transaksi tanpa membedakan asal usul pesanan.
+     * Menggabungkan transaksi Online (Aplikasi/Web) dan Offline (Loket/Kasir/WA/Telp) dalam satu tabel terpadu.
      */
     public function manajemenBooking(Request $request)
     {
         $user = auth()->user();
-        $today = Carbon::today();
+        $search = trim((string) $request->input('search', $request->input('q', '')));
+        $type = strtolower((string) $request->input('type', 'all'));
+        $status = strtolower((string) $request->input('status', 'all'));
+        $scheduleId = $request->query('schedule_id');
+        $date = $request->query('date');
+        $destinationId = $request->query('destination_id');
 
-        // 1. Ambil seluruh jadwal yang memiliki pemesanan aktif penumpang (prioritas utama staf)
-        $schedulesWithBookings = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user', 'bookings.passengers'])
-            ->whereHas('bookings', function ($q) {
-                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed']);
-            })
-            ->whereDate('departure_date', '>=', $today)
-            ->orderBy('departure_date')
-            ->orderBy('departure_time')
+        // Query dasar seluruh tabel bookings dengan relasi lengkap
+        $query = Booking::with([
+            'user',
+            'schedule.route.origin',
+            'schedule.route.destination',
+            'schedule.vehicle',
+            'schedule.driver.user',
+            'passengers.seat',
+            'payment',
+            'ticket',
+            'refund',
+        ]);
+
+        // 1. Pencarian Fleksibel
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('booking_code', 'LIKE', "%{$search}%")
+                    ->orWhere('contact_name', 'LIKE', "%{$search}%")
+                    ->orWhere('contact_phone', 'LIKE', "%{$search}%")
+                    ->orWhere('contact_email', 'LIKE', "%{$search}%")
+                    ->orWhereHas('passengers', function ($pq) use ($search) {
+                        $pq->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('phone', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('phone', 'LIKE', "%{$search}%")
+                            ->orWhere('email', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('ticket', function ($tq) use ($search) {
+                        $tq->where('ticket_number', 'LIKE', "%{$search}%")
+                            ->orWhere('qr_code', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('schedule.route.origin', function ($oq) use ($search) {
+                        $oq->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('city', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('schedule.route.destination', function ($dq) use ($search) {
+                        $dq->where('name', 'LIKE', "%{$search}%")
+                            ->orWhere('city', 'LIKE', "%{$search}%");
+                    })
+                    ->orWhereHas('schedule.vehicle', function ($vq) use ($search) {
+                        $vq->where('plate_number', 'LIKE', "%{$search}%")
+                            ->orWhere('name', 'LIKE', "%{$search}%");
+                    });
+            });
+        }
+
+        // 2. Filter Tipe Pesanan (Online vs Offline/Loket)
+        if ($type === 'online') {
+            $query->where(function ($q) {
+                $q->whereNull('source')
+                    ->orWhere('source', 'online')
+                    ->orWhereNotIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone']);
+            });
+        } elseif ($type === 'offline') {
+            $query->whereIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone']);
+        }
+
+        // 3. Filter Status Pembayaran / Transaksi
+        if ($status === 'paid' || $status === 'lunas') {
+            $query->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded']);
+        } elseif ($status === 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($status === 'checked_in' || $status === 'boarded') {
+            $query->whereIn('status', ['checked_in', 'boarded']);
+        } elseif ($status === 'cancelled' || $status === 'batal') {
+            $query->whereIn('status', ['cancelled', 'batal', 'Cancelled']);
+        } elseif ($status === 'completed') {
+            $query->where('status', 'completed');
+        }
+
+        // 4. Filter Jadwal Tertentu
+        if ($scheduleId) {
+            $query->where('schedule_id', $scheduleId);
+        }
+
+        // 5. Filter Tanggal Keberangkatan
+        if ($date) {
+            $query->whereHas('schedule', function ($sq) use ($date) {
+                $sq->whereDate('departure_date', $date);
+            });
+        }
+
+        // 6. Filter Kota / Pool Tujuan
+        if ($destinationId) {
+            $query->whereHas('schedule.route.destination', function ($dq) use ($destinationId) {
+                $dq->where('id', $destinationId);
+            });
+        }
+
+        // Eksekusi pagination bookings terbaru
+        $bookings = $query->latest('id')->paginate(15)->withQueryString();
+
+        // Statistik Keseluruhan (tanpa filter) untuk Kartu Ringkasan
+        $stats = [
+            'total' => Booking::count(),
+            'online' => Booking::where(function ($q) {
+                $q->whereNull('source')
+                    ->orWhere('source', 'online')
+                    ->orWhereNotIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone']);
+            })->count(),
+            'offline' => Booking::whereIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone'])->count(),
+            'paid' => Booking::whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'])->count(),
+            'pending' => Booking::where('status', 'pending')->count(),
+            'cancelled' => Booking::whereIn('status', ['cancelled', 'batal', 'Cancelled'])->count(),
+        ];
+
+        // Daftar jadwal untuk filter & kompatibilitas view
+        $scheduleList = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
+            ->whereDate('departure_date', '>=', Carbon::today()->subDays(3))
+            ->orderBy('departure_date', 'desc')
+            ->orderBy('departure_time', 'desc')
+            ->take(40)
             ->get();
 
-        // 2. Ambil jadwal lainnya hari ini / mendatang
-        $otherSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user', 'bookings'])
-            ->whereDate('departure_date', '>=', $today)
-            ->whereNotIn('id', $schedulesWithBookings->pluck('id'))
-            ->orderBy('departure_date')
-            ->orderBy('departure_time')
-            ->take(20)
-            ->get();
+        $selectedSchedule = $scheduleId
+            ? Schedule::with(['route.origin', 'route.destination', 'vehicle'])->find($scheduleId)
+            : $scheduleList->first();
 
-        $scheduleList = $schedulesWithBookings->merge($otherSchedules);
+        $destinations = Location::where('is_active', true)->orderBy('name')->get();
 
-        $selectedScheduleId = $request->query('schedule_id');
-        $selectedSchedule = null;
-
-        $bookingQuery = function ($q) {
-            $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed'])
-                ->with(['user', 'passengers.seat', 'ticket', 'payment']);
-        };
-
-        if ($selectedScheduleId) {
-            $selectedSchedule = Schedule::with([
-                'route.origin',
-                'route.destination',
-                'vehicle',
-                'driver.user',
-                'bookings' => $bookingQuery,
-            ])->find($selectedScheduleId);
-        }
-
-        // Jika tidak ada schedule_id di parameter URL, prioritaskan jadwal yang MEMILIKI pemesanan aktif
-        if (! $selectedSchedule) {
-            $firstWithBooking = $schedulesWithBookings->first();
-            if ($firstWithBooking) {
-                $selectedSchedule = Schedule::with([
-                    'route.origin',
-                    'route.destination',
-                    'vehicle',
-                    'driver.user',
-                    'bookings' => $bookingQuery,
-                ])->find($firstWithBooking->id);
-            } elseif ($scheduleList->isNotEmpty()) {
-                $selectedSchedule = Schedule::with([
-                    'route.origin',
-                    'route.destination',
-                    'vehicle',
-                    'driver.user',
-                    'bookings' => $bookingQuery,
-                ])->find($scheduleList->first()->id);
-            }
-        }
-
-        // Ekstraksi penumpang dari database jika ada
-        $passengers = collect();
-
-        if ($selectedSchedule && $selectedSchedule->bookings->isNotEmpty()) {
-            foreach ($selectedSchedule->bookings as $booking) {
-                $bookingStatusLower = strtolower((string) $booking->status);
-                $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'], true);
-                $isOffline = in_array(strtolower((string) $booking->source), ['walk_in', 'loket', 'whatsapp', 'wa', 'phone'], true);
-
-                foreach ($booking->passengers as $passenger) {
-                    $phoneRaw = $passenger->phone ?: ($booking->contact_phone ?: ($booking->user?->phone ?? '-'));
-                    $cleanPhone = preg_replace('/[^0-9]/', '', (string) $phoneRaw);
-                    if (str_starts_with($cleanPhone, '0')) {
-                        $cleanPhone = '62'.substr($cleanPhone, 1);
-                    }
-
-                    $originName = $selectedSchedule->route?->origin?->name ?? 'Pool Asal';
-                    $destName = $selectedSchedule->route?->destination?->name ?? 'Pool Tujuan';
-
-                    $isPassengerBoarded = in_array(strtolower($passenger->boarding_status ?? ''), ['boarded', 'hadir'], true)
-                        || ($booking->ticket?->boarded_at !== null)
-                        || strtolower($booking->ticket?->status ?? '') === 'boarded'
-                        || in_array($bookingStatusLower, ['checked_in', 'boarded'], true);
-
-                    $passengers->push((object) [
-                        'id' => $passenger->id,
-                        'booking_id' => $booking->id,
-                        'seat_number' => $passenger->seat?->seat_number ?? '-',
-                        'name' => $passenger->name ?: ($booking->contact_name ?: ($booking->user?->name ?? 'Penumpang')),
-                        'phone' => $phoneRaw,
-                        'phone_clean' => $cleanPhone,
-                        'phone_wa_url' => $cleanPhone !== '' ? 'https://wa.me/'.$cleanPhone.'?text='.urlencode("Halo Kak {$passenger->name}, kami dari staf loket TravelKu mengonfirmasi keberangkatan rute {$originName} - {$destName}. Armada kami telah siap di pool.") : '#',
-                        'phone_tel_url' => $phoneRaw !== '-' ? 'tel:'.$phoneRaw : '#',
-                        'pickup_point' => $originName,
-                        'drop_point' => $destName,
-                        'special_request' => $passenger->special_request ?: ($booking->notes ?: 'Standar (Tidak ada catatan khusus)'),
-                        'booking_code' => $booking->booking_code,
-                        'source' => $booking->source ?? 'online',
-                        'source_label' => $booking->sourceLabel(),
-                        'is_offline' => $isOffline,
-                        'is_paid' => $isPaid,
-                        'payment_status' => $booking->statusLabel(),
-                        'total_price' => (float) $booking->total_price,
-                        'boarded' => $isPassengerBoarded,
-                    ]);
-                }
-            }
-        }
-
-        // Urutkan berdasarkan nomor kursi
-        $sortedPassengers = $passengers->sortBy('seat_number')->values();
-
-        // Info ringkasan trip aktif
-        $driverName = $selectedSchedule?->driver?->user?->name ?? 'Belum ditugaskan';
-        $driverPhone = $selectedSchedule?->driver?->phone ?? ($selectedSchedule?->driver?->user?->phone ?? '-');
-        $driverCleanPhone = preg_replace('/[^0-9]/', '', (string) $driverPhone);
-        if (str_starts_with($driverCleanPhone, '0')) {
-            $driverCleanPhone = '62'.substr($driverCleanPhone, 1);
-        }
-
-        $activeTripInfo = $selectedSchedule ? (object) [
-            'id' => $selectedSchedule->id,
-            'time' => $selectedSchedule->departure_time ? Carbon::parse($selectedSchedule->departure_time)->format('H:i').' WIB' : '-',
-            'date' => $selectedSchedule->departure_date ? Carbon::parse($selectedSchedule->departure_date)->translatedFormat('l, d F Y') : '-',
-            'route_name' => ($selectedSchedule->route?->origin?->name ?? 'Asal').' → '.($selectedSchedule->route?->destination?->name ?? 'Tujuan'),
-            'origin' => $selectedSchedule->route?->origin?->name ?? 'Asal',
-            'destination' => $selectedSchedule->route?->destination?->name ?? 'Tujuan',
-            'plate_number' => $selectedSchedule->vehicle?->plate_number ?? '-',
-            'vehicle_name' => $selectedSchedule->vehicle?->name ?? 'Kendaraan belum ditugaskan',
-            'driver_name' => $driverName,
-            'driver_phone' => $driverPhone,
-            'driver_wa_clean' => $driverCleanPhone,
-            'capacity' => $selectedSchedule->vehicle?->capacity ?? 10,
-            'status' => $selectedSchedule->status ?: 'Terjadwal',
-        ] : null;
-
-        // Hitung statistik manifes
-        $totalBooked = $sortedPassengers->count();
-        $boardedCount = $sortedPassengers->where('boarded', true)->count();
-        $pendingCount = $totalBooked - $boardedCount;
+        // Kompatibilitas variabel legacy untuk test
+        $sortedPassengers = collect();
+        $totalBooked = $bookings->total();
+        $boardedCount = BookingPassenger::where('boarding_status', 'boarded')->count();
+        $pendingCount = max(0, $totalBooked - $boardedCount);
+        $activeTripInfo = null;
 
         return view('dashboard.admin-biasa.manajemen-booking', compact(
             'user',
+            'bookings',
+            'stats',
+            'search',
+            'type',
+            'status',
+            'scheduleId',
+            'date',
+            'destinationId',
             'scheduleList',
             'selectedSchedule',
-            'activeTripInfo',
+            'destinations',
             'sortedPassengers',
             'totalBooked',
             'boardedCount',
-            'pendingCount'
+            'pendingCount',
+            'activeTripInfo'
         ));
     }
 
     /**
-     * Melihat Informasi Perjalanan
+     * Detail Pesanan (Modal / JSON)
+     */
+    public function bookingDetail(Booking $booking): JsonResponse
+    {
+        $booking->load([
+            'user',
+            'schedule.route.origin',
+            'schedule.route.destination',
+            'schedule.vehicle',
+            'schedule.driver.user',
+            'passengers.seat',
+            'payment',
+            'ticket',
+            'refund',
+        ]);
+
+        $schedule = $booking->schedule;
+        $depDate = $schedule?->departure_date ? Carbon::parse($schedule->departure_date)->translatedFormat('l, d F Y') : '-';
+        $depTime = $schedule?->departure_time ? Carbon::parse($schedule->departure_time)->format('H:i').' WIB' : '-';
+        $statusLower = strtolower((string) $booking->status);
+
+        return response()->json([
+            'success' => true,
+            'booking' => [
+                'id' => $booking->id,
+                'booking_code' => $booking->booking_code,
+                'source' => $booking->source ?? 'online',
+                'source_label' => $booking->sourceLabel(),
+                'is_offline' => $booking->isOffline(),
+                'status' => $booking->status,
+                'status_label' => $booking->statusLabel(),
+                'status_badge_class' => $booking->statusBadgeClass(),
+                'created_at' => $booking->created_at ? $booking->created_at->translatedFormat('d M Y, H:i').' WIB' : '-',
+                'customer_name' => $booking->customerName(),
+                'customer_phone' => $booking->customerPhone(),
+                'customer_email' => $booking->customerEmail() ?: '-',
+                'total_passenger' => $booking->total_passenger,
+                'seat_numbers' => $booking->passengerSeatNumbers(),
+                'subtotal' => (float) $booking->subtotal,
+                'discount' => (float) $booking->discount,
+                'total_price' => (float) $booking->total_price,
+                'formatted_total' => 'Rp '.number_format((float) $booking->total_price, 0, ',', '.'),
+                'notes' => $booking->notes ?: '-',
+                'rescheduled_at' => $booking->rescheduled_at ? $booking->rescheduled_at->translatedFormat('d M Y, H:i').' WIB' : null,
+                'reschedule_reason' => $booking->reschedule_reason,
+                'can_cancel' => ! in_array($statusLower, ['cancelled', 'batal'], true),
+                'can_reschedule' => ! in_array($statusLower, ['cancelled', 'batal', 'completed'], true) && ($schedule && $schedule->departureCarbon()->isFuture()),
+                'print_url' => route('dashboard.admin-biasa.booking.print-ticket', $booking->id),
+            ],
+            'schedule' => [
+                'route_name' => ($schedule?->route?->origin?->name ?? 'Asal').' → '.($schedule?->route?->destination?->name ?? 'Tujuan'),
+                'origin' => $schedule?->route?->origin?->name ?? 'Asal',
+                'destination' => $schedule?->route?->destination?->name ?? 'Tujuan',
+                'departure_date' => $depDate,
+                'departure_time' => $depTime,
+                'vehicle_name' => $schedule?->vehicle?->name ?? 'Armada',
+                'plate_number' => $schedule?->vehicle?->plate_number ?? '-',
+                'driver_name' => $schedule?->driver?->user?->name ?? 'Belum Ditugaskan',
+                'driver_phone' => $schedule?->driver?->phone ?? ($schedule?->driver?->user?->phone ?? '-'),
+            ],
+            'passengers' => $booking->passengers->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'phone' => $p->phone ?: '-',
+                'seat_number' => $p->seat?->seat_number ?? '-',
+                'boarding_status' => $p->boarding_status ?: 'pending',
+                'is_boarded' => $p->isBoarded(),
+                'boarded_at' => $p->boarded_at ? $p->boarded_at->format('H:i').' WIB' : null,
+            ]),
+            'payment' => [
+                'method' => $booking->payment?->payment_method ?? ($booking->isOffline() ? 'Cash (Loket)' : 'Payment Gateway Online'),
+                'status' => $booking->payment?->status ?? ($booking->isPaid() ? 'Paid' : 'Pending'),
+                'paid_at' => $booking->payment?->paid_at ? Carbon::parse($booking->payment->paid_at)->translatedFormat('d M Y, H:i').' WIB' : null,
+            ],
+            'ticket' => [
+                'ticket_number' => $booking->ticket?->ticket_number ?? 'TKT-'.$booking->booking_code,
+                'qr_code' => $booking->ticket?->qr_code ?? 'QR-'.$booking->booking_code,
+                'status' => $booking->ticket?->status ?? ($booking->isPaid() ? 'Confirmed' : 'Pending'),
+            ],
+        ]);
+    }
+
+    /**
+     * Membatalkan pemesanan dan melepaskan kursi kembali ke kuota armada.
+     */
+    public function cancelBooking(Request $request, Booking $booking): JsonResponse|RedirectResponse
+    {
+        $user = auth()->user();
+        if ($user && in_array($user->role, ['staff', 'admin_biasa']) && ! $user->hasPermission('cancel_booking')) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki hak akses untuk membatalkan pesanan.'], 403);
+            }
+
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk membatalkan pesanan.');
+        }
+
+        if (in_array(strtolower((string) $booking->status), ['cancelled', 'batal'], true)) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Pemesanan ini sudah dibatalkan sebelumnya.'], 422);
+            }
+
+            return redirect()->back()->with('error', 'Pemesanan ini sudah dibatalkan sebelumnya.');
+        }
+
+        $reason = trim((string) $request->input('reason', 'Dibatalkan oleh staf loket / pool.'));
+        if ($reason === '') {
+            $reason = 'Dibatalkan oleh staf loket / pool.';
+        }
+
+        $wasPaid = $booking->isPaid();
+
+        DB::transaction(function () use ($booking, $wasPaid, $reason, $user) {
+            $booking->status = 'Cancelled';
+            $booking->notes = trim(($booking->notes ? $booking->notes."\n" : '').'[Pembatalan '.now()->format('d/m/Y H:i').'] Oleh: '.($user->name ?? 'Staf').". Alasan: {$reason}");
+            $booking->save();
+
+            if ($booking->ticket) {
+                $booking->ticket->status = 'Cancelled';
+                $booking->ticket->save();
+            }
+
+            if ($booking->payment) {
+                $booking->payment->status = $wasPaid ? 'Refunded' : 'Failed';
+                $booking->payment->save();
+            }
+
+            if ($wasPaid) {
+                Refund::updateOrCreate(
+                    ['booking_id' => $booking->id],
+                    [
+                        'user_id' => $booking->user_id ?? $user->id,
+                        'original_amount' => $booking->total_price,
+                        'cancellation_fee' => 0,
+                        'refund_percentage' => 100.00,
+                        'amount' => $booking->total_price,
+                        'reason' => $reason,
+                        'bank_name' => $booking->payment?->payment_channel ?? 'Kasir Loket',
+                        'account_number' => '-',
+                        'account_holder' => $booking->customerName(),
+                        'status' => 'Disetujui',
+                        'processed_at' => now(),
+                        'processed_by' => $user->id,
+                        'admin_note' => 'Pembatalan oleh staf loket/pool. Kursi dikembalikan.',
+                    ]
+                );
+            }
+
+            if ($booking->schedule) {
+                $booking->schedule->recalculateAvailableSeats();
+            }
+        });
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Pesanan #{$booking->booking_code} berhasil dibatalkan dan kursi telah dilepaskan kembali ke sistem.",
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Pesanan #{$booking->booking_code} berhasil dibatalkan dan kursi telah dilepaskan.");
+    }
+
+    /**
+     * Mengambil data jadwal alternatif untuk modal Reschedule
+     */
+    public function rescheduleData(Booking $booking): JsonResponse
+    {
+        $booking->load(['schedule.route.origin', 'schedule.route.destination', 'passengers.seat']);
+
+        $originId = $booking->schedule?->route?->origin_id;
+        $destId = $booking->schedule?->route?->destination_id;
+
+        $schedules = Schedule::with([
+            'route.origin',
+            'route.destination',
+            'vehicle',
+            'driver.user',
+        ])
+            ->where('id', '!=', $booking->schedule_id)
+            ->whereDate('departure_date', '>=', Carbon::today())
+            ->whereNotIn('status', ['Completed', 'completed', 'Cancelled', 'cancelled'])
+            ->where('available_seats', '>=', $booking->total_passenger)
+            ->when($originId && $destId, function ($q) use ($originId, $destId) {
+                $q->whereHas('route', function ($r) use ($originId, $destId) {
+                    $r->where('origin_id', $originId)->where('destination_id', $destId);
+                });
+            })
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->get()
+            ->map(function ($s) {
+                return [
+                    'id' => $s->id,
+                    'date' => Carbon::parse($s->departure_date)->translatedFormat('d M Y'),
+                    'time' => Carbon::parse($s->departure_time)->format('H:i').' WIB',
+                    'route_name' => ($s->route?->origin?->name ?? 'Asal').' → '.($s->route?->destination?->name ?? 'Tujuan'),
+                    'vehicle_name' => $s->vehicle?->name ?? 'Armada',
+                    'plate_number' => $s->vehicle?->plate_number ?? '-',
+                    'price' => (float) $s->price,
+                    'available_seats' => $s->available_seats,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'booking' => [
+                'id' => $booking->id,
+                'booking_code' => $booking->booking_code,
+                'total_passenger' => $booking->total_passenger,
+                'current_schedule' => ($booking->schedule?->route?->origin?->name ?? 'Asal').' → '.($booking->schedule?->route?->destination?->name ?? 'Tujuan').', '.($booking->schedule?->departure_date ? Carbon::parse($booking->schedule->departure_date)->format('d/m/Y') : '').' '.($booking->schedule?->departure_time ? Carbon::parse($booking->schedule->departure_time)->format('H:i') : ''),
+                'current_seats' => $booking->passengerSeatNumbers(),
+            ],
+            'available_schedules' => $schedules,
+        ]);
+    }
+
+    /**
+     * Memproses perubahan jadwal (Reschedule) penumpang
+     */
+    public function updateReschedule(Request $request, Booking $booking): JsonResponse|RedirectResponse
+    {
+        $user = auth()->user();
+        if ($user && in_array($user->role, ['staff', 'admin_biasa']) && ! $user->hasPermission('reschedule_booking')) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki hak akses untuk mengubah jadwal pesanan.'], 403);
+            }
+
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk mengubah jadwal pesanan.');
+        }
+
+        if (in_array(strtolower((string) $booking->status), ['cancelled', 'batal'], true)) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Pesanan yang telah dibatalkan tidak dapat di-reschedule.'], 422);
+            }
+
+            return redirect()->back()->with('error', 'Pesanan yang telah dibatalkan tidak dapat di-reschedule.');
+        }
+
+        $validated = $request->validate([
+            'new_schedule_id' => ['required', 'exists:schedules,id'],
+            'new_seats' => ['nullable', 'array'],
+            'reschedule_reason' => ['required', 'string', 'max:255'],
+        ]);
+
+        $newSchedule = Schedule::with(['route', 'vehicle'])->findOrFail($validated['new_schedule_id']);
+        $oldSchedule = $booking->schedule;
+
+        if (in_array(strtolower((string) $newSchedule->status), ['cancelled', 'completed'], true)) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Jadwal tujuan tidak aktif atau telah dibatalkan.'], 422);
+            }
+
+            return redirect()->back()->with('error', 'Jadwal tujuan tidak aktif atau telah dibatalkan.');
+        }
+
+        // Auto-allocate seats if new_seats was not manually selected
+        $passengerCount = $booking->total_passenger;
+        $newSeats = $validated['new_seats'] ?? [];
+
+        if (empty($newSeats)) {
+            $takenSeatIds = BookingPassenger::whereHas('booking', function ($q) use ($newSchedule) {
+                $q->where('schedule_id', $newSchedule->id)
+                    ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed']);
+            })->pluck('seat_id')->filter()->all();
+
+            $availableSeatsList = Seat::where('vehicle_id', $newSchedule->vehicle_id)
+                ->whereNotIn('id', $takenSeatIds)
+                ->where('is_active', true)
+                ->orderBy('id')
+                ->take($passengerCount)
+                ->pluck('id')
+                ->all();
+
+            if (count($availableSeatsList) < $passengerCount) {
+                if ($request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Sisa kursi pada jadwal baru tidak mencukupi.'], 422);
+                }
+
+                return redirect()->back()->with('error', 'Sisa kursi pada jadwal baru tidak mencukupi.');
+            }
+
+            $newSeats = $availableSeatsList;
+        } else {
+            if (count($newSeats) !== $passengerCount) {
+                if ($request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => "Jumlah kursi baru harus sama dengan jumlah penumpang ({$passengerCount} kursi)."], 422);
+                }
+
+                return redirect()->back()->with('error', "Jumlah kursi baru harus sama dengan jumlah penumpang ({$passengerCount} kursi).");
+            }
+
+            $validSeatsCount = Seat::where('vehicle_id', $newSchedule->vehicle_id)->whereIn('id', $newSeats)->count();
+            if ($validSeatsCount !== count($newSeats)) {
+                if ($request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Kursi yang dipilih tidak sesuai dengan armada jadwal baru.'], 422);
+                }
+
+                return redirect()->back()->with('error', 'Kursi yang dipilih tidak sesuai dengan armada jadwal baru.');
+            }
+
+            $alreadyOccupied = BookingPassenger::whereHas('booking', function ($q) use ($newSchedule) {
+                $q->where('schedule_id', $newSchedule->id)
+                    ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed']);
+            })->whereIn('seat_id', $newSeats)->exists();
+
+            if ($alreadyOccupied) {
+                if ($request->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Salah satu kursi yang dipilih pada jadwal baru sudah terisi.'], 422);
+                }
+
+                return redirect()->back()->with('error', 'Salah satu kursi yang dipilih pada jadwal baru sudah terisi.');
+            }
+        }
+
+        DB::transaction(function () use ($validated, $booking, $newSchedule, $oldSchedule, $newSeats, $user) {
+            $oldInfo = ($oldSchedule?->route?->origin?->name ?? '').' → '.($oldSchedule?->route?->destination?->name ?? '').', '.($oldSchedule?->departure_date ? Carbon::parse($oldSchedule->departure_date)->format('d/m/Y') : '').' '.($oldSchedule?->departure_time ? Carbon::parse($oldSchedule->departure_time)->format('H:i') : '');
+            $newInfo = ($newSchedule->route?->origin?->name ?? '').' → '.($newSchedule->route?->destination?->name ?? '').', '.($newSchedule->departure_date ? Carbon::parse($newSchedule->departure_date)->format('d/m/Y') : '').' '.($newSchedule->departure_time ? Carbon::parse($newSchedule->departure_time)->format('H:i') : '');
+
+            $notesLog = trim(($booking->notes ? $booking->notes."\n" : '').'[Reschedule '.now()->format('d/m/Y H:i').'] Oleh: '.($user->name ?? 'Staf').". Dari: {$oldInfo} Menjadi: {$newInfo}. Alasan: {$validated['reschedule_reason']}");
+
+            foreach ($booking->passengers as $idx => $passenger) {
+                if (isset($newSeats[$idx])) {
+                    $passenger->seat_id = $newSeats[$idx];
+                    $passenger->boarding_status = 'pending';
+                    $passenger->boarded_at = null;
+                    $passenger->save();
+                }
+            }
+
+            $booking->schedule_id = $newSchedule->id;
+            $booking->rescheduled_at = now();
+            $booking->reschedule_reason = $validated['reschedule_reason'];
+            $booking->notes = $notesLog;
+            if (in_array(strtolower((string) $booking->status), ['checked_in', 'boarded'], true)) {
+                $booking->status = 'paid';
+            }
+            $booking->save();
+
+            if ($booking->ticket) {
+                $booking->ticket->status = 'Confirmed';
+                $booking->ticket->boarded_at = null;
+                $booking->ticket->save();
+            }
+
+            if ($oldSchedule) {
+                $oldSchedule->recalculateAvailableSeats();
+            }
+            $newSchedule->recalculateAvailableSeats();
+        });
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Jadwal booking #{$booking->booking_code} berhasil diubah (reschedule).",
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Jadwal booking #{$booking->booking_code} berhasil diubah ke jadwal baru.");
+    }
+
+    /**
+     * Modul Informasi Perjalanan (Jadwal & Manifest):
+     * Staff loket melihat rangkuman jadwal armada hari ini sesuai dengan yang dilihat oleh user di website.
+     * Dikelompokkan berdasarkan Tujuan Keberangkatan, rincian plat armada, sopir, kapasitas (kosong vs terisi),
+     * serta pop-up Manifest Penumpang per mobil.
      */
     public function informasiPerjalanan(Request $request)
     {
         $user = auth()->user();
         $today = Carbon::today();
-
-        // Ambil jadwal hari ini (atau tanggal dipilih) dari database dengan batas aman
         $selectedDate = $request->query('date', $today->toDateString());
+        $destinationFilter = $request->query('destination');
 
-        $schedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user', 'bookings'])
+        // Sinkronisasi dengan Sisi User:
+        // Query tabel schedules yang sama persis dengan yang dilihat user
+        $schedulesQuery = Schedule::query()
+            ->with([
+                'route.origin',
+                'route.destination',
+                'vehicle.seats',
+                'driver.user',
+                'bookings' => function ($bq) {
+                    $bq->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed'])
+                        ->with(['user', 'passengers.seat']);
+                },
+            ])
             ->whereDate('departure_date', $selectedDate)
-            ->orderBy('departure_time')
-            ->take(24)
-            ->get();
+            ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
+            ->orderBy('departure_time');
 
-        // Fallback jika hari ini belum ada jadwal, ambil jadwal terdekat dengan limit aman
+        $schedules = $schedulesQuery->get();
+
+        // Fallback jika hari ini belum ada jadwal (misal di database uji/demo)
         if ($schedules->isEmpty()) {
-            $schedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user', 'bookings'])
+            $schedules = Schedule::query()
+                ->with([
+                    'route.origin',
+                    'route.destination',
+                    'vehicle.seats',
+                    'driver.user',
+                    'bookings' => function ($bq) {
+                        $bq->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed'])
+                            ->with(['user', 'passengers.seat']);
+                    },
+                ])
                 ->whereDate('departure_date', '>=', $today)
+                ->whereNotIn('status', ['cancelled', 'Cancelled', 'completed', 'Completed'])
                 ->orderBy('departure_date')
                 ->orderBy('departure_time')
-                ->take(16)
+                ->take(30)
                 ->get();
         }
 
-        $trips = $schedules->map(function ($sched, $index) {
+        $trips = $schedules->map(function (Schedule $sched) {
             $origin = $sched->route?->origin?->name ?? 'Pool Asal';
             $dest = $sched->route?->destination?->name ?? 'Pool Tujuan';
+            $destCity = $sched->route?->destination?->city ?? $dest;
+            $destinationGroup = 'Tujuan '.($destCity ?: $dest);
+
             $plateNumber = $sched->vehicle?->plate_number ?? '-';
             $vehicleType = $sched->vehicle?->name ?? ($sched->vehicle?->type ?? 'Armada Belum Ditentukan');
+            $capacity = (int) ($sched->vehicle?->capacity ?? 10);
+
             $driverName = $sched->driver?->user?->name ?? 'Belum ditugaskan';
             $driverPhone = $sched->driver?->phone ?? ($sched->driver?->user?->phone ?? '-');
             $cleanPhone = preg_replace('/[^0-9]/', '', (string) $driverPhone);
@@ -380,6 +778,15 @@ class AdminBiasaDashboardController extends Controller
             $gatheringTime = $depTimeCarbon->copy()->subMinutes(30)->format('H:i').' WIB';
             $boardingGateTime = $depTimeCarbon->copy()->subMinutes(15)->format('H:i').' WIB';
             $estimatedArrivalTime = $depTimeCarbon->copy()->addHours(2)->addMinutes(45)->format('H:i').' WIB';
+
+            // Kapasitas Armada: Hitung relasi ke tabel bookings
+            $activeBookings = $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled', 'Expired', 'expired', 'Failed', 'failed']);
+            $occupiedPassengers = $activeBookings->sum(function ($b) {
+                return $b->passengers->count() ?: $b->total_passenger;
+            });
+            $occupied = min($capacity, (int) $occupiedPassengers);
+            $available = max(0, $capacity - $occupied);
+            $capacityText = "Kapasitas Tersedia: {$available}/{$capacity} Kursi ({$available} kosong, {$occupied} terisi)";
 
             $tripStatus = method_exists($sched, 'tripStatusKey') ? $sched->tripStatusKey() : 'scheduled';
             if (in_array($tripStatus, ['departed', 'arrived', 'completed'], true) || now()->greaterThanOrEqualTo($depTimeCarbon)) {
@@ -399,29 +806,27 @@ class AdminBiasaDashboardController extends Controller
                 $statusDesc = 'Armada dalam tahap pengecekan rutin sebelum masuk area boarding pool.';
             }
 
-            $capacity = $sched->vehicle?->capacity ?? 10;
-            $bookedPassengers = $sched->bookings->whereNotIn('status', ['cancelled', 'batal', 'Cancelled', 'Expired', 'expired', 'Failed', 'failed'])->sum(function ($b) {
-                return $b->passengers->count() ?: $b->total_passenger;
-            });
-            $occupied = min($capacity, (int) $bookedPassengers);
-            if ($sched->available_seats !== null && $sched->available_seats < $capacity) {
-                $occupied = max($occupied, max(0, $capacity - (int) $sched->available_seats));
-            }
-
             return (object) [
                 'id' => $sched->id,
                 'trip_code' => 'TRP-'.str_pad((string) $sched->id, 4, '0', STR_PAD_LEFT),
                 'plate_number' => $plateNumber,
                 'vehicle_type' => $vehicleType,
                 'vehicle_capacity' => $capacity,
+                'occupied_seats' => $occupied,
+                'available_seats' => $available,
+                'capacity_text' => $capacityText,
+                'price' => $sched->effectivePrice(),
+                'formatted_price' => $sched->formattedEffectivePrice(),
                 'driver_name' => $driverName,
                 'driver_phone' => $driverPhone,
                 'driver_wa_url' => $cleanPhone !== '' ? 'https://wa.me/'.$cleanPhone.'?text='.urlencode("Halo Pak {$driverName}, staf loket mengonfirmasi kesiapan armada {$plateNumber} untuk rute {$origin} - {$dest}.") : '#',
                 'driver_tel_url' => $driverPhone !== '-' ? 'tel:'.$driverPhone : '#',
                 'origin_pool' => $origin,
-                'transit_points' => [],
                 'destination_pool' => $dest,
+                'destination_city' => $destCity,
+                'destination_group' => $destinationGroup,
                 'departure_date' => $depTimeCarbon->translatedFormat('l, d M Y'),
+                'departure_date_raw' => $depTimeCarbon->toDateString(),
                 'departure_time' => $departureTime,
                 'gathering_time' => $gatheringTime,
                 'boarding_gate_time' => $boardingGateTime,
@@ -435,19 +840,125 @@ class AdminBiasaDashboardController extends Controller
             ];
         });
 
-        // Hitung statistik status unit
+        // Filter berdasarkan tujuan bila dipilih
+        if ($destinationFilter && $destinationFilter !== 'all') {
+            $filteredTrips = $trips->filter(function ($t) use ($destinationFilter) {
+                return $t->destination_city === $destinationFilter
+                    || $t->destination_pool === $destinationFilter
+                    || $t->destination_group === $destinationFilter;
+            })->values();
+        } else {
+            $filteredTrips = $trips;
+        }
+
+        // Grouping Berdasarkan Tujuan Keberangkatan
+        $groupedByDestination = $filteredTrips->groupBy('destination_group');
+        $availableDestinations = $trips->pluck('destination_group')->unique()->values();
+
+        // Statistik unit
         $stats = [
             'total_trips' => $trips->count(),
             'in_bay' => $trips->where('status_key', 'bay')->count(),
             'in_garage' => $trips->where('status_key', 'garasi')->count(),
             'departed' => $trips->where('status_key', 'berangkat')->count(),
+            'total_seats' => $trips->sum('vehicle_capacity'),
+            'total_occupied' => $trips->sum('occupied_seats'),
+            'total_available' => $trips->sum('available_seats'),
         ];
 
         return view('dashboard.admin-biasa.informasi-perjalanan', compact(
             'user',
             'trips',
+            'filteredTrips',
+            'groupedByDestination',
+            'availableDestinations',
+            'destinationFilter',
+            'selectedDate',
             'stats'
         ));
+    }
+
+    /**
+     * AJAX Pop-up: Manifest Penumpang per Jadwal Keberangkatan Armada
+     */
+    public function scheduleManifest(Schedule $schedule): JsonResponse
+    {
+        $schedule->load([
+            'route.origin',
+            'route.destination',
+            'vehicle.seats',
+            'driver.user',
+            'bookings' => function ($bq) {
+                $bq->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Expired', 'expired', 'Failed', 'failed'])
+                    ->with(['user', 'passengers.seat', 'ticket']);
+            },
+        ]);
+
+        $origin = $schedule->route?->origin?->name ?? 'Pool Asal';
+        $dest = $schedule->route?->destination?->name ?? 'Pool Tujuan';
+        $plateNumber = $schedule->vehicle?->plate_number ?? '-';
+        $driverName = $schedule->driver?->user?->name ?? 'Belum Ditugaskan';
+        $driverPhone = $schedule->driver?->phone ?? ($schedule->driver?->user?->phone ?? '-');
+
+        $passengers = collect();
+        foreach ($schedule->bookings as $b) {
+            $isOffline = $b->isOffline();
+            $isPaid = $b->isPaid();
+
+            foreach ($b->passengers as $p) {
+                $phoneRaw = $p->phone ?: ($b->contact_phone ?: ($b->user?->phone ?? '-'));
+                $cleanPhone = preg_replace('/[^0-9]/', '', (string) $phoneRaw);
+                if (str_starts_with($cleanPhone, '0')) {
+                    $cleanPhone = '62'.substr($cleanPhone, 1);
+                }
+
+                $passengers->push([
+                    'id' => $p->id,
+                    'passenger_name' => $p->name ?: ($b->contact_name ?: 'Penumpang'),
+                    'seat_number' => $p->seat?->seat_number ?? '-',
+                    'phone' => $phoneRaw,
+                    'phone_clean' => $cleanPhone,
+                    'booking_code' => $b->booking_code,
+                    'source_label' => $b->sourceLabel(),
+                    'is_offline' => $isOffline,
+                    'is_paid' => $isPaid,
+                    'payment_status' => $b->statusLabel(),
+                    'is_boarded' => $p->isBoarded(),
+                    'boarded_at' => $p->boarded_at ? $p->boarded_at->format('H:i').' WIB' : null,
+                    'special_request' => $p->special_request ?: '-',
+                ]);
+            }
+        }
+
+        $sortedPassengers = $passengers->sortBy('seat_number')->values();
+        $capacity = (int) ($schedule->vehicle?->capacity ?? 10);
+        $occupiedCount = $sortedPassengers->count();
+        $availableSeats = max(0, $capacity - $occupiedCount);
+        $boardedCount = $sortedPassengers->where('is_boarded', true)->count();
+
+        return response()->json([
+            'success' => true,
+            'schedule' => [
+                'id' => $schedule->id,
+                'trip_code' => 'TRP-'.str_pad((string) $schedule->id, 4, '0', STR_PAD_LEFT),
+                'route_name' => "{$origin} → {$dest}",
+                'origin' => $origin,
+                'destination' => $dest,
+                'departure_date' => $schedule->departure_date ? Carbon::parse($schedule->departure_date)->translatedFormat('l, d F Y') : '-',
+                'departure_time' => $schedule->departure_time ? Carbon::parse($schedule->departure_time)->format('H:i').' WIB' : '-',
+                'plate_number' => $plateNumber,
+                'vehicle_name' => $schedule->vehicle?->name ?? 'Armada',
+                'driver_name' => $driverName,
+                'driver_phone' => $driverPhone,
+                'total_capacity' => $capacity,
+                'occupied_seats' => $occupiedCount,
+                'available_seats' => $availableSeats,
+                'boarded_count' => $boardedCount,
+                'capacity_text' => "Kapasitas Tersedia: {$availableSeats}/{$capacity} Kursi ({$availableSeats} kosong, {$occupiedCount} terisi)",
+            ],
+            'passengers' => $sortedPassengers,
+            'total_passengers' => $sortedPassengers->count(),
+        ]);
     }
 
     /**
@@ -456,6 +967,10 @@ class AdminBiasaDashboardController extends Controller
     public function validasiTiket(Request $request)
     {
         $user = auth()->user();
+        if ($user && in_array($user->role, ['staff', 'admin_biasa']) && ! $user->hasPermission('checkin_ticket')) {
+            abort(403, 'Anda tidak memiliki hak akses untuk melakukan validasi atau check-in tiket penumpang.');
+        }
+
         $today = Carbon::today();
 
         // 1. Ambil seluruh jadwal yang memiliki pemesanan aktif penumpang (prioritas utama validasi tiket)
@@ -537,7 +1052,7 @@ class AdminBiasaDashboardController extends Controller
             foreach ($selectedSchedule->bookings as $booking) {
                 $bookingStatusLower = strtolower((string) $booking->status);
                 $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'], true);
-                $isOffline = in_array(strtolower((string) $booking->source), ['walk_in', 'loket', 'whatsapp', 'wa', 'phone'], true);
+                $isOffline = in_array(strtolower((string) $booking->source), ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone'], true);
 
                 foreach ($booking->passengers as $p) {
                     $bStatus = $p->boarding_status ?: ($booking->ticket?->boarded_at ? 'boarded' : 'belum_hadir');
@@ -590,6 +1105,12 @@ class AdminBiasaDashboardController extends Controller
             ->take(6)
             ->get();
 
+        // 6. Data Penumpang Hari Ini yang Statusnya is_boarded = true (Sudah Scan Tiket)
+        $boardedPassengersToday = $this->getBoardedPassengersToday();
+        $groupedBoardedByDestination = $boardedPassengersToday->groupBy('destination');
+        $availableDestinations = $boardedPassengersToday->pluck('destination')->unique()->values();
+        $totalBoardedTodayCount = $boardedPassengersToday->count();
+
         return view('dashboard.admin-biasa.validasi-tiket', compact(
             'user',
             'scheduleList',
@@ -601,7 +1122,11 @@ class AdminBiasaDashboardController extends Controller
             'noShowCount',
             'boardedPercent',
             'formattedDepartureTime',
-            'recentBoardedTickets'
+            'recentBoardedTickets',
+            'boardedPassengersToday',
+            'groupedBoardedByDestination',
+            'availableDestinations',
+            'totalBoardedTodayCount'
         ));
     }
 
@@ -610,6 +1135,14 @@ class AdminBiasaDashboardController extends Controller
      */
     public function ajaxValidateTicket(Request $request): JsonResponse
     {
+        $user = auth()->user();
+        if ($user && in_array($user->role, ['staff', 'admin_biasa']) && ! $user->hasPermission('checkin_ticket')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki hak akses untuk memvalidasi tiket penumpang.',
+            ], 403);
+        }
+
         $request->validate([
             'code' => 'required|string|max:100',
             'schedule_id' => 'nullable',
@@ -797,9 +1330,19 @@ class AdminBiasaDashboardController extends Controller
                 $p->save();
             }
 
+            $booking->status = 'checked_in';
+            $booking->save();
+
             $primaryPassenger = $booking->passengers->first();
             $seatList = $booking->passengers->map(fn ($p) => $p->seat?->seat_number ?? '1A')->filter()->join(', ');
-            $routeName = ($booking->schedule?->route?->origin?->name ?? 'Bandung').' → '.($booking->schedule?->route?->destination?->name ?? 'Jakarta');
+            $destName = $booking->schedule?->route?->destination?->name ?? 'Tujuan';
+            $originName = $booking->schedule?->route?->origin?->name ?? 'Asal';
+            $routeName = "{$originName} → {$destName}";
+            $vehicleName = $booking->schedule?->vehicle?->name ?? 'Armada';
+            $plateNumber = $booking->schedule?->vehicle?->plate_number ?? '-';
+            $departureTime = $booking->schedule?->departure_time ? Carbon::parse($booking->schedule->departure_time)->format('H:i').' WIB' : '-';
+
+            $updatedBoardedList = $this->getBoardedPassengersToday();
 
             return response()->json([
                 'success' => true,
@@ -809,13 +1352,31 @@ class AdminBiasaDashboardController extends Controller
                 'booking_code' => $booking->booking_code,
                 'ticket_number' => $ticket?->ticket_number ?? 'TKT-'.$booking->booking_code,
                 'source_label' => $booking->sourceLabel(),
+                'destination' => $destName,
+                'origin' => $originName,
                 'route_name' => $routeName,
+                'vehicle_name' => $vehicleName,
+                'plate_number' => $plateNumber,
+                'departure_time' => $departureTime,
+                'is_boarded' => true,
                 'boarded_at' => Carbon::now()->format('H:i:s').' WIB',
                 'message' => 'Tiket valid! Status penumpang berhasil diubah menjadi Boarded.',
+                'boarded_passengers' => $updatedBoardedList,
+                'grouped_by_destination' => $updatedBoardedList->groupBy('destination'),
+                'total_boarded_today' => $updatedBoardedList->count(),
             ]);
         }
 
-        // 2. Simulasi Fallback Cepat (untuk Demo / Quick Chips / Offline Test)
+        // 2. Simulasi Fallback Cepat (Hanya aktif di non-production untuk Demo / Quick Chips / Offline Test)
+        if (app()->environment('production')) {
+            return response()->json([
+                'success' => false,
+                'reason' => 'not_found',
+                'title' => 'Tiket Tidak Ditemukan',
+                'message' => 'Kode booking atau QR e-ticket "'.$rawCode.'" tidak ditemukan dalam sistem database perjalanan.',
+            ], 404);
+        }
+
         if ($cleanCode === 'TKV-ALREADY-SCAN' || $cleanCode === 'TKV-7821-JKT') {
             return response()->json([
                 'success' => false,
@@ -920,12 +1481,27 @@ class AdminBiasaDashboardController extends Controller
      */
     public function ajaxUpdatePassengerBoardingStatus(Request $request, $passengerId): JsonResponse
     {
+        $user = auth()->user();
+        if ($user && in_array($user->role, ['staff', 'admin_biasa']) && ! $user->hasPermission('checkin_ticket')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki hak akses untuk memperbarui status boarding penumpang.',
+            ], 403);
+        }
+
         $request->validate([
             'status' => 'required|in:belum_hadir,boarded,no_show',
         ]);
 
         $status = $request->input('status');
         $passenger = BookingPassenger::with('booking.ticket', 'booking.refund')->find($passengerId);
+
+        if (! $passenger) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data penumpang tidak ditemukan dalam sistem.',
+            ], 404);
+        }
 
         if ($passenger && $status === 'boarded' && $passenger->booking) {
             $bookingStatusLower = strtolower((string) $passenger->booking->status);
@@ -980,6 +1556,96 @@ class AdminBiasaDashboardController extends Controller
     }
 
     /**
+     * AJAX: Mengambil Daftar Penumpang Hari Ini yang Berstatus is_boarded = true
+     */
+    public function ajaxBoardedPassengers(Request $request): JsonResponse
+    {
+        $date = $request->query('date', Carbon::today()->toDateString());
+        $passengers = $this->getBoardedPassengersToday($date);
+
+        $destinationFilter = $request->query('destination');
+        if ($destinationFilter && $destinationFilter !== 'all') {
+            $passengers = $passengers->filter(fn ($p) => $p->destination === $destinationFilter || $p->destination_city === $destinationFilter)->values();
+        }
+
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'total' => $passengers->count(),
+            'passengers' => $passengers,
+            'grouped_by_destination' => $passengers->groupBy('destination'),
+        ]);
+    }
+
+    /**
+     * Helper: Query HANYA memanggil data penumpang hari ini yang statusnya is_boarded = true (sudah scan tiket).
+     */
+    public function getBoardedPassengersToday(?string $date = null): Collection
+    {
+        $targetDate = $date ? Carbon::parse($date)->toDateString() : Carbon::today()->toDateString();
+
+        return BookingPassenger::query()
+            ->with([
+                'seat',
+                'booking.ticket',
+                'booking.schedule.route.origin',
+                'booking.schedule.route.destination',
+                'booking.schedule.vehicle',
+                'booking.schedule.driver.user',
+            ])
+            ->where(function ($q) {
+                $q->where('boarding_status', 'boarded')
+                    ->orWhereNotNull('boarded_at')
+                    ->orWhereHas('booking', function ($bq) {
+                        $bq->whereRaw("LOWER(status) IN ('checked_in', 'boarded')")
+                            ->orWhereHas('ticket', function ($tq) {
+                                $tq->whereRaw("LOWER(status) = 'boarded'")
+                                    ->orWhereNotNull('boarded_at');
+                            });
+                    });
+            })
+            ->whereHas('booking.schedule', function ($sq) use ($targetDate) {
+                $sq->whereDate('departure_date', $targetDate);
+            })
+            ->get()
+            ->map(function (BookingPassenger $p) {
+                $booking = $p->booking;
+                $schedule = $booking?->schedule;
+                $originName = $schedule?->route?->origin?->name ?? 'Pool Asal';
+                $destName = $schedule?->route?->destination?->name ?? 'Pool Tujuan';
+                $destCity = $schedule?->route?->destination?->city ?? $destName;
+                $plateNumber = $schedule?->vehicle?->plate_number ?? '-';
+                $vehicleName = $schedule?->vehicle?->name ?? 'Armada';
+                $driverName = $schedule?->driver?->user?->name ?? 'Driver';
+                $departureTime = $schedule?->departure_time ? Carbon::parse($schedule->departure_time)->format('H:i').' WIB' : '-';
+                $boardedTime = $p->boarded_at ? $p->boarded_at->format('H:i').' WIB' : ($booking?->ticket?->boarded_at ? $booking->ticket->boarded_at->format('H:i').' WIB' : 'Hari ini');
+
+                return (object) [
+                    'id' => $p->id,
+                    'booking_id' => $booking?->id,
+                    'passenger_name' => $p->name ?: ($booking?->contact_name ?: 'Penumpang'),
+                    'phone' => $p->phone ?: ($booking?->contact_phone ?: '-'),
+                    'seat_number' => $p->seat?->seat_number ?? '-',
+                    'booking_code' => $booking?->booking_code ?? '-',
+                    'ticket_number' => $booking?->ticket?->ticket_number ?? 'TKT-'.strtoupper(substr($booking?->booking_code ?? '', -4)),
+                    'destination' => $destName,
+                    'destination_city' => $destCity,
+                    'origin' => $originName,
+                    'route_name' => "{$originName} → {$destName}",
+                    'vehicle_name' => $vehicleName,
+                    'plate_number' => $plateNumber,
+                    'driver_name' => $driverName,
+                    'departure_time' => $departureTime,
+                    'boarded_at' => $boardedTime,
+                    'is_boarded' => true,
+                    'source_label' => $booking ? $booking->sourceLabel() : 'Online',
+                ];
+            })
+            ->sortByDesc(fn ($item) => $item->boarded_at)
+            ->values();
+    }
+
+    /**
      * Halaman Pemesanan Loket (Offline: Walk-In, WhatsApp, Telepon) untuk Staf Pool.
      */
     public function offlineBooking(Request $request)
@@ -992,7 +1658,7 @@ class AdminBiasaDashboardController extends Controller
             ->whereNotIn('status', ['Cancelled', 'cancelled', 'Completed', 'completed'])
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(40)
+            ->take(60)
             ->get()
             ->filter(fn (Schedule $sched) => $sched->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(15)))
             ->values();
@@ -1002,10 +1668,21 @@ class AdminBiasaDashboardController extends Controller
             ? $schedules->firstWhere('id', (int) $selectedScheduleId) ?? Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user'])->find($selectedScheduleId)
             : null;
 
+        // Ambil daftar rute unik untuk filter dropdown kasir
+        $availableRoutes = $schedules->map(fn ($s) => $s->route)->filter()->unique('id')->values();
+
+        // Ambil daftar tanggal unik keberangkatan
+        $availableDates = $schedules->pluck('departure_date')
+            ->map(fn ($d) => Carbon::parse($d)->toDateString())
+            ->unique()
+            ->values();
+
         return view('dashboard.admin-biasa.offline-booking', compact(
             'user',
             'schedules',
-            'selectedSchedule'
+            'selectedSchedule',
+            'availableRoutes',
+            'availableDates'
         ));
     }
 
@@ -1068,17 +1745,32 @@ class AdminBiasaDashboardController extends Controller
             ];
         })->values();
 
+        $capacity = (int) $schedule->vehicle->capacity;
+        $occupiedCount = $occupiedPassengers->count();
+        $availableCount = max(0, $capacity - $occupiedCount);
+
+        // Sinkronisasi kolom cache available_seats pada jadwal
+        $schedule->available_seats = $availableCount;
+        $schedule->save();
+
         return response()->json([
             'success' => true,
             'schedule' => [
                 'id' => $schedule->id,
                 'route_name' => ($schedule->route?->origin?->name ?? 'Asal').' → '.($schedule->route?->destination?->name ?? 'Tujuan'),
+                'origin' => $schedule->route?->origin?->name ?? 'Asal',
+                'destination' => $schedule->route?->destination?->name ?? 'Tujuan',
                 'departure_date' => $schedule->departure_date ? Carbon::parse($schedule->departure_date)->translatedFormat('d M Y') : '-',
+                'departure_date_raw' => $schedule->departure_date ? Carbon::parse($schedule->departure_date)->toDateString() : null,
                 'departure_time' => $schedule->departure_time ? Carbon::parse($schedule->departure_time)->format('H:i').' WIB' : '-',
+                'departure_time_raw' => $schedule->departure_time,
                 'vehicle_name' => $schedule->vehicle->name,
                 'plate_number' => $schedule->vehicle->plate_number,
-                'capacity' => (int) $schedule->vehicle->capacity,
+                'capacity' => $capacity,
+                'occupied_seats' => $occupiedCount,
+                'available_seats' => $availableCount,
                 'price' => (float) $schedule->effectivePrice(),
+                'price_formatted' => 'Rp '.number_format((float) $schedule->effectivePrice(), 0, ',', '.'),
             ],
             'seats' => $seatPayload,
         ]);
@@ -1096,7 +1788,7 @@ class AdminBiasaDashboardController extends Controller
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
             'customer_email' => ['nullable', 'email', 'max:100'],
-            'source' => ['required', Rule::in(['walk_in', 'whatsapp', 'phone'])],
+            'source' => ['nullable', Rule::in(['offline', 'walk_in', 'whatsapp', 'phone', 'loket'])],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer Bank', 'QRIS'])],
             'payment_status' => ['required', Rule::in(['paid', 'pending'])],
             'auto_board' => ['nullable', 'boolean'],
@@ -1172,6 +1864,9 @@ class AdminBiasaDashboardController extends Controller
             $bookingStatus = $shouldBoard ? 'checked_in' : ($isPaid ? 'Paid' : 'Pending');
             $bookingCode = 'TRV-LKT-'.strtoupper(Str::random(6));
 
+            $rawSource = $validated['source'] ?? 'offline';
+            $finalSource = in_array($rawSource, ['walk_in', 'loket', 'offline'], true) ? 'offline' : $rawSource;
+
             $booking = Booking::create([
                 'booking_code' => $bookingCode,
                 'user_id' => $customerUser?->id,
@@ -1184,7 +1879,7 @@ class AdminBiasaDashboardController extends Controller
                 'discount' => 0,
                 'total_price' => $totalAmount,
                 'status' => $bookingStatus,
-                'source' => $validated['source'],
+                'source' => $finalSource,
                 'notes' => $validated['notes'] ?? null,
                 'expired_at' => $isPaid ? null : Carbon::now()->addMinutes(30),
             ]);
@@ -1214,7 +1909,7 @@ class AdminBiasaDashboardController extends Controller
                 'paid_at' => $isPaid ? Carbon::now() : null,
                 'verified_by' => $isPaid ? auth()->id() : null,
                 'verified_at' => $isPaid ? Carbon::now() : null,
-                'notes' => 'Transaksi loket pool oleh staf '.(auth()->user()->name ?? 'Staf').' ('.$booking->sourceLabel().')',
+                'notes' => 'Transaksi loket kasir pool oleh staf '.(auth()->user()->name ?? 'Staf').' ('.$booking->sourceLabel().')',
             ]);
 
             if ($isPaid) {
@@ -1234,10 +1929,38 @@ class AdminBiasaDashboardController extends Controller
                 ? "Pemesanan loket {$bookingCode} berhasil dicatat LUNAS ({$validated['payment_method']}). ".($shouldBoard ? 'Penumpang langsung berstatus Boarded.' : 'Tiket siap divalidasi saat naik.')
                 : "Pemesanan sementara {$bookingCode} tersimpan (Pending). Kursi ditahan 30 menit hingga pelunasan di loket.";
 
+            $printUrl = route('dashboard.admin-biasa.booking.print-ticket', [
+                'booking' => $booking->id,
+                'auto_print' => 1,
+            ]);
+
             return redirect()
                 ->route('dashboard.admin-biasa.booking', ['schedule_id' => $schedule->id])
-                ->with('success', $msg);
+                ->with('success', $msg)
+                ->with('print_booking_id', $booking->id)
+                ->with('print_booking_code', $bookingCode)
+                ->with('print_url', $printUrl);
         });
+    }
+
+    /**
+     * Mencetak struk / tiket fisik untuk pemesanan loket / customer offline.
+     */
+    public function printTicket(Booking $booking)
+    {
+        $user = auth()->user();
+
+        $booking->load([
+            'schedule.route.origin',
+            'schedule.route.destination',
+            'schedule.vehicle',
+            'schedule.driver.user',
+            'passengers.seat',
+            'payment',
+            'ticket',
+        ]);
+
+        return view('dashboard.admin-biasa.cetak-tiket', compact('booking', 'user'));
     }
 
     /**

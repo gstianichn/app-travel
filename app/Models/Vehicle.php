@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Vehicle extends Model
 {
@@ -368,6 +369,32 @@ class Vehicle extends Model
                 $row++;
             }
         }
+    }
+
+    /**
+     * Mendapatkan URL foto kendaraan (atau default fleet image yang sesuai).
+     */
+    public function photoUrl(): string
+    {
+        if ($this->photo && Storage::disk('public')->exists($this->photo)) {
+            return asset('storage/'.$this->photo);
+        }
+
+        if ($this->photo && file_exists(public_path($this->photo))) {
+            return asset($this->photo);
+        }
+
+        $type = strtolower((string) ($this->type.' '.$this->name));
+
+        if (str_contains($type, 'sprinter') || str_contains($type, 'mercedes')) {
+            return asset('images/fleet/mercedes-sprinter.svg');
+        }
+
+        if (str_contains($type, 'commuter')) {
+            return asset('images/fleet/hiace-commuter.svg');
+        }
+
+        return asset('images/fleet/hiace-premio.svg');
     }
 
     /**
