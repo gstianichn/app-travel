@@ -18,8 +18,9 @@ return new class extends Migration
                 ->unique();
 
             $table->foreignId('user_id')
+                ->nullable()
                 ->constrained('users')
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
             $table->foreignId('schedule_id')
                 ->constrained('schedules')

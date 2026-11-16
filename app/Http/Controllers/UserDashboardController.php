@@ -283,15 +283,16 @@ class UserDashboardController extends Controller
 
         $schedule->load(['route.origin', 'route.destination', 'vehicle', 'driver.user']);
 
-        // Tolak jadwal yang dibatalkan, selesai, atau sudah penuh (memicu Warning Sound + Toast merah lewat flash error).
-        $isClosedSchedule = in_array(strtolower((string) $schedule->status), ['cancelled', 'completed'], true);
+        // Tolak jadwal yang dibatalkan, selesai, sudah berangkat, atau sudah penuh (memicu flash error).
+        $isPast = $schedule->departureCarbon()->isPast();
+        $isClosedSchedule = in_array(strtolower((string) $schedule->status), ['cancelled', 'completed', 'departed', 'batal'], true) || $isPast;
         if ($isClosedSchedule || (int) $schedule->available_seats <= 0) {
             return redirect()->route('dashboard.user.search', array_filter([
                 'origin' => $schedule->route?->origin_id,
                 'destination' => $schedule->route?->destination_id,
                 'departure_date' => $schedule->departure_date?->toDateString(),
             ]))->with('error', $isClosedSchedule
-                ? 'Jadwal ini sudah tidak dapat dipesan. Silakan pilih jadwal lain.'
+                ? ($isPast ? 'Jadwal perjalanan ini sudah berangkat. Silakan pilih jadwal lain.' : 'Jadwal ini sudah tidak dapat dipesan. Silakan pilih jadwal lain.')
                 : 'Jadwal ini sudah penuh. Silakan pilih jam atau tanggal lain.');
         }
 
@@ -346,6 +347,17 @@ class UserDashboardController extends Controller
                 ->with('vehicle')
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            // Tolak jika jadwal dibatalkan, sudah selesai, sudah berangkat, atau lewat waktu
+            $isPast = $schedule->departureCarbon()->isPast();
+            $isClosedSchedule = in_array(strtolower((string) $schedule->status), ['cancelled', 'completed', 'departed', 'batal'], true) || $isPast;
+            if ($isClosedSchedule || (int) $schedule->available_seats < $passengersCount) {
+                return back()->with('error', $isPast
+                    ? 'Jadwal perjalanan ini sudah berangkat. Silakan pilih jadwal lain.'
+                    : ($isClosedSchedule
+                        ? 'Jadwal perjalanan ini sudah tidak dapat dipesan.'
+                        : 'Sisa kursi pada jadwal ini tidak mencukupi jumlah penumpang.'));
+            }
 
             // 2. Pessimistic lock pada baris kursi yang dipilih agar request konkuren tertahan
             $seats = Seat::whereIn('id', $seatIds)
@@ -1508,7 +1520,23 @@ class UserDashboardController extends Controller
             abort(403);
         }
 
-        if ($booking->status !== 'completed') {
+        $statusLower = strtolower((string) $booking->status);
+
+        if (in_array($statusLower, ['cancelled', 'batal', 'expired', 'failed'], true)) {
+            return back()->with('error', 'Ulasan tidak dapat dikirim untuk pesanan yang telah dibatalkan atau kedaluwarsa.');
+        }
+
+        if ($statusLower !== 'completed') {
+            return back()->with('error', 'Ulasan hanya dapat dikirim setelah perjalanan Anda selesai.');
+        }
+
+        if (! $booking->isPaid() && ! in_array(strtolower((string) $booking->payment?->status), ['paid', 'success', 'settlement'], true)) {
+            return back()->with('error', 'Ulasan tidak dapat dikirim untuk pesanan yang belum dibayar.');
+        }
+
+        $sched = $booking->schedule;
+        $isTripCompleted = $sched && $sched->trip_status === 'completed';
+        if (! $isTripCompleted && $sched && $sched->departureCarbon()->isFuture()) {
             return back()->with('error', 'Ulasan hanya dapat dikirim setelah perjalanan Anda selesai.');
         }
 
@@ -2068,12 +2096,12 @@ class UserDashboardController extends Controller
     }
 
     /**
-     * Helper: Inisialisasi data bawaan untuk demo/testing (Saved Passengers & Vouchers).
-     * Hanya dijalankan pada automated test suite agar simulasi lokal pengguna tetap bersih.
+     * Helper: Inisialisasi data bawaan untuk akun pengguna (Saved Passengers & Vouchers).
+     * Dijalankan secara konsisten baik pada aplikasi asli maupun saat testing.
      */
     protected function ensureUserPresets(User $user): void
     {
-        // 1. Saved Passengers (Always ensure user's own primary preset exists)
+        // 1. Saved Passengers (Pastikan preset data penumpang utama pengguna selalu ada)
         if ($user->savedPassengers()->count() === 0) {
             $user->savedPassengers()->create([
                 'name' => $user->name,
@@ -2081,26 +2109,6 @@ class UserDashboardController extends Controller
                 'phone' => $user->phone ?? '081234567890',
                 'is_primary' => true,
             ]);
-
-            if (app()->runningUnitTests() || config('app.debug')) {
-                $user->savedPassengers()->create([
-                    'name' => 'Budi Santoso',
-                    'nik' => '3273021405880002',
-                    'phone' => '081234567891',
-                    'is_primary' => false,
-                ]);
-
-                $user->savedPassengers()->create([
-                    'name' => 'Sari Dewi',
-                    'nik' => '3273045209930003',
-                    'phone' => '081298765432',
-                    'is_primary' => false,
-                ]);
-            }
-        }
-
-        if (! app()->runningUnitTests()) {
-            return;
         }
 
         // 2. User Vouchers

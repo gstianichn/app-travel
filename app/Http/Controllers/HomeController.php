@@ -56,7 +56,6 @@ class HomeController extends Controller
     {
         return Vehicle::query()
             ->where('capacity', '>=', 10)
-            ->whereIn('type', ['Toyota HiAce Premio', 'Toyota HiAce Commuter'])
             ->get()
             ->groupBy(fn (Vehicle $vehicle) => $vehicle->type ?: 'Minibus')
             ->map(function (Collection $vehicles, string $type) {

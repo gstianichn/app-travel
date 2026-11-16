@@ -40,7 +40,7 @@ class LoginController extends Controller
 
             'role' => [
                 'required',
-                'in:admin_utama,staff,cs,driver',
+                'in:admin_utama,admin,staff,cs,customer_service,driver',
             ],
 
             'access_code' => [
@@ -110,11 +110,23 @@ class LoginController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Validasi role
+        | Validasi role (mendukung alias admin/admin_utama dan cs/customer_service)
         |--------------------------------------------------------------------------
         */
 
-        if ($user->role !== $credentials['role']) {
+        $normalizedUserRole = match ($user->role) {
+            'admin' => 'admin_utama',
+            'customer_service' => 'cs',
+            default => $user->role,
+        };
+
+        $normalizedInputRole = match ($credentials['role']) {
+            'admin' => 'admin_utama',
+            'customer_service' => 'cs',
+            default => $credentials['role'],
+        };
+
+        if ($normalizedUserRole !== $normalizedInputRole) {
             return back()
                 ->withInput($request->only('email', 'role'))
                 ->withErrors([
@@ -168,7 +180,7 @@ class LoginController extends Controller
 
         return match ($user->role) {
 
-            'admin_utama' => redirect()->route(
+            'admin_utama', 'admin' => redirect()->route(
                 'dashboard.admin.index'
             ),
 
@@ -176,7 +188,7 @@ class LoginController extends Controller
                 'dashboard.admin-biasa.index'
             ),
 
-            'cs' => redirect()->route(
+            'cs', 'customer_service' => redirect()->route(
                 'dashboard.customer-service.index'
             ),
 

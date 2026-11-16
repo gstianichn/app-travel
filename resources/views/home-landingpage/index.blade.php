@@ -283,7 +283,7 @@
                 </div>
                 <p>Rata-rata dari {{ $reviewCount }} ulasan penumpang setelah perjalanan selesai.</p>
                 @auth
-                    <a href="{{ route('user.history') }}" class="lp-btn lp-btn--ghost" style="margin-top: 12px; display: inline-flex;">Tulis Ulasan Perjalanan</a>
+                    <a href="{{ route('dashboard.user.user-tiket', ['action' => 'review']) }}" class="lp-btn lp-btn--ghost" style="margin-top: 12px; display: inline-flex;">Tulis Ulasan Perjalanan</a>
                 @else
                     <a href="{{ route('user.login') }}" class="lp-btn lp-btn--ghost" style="margin-top: 12px; display: inline-flex;">Masuk untuk Beri Ulasan</a>
                 @endauth

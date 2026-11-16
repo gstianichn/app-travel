@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -17,8 +18,10 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin Utama',
                 'phone' => '081234567890',
-                'password' => 'password',
-                'role' => 'admin',
+                'password' => Hash::make('password'),
+                'role' => 'admin_utama',
+                'access_code' => Hash::make('ADMIN123'),
+                'status' => 'active',
             ],
         );
 
@@ -27,8 +30,11 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin Biasa',
                 'phone' => '081234567891',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'role' => 'staff',
+                'branch' => 'Pool Dipatiukur Bandung',
+                'access_code' => Hash::make('STF-2026-TRAVEL'),
+                'status' => 'active',
             ],
         );
 
@@ -37,8 +43,10 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Driver Travel',
                 'phone' => '081234567892',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'role' => 'driver',
+                'access_code' => Hash::make('DRV-2026-TRAVEL'),
+                'status' => 'active',
             ],
         );
 
@@ -47,8 +55,10 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Customer Service',
                 'phone' => '081234567893',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'role' => 'cs',
+                'access_code' => Hash::make('CS-2026-TRAVEL'),
+                'status' => 'active',
             ],
         );
 
@@ -57,8 +67,9 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Andi Pratama',
                 'phone' => '081234567894',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'role' => 'user',
+                'status' => 'active',
             ],
         );
     }

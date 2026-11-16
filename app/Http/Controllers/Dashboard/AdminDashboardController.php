@@ -712,6 +712,15 @@ class AdminDashboardController extends Controller
                 );
         }
 
+        if ($user->bookings()->exists() || $user->refunds()->exists()) {
+            return redirect()
+                ->back()
+                ->with(
+                    'error',
+                    'Akun pelanggan tidak dapat dihapus karena memiliki riwayat pemesanan atau transaksi keuangan. Anda dapat menonaktifkan status akun pelanggan.'
+                );
+        }
+
         $user->delete();
 
         return redirect()

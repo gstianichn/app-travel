@@ -890,6 +890,11 @@ Route::middleware(['auth', 'role:user'])
             'tiket',
         ])->name('dashboard.user.user-tiket');
 
+        Route::get('/user/history', [
+            UserDashboardController::class,
+            'tiket',
+        ])->name('user.history');
+
         Route::get('/notifikasi/dashboard', [
             UserDashboardController::class,
             'notifikasi',
