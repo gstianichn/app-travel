@@ -672,13 +672,40 @@
 
             <!-- FLASH ALERTS -->
             @if (session('success'))
-                <div class="ds-alert ds-alert--success" role="status" style="margin-bottom: 20px;">
+                <div class="ds-alert ds-alert--success" role="status" style="margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
                     <span>{{ session('success') }}</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        @if (session('print_url'))
+                            <a href="{{ session('print_url') }}" target="_blank" class="btn-filter-apply" style="text-decoration: none; height: 36px; font-size: 12.5px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 6 2 18 2 18 9" />
+                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                    <rect width="12" height="8" x="6" y="14" />
+                                </svg>
+                                <span>Cetak Struk / Tiket Fisik ({{ session('print_booking_code') }})</span>
+                            </a>
+                        @endif
+                        @if ($scheduleId)
+                            <a href="{{ route('dashboard.admin-biasa.booking') }}" class="btn-filter-reset" style="height: 36px; font-size: 12.5px; background: #ffffff;">
+                                Tampilkan Semua Booking
+                            </a>
+                        @endif
+                    </div>
                 </div>
             @endif
             @if (session('error'))
                 <div class="ds-alert ds-alert--error" role="alert" style="margin-bottom: 20px;">
                     <span>{{ session('error') }}</span>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="ds-alert ds-alert--error" role="alert" style="margin-bottom: 20px; display: grid; gap: 4px;">
+                    <strong>Mohon periksa kembali isian formulir pesanan manual:</strong>
+                    <ul style="padding-left: 18px; margin: 0;">
+                        @foreach ($errors->all() as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
 
@@ -787,10 +814,15 @@
                         </a>
                     </div>
 
-                    <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="btn-filter-apply" style="text-decoration: none;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>Buat Pesanan Baru (Kasir)</span>
-                    </a>
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                        <button type="button" onclick="openManualBookingModal()" class="btn-filter-apply">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span>Buat Pesanan Baru (Kasir)</span>
+                        </button>
+                        <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="btn-filter-reset" style="text-decoration: none;" title="Buka Halaman Kasir Loket Penuh">
+                            <span>Halaman Kasir Penuh</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Form Search & Dropdown Filter -->
@@ -1062,6 +1094,24 @@
                                                 </svg>
                                             </a>
 
+                                            <!-- 2.5 KONFIRMASI LUNAS CEPAT (UNTUK PESANAN PENDING) -->
+                                            @if(!$isPaid && !$isCancelled)
+                                                <form method="POST" action="{{ route('dashboard.admin-biasa.booking.settle', $b->id) }}" style="display: inline-flex; margin: 0;">
+                                                    @csrf
+                                                    <input type="hidden" name="payment_method" value="Cash">
+                                                    <button
+                                                        type="submit"
+                                                        class="btn-tbl-action print"
+                                                        style="background: #ecfdf5; color: #059669; border-color: #6ee7b7;"
+                                                        title="Konfirmasi Lunas (Tunai / Loket)"
+                                                    >
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                            <polyline points="20 6 9 17 4 12" />
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            @endif
+
                                             <!-- 3. UBAH JADWAL (RESCHEDULE) -->
                                             @if(!$isCancelled && $sched && $sched->departureCarbon()->isFuture())
                                                 <button
@@ -1289,6 +1339,212 @@
 </div>
 
 <!-- =====================================================================================
+     MODAL 4: BUAT PESANAN MANUAL / BARU (KASIR LOKET) LANGSUNG DARI SEMUA BOOKING
+====================================================================================== -->
+<div class="modal-overlay" id="manualBookingModalOverlay" onclick="if (event.target === this) closeModal('manualBookingModalOverlay')">
+    <div class="modal-dialog" style="max-width: 960px;">
+        <form method="POST" action="{{ route('dashboard.admin-biasa.offline-booking.store') }}" id="manualBookingModalForm">
+            @csrf
+            <div class="modal-header">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    <span>Buat Pesanan Manual / Baru (Kasir Loket)</span>
+                </h3>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="btn-filter-reset" style="height: 32px; font-size: 12px; text-decoration: none;">
+                        Buka Layar Kasir Penuh &nearr;
+                    </a>
+                    <button type="button" class="modal-close" onclick="closeModal('manualBookingModalOverlay')">&times;</button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                @php
+                    $modalSchedules = $activeSchedules ?? collect();
+                    $modalRoutes = $availableRoutes ?? collect();
+                    $modalDefaultDate = $defaultBookingDate ?? now()->toDateString();
+                @endphp
+
+                @if ($modalSchedules->isEmpty())
+                    <div style="padding: 28px; text-align: center; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                        <strong style="display: block; font-size: 15px; color: var(--text-dark); margin-bottom: 6px;">Belum ada jadwal keberangkatan aktif.</strong>
+                        <p style="font-size: 13px; color: var(--text-light); margin-bottom: 14px;">Jadwal keberangkatan harus tersedia terlebih dahulu sebelum loket dapat melayani pemesanan tiket manual.</p>
+                        <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="btn-filter-apply" style="text-decoration: none;">Buka Halaman Buat Pesanan Baru</a>
+                    </div>
+                @else
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; align-items: start;">
+                        <!-- KOLOM KIRI: PILIH JADWAL & DENAH KURSI REAL-TIME -->
+                        <div style="background: #f8faf9; border: 1.5px solid #d5e5de; border-radius: 14px; padding: 16px; display: grid; gap: 14px;">
+                            <div style="font-weight: 800; font-size: 14px; color: #0C392F; border-bottom: 1px solid #d5e5de; padding-bottom: 8px;">
+                                1. Pilih Jadwal &amp; Cek Ketersediaan Kursi
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label for="mb_filter_date" style="display: block; font-size: 12px; font-weight: 700; color: #0C392F; margin-bottom: 4px;">Tanggal Berangkat</label>
+                                    <input type="date" id="mb_filter_date" class="filter-select" value="{{ $modalDefaultDate }}" onchange="mbFilterSchedules(true)">
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px;">
+                                        <button type="button" onclick="mbSetDate('{{ now()->toDateString() }}')" style="font-size: 11px; padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700;">Hari Ini</button>
+                                        <button type="button" onclick="mbSetDate('{{ now()->addDay()->toDateString() }}')" style="font-size: 11px; padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700;">Besok</button>
+                                        <button type="button" onclick="mbSetDate('')" style="font-size: 11px; padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; cursor: pointer; font-weight: 700;">Semua</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="mb_filter_route" style="display: block; font-size: 12px; font-weight: 700; color: #0C392F; margin-bottom: 4px;">Rute / Tujuan</label>
+                                    <select id="mb_filter_route" class="filter-select" onchange="mbFilterSchedules(true)">
+                                        <option value="">Semua Rute / Tujuan</option>
+                                        @foreach ($modalRoutes as $r)
+                                            <option value="{{ $r->id }}">{{ $r->origin?->name ?? 'Asal' }} &rarr; {{ $r->destination?->name ?? 'Tujuan' }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="mb_schedule_id" style="display: block; font-size: 12px; font-weight: 700; color: #0C392F; margin-bottom: 4px;">Pilih Jam Keberangkatan &amp; Armada <span style="color: #dc2626;">*</span></label>
+                                <select name="schedule_id" id="mb_schedule_id" class="filter-select" onchange="mbLoadScheduleSeats(this.value)" required>
+                                    @foreach ($modalSchedules as $sched)
+                                        @php
+                                            $sDateVal = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->toDateString() : '';
+                                            $sDateText = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->translatedFormat('d M Y') : '-';
+                                            $sTimeText = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i').' WIB' : '-';
+                                            $sRouteText = ($sched->route?->origin?->name ?? 'Asal').' → '.($sched->route?->destination?->name ?? 'Tujuan');
+                                            $sPriceText = 'Rp '.number_format((float) $sched->effectivePrice(), 0, ',', '.');
+                                            $sAvail = (int) ($sched->available_seats ?? 10);
+                                        @endphp
+                                        <option
+                                            value="{{ $sched->id }}"
+                                            data-date="{{ $sDateVal }}"
+                                            data-route-id="{{ $sched->route_id }}"
+                                        >
+                                            {{ $sTimeText }} ({{ $sDateText }}) — {{ $sRouteText }} • {{ $sched->vehicle?->name ?? 'Armada' }} (Sisa {{ $sAvail }} kursi) • {{ $sPriceText }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <small id="mbNoScheduleText" style="display: none; color: #dc2626; font-size: 11.5px; margin-top: 4px;">
+                                    Tidak ada jadwal untuk filter ini.
+                                </small>
+                            </div>
+
+                            <!-- Bar Ketersediaan Kursi -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #eefbf5; border: 1px solid #8fd3b4; border-radius: 8px; font-size: 12px; color: #0C5A3E;">
+                                <span>Sisa Kursi: <strong id="mbLiveAvailableCount">Memuat...</strong></span>
+                                <span style="font-weight: 700; font-size: 11px;">Sinkron Online &amp; Loket</span>
+                            </div>
+
+                            <!-- Denah Kursi Interaktif -->
+                            <div style="background: #ffffff; border: 2px solid #cbd5e1; border-radius: 20px 20px 12px 12px; padding: 14px; max-width: 320px; width: 100%; margin: 0 auto;">
+                                <div style="padding: 6px; border-radius: 10px 10px 4px 4px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 800; text-align: center; text-transform: uppercase; margin-bottom: 10px;">
+                                    Kaca Depan Armada (Pilih Kursi Kosong)
+                                </div>
+                                <div id="mbSeatGridBody" style="display: grid; gap: 8px;">
+                                    <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">Memuat denah kursi...</div>
+                                </div>
+                            </div>
+
+                            <!-- Ringkasan Kursi & Tarif -->
+                            <div style="padding: 12px 14px; border-radius: 10px; background: #eef6f1; border: 1px solid #c6e2d2; display: grid; gap: 4px; font-size: 13px;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Kursi dipilih:</span>
+                                    <strong id="mbSummarySeatsText">Belum ada kursi dipilih</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 14.5px; color: #0C392F;">
+                                    <span>Total Tarif:</span>
+                                    <strong id="mbSummaryTotalText">Rp 0</strong>
+                                </div>
+                            </div>
+
+                            <div id="mbSelectedSeatInputs"></div>
+                        </div>
+
+                        <!-- KOLOM KANAN: INPUT DATA PELANGGAN & PEMBAYARAN -->
+                        <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 16px; display: grid; gap: 12px;">
+                            <div style="font-weight: 800; font-size: 14px; color: #0C392F; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                                2. Data Pelanggan &amp; Pembayaran Kasir
+                            </div>
+
+                            <div>
+                                <label for="mb_source" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Saluran Pemesanan Loket</label>
+                                <select name="source" id="mb_source" class="filter-select" required>
+                                    <option value="offline">Datang Langsung di Loket / Go-Show (Offline)</option>
+                                    <option value="whatsapp">Pesan via WhatsApp Pool / CS</option>
+                                    <option value="phone">Pesan via Telepon Pool</option>
+                                </select>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label for="mb_customer_name" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Nama Pelanggan <span style="color: #dc2626;">*</span></label>
+                                    <input type="text" id="mb_customer_name" name="customer_name" class="filter-select" placeholder="Contoh: Budi Santoso" required maxlength="100" oninput="mbSyncPassengerNames()">
+                                </div>
+                                <div>
+                                    <label for="mb_customer_phone" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Nomor HP / WA <span style="color: #dc2626;">*</span></label>
+                                    <input type="tel" id="mb_customer_phone" name="customer_phone" class="filter-select" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); mbSyncPassengerPhones();">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="mb_customer_email" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Email Pelanggan (Opsional)</label>
+                                <input type="email" id="mb_customer_email" name="customer_email" class="filter-select" placeholder="email@contoh.com" maxlength="100">
+                            </div>
+
+                            <div id="mbPassengersDetailSection" style="display: none; gap: 8px;">
+                                <span style="font-size: 12px; font-weight: 700; color: #0C392F;">Rincian Penumpang per Kursi Terpilih:</span>
+                                <div id="mbPassengerCardsList" style="display: grid; gap: 8px; max-height: 160px; overflow-y: auto;"></div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label for="mb_payment_method" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Metode Pembayaran</label>
+                                    <select name="payment_method" id="mb_payment_method" class="filter-select" required>
+                                        <option value="Cash">Tunai (Cash di Loket)</option>
+                                        <option value="Transfer Bank">Transfer Langsung</option>
+                                        <option value="QRIS">QRIS Loket Pool</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="mb_payment_status" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Status Pembayaran</label>
+                                    <select name="payment_status" id="mb_payment_status" class="filter-select" onchange="mbTogglePaymentStatus()" required>
+                                        <option value="paid">Konfirmasi Lunas (Terbitkan Tiket)</option>
+                                        <option value="pending">Bayar Nanti (Pending 30 Menit)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <label id="mbAutoBoardWrap" style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: #f8faf9; border: 1px solid #d5e5de; cursor: pointer; font-size: 12.5px; font-weight: 700; color: #0C392F;">
+                                <input type="checkbox" name="auto_board" value="1">
+                                <span>Langsung tandai <em>Boarded</em> (penumpang langsung naik armada)</span>
+                            </label>
+
+                            <div>
+                                <label for="mb_notes" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Catatan / Titik Turun (Opsional)</label>
+                                <input type="text" id="mb_notes" name="notes" class="filter-select" placeholder="Contoh: Turun dekat pintu tol / bawa koper" maxlength="500">
+                            </div>
+
+                            <div id="mbSeatHint" style="padding: 8px 12px; border-radius: 8px; background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; font-size: 12px; font-weight: 700;">
+                                Klik minimal 1 nomor kursi kosong pada denah di sebelah kiri untuk mengaktifkan tombol Konfirmasi Lunas.
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-filter-reset" onclick="closeModal('manualBookingModalOverlay')">Batal</button>
+                @if ($modalSchedules->isNotEmpty())
+                    <button type="submit" id="mbSubmitBtn" class="btn-filter-apply" disabled>
+                        <span>Konfirmasi Lunas &amp; Buat Tiket</span>
+                    </button>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =====================================================================================
      SCRIPTS
 ====================================================================================== -->
 <script>
@@ -1303,6 +1559,7 @@
             closeModal('detailModalOverlay');
             closeModal('rescheduleModalOverlay');
             closeModal('cancelModalOverlay');
+            closeModal('manualBookingModalOverlay');
         }
     });
 
@@ -1588,6 +1845,345 @@
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
+    }
+
+    // 4. MODAL BUAT PESANAN MANUAL / BARU (KASIR LOKET)
+    const mbSeatsUrlTemplate = @json(route('dashboard.admin-biasa.offline-booking.seats', ['schedule' => '__SCHED_ID__']));
+    const mbSchedulesUrl = @json(route('dashboard.admin-biasa.offline-booking'));
+    let mbSelectedSeats = new Map();
+    let mbUnitPrice = 0;
+    let mbInitialized = false;
+
+    function openManualBookingModal() {
+        const overlay = document.getElementById('manualBookingModalOverlay');
+        if (!overlay) return;
+        overlay.classList.add('active');
+
+        if (!mbInitialized) {
+            mbInitialized = true;
+            mbFilterSchedules(false);
+        }
+    }
+
+    function mbSetDate(dateStr) {
+        const dateEl = document.getElementById('mb_filter_date');
+        if (dateEl) {
+            dateEl.value = dateStr;
+            mbFilterSchedules(true);
+        }
+    }
+
+    async function mbFilterSchedules(fetchIfEmpty = false) {
+        const dateVal = document.getElementById('mb_filter_date')?.value || '';
+        const routeVal = document.getElementById('mb_filter_route')?.value || '';
+        const selectEl = document.getElementById('mb_schedule_id');
+        if (!selectEl) return;
+
+        const options = Array.from(selectEl.options);
+        let firstVisibleValue = null;
+        let visibleCount = 0;
+
+        options.forEach(opt => {
+            const oDate = opt.dataset.date || '';
+            const oRoute = opt.dataset.routeId || '';
+            const matchDate = !dateVal || oDate === dateVal;
+            const matchRoute = !routeVal || oRoute === routeVal;
+
+            if (matchDate && matchRoute) {
+                opt.hidden = false;
+                opt.disabled = false;
+                visibleCount++;
+                if (!firstVisibleValue) firstVisibleValue = opt.value;
+            } else {
+                opt.hidden = true;
+                opt.disabled = true;
+            }
+        });
+
+        if (visibleCount === 0 && !fetchIfEmpty && dateVal && options.length > 0) {
+            const dateEl = document.getElementById('mb_filter_date');
+            if (dateEl) {
+                dateEl.value = '';
+                return mbFilterSchedules(false);
+            }
+        }
+
+        if (visibleCount === 0 && fetchIfEmpty && dateVal) {
+            try {
+                const params = new URLSearchParams();
+                if (dateVal) params.set('date', dateVal);
+                if (routeVal) params.set('route_id', routeVal);
+
+                const res = await fetch(`${mbSchedulesUrl}?${params.toString()}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success && Array.isArray(data.schedules) && data.schedules.length > 0) {
+                    data.schedules.forEach(sched => {
+                        if (!selectEl.querySelector(`option[value="${sched.id}"]`)) {
+                            const opt = document.createElement('option');
+                            opt.value = sched.id;
+                            opt.dataset.date = sched.date_val;
+                            opt.dataset.routeId = String(sched.route_id);
+                            opt.textContent = `${sched.time_text} (${sched.date_text}) — ${sched.route_text} • ${sched.vehicle_name} (Sisa ${sched.available_seats} kursi) • ${sched.price_text}`;
+                            selectEl.appendChild(opt);
+                        }
+                    });
+                    return mbFilterSchedules(false);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        const noText = document.getElementById('mbNoScheduleText');
+        if (noText) {
+            noText.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        if (firstVisibleValue) {
+            selectEl.value = firstVisibleValue;
+            mbLoadScheduleSeats(firstVisibleValue);
+        }
+    }
+
+    async function mbLoadScheduleSeats(scheduleId) {
+        if (!scheduleId) return;
+
+        mbSelectedSeats.clear();
+        mbRenderSelectionState();
+
+        const container = document.getElementById('mbSeatGridBody');
+        if (!container) return;
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">Memuat denah kursi...</div>';
+
+        try {
+            const url = mbSeatsUrlTemplate.replace('__SCHED_ID__', scheduleId);
+            const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                container.innerHTML = `<div style="color: #dc2626; text-align: center; font-size: 12px;">${escapeHtml(data.message || 'Gagal memuat kursi.')}</div>`;
+                return;
+            }
+
+            mbUnitPrice = Number(data.schedule.price || 0);
+            const availEl = document.getElementById('mbLiveAvailableCount');
+            if (availEl) {
+                availEl.textContent = `${data.schedule.available_seats} dari ${data.schedule.capacity} Kursi (${data.schedule.occupied_seats} Terisi Online & Loket)`;
+            }
+
+            mbRenderSeatGrid(data.seats);
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div style="color: #dc2626; text-align: center; font-size: 12px;">Gagal memuat data kursi armada.</div>';
+        }
+    }
+
+    function mbRenderSeatGrid(seats) {
+        const container = document.getElementById('mbSeatGridBody');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const rows = {};
+        seats.forEach(s => {
+            const r = String(s.seat_row || '1');
+            if (!rows[r]) rows[r] = [];
+            rows[r].push(s);
+        });
+
+        Object.keys(rows).sort((a, b) => Number(a) - Number(b)).forEach(rowNum => {
+            const rowDiv = document.createElement('div');
+            rowDiv.style.display = 'grid';
+            rowDiv.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            rowDiv.style.gap = '6px';
+            rowDiv.style.alignItems = 'center';
+
+            const rowSeats = rows[rowNum].sort((a, b) => a.seat_column - b.seat_column);
+
+            for (let col = 1; col <= 4; col++) {
+                if (rowNum === '1' && col === 4) {
+                    const driverEl = document.createElement('div');
+                    driverEl.style.minHeight = '44px';
+                    driverEl.style.borderRadius = '8px';
+                    driverEl.style.background = '#22403A';
+                    driverEl.style.color = '#ffffff';
+                    driverEl.style.fontSize = '10px';
+                    driverEl.style.fontWeight = '800';
+                    driverEl.style.display = 'grid';
+                    driverEl.style.placeItems = 'center';
+                    driverEl.textContent = 'SOPIR';
+                    rowDiv.appendChild(driverEl);
+                    continue;
+                }
+
+                const seat = rowSeats.find(item => Number(item.seat_column) === col);
+                if (!seat) {
+                    rowDiv.appendChild(document.createElement('div'));
+                    continue;
+                }
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.dataset.seatId = String(seat.id);
+                btn.dataset.seatNum = seat.seat_number;
+                btn.style.minHeight = '44px';
+                btn.style.borderRadius = '8px';
+                btn.style.fontWeight = '800';
+                btn.style.fontSize = '12.5px';
+                btn.style.display = 'flex';
+                btn.style.flexDirection = 'column';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'center';
+
+                if (seat.status === 'available') {
+                    btn.style.background = '#eefbf5';
+                    btn.style.border = '2px solid #8fd3b4';
+                    btn.style.color = '#0C5A3E';
+                    btn.style.cursor = 'pointer';
+                    btn.innerHTML = `<span>${escapeHtml(seat.seat_number)}</span><small style="font-size: 9px; font-weight: 600;">Kosong</small>`;
+                    btn.onclick = () => mbToggleSeat(btn);
+                } else {
+                    btn.disabled = true;
+                    btn.style.background = '#f1f5f9';
+                    btn.style.border = '2px solid #cbd5e1';
+                    btn.style.color = '#64748b';
+                    btn.style.cursor = 'not-allowed';
+                    const tag = seat.status === 'paid' ? 'Terisi' : 'Ditahan';
+                    btn.title = `${seat.passenger_name || 'Terisi'} (${seat.channel || 'Booking'})`;
+                    btn.innerHTML = `<span>${escapeHtml(seat.seat_number)}</span><small style="font-size: 9px; font-weight: 600;">${tag}</small>`;
+                }
+
+                rowDiv.appendChild(btn);
+            }
+
+            container.appendChild(rowDiv);
+        });
+    }
+
+    function mbToggleSeat(btn) {
+        const id = btn.dataset.seatId;
+        const num = btn.dataset.seatNum;
+
+        if (mbSelectedSeats.has(id)) {
+            mbSelectedSeats.delete(id);
+            btn.style.background = '#eefbf5';
+            btn.style.borderColor = '#8fd3b4';
+            btn.style.color = '#0C5A3E';
+        } else {
+            mbSelectedSeats.set(id, num);
+            btn.style.background = '#0C7950';
+            btn.style.borderColor = '#0C392F';
+            btn.style.color = '#ffffff';
+        }
+
+        mbRenderSelectionState();
+    }
+
+    function mbRenderSelectionState() {
+        const summarySeats = document.getElementById('mbSummarySeatsText');
+        const summaryTotal = document.getElementById('mbSummaryTotalText');
+        const inputsWrap = document.getElementById('mbSelectedSeatInputs');
+        const cardsSection = document.getElementById('mbPassengersDetailSection');
+        const cardsList = document.getElementById('mbPassengerCardsList');
+        const submitBtn = document.getElementById('mbSubmitBtn');
+        const hintEl = document.getElementById('mbSeatHint');
+
+        if (!summarySeats || !inputsWrap) return;
+
+        inputsWrap.innerHTML = '';
+        if (cardsList) cardsList.innerHTML = '';
+
+        if (mbSelectedSeats.size === 0) {
+            summarySeats.textContent = 'Belum ada kursi dipilih';
+            summaryTotal.textContent = 'Rp 0';
+            if (cardsSection) cardsSection.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = true;
+            if (hintEl) hintEl.style.display = 'block';
+            return;
+        }
+
+        const seatNumbers = Array.from(mbSelectedSeats.values());
+        const totalTariff = mbSelectedSeats.size * mbUnitPrice;
+
+        summarySeats.textContent = seatNumbers.join(', ') + ` (${mbSelectedSeats.size} kursi)`;
+        summaryTotal.textContent = 'Rp ' + totalTariff.toLocaleString('id-ID');
+        if (cardsSection) cardsSection.style.display = 'grid';
+        if (submitBtn) submitBtn.disabled = false;
+        if (hintEl) hintEl.style.display = 'none';
+
+        const defaultName = document.getElementById('mb_customer_name')?.value.trim() || '';
+        const defaultPhone = document.getElementById('mb_customer_phone')?.value.trim() || '';
+
+        let idx = 0;
+        mbSelectedSeats.forEach((seatNum, seatId) => {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'selected_seats[]';
+            hidden.value = seatId;
+            inputsWrap.appendChild(hidden);
+
+            if (cardsList) {
+                const card = document.createElement('div');
+                card.style.padding = '10px';
+                card.style.borderRadius = '8px';
+                card.style.border = '1px solid #cbd5e1';
+                card.style.background = '#f8fafc';
+                card.style.display = 'grid';
+                card.style.gap = '6px';
+                const suggestedName = idx === 0 ? defaultName : (defaultName ? `${defaultName} (${idx + 1})` : '');
+                card.innerHTML = `
+                    <strong style="font-size: 11.5px; color: #0C392F;">Penumpang Kursi ${escapeHtml(seatNum)}</strong>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                        <input type="text" name="passengers[${seatId}][name]" class="filter-select" style="height: 36px; font-size: 12.5px;" data-auto-synced="true" oninput="this.dataset.autoSynced = 'false'" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${escapeHtml(seatNum)}" required maxlength="100">
+                        <input type="tel" name="passengers[${seatId}][phone]" class="filter-select" style="height: 36px; font-size: 12.5px;" data-auto-synced="true" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.dataset.autoSynced = 'false'">
+                    </div>
+                `;
+                cardsList.appendChild(card);
+            }
+            idx++;
+        });
+    }
+
+    function mbSyncPassengerNames() {
+        const defaultName = document.getElementById('mb_customer_name')?.value.trim() || '';
+        const inputs = document.querySelectorAll('#mbPassengerCardsList input[name$="[name]"]');
+        inputs.forEach((input, idx) => {
+            if (input.dataset.autoSynced === 'true' || !input.value.trim()) {
+                input.value = idx === 0 ? defaultName : (defaultName ? `${defaultName} (${idx + 1})` : '');
+                input.dataset.autoSynced = 'true';
+            }
+        });
+    }
+
+    function mbSyncPassengerPhones() {
+        const defaultPhone = document.getElementById('mb_customer_phone')?.value.trim() || '';
+        const inputs = document.querySelectorAll('#mbPassengerCardsList input[name$="[phone]"]');
+        inputs.forEach(input => {
+            if (input.dataset.autoSynced === 'true' || !input.value.trim()) {
+                input.value = defaultPhone;
+                input.dataset.autoSynced = 'true';
+            }
+        });
+    }
+
+    function mbTogglePaymentStatus() {
+        const status = document.getElementById('mb_payment_status')?.value;
+        const wrap = document.getElementById('mbAutoBoardWrap');
+        const submitBtn = document.getElementById('mbSubmitBtn');
+        if (submitBtn) {
+            submitBtn.innerHTML = status === 'paid'
+                ? '<span>Konfirmasi Lunas &amp; Buat Tiket</span>'
+                : '<span>Simpan Pesanan Pending (30 Menit)</span>';
+        }
+        if (wrap) {
+            wrap.style.display = status === 'paid' ? 'flex' : 'none';
+            if (status !== 'paid') {
+                const cb = wrap.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = false;
+            }
+        }
     }
 </script>
 

@@ -7,6 +7,7 @@ use App\Models\BookingPassenger;
 use App\Models\Location;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\Route as TravelRoute;
 use App\Models\Schedule;
 use App\Models\Seat;
 use App\Models\Ticket;
@@ -27,6 +28,8 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
+        Schedule::ensureUpcomingSchedulesExist(2);
+
         // Ambil jadwal hari ini atau terdekat (prioritaskan jadwal yang memiliki pemesanan aktif)
         $schedulesWithBookings = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver', 'bookings.passengers.seat'])
             ->whereHas('bookings', function ($q) {
@@ -42,7 +45,6 @@ class AdminBiasaDashboardController extends Controller
             ->whereNotIn('id', $schedulesWithBookings->pluck('id'))
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(60)
             ->get();
 
         // Only departures still ahead, or that left less than 30 minutes ago.
@@ -301,6 +303,8 @@ class AdminBiasaDashboardController extends Controller
         ];
 
         // Daftar jadwal untuk filter & kompatibilitas view
+        Schedule::ensureUpcomingSchedulesExist(2);
+
         $scheduleList = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
             ->whereDate('departure_date', '>=', Carbon::today()->subDays(3))
             ->orderBy('departure_date', 'desc')
@@ -313,6 +317,22 @@ class AdminBiasaDashboardController extends Controller
             : $scheduleList->first();
 
         $destinations = Location::where('is_active', true)->orderBy('name')->get();
+
+        // Data jadwal aktif untuk Modal Buat Pesanan Manual (Kasir) langsung dari halaman Semua Booking
+        $activeSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user'])
+            ->whereDate('departure_date', '>=', Carbon::today())
+            ->whereNotIn('status', ['Cancelled', 'cancelled', 'Completed', 'completed'])
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->get()
+            ->filter(fn (Schedule $sched) => $sched->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(15)))
+            ->take(300)
+            ->values();
+
+        $availableRoutes = $activeSchedules->map(fn ($s) => $s->route)->filter()->unique('id')->values();
+        $defaultBookingDate = $activeSchedules->first()?->departure_date
+            ? Carbon::parse($activeSchedules->first()->departure_date)->toDateString()
+            : Carbon::today()->toDateString();
 
         // Kompatibilitas variabel legacy untuk test
         $sortedPassengers = collect();
@@ -334,6 +354,9 @@ class AdminBiasaDashboardController extends Controller
             'scheduleList',
             'selectedSchedule',
             'destinations',
+            'activeSchedules',
+            'availableRoutes',
+            'defaultBookingDate',
             'sortedPassengers',
             'totalBooked',
             'boardedCount',
@@ -715,6 +738,8 @@ class AdminBiasaDashboardController extends Controller
         $today = Carbon::today();
         $selectedDate = $request->query('date', $today->toDateString());
         $destinationFilter = $request->query('destination');
+
+        Schedule::ensureUpcomingSchedulesExist(2);
 
         // Sinkronisasi dengan Sisi User:
         // Query tabel schedules yang sama persis dengan yang dilihat user
@@ -1653,15 +1678,62 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
 
+        Schedule::ensureUpcomingSchedulesExist(2);
+
+        if ($request->filled('date')) {
+            try {
+                $requestedDate = Carbon::parse($request->query('date'))->toDateString();
+                if ($requestedDate >= $today->toDateString()) {
+                    if ($request->filled('route_id')) {
+                        $reqRoute = TravelRoute::find($request->query('route_id'));
+                        if ($reqRoute) {
+                            Schedule::ensureSchedulesExistForDateAndRoute($reqRoute, $requestedDate);
+                        }
+                    } else {
+                        $activeRoutesList = TravelRoute::where('is_active', true)->orderBy('id')->get();
+                        foreach ($activeRoutesList as $reqRoute) {
+                            Schedule::ensureSchedulesExistForDateAndRoute($reqRoute, $requestedDate);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Abaikan format tanggal yang tidak valid
+            }
+        }
+
         $schedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user'])
             ->whereDate('departure_date', '>=', $today)
+            ->when($request->filled('date'), function ($q) use ($request) {
+                $q->whereDate('departure_date', $request->query('date'));
+            })
+            ->when($request->filled('route_id'), function ($q) use ($request) {
+                $q->where('route_id', $request->query('route_id'));
+            })
             ->whereNotIn('status', ['Cancelled', 'cancelled', 'Completed', 'completed'])
             ->orderBy('departure_date')
             ->orderBy('departure_time')
-            ->take(60)
             ->get()
             ->filter(fn (Schedule $sched) => $sched->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(15)))
+            ->take(300)
             ->values();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'schedules' => $schedules->map(fn (Schedule $sched) => [
+                    'id' => $sched->id,
+                    'route_id' => $sched->route_id,
+                    'route_text' => ($sched->route?->origin?->name ?? 'Asal').' → '.($sched->route?->destination?->name ?? 'Tujuan'),
+                    'date_val' => $sched->departure_date ? Carbon::parse($sched->departure_date)->toDateString() : '',
+                    'date_text' => $sched->departure_date ? Carbon::parse($sched->departure_date)->translatedFormat('d M Y') : '-',
+                    'time_text' => $sched->departure_time ? Carbon::parse($sched->departure_time)->format('H:i').' WIB' : '-',
+                    'vehicle_name' => $sched->vehicle?->name ?? 'Minibus',
+                    'plate_number' => $sched->vehicle?->plate_number ?? '-',
+                    'price_text' => 'Rp '.number_format((float) $sched->effectivePrice(), 0, ',', '.'),
+                    'available_seats' => (int) ($sched->available_seats ?? 10),
+                ])->values(),
+            ]);
+        }
 
         $selectedScheduleId = $request->query('schedule_id') ?? $schedules->first()?->id;
         $selectedSchedule = $selectedScheduleId
@@ -1677,12 +1749,18 @@ class AdminBiasaDashboardController extends Controller
             ->unique()
             ->values();
 
+        $defaultFilterDate = $request->query('date')
+            ?? ($selectedSchedule?->departure_date ? Carbon::parse($selectedSchedule->departure_date)->toDateString() : null)
+            ?? $availableDates->first()
+            ?? $today->toDateString();
+
         return view('dashboard.admin-biasa.offline-booking', compact(
             'user',
             'schedules',
             'selectedSchedule',
             'availableRoutes',
-            'availableDates'
+            'availableDates',
+            'defaultFilterDate'
         ));
     }
 

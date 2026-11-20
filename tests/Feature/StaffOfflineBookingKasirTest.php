@@ -222,3 +222,45 @@ test('3. alur pemesanan offline loket: input data, pilih kursi, konfirmasi lunas
         ->assertSee('Siti Nurhaliza')
         ->assertSee('Lunas');
 });
+
+test('4. halaman buat pesanan baru dan semua booking tetap menampilkan jadwal aktif meskipun jadwal lama sudah lewat atau ada lebih dari 60 jadwal pagi yang telah berangkat', function () {
+    // Hapus jadwal besok dari beforeEach, buat 65 jadwal hari ini yang jamnya sudah lewat (00:01 WIB)
+    Schedule::query()->delete();
+
+    for ($i = 0; $i < 65; $i++) {
+        Schedule::create([
+            'route_id' => $this->route->id,
+            'vehicle_id' => $this->vehicle->id,
+            'departure_date' => Carbon::today()->toDateString(),
+            'departure_time' => '00:01:00',
+            'price' => 125000,
+            'status' => 'Scheduled',
+            'available_seats' => 10,
+        ]);
+    }
+
+    // 1. Ketika tidak ada jadwal mendatang yang tersisa namun armada & rute aktif ada, sistem otomatis menyediakan jadwal aktif mendatang
+    $offlinePage = $this->actingAs($this->staff)->get(route('dashboard.admin-biasa.offline-booking'));
+    $offlinePage->assertOk()
+        ->assertDontSee('Belum ada jadwal keberangkatan aktif.')
+        ->assertSee('Pilih Jadwal &amp; Denah Kursi', false);
+
+    // 2. Halaman Semua Booking juga memuat modal Buat Pesanan Manual / Baru dengan jadwal aktif yang siap dipilih
+    $allBookingsPage = $this->actingAs($this->staff)->get(route('dashboard.admin-biasa.booking'));
+    $allBookingsPage->assertOk()
+        ->assertSee('Buat Pesanan Manual / Baru (Kasir Loket)')
+        ->assertSee('manualBookingModalOverlay', false)
+        ->assertDontSee('Belum ada jadwal keberangkatan aktif.');
+
+    // 3. Filter AJAX untuk tanggal mendatang yang dipilih staf otomatis memastikan dan mengembalikan jadwal
+    $futureDate = Carbon::today()->addDays(5)->toDateString();
+    $ajaxRes = $this->actingAs($this->staff)->getJson(route('dashboard.admin-biasa.offline-booking', [
+        'date' => $futureDate,
+        'route_id' => $this->route->id,
+    ]));
+
+    $ajaxRes->assertOk()
+        ->assertJson(['success' => true]);
+
+    expect(count($ajaxRes->json('schedules')))->toBeGreaterThan(0);
+});

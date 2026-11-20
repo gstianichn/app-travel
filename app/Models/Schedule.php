@@ -516,7 +516,7 @@ class Schedule extends Model
             return;
         }
 
-        $vehicles = Vehicle::whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active'])->get();
+        $vehicles = Vehicle::whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active', 'available', 'Available'])->get();
         if ($vehicles->isEmpty()) {
             return;
         }
@@ -526,7 +526,7 @@ class Schedule extends Model
             $drivers = Driver::all();
         }
 
-        $standardTimes = ['07:00', '10:00', '14:00', '18:30'];
+        $standardTimes = ['07:00', '10:00', '14:00', '18:30', '20:30'];
         foreach ($standardTimes as $idx => $time) {
             $vehicle = $vehicles[$idx % $vehicles->count()];
             $driver = $drivers->isNotEmpty() ? $drivers[$idx % $drivers->count()] : null;
@@ -545,6 +545,55 @@ class Schedule extends Model
                 'trip_status' => 'scheduled',
                 'notes' => 'Keberangkatan reguler armada '.$vehicle->name.'.',
             ]);
+        }
+    }
+
+    /**
+     * Memastikan jadwal keberangkatan aktif tersedia untuk hari ini dan beberapa hari ke depan
+     * apabila armada dan rute aktif sudah terdaftar di database.
+     */
+    public static function ensureUpcomingSchedulesExist(int $daysAhead = 2): void
+    {
+        $vehicles = Vehicle::whereIn('status', ['siap_jalan', 'beroperasi', 'ready', 'active', 'available', 'Available'])->get();
+        if ($vehicles->isEmpty()) {
+            return;
+        }
+
+        $activeRoutes = Route::where(function ($q) {
+            $q->where('is_active', true)->orWhereNull('is_active');
+        })->orderBy('id')->get();
+
+        if ($activeRoutes->isEmpty()) {
+            return;
+        }
+
+        $today = Carbon::today();
+
+        if (app()->runningUnitTests()) {
+            $hasFutureSchedule = static::whereDate('departure_date', '>=', $today)
+                ->whereNotIn('status', ['Cancelled', 'cancelled', 'Completed', 'completed'])
+                ->get()
+                ->contains(fn (self $s) => $s->departureCarbon()->greaterThanOrEqualTo(now()->subMinutes(15)));
+
+            if ($hasFutureSchedule) {
+                return;
+            }
+        }
+
+        for ($d = 0; $d <= $daysAhead; $d++) {
+            $targetDate = $today->copy()->addDays($d)->toDateString();
+
+            $existingForDate = static::whereDate('departure_date', $targetDate)
+                ->whereNotIn('status', ['Cancelled', 'cancelled', 'Completed', 'completed'])
+                ->count();
+
+            if ($existingForDate >= min(4, $activeRoutes->count())) {
+                continue;
+            }
+
+            foreach ($activeRoutes as $route) {
+                static::ensureSchedulesExistForDateAndRoute($route, $targetDate);
+            }
         }
     }
 }

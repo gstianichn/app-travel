@@ -16,7 +16,7 @@
                     <p style="margin: 0; font-size: 0.8rem;">{{ $topbarSubtitle }}</p>
                 @endif
             @else
-                <p style="margin: 0;"><strong>TravelKu</strong>, staf pool</p>
+                <p style="margin: 0;"><strong>TravelKu</strong>, Staff Operasional</p>
             @endif
         </div>
     </div>
@@ -27,7 +27,7 @@
         </div>
         <div class="profile-info">
             <strong>{{ auth()->user()->name ?? 'Staff Operasional' }}</strong>
-            <span>{{ ($shiftInfo['pool_name'] ?? auth()->user()->branch) ?: 'Staf pool' }}</span>
+            <span>{{ ($shiftInfo['pool_name'] ?? auth()->user()->branch) ?: 'Staff Operasional' }}</span>
         </div>
     </div>
 </header>

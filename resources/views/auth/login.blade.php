@@ -7,7 +7,7 @@
 @php
     $staffRoles = [
         'admin_utama' => ['Admin utama', 'Rute, armada, staf, dan laporan'],
-        'staff' => ['Staf pool', 'Validasi tiket dan boarding'],
+        'staff' => ['Staff Operasional', 'Validasi tiket dan boarding'],
         'cs' => ['Customer service', 'Chat dan bantuan penumpang'],
         'driver' => ['Driver', 'Jadwal, penumpang, status jalan'],
     ];
@@ -15,7 +15,7 @@
 
 @section('content')
     <h1 class="au-title">Masuk sebagai petugas</h1>
-    <p class="au-lead">Untuk admin, staf pool, customer service, dan driver. Kode akses dibuat oleh admin utama.</p>
+    <p class="au-lead">Untuk admin, staff operasional, customer service, dan driver. Kode akses dibuat oleh admin utama.</p>
 
     @if (session('status'))
         <p class="au-alert au-alert--ok" role="status">{{ session('status') }}</p>

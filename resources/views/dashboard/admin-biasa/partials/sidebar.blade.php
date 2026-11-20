@@ -1,4 +1,4 @@
-{{-- Sidebar staf pool, dipakai semua halaman admin-biasa --}}
+{{-- Sidebar staff operasional, dipakai semua halaman admin-biasa --}}
 @php
     $staffMenu = [
         ['route' => 'dashboard.admin-biasa.index', 'label' => 'Beranda', 'icon' => 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z'],
@@ -11,19 +11,19 @@
 
 <div class="staff-sidebar-backdrop" id="staffSidebarBackdrop" onclick="closeStaffSidebar()" aria-hidden="true"></div>
 
-<aside class="sidebar" id="staffSidebar" aria-label="Sidebar staf pool">
+<aside class="sidebar" id="staffSidebar" aria-label="Sidebar staff operasional">
     <div class="logo-area">
         <div class="logo-icon" aria-hidden="true" style="padding: 5px; box-sizing: border-box;">
             <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
         <div class="logo-text">
             <h2>TravelKu</h2>
-            <span>Staf pool</span>
+            <span>Staff Operasional</span>
         </div>
         <button type="button" class="staff-sidebar-close" onclick="closeStaffSidebar()" aria-label="Tutup menu">&times;</button>
     </div>
 
-    <nav class="menu" id="staff-menu" aria-label="Menu staf pool">
+    <nav class="menu" id="staff-menu" aria-label="Menu staff operasional">
         <div class="menu-title">Menu Utama</div>
         @foreach ($staffMenu as $item)
             @php $isActive = request()->routeIs($item['route']); @endphp

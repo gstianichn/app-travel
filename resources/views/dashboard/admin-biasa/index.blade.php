@@ -159,7 +159,7 @@
                         @endif
                     </section>
 
-                    <nav aria-label="Menu staf pool">
+                    <nav aria-label="Menu staff operasional">
                         <ul class="ds-nav">
                             <li><a href="{{ route('dashboard.admin-biasa.offline-booking') }}"><b>Pemesanan loket (Offline)</b><span>Input pesanan walk-in, WA, atau telepon</span></a></li>
                             <li><a href="{{ route('dashboard.admin-biasa.validasi-tiket') }}"><b>Validasi tiket</b><span>Pindai QR atau cari kode booking</span></a></li>

@@ -402,17 +402,18 @@
                                         <div class="loket-row-2">
                                             <div class="loket-form-group">
                                                 <label class="loket-label" for="filter_date">Pilih Tanggal</label>
-                                                <input type="date" id="filter_date" class="loket-input" value="{{ old('filter_date', now()->toDateString()) }}" onchange="filterSchedules()">
-                                                <div style="display: flex; gap: 6px; margin-top: 4px;">
+                                                <input type="date" id="filter_date" class="loket-input" value="{{ old('filter_date', $defaultFilterDate ?? now()->toDateString()) }}" onchange="filterSchedules(true)">
+                                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
                                                     <button type="button" class="calc-chip-btn" onclick="setFilterDate('{{ now()->toDateString() }}')">Hari Ini</button>
                                                     <button type="button" class="calc-chip-btn" onclick="setFilterDate('{{ now()->addDay()->toDateString() }}')">Besok</button>
+                                                    <button type="button" class="calc-chip-btn" onclick="setFilterDate('{{ now()->addDays(2)->toDateString() }}')">Lusa</button>
                                                     <button type="button" class="calc-chip-btn" onclick="setFilterDate('')">Semua Tanggal</button>
                                                 </div>
                                             </div>
 
                                             <div class="loket-form-group">
                                                 <label class="loket-label" for="filter_route">Pilih Rute / Tujuan</label>
-                                                <select id="filter_route" class="loket-select" onchange="filterSchedules()">
+                                                <select id="filter_route" class="loket-select" onchange="filterSchedules(true)">
                                                     <option value="">Semua Rute / Tujuan</option>
                                                     @foreach ($availableRoutes as $r)
                                                         <option value="{{ $r->id }}">
@@ -541,7 +542,7 @@
 
                                         <div class="loket-form-group">
                                             <label class="loket-label" for="customer_phone">Nomor HP / WA (Angka saja) <span style="color: #A3341F;">*</span></label>
-                                            <input type="tel" id="customer_phone" name="customer_phone" class="loket-input" value="{{ old('customer_phone') }}" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                            <input type="tel" id="customer_phone" name="customer_phone" class="loket-input" value="{{ old('customer_phone') }}" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncDefaultPassengerPhones();">
                                         </div>
                                     </div>
 
@@ -607,6 +608,10 @@
                                         <textarea id="notes" name="notes" class="loket-textarea" placeholder="Contoh: Turun di dekat SPBU / bawa 1 koper" maxlength="500">{{ old('notes') }}</textarea>
                                     </div>
 
+                                    <div id="seatSelectionRequiredHint" style="padding: 10px 14px; border-radius: 10px; background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E; font-size: 0.85rem; font-weight: 700;">
+                                        Pilih minimal 1 nomor kursi kosong pada denah di sebelah kiri untuk mengaktifkan tombol Konfirmasi Lunas.
+                                    </div>
+
                                     <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding-top: 8px;">
                                         <a href="{{ route('dashboard.admin-biasa.index') }}" class="ds-btn ds-btn--secondary">Batal</a>
                                         <button type="submit" id="submitLoketBtn" class="ds-btn ds-btn--primary" style="min-height: 48px; font-size: 1rem; font-weight: 800; padding: 10px 24px;" disabled>
@@ -627,12 +632,13 @@
 
 <script>
     const seatsEndpointTemplate = @json(route('dashboard.admin-biasa.offline-booking.seats', ['schedule' => '__SCHED_ID__']));
+    const schedulesFilterUrl = @json(route('dashboard.admin-biasa.offline-booking'));
     let selectedSeats = new Map(); // seatId => seatNumber
     let currentUnitPrice = 0;
     let currentTotalTariff = 0;
 
     // Filter jadwal berdasarkan Tanggal dan Rute
-    function filterSchedules() {
+    async function filterSchedules(fetchIfEmpty = false) {
         const filterDate = document.getElementById('filter_date')?.value || '';
         const filterRoute = document.getElementById('filter_route')?.value || '';
         const cards = document.querySelectorAll('.schedule-card-item');
@@ -655,6 +661,21 @@
             }
         });
 
+        // Jika saat muat awal tanggal default tidak memiliki jadwal, tampilkan semua jadwal yang ada
+        if (visibleCount === 0 && !fetchIfEmpty && filterDate && cards.length > 0) {
+            const dateInput = document.getElementById('filter_date');
+            if (dateInput) {
+                dateInput.value = '';
+                return filterSchedules(false);
+            }
+        }
+
+        // Jika staf memilih tanggal mendatang yang belum dimuat di DOM, ambil otomatis dari server
+        if (visibleCount === 0 && fetchIfEmpty && filterDate) {
+            await fetchSchedulesForDate(filterDate, filterRoute);
+            return;
+        }
+
         const noFound = document.getElementById('noScheduleFoundText');
         if (noFound) {
             noFound.style.display = visibleCount === 0 ? 'block' : 'none';
@@ -669,11 +690,87 @@
         }
     }
 
+    async function fetchSchedulesForDate(dateStr, routeId) {
+        const noFound = document.getElementById('noScheduleFoundText');
+        if (noFound) {
+            noFound.style.display = 'block';
+            noFound.style.color = '#0C5A3E';
+            noFound.textContent = 'Memuat jadwal keberangkatan untuk tanggal tersebut...';
+        }
+
+        try {
+            const params = new URLSearchParams();
+            if (dateStr) params.set('date', dateStr);
+            if (routeId) params.set('route_id', routeId);
+
+            const res = await fetch(`${schedulesFilterUrl}?${params.toString()}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success && Array.isArray(data.schedules) && data.schedules.length > 0) {
+                const container = document.getElementById('scheduleCardsList');
+                const selectEl = document.getElementById('schedule_id');
+
+                data.schedules.forEach(sched => {
+                    if (!document.querySelector(`.schedule-card-item[data-schedule-id="${sched.id}"]`)) {
+                        const isLow = sched.available_seats <= 3;
+                        const div = document.createElement('div');
+                        div.className = 'schedule-card-item';
+                        div.dataset.scheduleId = String(sched.id);
+                        div.dataset.date = sched.date_val;
+                        div.dataset.routeId = String(sched.route_id);
+                        div.onclick = () => selectScheduleCard(sched.id);
+                        div.innerHTML = `
+                            <div>
+                                <div class="schedule-time-badge">${escapeHtml(sched.time_text)} &bull; <span style="font-size: 0.85rem; font-weight: 600; color: var(--lp-muted);">${escapeHtml(sched.date_text)}</span></div>
+                                <div style="font-size: 0.85rem; font-weight: 700; color: var(--lp-forest); margin-top: 2px;">${escapeHtml(sched.route_text)}</div>
+                                <div style="font-size: 0.75rem; color: var(--lp-muted); margin-top: 1px;">
+                                    ${escapeHtml(sched.vehicle_name)} (${escapeHtml(sched.plate_number)}) &bull; ${escapeHtml(sched.price_text)}
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="schedule-seats-badge ${isLow ? 'schedule-seats-badge--low' : 'schedule-seats-badge--plenty'}">
+                                    ${sched.available_seats} kursi sisa
+                                </span>
+                            </div>
+                        `;
+                        container.appendChild(div);
+
+                        if (selectEl) {
+                            const opt = document.createElement('option');
+                            opt.value = sched.id;
+                            opt.textContent = `${sched.time_text} • ${sched.id}`;
+                            selectEl.appendChild(opt);
+                        }
+                    }
+                });
+
+                if (noFound) {
+                    noFound.style.display = 'none';
+                    noFound.style.color = '#A3341F';
+                    noFound.textContent = 'Tidak ada jadwal yang cocok untuk tanggal dan rute ini.';
+                }
+
+                filterSchedules(false);
+                return;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+
+        if (noFound) {
+            noFound.style.display = 'block';
+            noFound.style.color = '#A3341F';
+            noFound.textContent = 'Tidak ada jadwal yang cocok untuk tanggal dan rute ini.';
+        }
+    }
+
     function setFilterDate(dateStr) {
         const dateInput = document.getElementById('filter_date');
         if (dateInput) {
             dateInput.value = dateStr;
-            filterSchedules();
+            filterSchedules(true);
         }
     }
 
@@ -808,6 +905,7 @@
         const cardsSection = document.getElementById('passengersDetailSection');
         const cardsList = document.getElementById('passengerCardsList');
         const submitBtn = document.getElementById('submitLoketBtn');
+        const hintEl = document.getElementById('seatSelectionRequiredHint');
 
         if (!summarySeats || !inputsWrap) return;
 
@@ -820,6 +918,7 @@
             currentTotalTariff = 0;
             cardsSection.style.display = 'none';
             submitBtn.disabled = true;
+            if (hintEl) hintEl.style.display = 'block';
             calculateChange(document.getElementById('cash_received')?.value || 0);
             return;
         }
@@ -831,6 +930,7 @@
         summaryTotal.textContent = 'Rp ' + currentTotalTariff.toLocaleString('id-ID');
         cardsSection.style.display = 'grid';
         submitBtn.disabled = false;
+        if (hintEl) hintEl.style.display = 'none';
 
         calculateChange(document.getElementById('cash_received')?.value || 0);
 
@@ -851,8 +951,8 @@
             card.innerHTML = `
                 <strong style="font-size: 0.85rem; color: var(--lp-forest);">Penumpang Kursi ${seatNum}</strong>
                 <div class="loket-row-2">
-                    <input type="text" name="passengers[${seatId}][name]" class="loket-input" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${seatNum}" required maxlength="100">
-                    <input type="tel" name="passengers[${seatId}][phone]" class="loket-input" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional, angka saja)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="text" name="passengers[${seatId}][name]" class="loket-input" data-auto-synced="true" oninput="this.dataset.autoSynced = 'false'" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${seatNum}" required maxlength="100">
+                    <input type="tel" name="passengers[${seatId}][phone]" class="loket-input" data-auto-synced="true" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional, angka saja)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.dataset.autoSynced = 'false'">
                 </div>
             `;
             cardsList.appendChild(card);
@@ -864,8 +964,20 @@
         const defaultName = document.getElementById('customer_name')?.value.trim() || '';
         const inputs = document.querySelectorAll('#passengerCardsList input[name$="[name]"]');
         inputs.forEach((input, idx) => {
-            if (!input.value.trim()) {
+            if (input.dataset.autoSynced === 'true' || !input.value.trim()) {
                 input.value = idx === 0 ? defaultName : (defaultName ? `${defaultName} (${idx + 1})` : '');
+                input.dataset.autoSynced = 'true';
+            }
+        });
+    }
+
+    function syncDefaultPassengerPhones() {
+        const defaultPhone = document.getElementById('customer_phone')?.value.trim() || '';
+        const inputs = document.querySelectorAll('#passengerCardsList input[name$="[phone]"]');
+        inputs.forEach((input) => {
+            if (input.dataset.autoSynced === 'true' || !input.value.trim()) {
+                input.value = defaultPhone;
+                input.dataset.autoSynced = 'true';
             }
         });
     }
@@ -873,6 +985,12 @@
     function toggleAutoBoardOption() {
         const status = document.getElementById('payment_status')?.value;
         const wrap = document.getElementById('autoBoardWrap');
+        const submitBtn = document.getElementById('submitLoketBtn');
+        if (submitBtn) {
+            submitBtn.innerHTML = status === 'paid'
+                ? 'Konfirmasi Lunas &amp; Cetak Tiket'
+                : 'Simpan Pesanan Pending (30 Menit)';
+        }
         if (!wrap) return;
         const cb = wrap.querySelector('input[type="checkbox"]');
         if (status === 'paid') {
@@ -939,11 +1057,16 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        filterSchedules();
+        filterSchedules(false);
 
-        const selectEl = document.getElementById('schedule_id');
-        if (selectEl && selectEl.value) {
-            selectScheduleCard(selectEl.value);
+        const activeCard = document.querySelector('.schedule-card-item.is-selected');
+        if (activeCard && activeCard.style.display !== 'none') {
+            selectScheduleCard(activeCard.dataset.scheduleId);
+        } else {
+            const firstVisible = Array.from(document.querySelectorAll('.schedule-card-item')).find(c => c.style.display !== 'none');
+            if (firstVisible) {
+                selectScheduleCard(firstVisible.dataset.scheduleId);
+            }
         }
 
         toggleAutoBoardOption();
