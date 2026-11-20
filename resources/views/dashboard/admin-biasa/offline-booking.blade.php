@@ -27,12 +27,14 @@
         .loket-form-group {
             display: grid;
             gap: 6px;
+            align-content: start;
         }
 
         .loket-label {
             font-size: 0.9rem;
             font-weight: 700;
             color: var(--lp-forest);
+            line-height: 1.3;
         }
 
         .loket-input,
@@ -47,6 +49,12 @@
             color: var(--lp-ink);
             font: inherit;
             font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        .loket-input,
+        .loket-select {
+            height: 44px;
         }
 
         .loket-textarea {
@@ -66,6 +74,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 14px;
+            align-items: end;
         }
 
         /* Filter Jadwal Kasir */
@@ -84,7 +93,7 @@
             gap: 8px;
             max-height: 280px;
             overflow-y: auto;
-            padding-right: 4px;
+            padding: 3px 6px 3px 3px;
         }
 
         .schedule-card-item {
@@ -97,7 +106,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        .schedule-card-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .schedule-card-badge-wrap {
+            flex-shrink: 0;
+            text-align: right;
         }
 
         .schedule-card-item:hover {
@@ -121,11 +140,15 @@
         .schedule-seats-badge {
             font-size: 0.75rem;
             font-weight: 800;
-            padding: 3px 8px;
+            padding: 5px 11px;
             border-radius: 999px;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 4px;
+            white-space: nowrap;
+            line-height: 1.2;
+            flex-shrink: 0;
         }
 
         .schedule-seats-badge--plenty {
@@ -383,7 +406,7 @@
                         </p>
                     </section>
                 @else
-                    <form method="POST" action="{{ route('dashboard.admin-biasa.offline-booking.store') }}" id="offlineBookingForm">
+                    <form method="POST" action="{{ route('dashboard.admin-biasa.offline-booking.store') }}" id="offlineBookingForm" autocomplete="off">
                         @csrf
 
                         <div class="loket-grid">
@@ -444,14 +467,14 @@
                                                         data-route-id="{{ $sched->route_id }}"
                                                         onclick="selectScheduleCard({{ $sched->id }})"
                                                     >
-                                                        <div>
+                                                        <div class="schedule-card-info">
                                                             <div class="schedule-time-badge">{{ $timeText }} &bull; <span style="font-size: 0.85rem; font-weight: 600; color: var(--lp-muted);">{{ $dateText }}</span></div>
                                                             <div style="font-size: 0.85rem; font-weight: 700; color: var(--lp-forest); margin-top: 2px;">{{ $routeText }}</div>
                                                             <div style="font-size: 0.75rem; color: var(--lp-muted); margin-top: 1px;">
                                                                 {{ $sched->vehicle?->name ?? 'Minibus' }} ({{ $sched->vehicle?->plate_number ?? '-' }}) &bull; {{ $priceText }}
                                                             </div>
                                                         </div>
-                                                        <div style="text-align: right;">
+                                                        <div class="schedule-card-badge-wrap">
                                                             <span class="schedule-seats-badge {{ $isLow ? 'schedule-seats-badge--low' : 'schedule-seats-badge--plenty' }}">
                                                                 {{ $availSeats }} kursi sisa
                                                             </span>
@@ -526,29 +549,32 @@
 
                                 <div class="ds-panel-body" style="display: grid; gap: 16px;">
                                     <div class="loket-form-group">
-                                        <label class="loket-label" for="source">Saluran Pemesanan Loket</label>
-                                        <select name="source" id="source" class="loket-select" required>
-                                            <option value="offline" @selected(old('source', 'offline') === 'offline')>Datang Langsung di Loket / Go-Show</option>
-                                            <option value="whatsapp" @selected(old('source') === 'whatsapp')>Pesan via WhatsApp Pool / CS</option>
-                                            <option value="phone" @selected(old('source') === 'phone')>Pesan via Telepon Pool</option>
-                                        </select>
+                                        <span class="loket-label">Saluran Pemesanan Loket</span>
+                                        <input type="hidden" name="source" id="source" value="offline">
+                                        <div class="loket-input" style="display: flex; align-items: center; gap: 8px; background: #F8FAF9; color: var(--lp-forest); font-weight: 700; cursor: default;">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: #0C7950;">
+                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                <polyline points="9 22 9 12 15 12 15 22" />
+                                            </svg>
+                                            <span>Datang Langsung di Loket / Go-Show</span>
+                                        </div>
                                     </div>
 
                                     <div class="loket-row-2">
                                         <div class="loket-form-group">
                                             <label class="loket-label" for="customer_name">Nama Pelanggan (Pemesan Utama) <span style="color: #A3341F;">*</span></label>
-                                            <input type="text" id="customer_name" name="customer_name" class="loket-input" value="{{ old('customer_name') }}" placeholder="Contoh: Budi Santoso" required maxlength="100" oninput="syncDefaultPassengerNames()">
+                                            <input type="text" id="customer_name" name="customer_name" class="loket-input" value="{{ old('customer_name') }}" placeholder="Contoh: Budi Santoso" required maxlength="100" autocomplete="off" oninput="syncDefaultPassengerNames()">
                                         </div>
 
                                         <div class="loket-form-group">
                                             <label class="loket-label" for="customer_phone">Nomor HP / WA (Angka saja) <span style="color: #A3341F;">*</span></label>
-                                            <input type="tel" id="customer_phone" name="customer_phone" class="loket-input" value="{{ old('customer_phone') }}" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncDefaultPassengerPhones();">
+                                            <input type="tel" id="customer_phone" name="customer_phone" class="loket-input" value="{{ old('customer_phone') }}" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, ''); syncDefaultPassengerPhones();">
                                         </div>
                                     </div>
 
                                     <div class="loket-form-group">
                                         <label class="loket-label" for="customer_email">Email Pelanggan (Opsional)</label>
-                                        <input type="email" id="customer_email" name="customer_email" class="loket-input" value="{{ old('customer_email') }}" placeholder="email@contoh.com" maxlength="100">
+                                        <input type="email" id="customer_email" name="customer_email" class="loket-input" value="{{ old('customer_email') }}" placeholder="email@contoh.com" maxlength="100" autocomplete="off">
                                     </div>
 
                                     <div id="passengersDetailSection" style="display: none; gap: 10px;">
@@ -722,14 +748,14 @@
                         div.dataset.routeId = String(sched.route_id);
                         div.onclick = () => selectScheduleCard(sched.id);
                         div.innerHTML = `
-                            <div>
+                            <div class="schedule-card-info">
                                 <div class="schedule-time-badge">${escapeHtml(sched.time_text)} &bull; <span style="font-size: 0.85rem; font-weight: 600; color: var(--lp-muted);">${escapeHtml(sched.date_text)}</span></div>
                                 <div style="font-size: 0.85rem; font-weight: 700; color: var(--lp-forest); margin-top: 2px;">${escapeHtml(sched.route_text)}</div>
                                 <div style="font-size: 0.75rem; color: var(--lp-muted); margin-top: 1px;">
                                     ${escapeHtml(sched.vehicle_name)} (${escapeHtml(sched.plate_number)}) &bull; ${escapeHtml(sched.price_text)}
                                 </div>
                             </div>
-                            <div style="text-align: right;">
+                            <div class="schedule-card-badge-wrap">
                                 <span class="schedule-seats-badge ${isLow ? 'schedule-seats-badge--low' : 'schedule-seats-badge--plenty'}">
                                     ${sched.available_seats} kursi sisa
                                 </span>
@@ -886,13 +912,20 @@
     function toggleLoketSeat(btn) {
         const id = btn.dataset.seatId;
         const num = btn.dataset.seatNum;
+        const statusLabel = btn.querySelector('small');
 
         if (selectedSeats.has(id)) {
             selectedSeats.delete(id);
             btn.classList.remove('loket-seat-btn--selected');
+            if (statusLabel) {
+                statusLabel.textContent = 'Kosong';
+            }
         } else {
             selectedSeats.set(id, num);
             btn.classList.add('loket-seat-btn--selected');
+            if (statusLabel) {
+                statusLabel.textContent = 'Terpilih';
+            }
         }
 
         renderSelectionState();
@@ -917,9 +950,8 @@
             summaryTotal.textContent = 'Rp 0';
             currentTotalTariff = 0;
             cardsSection.style.display = 'none';
-            submitBtn.disabled = true;
-            if (hintEl) hintEl.style.display = 'block';
             calculateChange(document.getElementById('cash_received')?.value || 0);
+            updateLoketSubmitState();
             return;
         }
 
@@ -929,10 +961,9 @@
         summarySeats.textContent = seatNumbers.join(', ') + ` (${selectedSeats.size} kursi)`;
         summaryTotal.textContent = 'Rp ' + currentTotalTariff.toLocaleString('id-ID');
         cardsSection.style.display = 'grid';
-        submitBtn.disabled = false;
-        if (hintEl) hintEl.style.display = 'none';
 
         calculateChange(document.getElementById('cash_received')?.value || 0);
+        updateLoketSubmitState();
 
         const defaultName = document.getElementById('customer_name')?.value.trim() || '';
         const defaultPhone = document.getElementById('customer_phone')?.value.trim() || '';
@@ -951,8 +982,8 @@
             card.innerHTML = `
                 <strong style="font-size: 0.85rem; color: var(--lp-forest);">Penumpang Kursi ${seatNum}</strong>
                 <div class="loket-row-2">
-                    <input type="text" name="passengers[${seatId}][name]" class="loket-input" data-auto-synced="true" oninput="this.dataset.autoSynced = 'false'" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${seatNum}" required maxlength="100">
-                    <input type="tel" name="passengers[${seatId}][phone]" class="loket-input" data-auto-synced="true" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional, angka saja)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.dataset.autoSynced = 'false'">
+                    <input type="text" name="passengers[${seatId}][name]" class="loket-input" autocomplete="off" data-auto-synced="true" oninput="this.dataset.autoSynced = 'false'" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${seatNum}" required maxlength="100">
+                    <input type="tel" name="passengers[${seatId}][phone]" class="loket-input" autocomplete="off" data-auto-synced="true" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional, angka saja)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.dataset.autoSynced = 'false'">
                 </div>
             `;
             cardsList.appendChild(card);
@@ -991,25 +1022,103 @@
                 ? 'Konfirmasi Lunas &amp; Cetak Tiket'
                 : 'Simpan Pesanan Pending (30 Menit)';
         }
-        if (!wrap) return;
-        const cb = wrap.querySelector('input[type="checkbox"]');
-        if (status === 'paid') {
-            wrap.style.display = 'flex';
-        } else {
-            wrap.style.display = 'none';
-            if (cb) cb.checked = false;
+        if (wrap) {
+            const cb = wrap.querySelector('input[type="checkbox"]');
+            if (status === 'paid') {
+                wrap.style.display = 'flex';
+            } else {
+                wrap.style.display = 'none';
+                if (cb) cb.checked = false;
+            }
         }
+        handlePaymentMethodChange();
+        updateLoketSubmitState();
     }
 
     function handlePaymentMethodChange() {
         const method = document.getElementById('payment_method')?.value;
+        const status = document.getElementById('payment_status')?.value;
         const calcBox = document.getElementById('cashCalcBox');
-        if (!calcBox) return;
+        if (calcBox) {
+            if (method === 'Cash' && status === 'paid') {
+                calcBox.style.display = 'grid';
+            } else {
+                calcBox.style.display = 'none';
+            }
+        }
+        updateLoketSubmitState();
+    }
 
-        if (method === 'Cash') {
-            calcBox.style.display = 'grid';
-        } else {
-            calcBox.style.display = 'none';
+    function getCashReceivedAmount() {
+        const raw = document.getElementById('cash_received')?.value || '';
+        const cleanVal = String(raw).replace(/[^0-9]/g, '');
+        return Number(cleanVal || 0);
+    }
+
+    function isCashPaymentInsufficient() {
+        const method = document.getElementById('payment_method')?.value;
+        const status = document.getElementById('payment_status')?.value;
+        if (method !== 'Cash' || status !== 'paid') {
+            return false;
+        }
+        if (currentTotalTariff <= 0) {
+            return false;
+        }
+        return getCashReceivedAmount() < currentTotalTariff;
+    }
+
+    function updateLoketSubmitState() {
+        const submitBtn = document.getElementById('submitLoketBtn');
+        const hintEl = document.getElementById('seatSelectionRequiredHint');
+        const cashInput = document.getElementById('cash_received');
+        if (!submitBtn) return;
+
+        if (selectedSeats.size === 0) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+            if (hintEl) {
+                hintEl.style.display = 'block';
+                hintEl.style.background = '#FEF3C7';
+                hintEl.style.borderColor = '#FCD34D';
+                hintEl.style.color = '#92400E';
+                hintEl.textContent = 'Pilih minimal 1 nomor kursi kosong pada denah di sebelah kiri untuk mengaktifkan tombol Konfirmasi Lunas.';
+            }
+            if (cashInput) {
+                cashInput.style.borderColor = '';
+            }
+            return;
+        }
+
+        if (isCashPaymentInsufficient()) {
+            const cashReceived = getCashReceivedAmount();
+            const shortage = Math.max(0, currentTotalTariff - cashReceived);
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.6';
+            submitBtn.style.cursor = 'not-allowed';
+            if (hintEl) {
+                hintEl.style.display = 'block';
+                hintEl.style.background = '#FEF2F2';
+                hintEl.style.borderColor = '#FCA5A5';
+                hintEl.style.color = '#991B1B';
+                hintEl.textContent = cashReceived === 0
+                    ? `Masukkan Uang Tunai Diterima minimal Rp ${currentTotalTariff.toLocaleString('id-ID')} (uang pas atau lebih) untuk mengaktifkan tombol Konfirmasi Lunas.`
+                    : `Uang tunai kurang Rp ${shortage.toLocaleString('id-ID')}. Konfirmasi hanya dapat dilakukan jika uang pas atau ada kembalian.`;
+            }
+            if (cashInput) {
+                cashInput.style.borderColor = '#DC2626';
+            }
+            return;
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+        if (hintEl) {
+            hintEl.style.display = 'none';
+        }
+        if (cashInput) {
+            cashInput.style.borderColor = '';
         }
     }
 
@@ -1022,17 +1131,20 @@
         if (currentTotalTariff === 0 || cashReceived === 0) {
             changeEl.textContent = 'Rp 0';
             changeEl.style.color = '#0C5A3E';
+            updateLoketSubmitState();
             return;
         }
 
         const diff = cashReceived - currentTotalTariff;
         if (diff >= 0) {
-            changeEl.textContent = 'Rp ' + diff.toLocaleString('id-ID');
+            changeEl.textContent = diff === 0 ? 'Rp 0 (Uang Pas)' : 'Rp ' + diff.toLocaleString('id-ID');
             changeEl.style.color = '#0C5A3E';
         } else {
             changeEl.textContent = 'Kurang Rp ' + Math.abs(diff).toLocaleString('id-ID');
             changeEl.style.color = '#A3341F';
         }
+
+        updateLoketSubmitState();
     }
 
     function setCashAmount(amount) {
@@ -1071,8 +1183,47 @@
 
         toggleAutoBoardOption();
         handlePaymentMethodChange();
+        updateLoketSubmitState();
+
+        const loketForm = document.getElementById('offlineBookingForm');
+        if (loketForm) {
+            loketForm.addEventListener('submit', (e) => {
+                if (selectedSeats.size === 0 || isCashPaymentInsufficient()) {
+                    e.preventDefault();
+                    updateLoketSubmitState();
+                    document.getElementById('cash_received')?.focus();
+                }
+            });
+        }
     });
 </script>
+
+@if (session('success') || session('error') || $errors->any())
+    <div id="loketPopupOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.58); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1200; padding: 16px;" onclick="if (event.target === this) this.style.display = 'none'">
+        <div style="background: #ffffff; border-radius: 18px; width: 100%; max-width: 440px; padding: 28px 24px 22px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);">
+            @php
+                $isLoketErr = session('error') || $errors->any();
+                $loketMsg = session('error') ?: ($errors->first() ?: session('success'));
+            @endphp
+            <div style="width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; background: {{ $isLoketErr ? '#fef2f2' : '#ecfdf5' }}; color: {{ $isLoketErr ? '#dc2626' : '#059669' }}; border: 2px solid {{ $isLoketErr ? '#fecaca' : '#a7f3d0' }};">
+                @if ($isLoketErr)
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                @else
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                @endif
+            </div>
+            <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
+                {{ $isLoketErr ? 'Perhatian Kasir Loket' : 'Transaksi Berhasil' }}
+            </h3>
+            <p style="font-size: 13.5px; color: #475569; line-height: 1.55; margin-bottom: 20px;">
+                {{ $loketMsg }}
+            </p>
+            <button type="button" class="ds-btn ds-btn--primary" onclick="document.getElementById('loketPopupOverlay').style.display = 'none'" style="min-width: 130px; justify-content: center; background: {{ $isLoketErr ? '#dc2626' : '#0C7950' }};">
+                <span>Mengerti</span>
+            </button>
+        </div>
+    </div>
+@endif
 
 @include('components.numeric-input-enforcer')
 </body>

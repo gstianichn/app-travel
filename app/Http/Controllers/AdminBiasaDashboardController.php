@@ -207,109 +207,184 @@ class AdminBiasaDashboardController extends Controller
             'refund',
         ]);
 
-        // 1. Pencarian Fleksibel
-        if ($search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->where('booking_code', 'LIKE', "%{$search}%")
-                    ->orWhere('contact_name', 'LIKE', "%{$search}%")
-                    ->orWhere('contact_phone', 'LIKE', "%{$search}%")
-                    ->orWhere('contact_email', 'LIKE', "%{$search}%")
-                    ->orWhereHas('passengers', function ($pq) use ($search) {
-                        $pq->where('name', 'LIKE', "%{$search}%")
-                            ->orWhere('phone', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('user', function ($uq) use ($search) {
-                        $uq->where('name', 'LIKE', "%{$search}%")
-                            ->orWhere('phone', 'LIKE', "%{$search}%")
-                            ->orWhere('email', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('ticket', function ($tq) use ($search) {
-                        $tq->where('ticket_number', 'LIKE', "%{$search}%")
-                            ->orWhere('qr_code', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('schedule.route.origin', function ($oq) use ($search) {
-                        $oq->where('name', 'LIKE', "%{$search}%")
-                            ->orWhere('city', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('schedule.route.destination', function ($dq) use ($search) {
-                        $dq->where('name', 'LIKE', "%{$search}%")
-                            ->orWhere('city', 'LIKE', "%{$search}%");
-                    })
-                    ->orWhereHas('schedule.vehicle', function ($vq) use ($search) {
-                        $vq->where('plate_number', 'LIKE', "%{$search}%")
-                            ->orWhere('name', 'LIKE', "%{$search}%");
+        // Helper filter kontekstual (pencarian cepat multi-kata, jadwal, tanggal, tujuan)
+        $applyContextFilters = function ($q) use ($search, $scheduleId, $date, $destinationId) {
+            if ($search !== '') {
+                $terms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [$search];
+
+                foreach ($terms as $term) {
+                    $termLower = strtolower($term);
+                    $q->where(function ($sub) use ($term, $termLower) {
+                        $sub->where('booking_code', 'LIKE', "%{$term}%")
+                            ->orWhere('contact_name', 'LIKE', "%{$term}%")
+                            ->orWhere('contact_phone', 'LIKE', "%{$term}%")
+                            ->orWhere('contact_email', 'LIKE', "%{$term}%")
+                            ->orWhere('source', 'LIKE', "%{$term}%")
+                            ->orWhere('status', 'LIKE', "%{$term}%")
+                            ->orWhereHas('passengers', function ($pq) use ($term) {
+                                $pq->where('name', 'LIKE', "%{$term}%")
+                                    ->orWhere('phone', 'LIKE', "%{$term}%")
+                                    ->orWhereHas('seat', function ($sq) use ($term) {
+                                        $sq->where('seat_number', 'LIKE', "%{$term}%");
+                                    });
+                            })
+                            ->orWhereHas('user', function ($uq) use ($term) {
+                                $uq->where('name', 'LIKE', "%{$term}%")
+                                    ->orWhere('phone', 'LIKE', "%{$term}%")
+                                    ->orWhere('email', 'LIKE', "%{$term}%");
+                            })
+                            ->orWhereHas('ticket', function ($tq) use ($term) {
+                                $tq->where('ticket_number', 'LIKE', "%{$term}%")
+                                    ->orWhere('qr_code', 'LIKE', "%{$term}%");
+                            })
+                            ->orWhereHas('schedule.route.origin', function ($oq) use ($term) {
+                                $oq->where('name', 'LIKE', "%{$term}%")
+                                    ->orWhere('city', 'LIKE', "%{$term}%");
+                            })
+                            ->orWhereHas('schedule.route.destination', function ($dq) use ($term) {
+                                $dq->where('name', 'LIKE', "%{$term}%")
+                                    ->orWhere('city', 'LIKE', "%{$term}%");
+                            })
+                            ->orWhereHas('schedule.vehicle', function ($vq) use ($term) {
+                                $vq->where('plate_number', 'LIKE', "%{$term}%")
+                                    ->orWhere('name', 'LIKE', "%{$term}%");
+                            });
+
+                        if (in_array($termLower, ['loket', 'offline', 'kasir'], true)) {
+                            $sub->orWhereRaw("LOWER(source) IN ('offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone')");
+                        } elseif ($termLower === 'online') {
+                            $sub->orWhere(function ($onl) {
+                                $onl->whereNull('source')
+                                    ->orWhereRaw("LOWER(source) NOT IN ('offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone')");
+                            });
+                        } elseif ($termLower === 'lunas') {
+                            $sub->orWhereRaw("LOWER(status) IN ('paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed')");
+                        } elseif (in_array($termLower, ['batal', 'dibatalkan'], true)) {
+                            $sub->orWhereRaw("LOWER(status) IN ('cancelled', 'batal')");
+                        } elseif ($termLower === 'selesai') {
+                            $sub->orWhereRaw("LOWER(status) = 'completed'");
+                        } elseif ($termLower === 'boarding') {
+                            $sub->orWhereRaw("LOWER(status) IN ('checked_in', 'boarded')");
+                        }
                     });
-            });
-        }
+                }
+            }
 
-        // 2. Filter Tipe Pesanan (Online vs Offline/Loket)
-        if ($type === 'online') {
-            $query->where(function ($q) {
-                $q->whereNull('source')
-                    ->orWhere('source', 'online')
-                    ->orWhereNotIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone']);
-            });
-        } elseif ($type === 'offline') {
-            $query->whereIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone']);
-        }
+            if ($scheduleId) {
+                $q->where('schedule_id', $scheduleId);
+            }
 
-        // 3. Filter Status Pembayaran / Transaksi
-        if ($status === 'paid' || $status === 'lunas') {
-            $query->whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded']);
-        } elseif ($status === 'pending') {
-            $query->where('status', 'pending');
-        } elseif ($status === 'checked_in' || $status === 'boarded') {
-            $query->whereIn('status', ['checked_in', 'boarded']);
-        } elseif ($status === 'cancelled' || $status === 'batal') {
-            $query->whereIn('status', ['cancelled', 'batal', 'Cancelled']);
-        } elseif ($status === 'completed') {
-            $query->where('status', 'completed');
-        }
+            if ($date) {
+                $q->whereHas('schedule', function ($sq) use ($date) {
+                    $sq->whereDate('departure_date', $date);
+                });
+            }
 
-        // 4. Filter Jadwal Tertentu
-        if ($scheduleId) {
-            $query->where('schedule_id', $scheduleId);
-        }
+            if ($destinationId) {
+                $q->whereHas('schedule.route.destination', function ($dq) use ($destinationId) {
+                    $dq->where('id', $destinationId);
+                });
+            }
 
-        // 5. Filter Tanggal Keberangkatan
-        if ($date) {
-            $query->whereHas('schedule', function ($sq) use ($date) {
-                $sq->whereDate('departure_date', $date);
-            });
-        }
+            return $q;
+        };
 
-        // 6. Filter Kota / Pool Tujuan
-        if ($destinationId) {
-            $query->whereHas('schedule.route.destination', function ($dq) use ($destinationId) {
-                $dq->where('id', $destinationId);
-            });
-        }
+        // Helper filter Tipe Pesanan (Online vs Offline/Loket) — case-insensitive
+        $applyTypeFilter = function ($q, string $typeFilter) {
+            if ($typeFilter === 'online') {
+                $q->where(function ($sub) {
+                    $sub->whereNull('source')
+                        ->orWhereRaw("LOWER(source) NOT IN ('offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone')");
+                });
+            } elseif ($typeFilter === 'offline') {
+                $q->whereRaw("LOWER(source) IN ('offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone')");
+            }
+
+            return $q;
+        };
+
+        // Helper filter Status Transaksi — case-insensitive & konsisten dengan badge tabel
+        $applyStatusFilter = function ($q, string $statusFilter) {
+            if ($statusFilter === 'paid' || $statusFilter === 'lunas') {
+                $q->whereRaw("LOWER(status) IN ('paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed')");
+            } elseif ($statusFilter === 'pending') {
+                $q->whereRaw("LOWER(status) = 'pending'");
+            } elseif ($statusFilter === 'checked_in' || $statusFilter === 'boarded') {
+                $q->whereRaw("LOWER(status) IN ('checked_in', 'boarded')");
+            } elseif ($statusFilter === 'cancelled' || $statusFilter === 'batal') {
+                $q->whereRaw("LOWER(status) IN ('cancelled', 'batal')");
+            } elseif ($statusFilter === 'completed') {
+                $q->whereRaw("LOWER(status) = 'completed'");
+            }
+
+            return $q;
+        };
+
+        // Terapkan seluruh filter ke query utama tabel
+        $applyContextFilters($query);
+        $applyTypeFilter($query, $type);
+        $applyStatusFilter($query, $status);
 
         // Eksekusi pagination bookings terbaru
         $bookings = $query->latest('id')->paginate(15)->withQueryString();
 
-        // Statistik Keseluruhan (tanpa filter) untuk Kartu Ringkasan
+        // Statistik sinkron dengan filter konteks aktif agar angka kartu sesuai data yang dihasilkan
+        $makeStatsQuery = fn () => $applyContextFilters(Booking::query());
+
         $stats = [
-            'total' => Booking::count(),
-            'online' => Booking::where(function ($q) {
-                $q->whereNull('source')
-                    ->orWhere('source', 'online')
-                    ->orWhereNotIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone']);
-            })->count(),
-            'offline' => Booking::whereIn('source', ['offline', 'walk_in', 'loket', 'whatsapp', 'wa', 'phone'])->count(),
-            'paid' => Booking::whereIn('status', ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'])->count(),
-            'pending' => Booking::where('status', 'pending')->count(),
-            'cancelled' => Booking::whereIn('status', ['cancelled', 'batal', 'Cancelled'])->count(),
+            'total' => $makeStatsQuery()->count(),
+            'online' => $applyTypeFilter($makeStatsQuery(), 'online')->count(),
+            'offline' => $applyTypeFilter($makeStatsQuery(), 'offline')->count(),
+            'paid' => $applyStatusFilter($makeStatsQuery(), 'paid')->count(),
+            'pending' => $applyStatusFilter($makeStatsQuery(), 'pending')->count(),
+            'checked_in' => $applyStatusFilter($makeStatsQuery(), 'checked_in')->count(),
+            'completed' => $applyStatusFilter($makeStatsQuery(), 'completed')->count(),
+            'cancelled' => $applyStatusFilter($makeStatsQuery(), 'cancelled')->count(),
         ];
 
-        // Daftar jadwal untuk filter & kompatibilitas view
+        // Counter dropdown Status Transaksi (mengikuti tipe & filter konteks aktif)
+        $makeStatusDropdownQuery = fn () => $applyTypeFilter($makeStatsQuery(), $type);
+        $statusCounts = [
+            'all' => $makeStatusDropdownQuery()->count(),
+            'paid' => $applyStatusFilter($makeStatusDropdownQuery(), 'paid')->count(),
+            'pending' => $applyStatusFilter($makeStatusDropdownQuery(), 'pending')->count(),
+            'checked_in' => $applyStatusFilter($makeStatusDropdownQuery(), 'checked_in')->count(),
+            'completed' => $applyStatusFilter($makeStatusDropdownQuery(), 'completed')->count(),
+            'cancelled' => $applyStatusFilter($makeStatusDropdownQuery(), 'cancelled')->count(),
+        ];
+
+        // Counter untuk tab pill Tipe Pesanan yang juga mengikuti filter status aktif
+        $pillCounts = [
+            'total' => $applyStatusFilter($makeStatsQuery(), $status)->count(),
+            'online' => $applyStatusFilter($applyTypeFilter($makeStatsQuery(), 'online'), $status)->count(),
+            'offline' => $applyStatusFilter($applyTypeFilter($makeStatsQuery(), 'offline'), $status)->count(),
+        ];
+
+        // Daftar jadwal untuk dropdown Semua Jadwal Trip: HANYA jadwal yang benar-benar memiliki data booking
+        // (agar setiap jadwal yang dipilih di dropdown pasti menghasilkan data transaksi yang sesuai)
         Schedule::ensureUpcomingSchedulesExist(2);
 
-        $scheduleList = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
-            ->whereDate('departure_date', '>=', Carbon::today()->subDays(3))
+        $schedulesWithBookingsIds = Booking::query()
+            ->whereNotNull('schedule_id')
+            ->distinct()
+            ->pluck('schedule_id');
+
+        $scheduleListQuery = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
+            ->withCount('bookings')
+            ->where(function ($q) use ($schedulesWithBookingsIds, $scheduleId) {
+                $q->whereIn('id', $schedulesWithBookingsIds);
+                if ($scheduleId) {
+                    $q->orWhere('id', $scheduleId);
+                }
+            });
+
+        if ($date) {
+            $scheduleListQuery->whereDate('departure_date', $date);
+        }
+
+        $scheduleList = $scheduleListQuery
             ->orderBy('departure_date', 'desc')
             ->orderBy('departure_time', 'desc')
-            ->take(40)
             ->get();
 
         $selectedSchedule = $scheduleId
@@ -345,6 +420,8 @@ class AdminBiasaDashboardController extends Controller
             'user',
             'bookings',
             'stats',
+            'statusCounts',
+            'pillCounts',
             'search',
             'type',
             'status',

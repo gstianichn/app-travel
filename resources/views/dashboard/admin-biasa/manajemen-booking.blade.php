@@ -33,34 +33,88 @@
             margin: 0 auto;
         }
 
-        /* STATS CARDS */
+        /* STATS CARDS (5 KARTU SEJAJAR & INTERAKTIF) */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        @media (max-width: 1180px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
         }
 
         .stat-card {
             background: var(--white);
             border-radius: 14px;
-            padding: 18px 20px;
-            border: 1px solid var(--border);
+            padding: 16px 18px;
+            border: 1.5px solid var(--border);
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
             display: flex;
             align-items: center;
-            gap: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            justify-content: flex-start !important;
+            gap: 14px;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+            text-decoration: none;
+            cursor: pointer;
+            position: relative;
+            min-width: 0;
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+            border-color: #94a3b8;
+        }
+
+        .stat-card.is-active-total {
+            border-color: #334155;
+            background: #f8fafc;
+            box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.12);
+        }
+
+        .stat-card.is-active-online {
+            border-color: #087f55;
+            background: #f2fdf9;
+            box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.14);
+        }
+
+        .stat-card.is-active-offline {
+            border-color: #1971c2;
+            background: #f0f8ff;
+            box-shadow: 0 0 0 3px rgba(25, 113, 194, 0.14);
+        }
+
+        .stat-card.is-active-paid {
+            border-color: #059669;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.14);
+        }
+
+        .stat-card.is-active-cancelled {
+            border-color: #dc2626;
+            background: #fff5f5;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -68,23 +122,32 @@
             flex-shrink: 0;
         }
 
-        .stat-icon.total { background: #f1f5f9; color: #475569; }
+        .stat-icon.total { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
         .stat-icon.online { background: var(--online-bg); color: var(--online-text); border: 1px solid var(--online-border); }
         .stat-icon.offline { background: var(--offline-bg); color: var(--offline-text); border: 1px solid var(--offline-border); }
-        .stat-icon.paid { background: #ecfdf5; color: #059669; }
-        .stat-icon.cancelled { background: #fef2f2; color: #dc2626; }
+        .stat-icon.paid { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+        .stat-icon.cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+        .stat-info {
+            min-width: 0;
+            flex: 1;
+        }
 
         .stat-info span {
             display: block;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11.5px;
+            font-weight: 700;
             color: var(--text-light);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
+            letter-spacing: 0.4px;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .stat-info strong {
+            display: block;
             font-size: 24px;
             font-weight: 800;
             color: var(--text-dark);
@@ -168,12 +231,12 @@
         /* FILTER FORM GRID */
         .filter-grid {
             display: grid;
-            grid-template-columns: 2fr 1.2fr 1.2fr 1fr auto;
-            gap: 12px;
-            align-items: center;
+            grid-template-columns: minmax(195px, 1.3fr) minmax(175px, 1.05fr) minmax(152px, 0.92fr) minmax(205px, 1.3fr) auto;
+            gap: 10px;
+            align-items: end;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1180px) {
             .filter-grid {
                 grid-template-columns: 1fr 1fr;
             }
@@ -185,32 +248,75 @@
             }
         }
 
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 0;
+        }
+
+        .filter-field-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.35px;
+            padding-left: 2px;
+            white-space: nowrap;
+        }
+
+        .filter-control-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .filter-control-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            pointer-events: none;
+            flex-shrink: 0;
+        }
+
         .search-box {
             position: relative;
         }
 
         .search-box svg {
             position: absolute;
-            left: 14px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-light);
+            color: #64748b;
             pointer-events: none;
         }
 
         .search-input {
             width: 100%;
             height: 42px;
-            padding: 0 14px 0 42px;
+            padding: 0 12px 0 36px;
             border: 1.5px solid var(--border);
             border-radius: 10px;
-            font-size: 13.5px;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--text-dark);
             background: #ffffff;
             transition: all 0.2s;
+            text-overflow: ellipsis;
         }
 
-        .search-input:focus, .filter-select:focus {
+        .search-input::placeholder {
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .search-input:focus,
+        .filter-select:focus,
+        .filter-date:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.12);
@@ -219,28 +325,61 @@
         .filter-select {
             width: 100%;
             height: 42px;
-            padding: 0 12px;
+            padding: 0 30px 0 12px;
             border: 1.5px solid var(--border);
             border-radius: 10px;
-            font-size: 13.5px;
+            font-size: 13px;
+            font-weight: 600;
             color: var(--text-dark);
-            background: #ffffff;
+            background-color: #ffffff;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px 14px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-select.has-icon {
+            padding-left: 34px;
+        }
+
+        .filter-date {
+            width: 100%;
+            height: 42px;
+            padding: 0 10px 0 34px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text-dark);
+            background-color: #ffffff;
+            cursor: pointer;
             transition: all 0.2s;
         }
 
         .btn-filter-apply {
             height: 42px;
-            padding: 0 18px;
+            padding: 0 16px;
             background: var(--primary);
             color: #ffffff;
             border: none;
             border-radius: 10px;
             font-weight: 700;
-            font-size: 13.5px;
+            font-size: 13px;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            justify-content: center;
+            gap: 6px;
             cursor: pointer;
+            white-space: nowrap;
             transition: background 0.2s;
         }
 
@@ -250,17 +389,20 @@
 
         .btn-filter-reset {
             height: 42px;
-            padding: 0 14px;
+            padding: 0 13px;
             background: #f1f5f9;
             color: #475569;
-            border: 1px solid #cbd5e1;
+            border: 1.5px solid #cbd5e1;
             border-radius: 10px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 5px;
             text-decoration: none;
+            white-space: nowrap;
+            cursor: pointer;
             transition: all 0.2s;
         }
 
@@ -709,12 +851,37 @@
                 </div>
             @endif
 
-            <!-- 1. KARTU STATISTIK RINGKASAN -->
+            <!-- 1. KARTU STATISTIK RINGKASAN (INTERAKTIF & SINKRON DENGAN DATA TABEL) -->
+            @php
+                $baseFilterParams = array_filter([
+                    'search' => $search,
+                    'date' => $date,
+                    'schedule_id' => $scheduleId,
+                    'destination_id' => $destinationId ?? null,
+                ], fn ($val) => $val !== null && $val !== '');
+
+                $isAllActive = $type === 'all' && $status === 'all';
+                $isOnlineActive = $type === 'online' && $status === 'all';
+                $isOfflineActive = $type === 'offline' && $status === 'all';
+                $isPaidActive = $status === 'paid';
+                $isCancelledActive = $status === 'cancelled';
+
+                $pCounts = $pillCounts ?? [
+                    'total' => $stats['total'],
+                    'online' => $stats['online'],
+                    'offline' => $stats['offline'],
+                ];
+            @endphp
+
             <div class="stats-grid">
                 <!-- Total Booking -->
-                <div class="stat-card">
+                <a
+                    href="{{ route('dashboard.admin-biasa.booking', array_merge($baseFilterParams, ['type' => 'all', 'status' => 'all'])) }}"
+                    class="stat-card {{ $isAllActive ? 'is-active-total' : '' }}"
+                    title="Tampilkan Semua Booking ({{ number_format($stats['total']) }} data)"
+                >
                     <div class="stat-icon total">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="18" height="18" x="3" y="3" rx="2" />
                             <path d="M3 9h18M9 21V9" />
                         </svg>
@@ -723,12 +890,16 @@
                         <span>Semua Booking</span>
                         <strong>{{ number_format($stats['total']) }}</strong>
                     </div>
-                </div>
+                </a>
 
                 <!-- Booking Online (Hijau) -->
-                <div class="stat-card">
+                <a
+                    href="{{ route('dashboard.admin-biasa.booking', array_merge($baseFilterParams, ['type' => 'online', 'status' => 'all'])) }}"
+                    class="stat-card {{ $isOnlineActive ? 'is-active-online' : '' }}"
+                    title="Filter Tipe Online ({{ number_format($stats['online']) }} data)"
+                >
                     <div class="stat-icon online">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10" />
                             <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20" />
                         </svg>
@@ -737,12 +908,16 @@
                         <span style="color: var(--online-text);">Tipe Online</span>
                         <strong style="color: var(--online-text);">{{ number_format($stats['online']) }}</strong>
                     </div>
-                </div>
+                </a>
 
                 <!-- Booking Offline / Loket (Biru) -->
-                <div class="stat-card">
+                <a
+                    href="{{ route('dashboard.admin-biasa.booking', array_merge($baseFilterParams, ['type' => 'offline', 'status' => 'all'])) }}"
+                    class="stat-card {{ $isOfflineActive ? 'is-active-offline' : '' }}"
+                    title="Filter Tipe Offline / Loket ({{ number_format($stats['offline']) }} data)"
+                >
                     <div class="stat-icon offline">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                             <polyline points="9 22 9 12 15 12 15 22" />
                         </svg>
@@ -751,150 +926,162 @@
                         <span style="color: var(--offline-text);">Tipe Offline / Loket</span>
                         <strong style="color: var(--offline-text);">{{ number_format($stats['offline']) }}</strong>
                     </div>
-                </div>
+                </a>
 
                 <!-- Lunas / Berbayar -->
-                <div class="stat-card">
+                <a
+                    href="{{ route('dashboard.admin-biasa.booking', array_merge($baseFilterParams, ['type' => 'all', 'status' => 'paid'])) }}"
+                    class="stat-card {{ $isPaidActive ? 'is-active-paid' : '' }}"
+                    title="Filter Sudah Lunas ({{ number_format($stats['paid']) }} data)"
+                >
                     <div class="stat-icon paid">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
                     </div>
                     <div class="stat-info">
-                        <span>Sudah Lunas</span>
+                        <span style="color: #059669;">Sudah Lunas</span>
                         <strong style="color: #059669;">{{ number_format($stats['paid']) }}</strong>
                     </div>
-                </div>
+                </a>
 
                 <!-- Dibatalkan -->
-                <div class="stat-card">
+                <a
+                    href="{{ route('dashboard.admin-biasa.booking', array_merge($baseFilterParams, ['type' => 'all', 'status' => 'cancelled'])) }}"
+                    class="stat-card {{ $isCancelledActive ? 'is-active-cancelled' : '' }}"
+                    title="Filter Dibatalkan ({{ number_format($stats['cancelled']) }} data)"
+                >
                     <div class="stat-icon cancelled">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10" />
                             <line x1="15" y1="9" x2="9" y2="15" />
                             <line x1="9" y1="9" x2="15" y2="15" />
                         </svg>
                     </div>
                     <div class="stat-info">
-                        <span>Dibatalkan</span>
+                        <span style="color: #dc2626;">Dibatalkan</span>
                         <strong style="color: #dc2626;">{{ number_format($stats['cancelled']) }}</strong>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- 2. FILTER & PENCARIAN -->
             <div class="filter-panel">
-                <div class="filter-header">
-                    <!-- Tab Pill Tipe Pesanan: Semua, Online, Offline -->
-                    <div class="type-pills" role="tablist">
-                        <a
-                            href="{{ route('dashboard.admin-biasa.booking', array_merge(request()->except('page'), ['type' => 'all'])) }}"
-                            class="type-pill {{ $type === 'all' ? 'active' : '' }}"
-                        >
-                            <span>Semua Tipe</span>
-                            <span class="pill-counter">{{ $stats['total'] }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('dashboard.admin-biasa.booking', array_merge(request()->except('page'), ['type' => 'online'])) }}"
-                            class="type-pill {{ $type === 'online' ? 'active-online' : '' }}"
-                        >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
-                            <span>Online (App / Web)</span>
-                            <span class="pill-counter">{{ $stats['online'] }}</span>
-                        </a>
-
-                        <a
-                            href="{{ route('dashboard.admin-biasa.booking', array_merge(request()->except('page'), ['type' => 'offline'])) }}"
-                            class="type-pill {{ $type === 'offline' ? 'active-offline' : '' }}"
-                        >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                            <span>Offline (Loket / Kasir)</span>
-                            <span class="pill-counter">{{ $stats['offline'] }}</span>
-                        </a>
-                    </div>
-
-                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
-                        <button type="button" onclick="openManualBookingModal()" class="btn-filter-apply">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            <span>Buat Pesanan Baru (Kasir)</span>
-                        </button>
-                        <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="btn-filter-reset" style="text-decoration: none;" title="Buka Halaman Kasir Loket Penuh">
-                            <span>Halaman Kasir Penuh</span>
-                        </a>
-                    </div>
-                </div>
-
                 <!-- Form Search & Dropdown Filter -->
-                <form method="GET" action="{{ route('dashboard.admin-biasa.booking') }}" class="filter-grid">
+                <form method="GET" action="{{ route('dashboard.admin-biasa.booking') }}" class="filter-grid" autocomplete="off">
                     <input type="hidden" name="type" value="{{ $type }}">
 
-                    <!-- Kolom Pencarian Cepat -->
-                    <div class="search-box">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        <input
-                            type="text"
-                            name="search"
-                            value="{{ $search }}"
-                            placeholder="Cari kode booking, nama pemesan, no HP, rute..."
-                            class="search-input"
-                        >
+                    <!-- 1. Kolom Pencarian Cepat -->
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="booking_search_input">Pencarian Cepat</label>
+                        <div class="search-box">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <input
+                                type="text"
+                                id="booking_search_input"
+                                name="search"
+                                value="{{ $search }}"
+                                placeholder="Cari kode, nama, no HP, rute..."
+                                class="search-input"
+                                autocomplete="off"
+                            >
+                        </div>
                     </div>
 
-                    <!-- Filter Status Transaksi -->
-                    <div>
-                        <select name="status" class="filter-select">
-                            <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Semua Status</option>
-                            <option value="paid" {{ $status === 'paid' ? 'selected' : '' }}>Sudah Lunas</option>
-                            <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Pending (Menunggu Bayar)</option>
-                            <option value="checked_in" {{ in_array($status, ['checked_in', 'boarded']) ? 'selected' : '' }}>Sudah Boarding / Check-in</option>
-                            <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Selesai</option>
-                            <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
-                        </select>
+                    <!-- 2. Filter Status Transaksi -->
+                    @php
+                        $sCounts = $statusCounts ?? [
+                            'all' => $stats['total'],
+                            'paid' => $stats['paid'],
+                            'pending' => $stats['pending'],
+                            'checked_in' => $stats['checked_in'] ?? 0,
+                            'completed' => $stats['completed'] ?? 0,
+                            'cancelled' => $stats['cancelled'],
+                        ];
+                    @endphp
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="booking_status_select">Status Transaksi</label>
+                        <div class="filter-control-wrap">
+                            <svg class="filter-control-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                            <select id="booking_status_select" name="status" class="filter-select has-icon" onchange="this.form.submit()">
+                                <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Semua Status ({{ $sCounts['all'] }})</option>
+                                <option value="paid" {{ $status === 'paid' ? 'selected' : '' }}>Sudah Lunas ({{ $sCounts['paid'] }})</option>
+                                <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Pending ({{ $sCounts['pending'] }})</option>
+                                <option value="checked_in" {{ in_array($status, ['checked_in', 'boarded']) ? 'selected' : '' }}>Sudah Boarding ({{ $sCounts['checked_in'] }})</option>
+                                <option value="completed" {{ $status === 'completed' ? 'selected' : '' }}>Selesai ({{ $sCounts['completed'] }})</option>
+                                <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Dibatalkan ({{ $sCounts['cancelled'] }})</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Filter Tanggal Keberangkatan -->
-                    <div>
-                        <input
-                            type="date"
-                            name="date"
-                            value="{{ $date }}"
-                            class="filter-select"
-                            title="Filter Tanggal Keberangkatan"
-                        >
+                    <!-- 3. Filter Tanggal Keberangkatan -->
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="booking_date_input">Tanggal Keberangkatan</label>
+                        <div class="filter-control-wrap">
+                            <svg class="filter-control-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
+                                <line x1="16" x2="16" y1="2" y2="6" />
+                                <line x1="8" x2="8" y1="2" y2="6" />
+                                <line x1="3" x2="21" y1="10" y2="10" />
+                            </svg>
+                            <input
+                                type="date"
+                                id="booking_date_input"
+                                name="date"
+                                value="{{ $date }}"
+                                class="filter-date"
+                                title="Filter Tanggal Keberangkatan"
+                                onchange="const schedSel = document.getElementById('booking_schedule_select'); if (schedSel) schedSel.value = ''; this.form.submit();"
+                            >
+                        </div>
                     </div>
 
-                    <!-- Filter Jadwal / Rute Spesifik -->
-                    <div>
-                        <select name="schedule_id" class="filter-select">
-                            <option value="">Semua Jadwal Trip</option>
-                            @foreach($scheduleList as $sched)
-                                @php
-                                    $sDate = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->format('d/m') : '';
-                                    $sTime = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '';
-                                    $sOrigin = $sched->route?->origin?->name ?? 'Asal';
-                                    $sDest = $sched->route?->destination?->name ?? 'Tujuan';
-                                @endphp
-                                <option value="{{ $sched->id }}" {{ ($scheduleId == $sched->id) ? 'selected' : '' }}>
-                                    {{ $sDate }} {{ $sTime }} — {{ $sOrigin }} ke {{ $sDest }}
-                                </option>
-                            @endforeach
-                        </select>
+                    <!-- 4. Filter Jadwal / Rute Spesifik -->
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="booking_schedule_select">Jadwal Trip Armada</label>
+                        <div class="filter-control-wrap">
+                            <svg class="filter-control-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="16" height="16" x="4" y="3" rx="2" />
+                                <path d="M4 11h16" />
+                                <path d="M12 3v8" />
+                                <path d="m8 19-2 3" />
+                                <path d="m18 22-2-3" />
+                                <path d="M8 15h0" />
+                                <path d="M16 15h0" />
+                            </svg>
+                            <select id="booking_schedule_select" name="schedule_id" class="filter-select has-icon" onchange="const opt = this.options[this.selectedIndex]; const dateInp = document.getElementById('booking_date_input'); if (dateInp && opt && opt.dataset.date) { dateInp.value = opt.dataset.date; } this.form.submit();">
+                                <option value="">Semua Jadwal Trip ({{ $scheduleList->count() }})</option>
+                                @foreach($scheduleList as $sched)
+                                    @php
+                                        $sDateRaw = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->toDateString() : '';
+                                        $sDate = $sched->departure_date ? \Carbon\Carbon::parse($sched->departure_date)->format('d/m/Y') : '';
+                                        $sTime = $sched->departure_time ? \Carbon\Carbon::parse($sched->departure_time)->format('H:i') : '';
+                                        $sOrigin = $sched->route?->origin?->name ?? 'Asal';
+                                        $sDest = $sched->route?->destination?->name ?? 'Tujuan';
+                                        $sCount = (int) ($sched->bookings_count ?? 0);
+                                    @endphp
+                                    <option value="{{ $sched->id }}" data-date="{{ $sDateRaw }}" {{ ((string) $scheduleId === (string) $sched->id) ? 'selected' : '' }}>
+                                        {{ $sDate }} {{ $sTime }} • {{ $sOrigin }} &rarr; {{ $sDest }} ({{ $sCount }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Tombol Aksi Filter -->
-                    <div style="display: flex; gap: 8px;">
+                    <!-- 5. Tombol Aksi Filter -->
+                    <div style="display: flex; gap: 6px; align-items: center;">
                         <button type="submit" class="btn-filter-apply">
                             <span>Filter</span>
                         </button>
-                        @if ($search || $type !== 'all' || $status !== 'all' || $scheduleId || $date)
-                            <a href="{{ route('dashboard.admin-biasa.booking') }}" class="btn-filter-reset" title="Reset Filter">
-                                Reset
-                            </a>
-                        @endif
+                        <a href="{{ route('dashboard.admin-biasa.booking') }}" class="btn-filter-reset" title="Reset Semua Filter">
+                            Reset
+                        </a>
                     </div>
                 </form>
             </div>
@@ -1043,14 +1230,27 @@
                                     </td>
 
                                     <!-- 6. TOTAL HARGA & STATUS PEMBAYARAN -->
+                                    @php
+                                        $isCompleted = $statusLower === 'completed';
+                                        $isBoarded = in_array($statusLower, ['checked_in', 'boarded'], true);
+                                        $isFutureTrip = $sched && $sched->departureCarbon()->isFuture();
+                                    @endphp
                                     <td>
                                         <div style="font-weight: 800; font-size: 14px; color: var(--text-dark);">
                                             Rp {{ number_format((float)$b->total_price, 0, ',', '.') }}
                                         </div>
-                                        <div style="margin-top: 4px;">
+                                        <div style="margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px;">
                                             @if($isCancelled)
                                                 <span class="status-badge badge-status-cancelled">
                                                     Dibatalkan
+                                                </span>
+                                            @elseif($isCompleted)
+                                                <span class="status-badge badge-status-completed" title="Pembayaran Lunas & Perjalanan Selesai">
+                                                    &check; Selesai
+                                                </span>
+                                            @elseif($isBoarded)
+                                                <span class="status-badge badge-status-paid" title="Pembayaran Lunas & Sudah Boarding">
+                                                    &check; Boarding
                                                 </span>
                                             @elseif($isPaid)
                                                 <span class="status-badge badge-status-paid">
@@ -1064,10 +1264,10 @@
                                         </div>
                                     </td>
 
-                                    <!-- 7. AKSI: DETAIL, CETAK ULANG TIKET, RESCHEDULE, BATALKAN -->
+                                    <!-- 7. AKSI (DISESUAIKAN DENGAN STATUS MASING-MASING PESANAN) -->
                                     <td style="text-align: center;">
                                         <div class="action-group" style="justify-content: center;">
-                                            <!-- 1. LIHAT DETAIL PESANAN -->
+                                            <!-- 1. LIHAT DETAIL PESANAN (SELALU TERSEDIA) -->
                                             <button
                                                 type="button"
                                                 class="btn-tbl-action detail"
@@ -1080,40 +1280,39 @@
                                                 </svg>
                                             </button>
 
-                                            <!-- 2. CETAK ULANG TIKET / STRUK FISIK -->
-                                            <a
-                                                href="{{ route('dashboard.admin-biasa.booking.print-ticket', $b->id) }}"
-                                                target="_blank"
-                                                class="btn-tbl-action print"
-                                                title="Cetak Ulang Tiket / Struk Fisik"
-                                            >
-                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polyline points="6 9 6 2 18 2 18 9" />
-                                                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                                                    <rect width="12" height="8" x="6" y="14" />
-                                                </svg>
-                                            </a>
-
-                                            <!-- 2.5 KONFIRMASI LUNAS CEPAT (UNTUK PESANAN PENDING) -->
-                                            @if(!$isPaid && !$isCancelled)
-                                                <form method="POST" action="{{ route('dashboard.admin-biasa.booking.settle', $b->id) }}" style="display: inline-flex; margin: 0;">
-                                                    @csrf
-                                                    <input type="hidden" name="payment_method" value="Cash">
-                                                    <button
-                                                        type="submit"
-                                                        class="btn-tbl-action print"
-                                                        style="background: #ecfdf5; color: #059669; border-color: #6ee7b7;"
-                                                        title="Konfirmasi Lunas (Tunai / Loket)"
-                                                    >
-                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                                            <polyline points="20 6 9 17 4 12" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
+                                            <!-- 2. CETAK TIKET / STRUK FISIK (HANYA UNTUK PESANAN SUDAH LUNAS / SELESAI) -->
+                                            @if($isPaid && !$isCancelled)
+                                                <a
+                                                    href="{{ route('dashboard.admin-biasa.booking.print-ticket', $b->id) }}"
+                                                    target="_blank"
+                                                    class="btn-tbl-action print"
+                                                    title="Cetak Ulang Tiket / Struk Fisik"
+                                                >
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="6 9 6 2 18 2 18 9" />
+                                                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                                        <rect width="12" height="8" x="6" y="14" />
+                                                    </svg>
+                                                </a>
                                             @endif
 
-                                            <!-- 3. UBAH JADWAL (RESCHEDULE) -->
-                                            @if(!$isCancelled && $sched && $sched->departureCarbon()->isFuture())
+                                            <!-- 3. KONFIRMASI LUNAS CEPAT (KHUSUS PESANAN PENDING) -->
+                                            @if(!$isPaid && !$isCancelled)
+                                                <button
+                                                    type="button"
+                                                    class="btn-tbl-action print"
+                                                    style="background: #ecfdf5; color: #059669; border-color: #6ee7b7;"
+                                                    title="Konfirmasi Lunas (Tunai / QRIS / Transfer)"
+                                                    onclick="openSettleModal({{ $b->id }}, @js($b->booking_code), @js($b->customerName()), @js('Rp '.number_format((float) $b->total_price, 0, ',', '.')))"
+                                                >
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polyline points="20 6 9 17 4 12" />
+                                                    </svg>
+                                                </button>
+                                            @endif
+
+                                            <!-- 4. UBAH JADWAL / RESCHEDULE (KHUSUS PESANAN AKTIF & JADWAL BELUM BERANGKAT) -->
+                                            @if(!$isCancelled && !$isCompleted && $isFutureTrip)
                                                 <button
                                                     type="button"
                                                     class="btn-tbl-action reschedule"
@@ -1129,8 +1328,8 @@
                                                 </button>
                                             @endif
 
-                                            <!-- 4. MEMBATALKAN PESANAN -->
-                                            @if(!$isCancelled)
+                                            <!-- 5. MEMBATALKAN PESANAN (KHUSUS PESANAN BELUM DIBATALKAN & BELUM SELESAI) -->
+                                            @if(!$isCancelled && !$isCompleted)
                                                 <button
                                                     type="button"
                                                     class="btn-tbl-action cancel"
@@ -1343,7 +1542,7 @@
 ====================================================================================== -->
 <div class="modal-overlay" id="manualBookingModalOverlay" onclick="if (event.target === this) closeModal('manualBookingModalOverlay')">
     <div class="modal-dialog" style="max-width: 960px;">
-        <form method="POST" action="{{ route('dashboard.admin-biasa.offline-booking.store') }}" id="manualBookingModalForm">
+        <form method="POST" action="{{ route('dashboard.admin-biasa.offline-booking.store') }}" id="manualBookingModalForm" autocomplete="off">
             @csrf
             <div class="modal-header">
                 <h3>
@@ -1467,28 +1666,31 @@
                             </div>
 
                             <div>
-                                <label for="mb_source" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Saluran Pemesanan Loket</label>
-                                <select name="source" id="mb_source" class="filter-select" required>
-                                    <option value="offline">Datang Langsung di Loket / Go-Show (Offline)</option>
-                                    <option value="whatsapp">Pesan via WhatsApp Pool / CS</option>
-                                    <option value="phone">Pesan via Telepon Pool</option>
-                                </select>
+                                <span style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Saluran Pemesanan Loket</span>
+                                <input type="hidden" name="source" id="mb_source" value="offline">
+                                <div style="height: 42px; padding: 0 12px; border: 1.5px solid var(--border); border-radius: 10px; background: #f8faf9; color: #0C392F; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: default;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: #0C7950;">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                        <polyline points="9 22 9 12 15 12 15 22" />
+                                    </svg>
+                                    <span>Datang Langsung di Loket / Go-Show (Offline)</span>
+                                </div>
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <div>
                                     <label for="mb_customer_name" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Nama Pelanggan <span style="color: #dc2626;">*</span></label>
-                                    <input type="text" id="mb_customer_name" name="customer_name" class="filter-select" placeholder="Contoh: Budi Santoso" required maxlength="100" oninput="mbSyncPassengerNames()">
+                                    <input type="text" id="mb_customer_name" name="customer_name" class="filter-select" style="background-image: none; padding-right: 12px;" placeholder="Contoh: Budi Santoso" required maxlength="100" autocomplete="off" oninput="mbSyncPassengerNames()">
                                 </div>
                                 <div>
                                     <label for="mb_customer_phone" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Nomor HP / WA <span style="color: #dc2626;">*</span></label>
-                                    <input type="tel" id="mb_customer_phone" name="customer_phone" class="filter-select" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); mbSyncPassengerPhones();">
+                                    <input type="tel" id="mb_customer_phone" name="customer_phone" class="filter-select" style="background-image: none; padding-right: 12px;" placeholder="081234567890" required maxlength="20" inputmode="numeric" pattern="[0-9]*" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, ''); mbSyncPassengerPhones();">
                                 </div>
                             </div>
 
                             <div>
                                 <label for="mb_customer_email" style="display: block; font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">Email Pelanggan (Opsional)</label>
-                                <input type="email" id="mb_customer_email" name="customer_email" class="filter-select" placeholder="email@contoh.com" maxlength="100">
+                                <input type="email" id="mb_customer_email" name="customer_email" class="filter-select" style="background-image: none; padding-right: 12px;" placeholder="email@contoh.com" maxlength="100" autocomplete="off">
                             </div>
 
                             <div id="mbPassengersDetailSection" style="display: none; gap: 8px;">
@@ -1545,13 +1747,152 @@
 </div>
 
 <!-- =====================================================================================
+     MODAL 5: KONFIRMASI PELUNASAN CEPAT (SETTLE PAYMENT)
+====================================================================================== -->
+<div class="modal-overlay" id="settleModalOverlay" onclick="if (event.target === this) closeModal('settleModalOverlay')">
+    <div class="modal-dialog" style="max-width: 460px;">
+        <form id="settleBookingForm" method="POST" onsubmit="submitSettleBooking(event)" autocomplete="off">
+            @csrf
+            <div class="modal-header">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #059669;">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    <span>Konfirmasi Pelunasan Tiket</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('settleModalOverlay')">&times;</button>
+            </div>
+
+            <div class="modal-body" style="display: grid; gap: 14px;">
+                <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; padding: 14px 16px; border-radius: 12px;">
+                    <div style="font-size: 12px; color: #047857; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Tagihan Pesanan Pending</div>
+                    <div style="font-size: 15px; font-weight: 800; color: #064e3b; margin-top: 2px;">
+                        <span id="settleBookingCodeText">#TRV-</span> &bull; <span id="settleCustomerNameText">-</span>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 800; color: #059669; margin-top: 6px;" id="settleTotalText">Rp 0</div>
+                </div>
+
+                <div>
+                    <label for="settlePaymentMethod" style="display: block; font-size: 12.5px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+                        Pilih Metode Pembayaran Diterima:
+                    </label>
+                    <select id="settlePaymentMethod" name="payment_method" class="filter-select" required>
+                        <option value="Cash">Tunai (Cash di Loket)</option>
+                        <option value="QRIS">QRIS Loket Pool</option>
+                        <option value="Transfer Bank">Transfer Bank</option>
+                    </select>
+                </div>
+
+                <label style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #f8fafc; border: 1px solid #cbd5e1; cursor: pointer; font-size: 12.5px; font-weight: 700; color: #0f172a;">
+                    <input type="checkbox" id="settleMarkBoarded" name="mark_boarded" value="1">
+                    <span>Langsung tandai penumpang <em>Boarded</em> (Sudah Naik)</span>
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-filter-reset" onclick="closeModal('settleModalOverlay')">Batal</button>
+                <button type="submit" id="settleSubmitBtn" class="btn-filter-apply" style="background: #059669;">
+                    <span>Konfirmasi Lunas Sekarang</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- =====================================================================================
+     MODAL 6: POPUP NOTIFIKASI CUSTOM (PENGGANTI BROWSER ALERT LOCALHOST)
+====================================================================================== -->
+<div class="modal-overlay" id="appPopupModalOverlay" style="z-index: 1200;" onclick="if (event.target === this) closeAppPopup()">
+    <div class="modal-dialog" style="max-width: 440px; text-align: center; padding: 28px 24px 22px;">
+        <div id="appPopupIconWrap" style="width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; background: #ecfdf5; color: #059669; border: 2px solid #a7f3d0;">
+            <!-- SVG Icon diisi via JS -->
+        </div>
+        <h3 id="appPopupTitle" style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Notifikasi Sistem</h3>
+        <p id="appPopupMessage" style="font-size: 13.5px; color: #475569; line-height: 1.55; margin-bottom: 20px;"></p>
+
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+            <a href="#" id="appPopupActionLink" target="_blank" class="btn-filter-apply" style="display: none; text-decoration: none; background: #0C7950;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9" />
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                    <rect width="12" height="8" x="6" y="14" />
+                </svg>
+                <span id="appPopupActionLabel">Cetak Struk / Tiket Fisik</span>
+            </a>
+            <button type="button" id="appPopupConfirmBtn" class="btn-filter-apply" onclick="closeAppPopup()" style="min-width: 120px; justify-content: center;">
+                <span>Mengerti</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================================
      SCRIPTS
 ====================================================================================== -->
 <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    let appPopupCloseCallback = null;
 
     function closeModal(modalId) {
         document.getElementById(modalId)?.classList.remove('active');
+    }
+
+    function showAppPopup({ type = 'success', title = 'Informasi', message = '', buttonText = 'Tutup', actionUrl = '', actionLabel = '', onClose = null }) {
+        const overlay = document.getElementById('appPopupModalOverlay');
+        const iconWrap = document.getElementById('appPopupIconWrap');
+        const titleEl = document.getElementById('appPopupTitle');
+        const msgEl = document.getElementById('appPopupMessage');
+        const btnEl = document.getElementById('appPopupConfirmBtn');
+        const linkEl = document.getElementById('appPopupActionLink');
+        const linkLabelEl = document.getElementById('appPopupActionLabel');
+
+        if (!overlay) return;
+        appPopupCloseCallback = typeof onClose === 'function' ? onClose : null;
+
+        if (type === 'error') {
+            iconWrap.style.background = '#fef2f2';
+            iconWrap.style.color = '#dc2626';
+            iconWrap.style.borderColor = '#fecaca';
+            iconWrap.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+            btnEl.style.background = '#dc2626';
+        } else if (type === 'warning') {
+            iconWrap.style.background = '#fffbeb';
+            iconWrap.style.color = '#d97706';
+            iconWrap.style.borderColor = '#fde68a';
+            iconWrap.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+            btnEl.style.background = '#d97706';
+        } else {
+            iconWrap.style.background = '#ecfdf5';
+            iconWrap.style.color = '#059669';
+            iconWrap.style.borderColor = '#a7f3d0';
+            iconWrap.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            btnEl.style.background = '#087f55';
+        }
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        btnEl.querySelector('span').textContent = buttonText;
+
+        if (actionUrl && linkEl) {
+            linkEl.href = actionUrl;
+            if (linkLabelEl) linkLabelEl.textContent = actionLabel || 'Cetak Struk / Tiket Fisik';
+            linkEl.style.display = 'inline-flex';
+        } else if (linkEl) {
+            linkEl.style.display = 'none';
+        }
+
+        overlay.classList.add('active');
+    }
+
+    function closeAppPopup() {
+        const overlay = document.getElementById('appPopupModalOverlay');
+        overlay?.classList.remove('active');
+        if (appPopupCloseCallback) {
+            const cb = appPopupCloseCallback;
+            appPopupCloseCallback = null;
+            cb();
+        }
     }
 
     document.addEventListener('keydown', function (e) {
@@ -1560,6 +1901,8 @@
             closeModal('rescheduleModalOverlay');
             closeModal('cancelModalOverlay');
             closeModal('manualBookingModalOverlay');
+            closeModal('settleModalOverlay');
+            closeAppPopup();
         }
     });
 
@@ -1591,7 +1934,10 @@
             const passengers = data.passengers || [];
 
             title.innerText = `Detail Pesanan #${b.booking_code}`;
+            const bStatusLower = String(b.status || '').toLowerCase();
+            const canPrintTicket = ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed'].includes(bStatusLower);
             printBtn.href = b.print_url;
+            printBtn.style.display = canPrintTicket ? 'inline-flex' : 'none';
 
             const badgeHtml = b.is_offline
                 ? '<span class="badge-type-offline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg> Offline (Loket)</span>'
@@ -1750,7 +2096,12 @@
         const reason = document.getElementById('rescheduleReasonInput').value;
 
         if (!select.value) {
-            alert('Silakan pilih jadwal keberangkatan baru terlebih dahulu.');
+            showAppPopup({
+                type: 'warning',
+                title: 'Jadwal Belum Dipilih',
+                message: 'Silakan pilih jadwal keberangkatan baru terlebih dahulu sebelum menyimpan perubahan.',
+                buttonText: 'Pilih Jadwal'
+            });
             return;
         }
 
@@ -1773,16 +2124,32 @@
 
             const data = await res.json();
             if (res.ok && data.success) {
-                alert(data.message || 'Jadwal tiket berhasil diubah!');
-                window.location.reload();
+                closeModal('rescheduleModalOverlay');
+                showAppPopup({
+                    type: 'success',
+                    title: 'Jadwal Berhasil Diubah',
+                    message: data.message || 'Jadwal keberangkatan tiket berhasil diperbarui.',
+                    buttonText: 'Muat Ulang Data',
+                    onClose: () => window.location.reload()
+                });
             } else {
-                alert(data.message || 'Gagal mengubah jadwal tiket.');
+                showAppPopup({
+                    type: 'error',
+                    title: 'Gagal Mengubah Jadwal',
+                    message: data.message || 'Gagal mengubah jadwal tiket.',
+                    buttonText: 'Tutup'
+                });
                 btn.disabled = false;
                 btn.innerText = 'Konfirmasi Ubah Jadwal';
             }
         } catch (err) {
             console.error(err);
-            alert('Terjadi kesalahan koneksi.');
+            showAppPopup({
+                type: 'error',
+                title: 'Gangguan Koneksi',
+                message: 'Terjadi kesalahan koneksi saat menghubungi server. Silakan coba lagi.',
+                buttonText: 'Tutup'
+            });
             btn.disabled = false;
             btn.innerText = 'Konfirmasi Ubah Jadwal';
         }
@@ -1824,18 +2191,108 @@
 
             const data = await res.json();
             if (res.ok && data.success) {
-                alert(data.message || 'Pesanan berhasil dibatalkan.');
-                window.location.reload();
+                closeModal('cancelModalOverlay');
+                showAppPopup({
+                    type: 'success',
+                    title: 'Pesanan Dibatalkan',
+                    message: data.message || 'Pesanan berhasil dibatalkan dan kursi telah dikembalikan ke kuota armada.',
+                    buttonText: 'Muat Ulang Data',
+                    onClose: () => window.location.reload()
+                });
             } else {
-                alert(data.message || 'Gagal membatalkan pesanan.');
+                showAppPopup({
+                    type: 'error',
+                    title: 'Gagal Membatalkan',
+                    message: data.message || 'Gagal membatalkan pesanan.',
+                    buttonText: 'Tutup'
+                });
                 btn.disabled = false;
                 btn.innerText = 'Ya, Batalkan Pesanan';
             }
         } catch (err) {
             console.error(err);
-            alert('Terjadi kesalahan koneksi.');
+            showAppPopup({
+                type: 'error',
+                title: 'Gangguan Koneksi',
+                message: 'Terjadi kesalahan koneksi saat membatalkan pesanan.',
+                buttonText: 'Tutup'
+            });
             btn.disabled = false;
             btn.innerText = 'Ya, Batalkan Pesanan';
+        }
+    }
+
+    // 3.5 SETTLE PAYMENT MODAL (KONFIRMASI LUNAS CEPAT)
+    const settleBookingUrlTemplate = @json(route('dashboard.admin-biasa.booking.settle', ['booking' => '__BOOKING_ID__']));
+
+    function openSettleModal(bookingId, bookingCode, customerName, formattedTotal) {
+        const overlay = document.getElementById('settleModalOverlay');
+        const form = document.getElementById('settleBookingForm');
+        if (!overlay || !form) return;
+
+        document.getElementById('settleBookingCodeText').textContent = `#${bookingCode}`;
+        document.getElementById('settleCustomerNameText').textContent = customerName;
+        document.getElementById('settleTotalText').textContent = formattedTotal;
+        document.getElementById('settlePaymentMethod').value = 'Cash';
+        document.getElementById('settleMarkBoarded').checked = false;
+        form.action = settleBookingUrlTemplate.replace('__BOOKING_ID__', String(bookingId));
+        overlay.classList.add('active');
+    }
+
+    async function submitSettleBooking(e) {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('settleSubmitBtn');
+        const paymentMethod = document.getElementById('settlePaymentMethod').value;
+        const markBoarded = document.getElementById('settleMarkBoarded').checked;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span>Memproses...</span>';
+
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    payment_method: paymentMethod,
+                    mark_boarded: markBoarded
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                closeModal('settleModalOverlay');
+                showAppPopup({
+                    type: 'success',
+                    title: 'Pelunasan Berhasil',
+                    message: data.message || 'Status pesanan telah diperbarui menjadi Lunas.',
+                    buttonText: 'Muat Ulang Data',
+                    onClose: () => window.location.reload()
+                });
+            } else {
+                showAppPopup({
+                    type: 'error',
+                    title: 'Pelunasan Gagal',
+                    message: data.message || 'Tidak dapat memproses pelunasan tiket.',
+                    buttonText: 'Tutup'
+                });
+                btn.disabled = false;
+                btn.innerHTML = '<span>Konfirmasi Lunas Sekarang</span>';
+            }
+        } catch (err) {
+            console.error(err);
+            showAppPopup({
+                type: 'error',
+                title: 'Gangguan Koneksi',
+                message: 'Terjadi kesalahan jaringan saat memproses pelunasan.',
+                buttonText: 'Tutup'
+            });
+            btn.disabled = false;
+            btn.innerHTML = '<span>Konfirmasi Lunas Sekarang</span>';
         }
     }
 
@@ -2065,17 +2522,24 @@
     function mbToggleSeat(btn) {
         const id = btn.dataset.seatId;
         const num = btn.dataset.seatNum;
+        const statusLabel = btn.querySelector('small');
 
         if (mbSelectedSeats.has(id)) {
             mbSelectedSeats.delete(id);
             btn.style.background = '#eefbf5';
             btn.style.borderColor = '#8fd3b4';
             btn.style.color = '#0C5A3E';
+            if (statusLabel) {
+                statusLabel.textContent = 'Kosong';
+            }
         } else {
             mbSelectedSeats.set(id, num);
             btn.style.background = '#0C7950';
             btn.style.borderColor = '#0C392F';
             btn.style.color = '#ffffff';
+            if (statusLabel) {
+                statusLabel.textContent = 'Terpilih';
+            }
         }
 
         mbRenderSelectionState();
@@ -2136,8 +2600,8 @@
                 card.innerHTML = `
                     <strong style="font-size: 11.5px; color: #0C392F;">Penumpang Kursi ${escapeHtml(seatNum)}</strong>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                        <input type="text" name="passengers[${seatId}][name]" class="filter-select" style="height: 36px; font-size: 12.5px;" data-auto-synced="true" oninput="this.dataset.autoSynced = 'false'" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${escapeHtml(seatNum)}" required maxlength="100">
-                        <input type="tel" name="passengers[${seatId}][phone]" class="filter-select" style="height: 36px; font-size: 12.5px;" data-auto-synced="true" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.dataset.autoSynced = 'false'">
+                        <input type="text" name="passengers[${seatId}][name]" class="filter-select" style="height: 36px; font-size: 12.5px; background-image: none; padding-right: 10px;" autocomplete="off" data-auto-synced="true" oninput="this.dataset.autoSynced = 'false'" value="${escapeHtml(suggestedName)}" placeholder="Nama penumpang kursi ${escapeHtml(seatNum)}" required maxlength="100">
+                        <input type="tel" name="passengers[${seatId}][phone]" class="filter-select" style="height: 36px; font-size: 12.5px; background-image: none; padding-right: 10px;" autocomplete="off" data-auto-synced="true" value="${escapeHtml(defaultPhone)}" placeholder="No. HP (opsional)" maxlength="20" inputmode="numeric" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, ''); this.dataset.autoSynced = 'false'">
                     </div>
                 `;
                 cardsList.appendChild(card);
@@ -2185,6 +2649,27 @@
             }
         }
     }
+    @if (session('success'))
+        document.addEventListener('DOMContentLoaded', () => {
+            showAppPopup({
+                type: 'success',
+                title: 'Transaksi Berhasil',
+                message: @json(session('success')),
+                buttonText: 'Tutup',
+                actionUrl: @json(session('print_url') ?? ''),
+                actionLabel: @json(session('print_booking_code') ? 'Cetak Struk (' . session('print_booking_code') . ')' : 'Cetak Struk / Tiket Fisik')
+            });
+        });
+    @elseif (session('error'))
+        document.addEventListener('DOMContentLoaded', () => {
+            showAppPopup({
+                type: 'error',
+                title: 'Transaksi Gagal',
+                message: @json(session('error')),
+                buttonText: 'Mengerti'
+            });
+        });
+    @endif
 </script>
 
 @include('components.numeric-input-enforcer')
