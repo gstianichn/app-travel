@@ -16,8 +16,8 @@
         {{-- Scene: the same sun, hills and minibus as the landing page --}}
         <aside class="au-scene">
             <a href="{{ route('home') }}" class="au-brand">
-                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 44px; width: auto; object-fit: contain;">
-                <span>TravelKu</span>
+                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 66px; width: auto; object-fit: contain;">
+                <!-- <span>TravelKu</span> -->
             </a>
 
 

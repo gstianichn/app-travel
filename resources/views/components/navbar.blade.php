@@ -2,7 +2,7 @@
     <div class="container navbar-content">
 
         <a href="{{ url('/') }}" class="navbar-brand">
-            <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 44px; width: auto; object-fit: contain;">
+            <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 66px; width: auto; object-fit: contain; padding: 5px;">
         </a>
 
         <button type="button" class="navbar-toggle" aria-expanded="false" aria-controls="navbar-panel" data-navbar-toggle>

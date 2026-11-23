@@ -29,7 +29,7 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6">
             <div class="flex items-center justify-between gap-4 h-16">
                 <a href="{{ $layoutUser ? route('dashboard.user.index') : route('home') }}" class="flex items-center gap-2.5 min-h-11 text-brand-900 font-extrabold text-xl">
-                    <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" class="w-8 h-8 object-contain">
+                    <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" class="object-contain" style="width: 100%; height: 55px; padding: 4px;">
                     <span>TravelKu</span>
                 </a>
 

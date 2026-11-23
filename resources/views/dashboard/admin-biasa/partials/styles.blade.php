@@ -98,8 +98,8 @@
         }
 
         .logo-icon {
-            width: 43px;
-            height: 43px;
+            width: 50px;
+            height: 50px;
 
             display: flex;
             align-items: center;

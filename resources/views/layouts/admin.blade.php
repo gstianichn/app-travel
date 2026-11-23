@@ -93,13 +93,13 @@
         }
 
         .admin-logo-icon {
-            width: 38px;
-            height: 38px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 11px;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.8);
             padding: 5px;
             box-sizing: border-box;
             margin-right: 11px;

@@ -12,7 +12,7 @@
     <div class="container ft-top">
         <div class="ft-brand">
             <a href="{{ route('home') }}" class="ft-logo">
-                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 56px; width: auto; object-fit: contain; background-color: #ffffff; padding: 4px; border-radius: 4px;">
+                <img src="{{ asset('images/logo-travelku.png') }}" alt="TravelKu" style="height: 66px; width: auto; object-fit: contain; background-color: #ffffff; padding: 6px; border-radius: 4px;">
             </a>
             <p>Travel minibus antar kota. Pilih rute, jam, dan kursi dari HP, bayar lewat virtual account, QRIS, atau e-wallet, lalu tunjukkan QR e-ticket saat naik.</p>
             <div class="ft-actions">
