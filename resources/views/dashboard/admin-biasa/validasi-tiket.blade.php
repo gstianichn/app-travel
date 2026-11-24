@@ -668,6 +668,21 @@
                                         </svg>
                                         <span>Balik Kamera</span>
                                     </button>
+
+                                    <label class="btn-camera-action" style="margin: 0;" title="Pindai QR Code dari file gambar / tangkapan layar">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                                            <circle cx="9" cy="9" r="2" />
+                                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                        </svg>
+                                        <span>Scan Gambar</span>
+                                        <input type="file" id="qrImageUploadInput" accept="image/*" style="display: none;" onchange="scanQrFromImage(this)">
+                                    </label>
+                                </div>
+
+                                <div id="cameraDeviceRow" style="display: none; margin-top: 8px; align-items: center; gap: 8px;">
+                                    <label for="cameraDeviceSelect" style="font-size: 11px; font-weight: 700; color: var(--text-light); white-space: nowrap;">Perangkat Kamera:</label>
+                                    <select id="cameraDeviceSelect" class="manual-input" style="min-height: 34px; padding: 4px 10px; font-size: 12px; font-family: inherit; text-transform: none;" onchange="selectCameraDevice(this.value)"></select>
                                 </div>
 
                                 {{-- MODE MANUAL (FALLBACK KODE BOOKING / SCAN GUN) --}}
@@ -906,7 +921,7 @@
 </div>
 
 {{-- LIBRARY JSQR UNTUK CAMERA QR DECODING REAL-TIME --}}
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" onerror="var s=document.createElement('script');s.src='https://unpkg.com/jsqr@1.4.0/dist/jsQR.js';document.head.appendChild(s);"></script>
 
 <script>
     // Inisialisasi Data Awal dari Backend
@@ -997,43 +1012,117 @@
     let videoTrack = null;
     let isTorchOn = false;
     let currentFacingMode = 'environment';
+    let selectedCameraDeviceId = '';
+    let availableCameraDevices = [];
     let scanInterval = null;
+    let lastScannedCode = '';
+    let lastScannedAt = 0;
+
+    async function populateCameraDevices() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            availableCameraDevices = devices.filter(d => d.kind === 'videoinput');
+            const selectEl = document.getElementById('cameraDeviceSelect');
+            const rowEl = document.getElementById('cameraDeviceRow');
+            if (!selectEl || !rowEl) return;
+
+            if (availableCameraDevices.length > 1) {
+                selectEl.innerHTML = availableCameraDevices.map((cam, idx) => {
+                    const label = cam.label || `Kamera ${idx + 1}`;
+                    const selected = (selectedCameraDeviceId && cam.deviceId === selectedCameraDeviceId) ? 'selected' : '';
+                    return `<option value="${escapeHtml(cam.deviceId)}" ${selected}>${escapeHtml(label)}</option>`;
+                }).join('');
+                rowEl.style.display = 'flex';
+            } else {
+                rowEl.style.display = 'none';
+            }
+        } catch (e) {
+            // ignore enumerate errors
+        }
+    }
+
+    async function startCamera(isAutoStart = false) {
+        const videoElem = document.getElementById('scannerVideo');
+        const btnText = document.getElementById('cameraBtnText');
+        const statusText = document.getElementById('scannerStatusText');
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            statusText.innerText = 'Browser tidak mendukung kamera (gunakan localhost/HTTPS atau Scan Gambar).';
+            if (!isAutoStart) {
+                showToast('Browser tidak mendukung akses kamera pada URL ini.', 'danger');
+            }
+            return;
+        }
+
+        stopCameraStream();
+        statusText.innerText = 'Menyalakan kamera...';
+
+        const videoConstraints = selectedCameraDeviceId
+            ? { deviceId: { exact: selectedCameraDeviceId }, width: { ideal: 1280 }, height: { ideal: 720 } }
+            : { facingMode: { ideal: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 720 } };
+
+        try {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+            } catch (primaryErr) {
+                // Fallback universal untuk webcam laptop/desktop jika facingMode atau resolusi tidak didukung
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            }
+
+            videoElem.srcObject = cameraStream;
+            videoElem.setAttribute('playsinline', 'true');
+            videoElem.muted = true;
+            await videoElem.play();
+
+            videoTrack = cameraStream.getVideoTracks()[0] || null;
+            if (videoTrack && videoTrack.getSettings) {
+                const settings = videoTrack.getSettings();
+                if (settings.deviceId) {
+                    selectedCameraDeviceId = settings.deviceId;
+                }
+            }
+
+            btnText.innerText = 'Hentikan Kamera';
+            statusText.innerText = 'Kamera Aktif • Arahkan QR Code Tiket ke Kotak';
+            if (!isAutoStart) {
+                showToast('Kamera pemindai QR aktif.', 'info');
+            }
+
+            await populateCameraDevices();
+            startBarcodeDetector(videoElem);
+        } catch (err) {
+            console.warn('Camera access issue:', err);
+            btnText.innerText = 'Mulai Kamera';
+            if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+                statusText.innerText = 'Izin kamera ditolak. Klik "Mulai Kamera" & izinkan akses.';
+            } else if (err && err.name === 'NotFoundError') {
+                statusText.innerText = 'Kamera tidak ditemukan. Gunakan Scan Gambar atau input manual.';
+            } else {
+                statusText.innerText = 'Kamera belum aktif. Klik "Mulai Kamera" untuk memulai.';
+            }
+            if (!isAutoStart) {
+                showToast('Gagal membuka kamera: ' + (err.message || 'Periksa izin kamera browser'), 'danger');
+            }
+        }
+    }
 
     async function toggleCamera() {
-        const videoElem = document.getElementById('scannerVideo');
         const btnText = document.getElementById('cameraBtnText');
         const statusText = document.getElementById('scannerStatusText');
 
         if (cameraStream) {
             stopCameraStream();
             btnText.innerText = 'Mulai Kamera';
-            statusText.innerText = 'Kamera Dihentikan (Mode Manual Aktif)';
+            statusText.innerText = 'Kamera Dihentikan (Klik Mulai Kamera untuk Scan QR)';
         } else {
-            try {
-                const constraints = {
-                    video: {
-                        facingMode: { ideal: currentFacingMode },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                };
-
-                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-                videoElem.srcObject = cameraStream;
-                videoTrack = cameraStream.getVideoTracks()[0];
-
-                btnText.innerText = 'Hentikan Kamera';
-                statusText.innerText = 'Kamera Aktif • Arahkan QR Code Tiket';
-                showToast('Kamera pemindai QR aktif.', 'info');
-
-                startBarcodeDetector(videoElem);
-            } catch (err) {
-                console.warn('Camera access issue:', err);
-                statusText.innerText = 'Kamera tidak dapat diakses. Gunakan input manual.';
-                showToast('Gagal membuka kamera: ' + (err.message || 'Izin ditolak'), 'danger');
-            }
+            await startCamera(false);
         }
+    }
+
+    async function selectCameraDevice(deviceId) {
+        selectedCameraDeviceId = deviceId || '';
+        await startCamera(false);
     }
 
     function stopCameraStream() {
@@ -1046,7 +1135,11 @@
             clearInterval(scanInterval);
             scanInterval = null;
         }
-        document.getElementById('scannerVideo').srcObject = null;
+        const videoElem = document.getElementById('scannerVideo');
+        if (videoElem) {
+            videoElem.pause();
+            videoElem.srcObject = null;
+        }
         isTorchOn = false;
         updateTorchButtonUI();
     }
@@ -1089,46 +1182,97 @@
     }
 
     async function switchCamera() {
-        currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+        if (availableCameraDevices.length > 1) {
+            const currentIdx = availableCameraDevices.findIndex(d => d.deviceId === selectedCameraDeviceId);
+            const nextIdx = (currentIdx + 1) % availableCameraDevices.length;
+            selectedCameraDeviceId = availableCameraDevices[nextIdx].deviceId;
+            const selectEl = document.getElementById('cameraDeviceSelect');
+            if (selectEl) selectEl.value = selectedCameraDeviceId;
+        } else {
+            selectedCameraDeviceId = '';
+            currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+        }
         if (cameraStream) {
-            stopCameraStream();
-            toggleCamera();
+            await startCamera(false);
         }
     }
 
+    function handleDetectedQrCode(rawCode) {
+        const trimmed = String(rawCode || '').trim();
+        if (!trimmed) return;
+
+        const now = Date.now();
+        // Cooldown 3.5 detik untuk kode QR yang sama agar tidak langsung double-scan
+        if (trimmed === lastScannedCode && (now - lastScannedAt) < 3500) {
+            return;
+        }
+
+        lastScannedCode = trimmed;
+        lastScannedAt = now;
+
+        const statusText = document.getElementById('scannerStatusText');
+        if (statusText) {
+            statusText.innerText = `QR Terdeteksi: ${trimmed}`;
+        }
+
+        const manualInput = document.getElementById('manualCodeInput');
+        if (manualInput) {
+            manualInput.value = trimmed;
+        }
+
+        validateTicketCode(trimmed);
+    }
+
     function startBarcodeDetector(videoElem) {
+        if (scanInterval) {
+            clearInterval(scanInterval);
+            scanInterval = null;
+        }
+
         let isProcessing = false;
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        let nativeDetector = null;
+        if ('BarcodeDetector' in window) {
+            try {
+                nativeDetector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
+            } catch (e) {
+                nativeDetector = null;
+            }
+        }
 
         scanInterval = setInterval(async () => {
-            if (isProcessing || !cameraStream || videoElem.readyState < 2) return;
+            if (isProcessing || isSubmitting || !cameraStream || videoElem.readyState < 2 || videoElem.videoWidth === 0) return;
             isProcessing = true;
 
             try {
-                // 1. Coba native BarcodeDetector jika tersedia di browser
-                if ('BarcodeDetector' in window) {
-                    const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
-                    const barcodes = await detector.detect(videoElem);
-                    if (barcodes.length > 0 && barcodes[0].rawValue) {
-                        validateTicketCode(barcodes[0].rawValue);
-                        isProcessing = false;
-                        return;
+                // 1. Coba native BarcodeDetector jika tersedia
+                if (nativeDetector) {
+                    try {
+                        const barcodes = await nativeDetector.detect(videoElem);
+                        if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+                            handleDetectedQrCode(barcodes[0].rawValue);
+                            return;
+                        }
+                    } catch (e) {
+                        nativeDetector = null;
                     }
                 }
 
-                // 2. Fallback jsQR via hidden in-memory canvas
-                if (window.jsQR && videoElem.videoWidth > 0) {
-                    canvas.width = videoElem.videoWidth;
-                    canvas.height = videoElem.videoHeight;
+                // 2. Fallback jsQR (resolusi optimal + attemptBoth agar terbaca di layar HP terang/gelap)
+                if (window.jsQR && videoElem.videoWidth > 0 && videoElem.videoHeight > 0) {
+                    const maxDim = 720;
+                    const scale = Math.min(1, maxDim / Math.max(videoElem.videoWidth, videoElem.videoHeight));
+                    canvas.width = Math.max(1, Math.floor(videoElem.videoWidth * scale));
+                    canvas.height = Math.max(1, Math.floor(videoElem.videoHeight * scale));
                     ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
                     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const code = window.jsQR(imgData.data, imgData.width, imgData.height, {
-                        inversionAttempts: "dontInvert"
+                        inversionAttempts: 'attemptBoth'
                     });
                     if (code && code.data) {
-                        validateTicketCode(code.data);
-                        isProcessing = false;
+                        handleDetectedQrCode(code.data);
                         return;
                     }
                 }
@@ -1137,7 +1281,69 @@
             } finally {
                 isProcessing = false;
             }
-        }, 350);
+        }, 220);
+    }
+
+    async function scanQrFromImage(fileInput) {
+        const file = fileInput?.files?.[0];
+        if (!file) return;
+
+        try {
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            img.onload = async () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    const maxDim = 1000;
+                    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                    canvas.width = Math.max(1, Math.floor(img.width * scale));
+                    canvas.height = Math.max(1, Math.floor(img.height * scale));
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    let decoded = '';
+                    if ('BarcodeDetector' in window) {
+                        try {
+                            const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128'] });
+                            const results = await detector.detect(canvas);
+                            if (results && results.length > 0 && results[0].rawValue) {
+                                decoded = results[0].rawValue;
+                            }
+                        } catch (e) {
+                            // fallback ke jsQR
+                        }
+                    }
+
+                    if (!decoded && window.jsQR) {
+                        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const qr = window.jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'attemptBoth' });
+                        if (qr && qr.data) {
+                            decoded = qr.data;
+                        }
+                    }
+
+                    if (decoded) {
+                        lastScannedCode = '';
+                        handleDetectedQrCode(decoded);
+                    } else {
+                        playErrorSound();
+                        showToast('QR Code tidak terdeteksi pada gambar tersebut.', 'danger');
+                    }
+                } finally {
+                    URL.revokeObjectURL(objectUrl);
+                    fileInput.value = '';
+                }
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                fileInput.value = '';
+                showToast('Gagal membaca file gambar.', 'danger');
+            };
+            img.src = objectUrl;
+        } catch (err) {
+            fileInput.value = '';
+            showToast('Terjadi kesalahan saat memindai gambar QR.', 'danger');
+        }
     }
 
     // ---------------------------------------------------------
@@ -1550,6 +1756,13 @@
         renderBoardedData();
         const input = document.getElementById('manualCodeInput');
         if (input) input.focus();
+
+        // Otomatis aktifkan kamera pemindai QR saat halaman dibuka
+        startCamera(true);
+    });
+
+    window.addEventListener('beforeunload', () => {
+        stopCameraStream();
     });
 </script>
 

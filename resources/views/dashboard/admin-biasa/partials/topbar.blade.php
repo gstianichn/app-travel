@@ -21,7 +21,10 @@
         </div>
     </div>
 
-    <div class="profile">
+    <a href="{{ route('dashboard.admin-biasa.profil') }}"
+       class="profile {{ request()->routeIs('dashboard.admin-biasa.profil') ? 'is-active' : '' }}"
+       title="Buka Profil Staff"
+       aria-label="Profil {{ auth()->user()->name ?? 'Staff Operasional' }}">
         <div class="avatar">
             {{ strtoupper(substr(auth()->user()->name ?? 'S', 0, 1)) }}
         </div>
@@ -29,5 +32,5 @@
             <strong>{{ auth()->user()->name ?? 'Staff Operasional' }}</strong>
             <span>{{ ($shiftInfo['pool_name'] ?? auth()->user()->branch) ?: 'Staff Operasional' }}</span>
         </div>
-    </div>
+    </a>
 </header>

@@ -630,6 +630,21 @@ Route::middleware(['auth', 'role:staff'])
             'printTicket',
         ])->name('dashboard.admin-biasa.booking.print-ticket');
 
+        Route::get('/admin/profil', [
+            AdminBiasaDashboardController::class,
+            'profil',
+        ])->name('dashboard.admin-biasa.profil');
+
+        Route::post('/admin/profil', [
+            AdminBiasaDashboardController::class,
+            'updateProfil',
+        ])->name('dashboard.admin-biasa.profil.update');
+
+        Route::post('/admin/profil/password', [
+            AdminBiasaDashboardController::class,
+            'updatePassword',
+        ])->name('dashboard.admin-biasa.profil.password');
+
     });
 
 /*

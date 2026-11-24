@@ -52,26 +52,58 @@
                 <div class="flex items-center gap-2">
                     <div class="relative" @click.outside="userMenuOpen = false" @keydown.escape.window="userMenuOpen = false">
                         <button type="button" @click="userMenuOpen = !userMenuOpen" :aria-expanded="userMenuOpen.toString()" aria-haspopup="true"
-                                class="flex items-center gap-2 min-h-11 pl-1 pr-3 rounded-full border border-slate-300 bg-white hover:border-brand-500 transition-colors">
-                            <span class="w-9 h-9 rounded-full bg-brand-700 text-white font-bold flex items-center justify-center" aria-hidden="true">
+                                class="flex items-center gap-2 min-h-10 pl-1 pr-3 rounded-full border border-slate-300/90 bg-white hover:border-brand-700 transition-colors cursor-pointer">
+                            <span class="w-8 h-8 rounded-full bg-brand-800 text-white text-sm font-bold flex items-center justify-center" aria-hidden="true">
                                 {{ strtoupper(mb_substr($layoutUser->name ?? 'P', 0, 1)) }}
                             </span>
-                            <span class="hidden sm:block font-semibold text-slate-800 max-w-32 truncate">{{ \Illuminate\Support\Str::before($layoutUser->name ?? 'Penumpang', ' ') }}</span>
-                            <svg class="w-4 h-4 text-slate-500 transition-transform" :class="userMenuOpen && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                            <span class="hidden sm:block text-sm font-semibold text-slate-800 max-w-28 truncate">{{ \Illuminate\Support\Str::before($layoutUser->name ?? 'Penumpang', ' ') }}</span>
+                            <svg class="w-4 h-4 text-slate-500 transition-transform duration-150" :class="userMenuOpen && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
                         </button>
 
-                        <div x-show="userMenuOpen" x-cloak x-transition.origin.top.right
-                             class="absolute right-0 mt-2 w-64 rounded-xl bg-white border border-slate-200 shadow-lg py-2 z-50">
-                            <div class="px-4 py-2 border-b border-slate-100">
-                                <p class="font-bold text-slate-900 truncate">{{ $layoutUser->name ?? 'Penumpang' }}</p>
-                                <p class="text-sm text-slate-500 truncate">{{ $layoutUser->email ?? '' }}</p>
+                        <div x-show="userMenuOpen"
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-120"
+                             x-transition:enter-start="opacity-0 translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             x-transition:leave="transition ease-in duration-90"
+                             x-transition:leave-start="opacity-100 translate-y-0"
+                             x-transition:leave-end="opacity-0 translate-y-1"
+                             class="absolute right-0 mt-2 w-60 rounded-xl bg-white border border-slate-200 shadow-lg z-50 overflow-hidden">
+                            <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/70">
+                                <p class="text-sm font-bold text-slate-900 truncate">{{ $layoutUser->name ?? 'Penumpang' }}</p>
+                                <p class="text-xs text-slate-500 truncate mt-0.5">{{ $layoutUser->email ?? '' }}</p>
                             </div>
-                            <a href="{{ route('dashboard.user.user-akun') }}" class="flex items-center min-h-11 px-4 text-slate-700 hover:bg-slate-50">Profil dan akun</a>
-                            <a href="{{ route('dashboard.user.user-tiket') }}" class="flex items-center min-h-11 px-4 text-slate-700 hover:bg-slate-50">Tiket dan riwayat</a>
-                            <a href="{{ route('home') }}" class="flex items-center min-h-11 px-4 text-slate-700 hover:bg-slate-50">Halaman utama TravelKu</a>
-                            <form action="{{ route('user.logout') }}" method="POST" class="border-t border-slate-100 mt-1 pt-1">
+
+                            <div class="py-1.5">
+                                <a href="{{ route('dashboard.user.user-akun') }}"
+                                   class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-brand-900 transition-colors">
+                                    <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    <span>Profil dan akun</span>
+                                </a>
+
+                                <a href="{{ route('home') }}"
+                                   class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-brand-900 transition-colors">
+                                    <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                        <polyline points="9 22 9 12 15 12 15 22" />
+                                    </svg>
+                                    <span>Halaman utama TravelKu</span>
+                                </a>
+                            </div>
+
+                            <form action="{{ route('user.logout') }}" method="POST" class="border-t border-slate-100 py-1.5">
                                 @csrf
-                                <button type="submit" class="w-full text-left flex items-center min-h-11 px-4 font-semibold text-rose-700 hover:bg-rose-50">Keluar</button>
+                                <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer">
+                                    <svg class="h-4 w-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                        <polyline points="16 17 21 12 16 7" />
+                                        <line x1="21" y1="12" x2="9" y2="12" />
+                                    </svg>
+                                    <span>Keluar</span>
+                                </button>
                             </form>
                         </div>
                     </div>

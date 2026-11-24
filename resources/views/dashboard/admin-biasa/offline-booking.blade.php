@@ -352,7 +352,7 @@
 
         @include('dashboard.admin-biasa.partials.topbar', [
             'topbarTitle' => 'Buat Pesanan Baru (Kasir Loket)',
-            'topbarSubtitle' => 'Pemesanan tiket langsung di loket pool untuk penumpang go-show (walk-in, WhatsApp, telepon).',
+            'topbarSubtitle' => 'Pemesanan tiket langsung di loket untuk penumpang yang datang langsung ke kasir (go-show / walk-in).',
         ])
 
         <section class="content">

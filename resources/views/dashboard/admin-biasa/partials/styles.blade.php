@@ -294,6 +294,15 @@
             align-items: center;
 
             gap: 12px;
+            padding: 6px 10px 6px 6px;
+            border-radius: 999px;
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+
+        a.profile:hover,
+        a.profile.is-active {
+            background: var(--accent-light);
         }
 
         .avatar {

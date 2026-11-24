@@ -12,12 +12,15 @@ use App\Models\Schedule;
 use App\Models\Seat;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Notifications\BookingStatusNotification;
 use Carbon\Carbon;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -594,6 +597,13 @@ class AdminBiasaDashboardController extends Controller
                 $booking->schedule->recalculateAvailableSeats();
             }
         });
+
+        $booking->load(['user', 'schedule.route.origin', 'schedule.route.destination']);
+        $booking->user?->notify(new BookingStatusNotification(
+            $booking,
+            'cancelled',
+            "Pesanan {$booking->booking_code} telah dibatalkan oleh staf loket. Alasan: {$reason}"
+        ));
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -2190,6 +2200,9 @@ class AdminBiasaDashboardController extends Controller
             $booking->schedule?->recalculateAvailableSeats();
         });
 
+        $booking->load(['user', 'ticket', 'schedule.route.origin', 'schedule.route.destination']);
+        $booking->user?->notify(new BookingStatusNotification($booking, 'confirmed'));
+
         $successMsg = "Pelunasan {$booking->booking_code} ({$validated['payment_method']}) berhasil dikonfirmasi. ".($markBoarded ? 'Penumpang kini berstatus Boarded.' : 'Tiket kini aktif & siap boarding.');
 
         if ($request->expectsJson()) {
@@ -2201,5 +2214,99 @@ class AdminBiasaDashboardController extends Controller
         }
 
         return redirect()->back()->with('success', $successMsg);
+    }
+
+    /**
+     * Halaman profil akun staff operasional.
+     */
+    public function profil(): View
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $permissions = collect(User::availablePermissions())
+            ->map(function (array $meta, string $key) use ($user): array {
+                return [
+                    'key' => $key,
+                    'label' => $meta['label'],
+                    'description' => $meta['description'],
+                    'restricted' => (bool) ($meta['restricted'] ?? false),
+                    'granted' => $user->hasPermission($key),
+                ];
+            })
+            ->values();
+
+        $verifiedPaymentsCount = Payment::where('verified_by', $user->id)->count();
+        $verifiedTodayCount = Payment::where('verified_by', $user->id)
+            ->whereDate('verified_at', Carbon::today())
+            ->count();
+
+        return view('dashboard.admin-biasa.profil', [
+            'user' => $user,
+            'permissions' => $permissions,
+            'verifiedPaymentsCount' => $verifiedPaymentsCount,
+            'verifiedTodayCount' => $verifiedTodayCount,
+        ]);
+    }
+
+    /**
+     * Memperbarui informasi dasar profil staff operasional.
+     */
+    public function updateProfil(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email tersebut sudah digunakan akun lain.',
+            'phone.regex' => 'Nomor HP harus berupa 8–20 digit angka tanpa spasi atau simbol.',
+        ]);
+
+        $user->update([
+            'name' => trim($validated['name']),
+            'email' => trim($validated['email']),
+            'phone' => isset($validated['phone']) && trim((string) $validated['phone']) !== ''
+                ? trim((string) $validated['phone'])
+                : null,
+        ]);
+
+        return redirect()
+            ->route('dashboard.admin-biasa.profil')
+            ->with('success', 'Informasi profil berhasil diperbarui.');
+    }
+
+    /**
+     * Memperbarui kata sandi akun staff operasional.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'current_password.current_password' => 'Password saat ini tidak sesuai.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal terdiri dari 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return redirect()
+            ->route('dashboard.admin-biasa.profil')
+            ->with('success', 'Password akun berhasil diperbarui.');
     }
 }

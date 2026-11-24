@@ -48,12 +48,12 @@
                 <div class="ds-flow-grid">
                     <section class="ds-flow-card ds-flow-card--online" aria-labelledby="flow-online-title">
                         <div class="ds-flow-head">
-                            <h3 id="flow-online-title">Alur Customer Online (Website / Aplikasi)</h3>
+                            <h3 id="flow-online-title">Panduan Customer Online (Website / Aplikasi)</h3>
                             <span class="ds-channel-badge ds-channel-badge--online">Online Web/App</span>
                         </div>
                         <ol class="ds-flow-steps">
                             <li>Customer memesan jadwal, memilih kursi, dan membayar lewat Website/Aplikasi.</li>
-                            <li>Saat tiba di pool, customer menunjukkan QR E-Ticket atau Kode Booking (`TRV-...`).</li>
+                            <li>Saat tiba di loket, customer menunjukkan QR E-Ticket atau Kode Booking (TRV-...).</li>
                             <li>Staf pindai/periksa di <strong>Validasi E-Ticket</strong>: jika status <em>Lunas</em>, langsung tercatat <strong>Boarded</strong>. Jika masih <em>Pending</em>, proses pelunasan di loket sebelum naik.</li>
                         </ol>
                         <div>
@@ -63,13 +63,13 @@
 
                     <section class="ds-flow-card ds-flow-card--offline" aria-labelledby="flow-offline-title">
                         <div class="ds-flow-head">
-                            <h3 id="flow-offline-title">Alur Customer Offline (Loket / WA / Telepon)</h3>
+                            <h3 id="flow-offline-title">Panduan Customer Offline (Kasir Loket)</h3>
                             <span class="ds-channel-badge ds-channel-badge--offline">Non-Website</span>
                         </div>
                         <ol class="ds-flow-steps">
-                            <li>Customer datang ke pool atau memesan via WhatsApp/telepon tanpa membuka website/app.</li>
+                            <li>Customer datang langsung ke loket dan menemui staf yang bertugas di kasir loket tanpa membuka website/app.</li>
                             <li>Staf buka <strong>Pemesanan Loket (Offline)</strong>, pilih jadwal & kursi kosong di denah real-time (sinkron dengan kursi Online agar tidak bentrok).</li>
-                            <li>Terima pembayaran (<em>Cash / QRIS / Transfer</em>) atau tahan kursi sementara untuk bayar di pool, lalu tiket aktif & siap boarding.</li>
+                            <li>Terima pembayaran (<em>Cash / QRIS / Transfer</em>) atau tahan kursi sementara untuk bayar di loket, lalu tiket aktif & siap boarding.</li>
                         </ol>
                         <div>
                             <a href="{{ route('dashboard.admin-biasa.offline-booking') }}" class="ds-btn ds-btn--primary">Input Pesanan Loket Sekarang</a>

@@ -1508,6 +1508,9 @@ class UserDashboardController extends Controller
             ]);
         });
 
+        $booking->load(['schedule.route.origin', 'schedule.route.destination']);
+        $booking->user?->notify(new BookingStatusNotification($booking, 'refund_submitted'));
+
         return back()->with('success', 'Pengajuan refund berhasil dikirim dan sedang menunggu persetujuan admin. Dana akan otomatis dikembalikan setelah disetujui.');
     }
 
@@ -1742,6 +1745,21 @@ class UserDashboardController extends Controller
             case 'expired':
                 $user->notify(new BookingStatusNotification($booking, 'expired'));
                 $msg = 'Push & Riwayat Notifikasi Terkirim: Transaksi Dibatalkan ⚠️ (Waktu Habis)';
+                break;
+
+            case 'refund_submitted':
+                $user->notify(new BookingStatusNotification($booking, 'refund_submitted'));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Pengajuan Refund Diterima';
+                break;
+
+            case 'refund_approved':
+                $user->notify(new BookingStatusNotification($booking, 'refund_approved'));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Pengajuan Refund Disetujui ✅';
+                break;
+
+            case 'refund_rejected':
+                $user->notify(new BookingStatusNotification($booking, 'refund_rejected'));
+                $msg = 'Push & Riwayat Notifikasi Terkirim: Pengajuan Refund Ditolak ⚠️';
                 break;
 
             case 'reminder_2h':

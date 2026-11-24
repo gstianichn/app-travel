@@ -124,6 +124,23 @@ class BookingStatusNotification extends Notification
             ];
         }
 
+        if ($this->statusType === 'refund_submitted') {
+            return [
+                'title' => 'Pengajuan Refund Diterima',
+                'message' => $this->customMessage ?: "Pengajuan refund untuk pesanan {$bookingCode} ({$routeStr}) telah diterima dan sedang menunggu pemeriksaan admin.",
+                'category' => 'transaksi',
+                'status_type' => 'refund_submitted',
+                'deep_link_url' => route('dashboard.user.user-tiket'),
+                'action_label' => 'Pantau Status Refund',
+                'icon' => 'clock',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $bookingCode,
+                    'route' => $routeStr,
+                ],
+            ];
+        }
+
         if ($this->statusType === 'refund_approved') {
             return [
                 'title' => 'Pengajuan Refund Disetujui ✅',
