@@ -13,6 +13,7 @@ use App\Models\Ticket;
 use App\Models\TripIncident;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Notifications\DriverOperationalNotification;
 use App\Notifications\OperationalInfoNotification;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -91,7 +92,7 @@ class DriverDashboardController extends Controller
 
         $hasAssignedSchedule = (bool) $activeSchedule;
 
-        // Jika driver belum memiliki jadwal penugasan hari ini, carikan jadwal hari ini yang tersedia di DB
+        // Jika driver belum memiliki jadwal penugasan hari ini, carikan jadwal hari ini yang belum punya driver
         if (! $activeSchedule) {
             $todaySchedule = Schedule::with([
                 'route.origin',
@@ -103,22 +104,25 @@ class DriverDashboardController extends Controller
                 'bookings.payment',
                 'incidents',
             ])
+                ->whereNull('driver_id')
                 ->whereDate('departure_date', Carbon::today())
                 ->whereNotIn('trip_status', ['completed', 'cancelled'])
-                ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+                ->whereNotIn('status', ['completed', 'Completed', 'Cancelled', 'cancelled', 'Selesai', 'selesai'])
+                ->orderByDesc(
+                    Booking::selectRaw('COUNT(*)')
+                        ->whereColumn('bookings.schedule_id', 'schedules.id')
+                        ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded'])
+                )
                 ->orderBy('departure_time')
                 ->first();
 
             if ($todaySchedule) {
-                // Assign driver ke jadwal ini
-                if (! $todaySchedule->driver_id || $todaySchedule->driver_id !== $driver->id) {
-                    $todaySchedule->update(['driver_id' => $driver->id]);
-                }
+                $todaySchedule->update(['driver_id' => $driver->id]);
                 $activeSchedule = $todaySchedule;
             }
         }
 
-        // Fallback pencarian jadwal hari kemarin / besok jika hari ini belum ter-generate
+        // Fallback pencarian jadwal hari kemarin / besok yang belum punya driver jika hari ini belum ada
         if (! $activeSchedule) {
             $fallbackSchedule = Schedule::with([
                 'route.origin',
@@ -130,17 +134,21 @@ class DriverDashboardController extends Controller
                 'bookings.payment',
                 'incidents',
             ])
+                ->whereNull('driver_id')
                 ->whereDate('departure_date', '>=', Carbon::today()->subDays(1))
                 ->whereNotIn('trip_status', ['completed', 'cancelled'])
-                ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+                ->whereNotIn('status', ['completed', 'Completed', 'Cancelled', 'cancelled', 'Selesai', 'selesai'])
+                ->orderByDesc(
+                    Booking::selectRaw('COUNT(*)')
+                        ->whereColumn('bookings.schedule_id', 'schedules.id')
+                        ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded'])
+                )
                 ->orderBy('departure_date')
                 ->orderBy('departure_time')
                 ->first();
 
             if ($fallbackSchedule) {
-                if (! $fallbackSchedule->driver_id) {
-                    $fallbackSchedule->update(['driver_id' => $driver->id]);
-                }
+                $fallbackSchedule->update(['driver_id' => $driver->id]);
                 $activeSchedule = $fallbackSchedule;
             }
         }
@@ -267,20 +275,22 @@ class DriverDashboardController extends Controller
         // 5. Waypoints navigasi terurut (Pool Asal -> Titik Jemput Penumpang -> Rest Area -> Pool Tujuan)
         $waypoints = $activeSchedule->navigationWaypoints();
 
-        // 6. Manifest Penumpang Lengkap
+        // 6. Manifest Penumpang Lengkap (langsung dari data booking nyata: user, staff loket, dan admin)
         $manifestPassengers = collect();
         if ($activeSchedule->exists && $activeSchedule->id) {
-            $this->ensureSchedulePassengers($activeSchedule);
-
             $bookings = Booking::where('schedule_id', $activeSchedule->id)
-                ->whereNotIn('status', ['Cancelled', 'cancelled'])
+                ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded'])
                 ->with(['passengers.seat', 'user', 'payment', 'ticket'])
                 ->get();
 
             foreach ($bookings as $b) {
-                $isPaid = in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas', 'completed']);
+                $bookingStatusLower = strtolower((string) $b->status);
+                $paymentStatusLower = strtolower((string) ($b->payment?->status ?? ''));
+                $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'completed', 'checked_in', 'boarded', 'selesai'], true)
+                    || in_array($paymentStatusLower, ['paid', 'success', 'settlement', 'lunas'], true);
                 $paymentMethod = $b->payment?->payment_method ?? ($b->source === 'walk_in' ? 'cash' : 'online');
-                $isCod = in_array(strtolower($paymentMethod), ['cash', 'cod', 'tunai', 'bayar_ditempat']);
+                $isCod = in_array(strtolower((string) $paymentMethod), ['cash', 'cod', 'tunai', 'bayar_ditempat'], true);
+                $paidLabel = $isCod || strtolower((string) $b->source) === 'offline' ? 'Lunas (Loket)' : 'Lunas Online';
 
                 foreach ($b->passengers as $p) {
                     $manifestPassengers->push((object) [
@@ -288,6 +298,7 @@ class DriverDashboardController extends Controller
                         'passenger_model' => $p,
                         'booking_id' => $b->id,
                         'booking_code' => $b->booking_code,
+                        'qr_code' => $b->ticket?->qr_code ?: $b->booking_code,
                         'name' => $p->name,
                         'phone' => $p->phone ?: ($b->user?->phone ?? '-'),
                         'wa_phone' => $p->waPhone(),
@@ -301,7 +312,7 @@ class DriverDashboardController extends Controller
                         'is_boarded' => $p->isBoarded(),
                         'boarded_at' => $p->boarded_at ? $p->boarded_at->format('H:i').' WIB' : null,
                         'is_paid' => $isPaid,
-                        'payment_label' => $isPaid ? 'Lunas Online' : 'Tagih Tunai / COD: Rp '.number_format(! $isPaid ? ($b->total_price / max(1, $b->total_passenger)) : 0, 0, ',', '.'),
+                        'payment_label' => $isPaid ? $paidLabel : 'Tagih Tunai / COD: Rp '.number_format(! $isPaid ? ($b->total_price / max(1, $b->total_passenger)) : 0, 0, ',', '.'),
                         'payment_badge_class' => $isPaid ? 'badge-paid' : 'badge-cod',
                         'amount_due' => ! $isPaid ? ($b->total_price / max(1, $b->total_passenger)) : 0,
                     ]);
@@ -361,17 +372,116 @@ class DriverDashboardController extends Controller
         $occupancyPct = round(($totalBookedPassengers / max(1, $seatCapacity)) * 100);
         $emptySeats = max(0, $seatCapacity - $totalBookedPassengers);
 
-        $availableDriverSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
+        $bookedDriverSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
+            ->withCount(['bookings as active_bookings_count' => function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded']);
+            }])
             ->where('driver_id', $driver->id)
-            ->whereDate('departure_date', '>=', Carbon::today())
-            ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+            ->whereDate('departure_date', '>=', Carbon::today()->subDays(1))
+            ->whereNotIn('status', ['completed', 'Completed', 'Cancelled', 'cancelled', 'Selesai', 'selesai'])
+            ->whereHas('bookings', function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded']);
+            })
             ->orderBy('departure_date')
             ->orderBy('departure_time')
             ->get();
 
-        if ($availableDriverSchedules->isEmpty() && $activeSchedule && $activeSchedule->exists) {
-            $availableDriverSchedules = collect([$activeSchedule]);
+        $otherDriverSchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle'])
+            ->withCount(['bookings as active_bookings_count' => function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded']);
+            }])
+            ->where('driver_id', $driver->id)
+            ->whereDate('departure_date', '>=', Carbon::today())
+            ->whereNotIn('status', ['completed', 'Completed', 'Cancelled', 'cancelled', 'Selesai', 'selesai'])
+            ->whereNotIn('id', $bookedDriverSchedules->pluck('id'))
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->take(20)
+            ->get();
+
+        $availableDriverSchedules = $bookedDriverSchedules->concat($otherDriverSchedules)->values();
+
+        if ($activeSchedule && $activeSchedule->exists && ! $availableDriverSchedules->contains('id', $activeSchedule->id)) {
+            $availableDriverSchedules->prepend($activeSchedule);
         }
+
+        // 11. Semua Jadwal Hari Ini (Seluruh Armada & Rekan Driver untuk koordinasi lapangan)
+        $formatWaPhone = static function (?string $phone): string {
+            $digits = preg_replace('/[^0-9]/', '', (string) $phone);
+            if ($digits === '') {
+                return '';
+            }
+            if (str_starts_with($digits, '0')) {
+                return '62'.substr($digits, 1);
+            }
+
+            return $digits;
+        };
+
+        $allTodaySchedules = Schedule::with(['route.origin', 'route.destination', 'vehicle', 'driver.user'])
+            ->withCount(['bookings as active_bookings_count' => function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded']);
+            }])
+            ->whereDate('departure_date', Carbon::today())
+            ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal'])
+            ->whereNotNull('driver_id')
+            ->orderByDesc('active_bookings_count')
+            ->orderBy('departure_time')
+            ->take(40)
+            ->get()
+            ->map(function (Schedule $sched) use ($formatWaPhone, $driver): Schedule {
+                $driverPhone = $sched->driver?->phone ?: ($sched->driver?->user?->phone ?? '');
+                $sched->setAttribute('driver_phone_clean', $driverPhone);
+                $sched->setAttribute('driver_wa_phone', $formatWaPhone($driverPhone));
+                $sched->setAttribute('is_current_driver', $sched->driver_id === $driver->id);
+
+                return $sched;
+            });
+
+        // 12. Daftar Rekan Driver Aktif / Standby Hari Ini (untuk oper penumpang saat mogok/darurat)
+        $fellowDrivers = Driver::with(['user', 'schedules' => function ($q) {
+            $q->with(['route.origin', 'route.destination', 'vehicle'])
+                ->whereDate('departure_date', Carbon::today())
+                ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal'])
+                ->orderBy('departure_time');
+        }])
+            ->where('id', '!=', $driver->id)
+            ->whereIn('status', ['standby', 'on_duty', 'available', 'active'])
+            ->get()
+            ->map(function (Driver $colleague) use ($formatWaPhone): object {
+                $phone = $colleague->phone ?: ($colleague->user?->phone ?? '');
+                $todayTrip = $colleague->schedules->first();
+
+                return (object) [
+                    'id' => $colleague->id,
+                    'name' => $colleague->user?->name ?? 'Driver #'.$colleague->id,
+                    'phone' => $phone,
+                    'wa_phone' => $formatWaPhone($phone),
+                    'status' => $colleague->status,
+                    'status_label' => $colleague->statusLabel(),
+                    'vehicle_name' => $todayTrip?->vehicle?->name ?? 'Siap Ditugaskan',
+                    'plate_number' => $todayTrip?->vehicle?->plate_number ?? '-',
+                    'today_route' => $todayTrip
+                        ? (($todayTrip->route?->origin?->city ?? $todayTrip->route?->origin?->name ?? '-').' → '.($todayTrip->route?->destination?->city ?? $todayTrip->route?->destination?->name ?? '-'))
+                        : 'Standby di Loket',
+                    'departure_time' => $todayTrip ? $todayTrip->formattedDepartureTime() : null,
+                ];
+            })
+            ->values();
+
+        // 13. Notifikasi Driver & Konfigurasi Cuaca / Peta Lalu Lintas
+        $driverNotifications = $user->notifications()->latest()->take(20)->get();
+        $unreadNotificationsCount = $user->unreadNotifications()->count();
+        $recentDriverIncidents = TripIncident::with(['schedule.route.origin', 'schedule.route.destination', 'vehicle'])
+            ->where('driver_id', $driver->id)
+            ->latest('reported_at')
+            ->take(10)
+            ->get();
+
+        $originCity = $activeSchedule->route?->origin?->city ?? 'Bandung';
+        $destinationCity = $activeSchedule->route?->destination?->city ?? 'Jakarta';
+        $openWeatherApiKey = (string) config('services.openweathermap.key', '');
+        $googleMapsApiKey = (string) config('services.google_maps.key', '');
 
         return compact(
             'user',
@@ -382,6 +492,15 @@ class DriverDashboardController extends Controller
             'tomorrowSchedules',
             'upcomingSchedules',
             'availableDriverSchedules',
+            'allTodaySchedules',
+            'fellowDrivers',
+            'driverNotifications',
+            'unreadNotificationsCount',
+            'recentDriverIncidents',
+            'originCity',
+            'destinationCity',
+            'openWeatherApiKey',
+            'googleMapsApiKey',
             'waypoints',
             'manifestPassengers',
             'seatOccupancyRows',
@@ -410,11 +529,290 @@ class DriverDashboardController extends Controller
     }
 
     /**
-     * 1. Dashboard — Ringkasan operasional harian yang sedang berjalan (kartu kendali utama)
+     * 1. Dashboard — Beranda ringkas (sapaan, tanggal, cuaca, peta lalu lintas)
      */
     public function index(Request $request)
     {
         return view('dashboard.driver.index', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * 2. Perjalanan Saya — Kelola perjalanan aktif (rute, segera berangkat, batalkan)
+     */
+    public function perjalananSaya(Request $request)
+    {
+        return view('dashboard.driver.perjalanan-saya', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * Sistem Notifikasi Driver
+     */
+    public function notifikasi(Request $request)
+    {
+        return view('dashboard.driver.notifikasi', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * Tandai semua notifikasi driver sebagai sudah dibaca
+     */
+    public function markAllNotificationsRead()
+    {
+        auth()->user()?->unreadNotifications()->update(['read_at' => Carbon::now()]);
+
+        return redirect()->back()->with('success', 'Semua notifikasi telah ditandai sudah dibaca.');
+    }
+
+    /**
+     * Konfirmasi Segera Berangkat (1-klik tanpa approval admin, langsung kirim notifikasi ke penumpang)
+     */
+    public function confirmDeparting(Request $request, Schedule $schedule)
+    {
+        $driver = $this->ensureScheduleOwnedByDriver($schedule);
+        $now = Carbon::now();
+
+        $schedule->update([
+            'trip_status' => 'departing',
+            'status' => 'Segera Berangkat',
+            'departing_at' => $now,
+        ]);
+
+        if ($driver) {
+            $driver->update(['status' => 'on_duty']);
+        }
+
+        if ($schedule->vehicle) {
+            $schedule->vehicle->update(['status' => 'beroperasi']);
+        }
+
+        $this->notifyPassengers($schedule, 'departing');
+
+        $routeLabel = ($schedule->route?->origin?->name ?? 'Asal').' → '.($schedule->route?->destination?->name ?? 'Tujuan');
+        $plate = $schedule->vehicle?->plate_number ?? '-';
+        $driverName = $driver->user?->name ?? auth()->user()->name ?? 'Driver';
+
+        $this->notifyAdmins(
+            title: "Armada Segera Berangkat ({$plate})",
+            message: "{$driverName} mengonfirmasi segera berangkat untuk rute {$routeLabel} ({$schedule->formattedDepartureTime()}). Notifikasi telah dikirim ke penumpang.",
+            statusType: 'driver_departing',
+            meta: [
+                'schedule_id' => $schedule->id,
+                'driver_id' => $driver->id,
+                'plate_number' => $plate,
+                'trip_status' => 'departing',
+            ]
+        );
+
+        $message = 'Status perjalanan diperbarui menjadi Segera Berangkat. Notifikasi otomatis telah dikirim ke seluruh penumpang terdaftar.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'trip_status' => 'departing',
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * Batalkan Perjalanan sebelum berangkat (tanpa validasi admin, langsung notifikasi ke penumpang & admin)
+     */
+    public function cancelTrip(Request $request, Schedule $schedule)
+    {
+        $driver = $this->ensureScheduleOwnedByDriver($schedule);
+
+        $validated = $request->validate([
+            'cancellation_reason' => ['required', 'string', 'min:5', 'max:500'],
+        ], [
+            'cancellation_reason.required' => 'Alasan pembatalan perjalanan wajib diisi.',
+            'cancellation_reason.min' => 'Alasan pembatalan minimal 5 karakter agar jelas bagi penumpang dan admin.',
+        ]);
+
+        $now = Carbon::now();
+        $reason = trim($validated['cancellation_reason']);
+
+        $schedule->update([
+            'trip_status' => 'cancelled',
+            'status' => 'Cancelled',
+            'cancelled_at' => $now,
+            'cancellation_reason' => $reason,
+            'cancelled_by' => auth()->id(),
+        ]);
+
+        if ($driver) {
+            $driver->update(['status' => 'standby']);
+        }
+
+        $this->notifyPassengers($schedule, 'trip_cancelled', $reason);
+
+        $routeLabel = ($schedule->route?->origin?->name ?? 'Asal').' → '.($schedule->route?->destination?->name ?? 'Tujuan');
+        $plate = $schedule->vehicle?->plate_number ?? '-';
+        $driverName = $driver->user?->name ?? auth()->user()->name ?? 'Driver';
+
+        $this->notifyAdmins(
+            title: "Perjalanan Dibatalkan oleh Driver ({$plate})",
+            message: "{$driverName} membatalkan perjalanan {$routeLabel} ({$schedule->formattedDepartureTime()}) sebelum berangkat. Alasan: {$reason}",
+            statusType: 'trip_cancelled_by_driver',
+            meta: [
+                'schedule_id' => $schedule->id,
+                'driver_id' => $driver->id,
+                'plate_number' => $plate,
+                'cancellation_reason' => $reason,
+            ]
+        );
+
+        $message = 'Perjalanan telah dibatalkan. Pemberitahuan pembatalan otomatis dikirim ke seluruh penumpang dan Admin.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'trip_status' => 'cancelled',
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->route('dashboard.driver.perjalanan')->with('success', $message);
+    }
+
+    /**
+     * Lapor Kendala & Ganti Mobil (Darurat tanpa approval admin, langsung aktif + notifikasi ke admin & rekan driver)
+     */
+    public function storeEmergencyIncident(Request $request)
+    {
+        $user = auth()->user();
+        $driver = $user->driver;
+        if (! $driver) {
+            abort(403, 'Profil pengemudi tidak ditemukan.');
+        }
+
+        $validated = $request->validate([
+            'category' => ['required', 'string', 'in:mesin_mogok,ban_bocor,driver_sakit'],
+            'location_name' => ['required', 'string', 'min:3', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'schedule_id' => ['nullable', 'integer'],
+        ], [
+            'category.required' => 'Pilih jenis kendala yang terjadi.',
+            'location_name.required' => 'Lokasi kejadian terkini wajib diisi.',
+        ]);
+
+        $schedule = null;
+        if (! empty($validated['schedule_id'])) {
+            $candidate = Schedule::with(['vehicle', 'route.origin', 'route.destination'])->find($validated['schedule_id']);
+            if ($candidate && (! $candidate->driver_id || $candidate->driver_id === $driver->id)) {
+                $schedule = $candidate;
+            }
+        }
+        if (! $schedule) {
+            $schedule = $driver->activeSchedule();
+        }
+
+        $now = Carbon::now();
+        $vehicle = $schedule?->vehicle;
+        $plate = $vehicle?->plate_number ?? 'Armada Tidak Terdata';
+        $vehicleName = $vehicle?->name ?? 'Unit Shuttle';
+        $driverName = $user->name ?? 'Driver';
+
+        $incident = TripIncident::create([
+            'schedule_id' => $schedule?->id,
+            'driver_id' => $driver->id,
+            'vehicle_id' => $vehicle?->id,
+            'category' => $validated['category'],
+            'severity' => 'darurat',
+            'location_name' => trim($validated['location_name']),
+            'description' => trim((string) ($validated['description'] ?? '')) ?: "Laporan cepat dari {$driverName} untuk {$vehicleName} ({$plate}) di {$validated['location_name']}.",
+            'latitude' => $validated['latitude'] ?? $schedule?->current_latitude,
+            'longitude' => $validated['longitude'] ?? $schedule?->current_longitude,
+            'status' => 'active',
+            'emergency_dispatched' => true,
+            'needs_replacement_vehicle' => true,
+            'reported_at' => $now,
+            'activated_at' => $now,
+        ]);
+
+        // Langsung perbarui status unit / driver di sistem TANPA menunggu approval admin
+        if (in_array($validated['category'], ['mesin_mogok', 'ban_bocor'], true) && $vehicle) {
+            $vehicle->update(['status' => 'perbaikan']);
+        }
+        if ($validated['category'] === 'driver_sakit') {
+            $driver->update(['status' => 'on_leave']);
+        }
+
+        $categoryLabel = $incident->categoryLabel();
+        $alertTitle = "Darurat Operasional: {$categoryLabel} ({$plate})";
+        $alertMessage = "{$driverName} ({$vehicleName} - {$plate}) melaporkan {$categoryLabel} di {$incident->location_name}. Status laporan langsung AKTIF dan membutuhkan koordinasi oper penumpang / unit pengganti.";
+        $alertMeta = [
+            'incident_id' => $incident->id,
+            'schedule_id' => $schedule?->id,
+            'driver_id' => $driver->id,
+            'driver_name' => $driverName,
+            'driver_phone' => $driver->phone ?: $user->phone,
+            'plate_number' => $plate,
+            'category' => $incident->category,
+            'location_name' => $incident->location_name,
+            'latitude' => $incident->latitude,
+            'longitude' => $incident->longitude,
+        ];
+
+        // 1. Notifikasi langsung ke Admin
+        $this->notifyAdmins($alertTitle, $alertMessage, 'driver_emergency', $alertMeta);
+
+        // 2. Notifikasi langsung ke rekan sesama driver
+        $otherDriverUsers = User::where('role', 'driver')
+            ->where('id', '!=', $user->id)
+            ->get();
+
+        foreach ($otherDriverUsers as $colleagueUser) {
+            $colleagueUser->notify(new DriverOperationalNotification(
+                title: $alertTitle,
+                message: $alertMessage,
+                statusType: 'driver_emergency',
+                deepLinkUrl: route('dashboard.driver.jadwal'),
+                actionLabel: 'Lihat Jadwal & Rekan Driver',
+                meta: $alertMeta
+            ));
+        }
+
+        $message = "Laporan {$categoryLabel} langsung AKTIF tanpa menunggu validasi admin. Notifikasi darurat sudah dikirim ke Admin dan rekan driver. Silakan hubungi rekan driver di bawah ini untuk oper penumpang.";
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'incident' => $incident,
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()
+            ->route('dashboard.driver.lapor-masalah')
+            ->with('success', $message)
+            ->with('incident_reported', true);
+    }
+
+    /**
+     * Kirim notifikasi operasional langsung ke seluruh akun Admin (tanpa status pending_approval)
+     *
+     * @param  array<string, mixed>  $meta
+     */
+    protected function notifyAdmins(string $title, string $message, string $statusType, array $meta = []): void
+    {
+        try {
+            $admins = User::whereIn('role', ['admin_utama', 'admin'])->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new DriverOperationalNotification(
+                    title: $title,
+                    message: $message,
+                    statusType: $statusType,
+                    deepLinkUrl: route('dashboard.admin.index'),
+                    actionLabel: 'Buka Dashboard Admin',
+                    meta: $meta
+                ));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Gagal mengirim notifikasi operasional ke admin: '.$e->getMessage());
+        }
     }
 
     /**
@@ -562,7 +960,8 @@ class DriverDashboardController extends Controller
 
         $currentTripStatus = strtolower((string) ($schedule->trip_status ?: 'scheduled'));
         $validTransitions = [
-            'scheduled' => ['pickup', 'departed'],
+            'scheduled' => ['pickup', 'departing', 'departed'],
+            'departing' => ['departed'],
             'pickup' => ['departed'],
             'departed' => ['arrived'],
             'arrived' => ['completed'],
@@ -896,9 +1295,31 @@ class DriverDashboardController extends Controller
         if ($vehicle) {
             $vehicle->ensureSeatsExist();
         }
-        $seats = $vehicle ? $vehicle->seats()->orderBy('seat_number')->get() : collect();
+        $seats = $vehicle ? $vehicle->seats()->orderBy('seat_number')->get()->values() : collect();
+        $usedSeatIds = [];
 
-        $getSeat = fn ($seatNumber) => $seats->firstWhere('seat_number', $seatNumber) ?? $seats->first();
+        $getSeat = function (string $seatNumber, int $fallbackIndex = 0) use ($seats, &$usedSeatIds) {
+            $seat = $seats->first(function ($item) use ($seatNumber, $usedSeatIds) {
+                return $item->seat_number === $seatNumber && ! in_array($item->id, $usedSeatIds, true);
+            });
+
+            if (! $seat) {
+                $candidate = $seats->get($fallbackIndex);
+                if ($candidate && ! in_array($candidate->id, $usedSeatIds, true)) {
+                    $seat = $candidate;
+                }
+            }
+
+            if (! $seat) {
+                $seat = $seats->first(fn ($item) => ! in_array($item->id, $usedSeatIds, true));
+            }
+
+            if ($seat) {
+                $usedSeatIds[] = $seat->id;
+            }
+
+            return $seat;
+        };
 
         $unitPrice = $schedule->price ?: 125000;
         $originName = $schedule->route?->origin?->name ?? 'Pool Dipatiukur (Bandung)';
@@ -924,7 +1345,7 @@ class DriverDashboardController extends Controller
 
         $dateSuffix = $schedule->departure_date ? $schedule->departure_date->format('Ymd') : date('Ymd');
         $timeClean = preg_replace('/[^0-9]/', '', (string) $schedule->departure_time);
-        $timeSuffix = substr($timeClean ?: '0800', 0, 4);
+        $timeSuffix = substr($timeClean ?: '0800', 0, 4).'-S'.$schedule->id;
 
         // Booking 1 (Andi & Citra) - Lunas Online
         $b1 = Booking::create([
@@ -951,7 +1372,7 @@ class DriverDashboardController extends Controller
 
         BookingPassenger::create([
             'booking_id' => $b1->id,
-            'seat_id' => $getSeat('1A')?->id,
+            'seat_id' => $getSeat('1A', 0)?->id,
             'name' => 'Andi Pratama',
             'phone' => '081234567890',
             'pickup_point' => $originName,
@@ -964,7 +1385,7 @@ class DriverDashboardController extends Controller
 
         BookingPassenger::create([
             'booking_id' => $b1->id,
-            'seat_id' => $getSeat('2A')?->id,
+            'seat_id' => $getSeat('2A', 1)?->id,
             'name' => 'Citra Kirana',
             'phone' => '081288881009',
             'pickup_point' => 'Pool Pasteur (Gate Tol Bandung Barat)',
@@ -1005,7 +1426,7 @@ class DriverDashboardController extends Controller
 
         BookingPassenger::create([
             'booking_id' => $b2->id,
-            'seat_id' => $getSeat('2B')?->id,
+            'seat_id' => $getSeat('2B', 2)?->id,
             'name' => 'Budi Santoso',
             'phone' => '081288881002',
             'pickup_point' => 'Gerbang Tol Pasteur KM 1',
@@ -1046,7 +1467,7 @@ class DriverDashboardController extends Controller
 
         BookingPassenger::create([
             'booking_id' => $b3->id,
-            'seat_id' => $getSeat('3A')?->id,
+            'seat_id' => $getSeat('3A', 3)?->id,
             'name' => 'Dewi Lestari',
             'phone' => '081288881003',
             'pickup_point' => 'Rest Area KM 57 Tol Japek',
@@ -1088,7 +1509,7 @@ class DriverDashboardController extends Controller
 
         BookingPassenger::create([
             'booking_id' => $b4->id,
-            'seat_id' => $getSeat('3B')?->id,
+            'seat_id' => $getSeat('3B', 4)?->id,
             'name' => 'Rian Hidayat',
             'phone' => '081299992001',
             'pickup_point' => $originName,

@@ -163,20 +163,58 @@ class Driver extends Model
     }
 
     /**
-     * Jadwal perjalanan aktif saat ini (Belum selesai)
+     * Jadwal perjalanan aktif saat ini (Belum selesai).
+     * Memprioritaskan perjalanan yang sedang berjalan atau sudah memiliki pemesanan aktif.
      */
     public function activeSchedule(): ?Schedule
     {
-        return $this->schedules()
+        $baseQuery = fn () => $this->schedules()
             ->whereDate('departure_date', '>=', Carbon::today()->subDays(1))
             ->whereNotIn('trip_status', ['completed', 'cancelled'])
-            ->whereNotIn('status', ['completed', 'Cancelled', 'cancelled'])
+            ->whereNotIn('status', ['completed', 'Completed', 'Cancelled', 'cancelled', 'Selesai', 'selesai'])
             ->with(['route.origin', 'route.destination', 'vehicle', 'bookings.passengers.seat', 'bookings.user', 'bookings.payment', 'incidents'])
             ->orderByRaw("CASE 
                 WHEN trip_status = 'departed' THEN 1 
                 WHEN trip_status = 'pickup' THEN 2 
                 WHEN trip_status = 'arrived' THEN 3 
-                ELSE 4 END")
+                ELSE 4 END");
+
+        // 1. Prioritaskan jadwal yang sedang berlangsung (departed/pickup/arrived)
+        $inProgress = $baseQuery()
+            ->whereIn('trip_status', ['departed', 'pickup', 'arrived'])
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->first();
+
+        if ($inProgress) {
+            return $inProgress;
+        }
+
+        // 2. Prioritaskan jadwal milik driver ini yang benar-benar memiliki pemesanan aktif (dari user/staff/admin)
+        $withActiveBookings = $baseQuery()
+            ->whereHas('bookings', function ($q) {
+                $q->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded']);
+            })
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->first();
+
+        if ($withActiveBookings) {
+            return $withActiveBookings;
+        }
+
+        // 3. Fallback ke jadwal terdekat hari ini / mendatang milik driver ini
+        $upcoming = $baseQuery()
+            ->whereDate('departure_date', '>=', Carbon::today())
+            ->orderBy('departure_date')
+            ->orderBy('departure_time')
+            ->first();
+
+        if ($upcoming) {
+            return $upcoming;
+        }
+
+        return $baseQuery()
             ->orderBy('departure_date')
             ->orderBy('departure_time')
             ->first();

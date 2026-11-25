@@ -122,6 +122,48 @@ class OperationalInfoNotification extends Notification
             ];
         }
 
+        if ($this->infoType === 'departing') {
+            return [
+                'title' => 'Armada Akan Segera Berangkat',
+                'message' => "Armada {$vehicleModel} ({$plate}) yang dikemudikan oleh {$driverName} akan segera berangkat dari {$pickup}. Mohon segera merapat ke kendaraan.",
+                'category' => 'operasional',
+                'status_type' => 'departing',
+                'deep_link_url' => $deepLinkUrl,
+                'action_label' => 'Lihat Tiket & Armada',
+                'icon' => 'truck',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $this->booking->booking_code,
+                    'plate_number' => $plate,
+                    'vehicle_model' => $vehicleModel,
+                    'driver_name' => $driverName,
+                    'pickup_location' => $pickup,
+                ],
+            ];
+        }
+
+        if ($this->infoType === 'trip_cancelled') {
+            $reason = $this->delayReason ?: 'Kendala operasional mendadak sebelum keberangkatan';
+
+            return [
+                'title' => 'Perjalanan Dibatalkan oleh Pengemudi',
+                'message' => "Mohon maaf, perjalanan armada {$vehicleModel} ({$plate}) oleh {$driverName} dibatalkan sebelum berangkat. Alasan: {$reason}. Silakan hubungi loket atau ajukan pengalihan jadwal.",
+                'category' => 'operasional',
+                'status_type' => 'trip_cancelled',
+                'deep_link_url' => $deepLinkUrl,
+                'action_label' => 'Lihat Detail Tiket',
+                'icon' => 'alert-triangle',
+                'meta' => [
+                    'booking_id' => $this->booking->id,
+                    'booking_code' => $this->booking->booking_code,
+                    'plate_number' => $plate,
+                    'vehicle_model' => $vehicleModel,
+                    'driver_name' => $driverName,
+                    'cancellation_reason' => $reason,
+                ],
+            ];
+        }
+
         if ($this->infoType === 'departed') {
             return [
                 'title' => 'Armada Telah Berangkat 🚐',

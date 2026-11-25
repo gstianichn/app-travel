@@ -656,11 +656,28 @@ Route::middleware(['auth', 'role:staff'])
 Route::middleware(['auth', 'role:driver'])
     ->group(function () {
 
-        // 1. Dashboard Utama
+        // 1. Dashboard Utama (Beranda)
         Route::get('/driver/dashboard', [
             DriverDashboardController::class,
             'index',
         ])->name('dashboard.driver.index');
+
+        // 2. Perjalanan Saya (Kelola Perjalanan Aktif)
+        Route::get('/driver/perjalanan-saya', [
+            DriverDashboardController::class,
+            'perjalananSaya',
+        ])->name('dashboard.driver.perjalanan');
+
+        // 3. Notifikasi Driver
+        Route::get('/driver/notifikasi', [
+            DriverDashboardController::class,
+            'notifikasi',
+        ])->name('dashboard.driver.notifikasi');
+
+        Route::post('/driver/notifikasi/baca-semua', [
+            DriverDashboardController::class,
+            'markAllNotificationsRead',
+        ])->name('dashboard.driver.notifikasi.read-all');
 
         // 2. Melihat Jadwal Perjalanan
         Route::get('/driver/jadwal', [
@@ -766,6 +783,21 @@ Route::middleware(['auth', 'role:driver'])
             DriverDashboardController::class,
             'reportIncident',
         ])->name('dashboard.driver.schedule.incident');
+
+        Route::post('/driver/schedule/{schedule}/segera-berangkat', [
+            DriverDashboardController::class,
+            'confirmDeparting',
+        ])->name('dashboard.driver.schedule.departing');
+
+        Route::post('/driver/schedule/{schedule}/batalkan', [
+            DriverDashboardController::class,
+            'cancelTrip',
+        ])->name('dashboard.driver.schedule.cancel');
+
+        Route::post('/driver/kendala-darurat', [
+            DriverDashboardController::class,
+            'storeEmergencyIncident',
+        ])->name('dashboard.driver.incident.instant');
 
         Route::post('/driver/schedule/{schedule}/sos', [
             DriverDashboardController::class,

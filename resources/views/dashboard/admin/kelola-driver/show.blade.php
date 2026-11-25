@@ -940,6 +940,96 @@
         </div>
     </div>
 
+    {{-- DAFTAR PENUMPANG AKTIF DI AKUN DRIVER (TERSINKRONISASI REAL-TIME) --}}
+    <div style="background: white; border: 1px solid #e2eae6; border-radius: 16px; overflow: hidden;">
+        <div style="padding: 18px 22px; border-bottom: 1px solid #edf1ef; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h3 style="margin: 0; font-size: 15px; font-weight: 800; color: #17221d;">
+                    Daftar Penumpang di Akun Driver
+                </h3>
+                <p style="margin: 3px 0 0; font-size: 12px; color: #64748b;">
+                    Data penumpang aktif yang tampil pada akun driver ini (tersinkronisasi langsung dengan pesanan User, Staff Loket, dan Admin).
+                </p>
+            </div>
+            <span style="padding: 4px 12px; border-radius: 999px; background: #ecfdf5; color: #047857; font-size: 12px; font-weight: 700;">
+                {{ $driverPassengers->count() }} Penumpang Aktif
+            </span>
+        </div>
+
+        @if($driverPassengers->isNotEmpty())
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f8faf9; border-bottom: 1px solid #edf1ef; text-align: left; font-size: 11px; text-transform: uppercase; color: #64748b;">
+                            <th style="padding: 12px 16px;">Kode QR</th>
+                            <th style="padding: 12px 16px;">Nama</th>
+                            <th style="padding: 12px 16px;">Kursi</th>
+                            <th style="padding: 12px 16px;">Tujuan</th>
+                            <th style="padding: 12px 16px;">Berangkat Jam</th>
+                            <th style="padding: 12px 16px;">Sampai Jam</th>
+                            <th style="padding: 12px 16px;">Pembayaran</th>
+                            <th style="padding: 12px 16px; text-align: right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($driverPassengers as $dp)
+                            <tr style="border-bottom: 1px solid #edf1ef;">
+                                <td style="padding: 12px 16px; font-family: monospace; font-size: 12px; font-weight: 700; color: #0c392f;">
+                                    {{ $dp->qr_code }}
+                                </td>
+                                <td style="padding: 12px 16px;">
+                                    <div style="font-weight: 700; color: #1e293b;">{{ $dp->name }}</div>
+                                    <div style="font-size: 11px; color: #64748b;">{{ $dp->phone }}</div>
+                                </td>
+                                <td style="padding: 12px 16px;">
+                                    <span style="display: inline-block; padding: 3px 9px; border-radius: 6px; background: #0c392f; color: #fff; font-size: 11px; font-weight: 700;">
+                                        Kursi {{ $dp->seat_number }}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px 16px; color: #1e293b;">
+                                    {{ $dp->dropoff_point }}
+                                    <div style="font-size: 11px; color: #64748b;">{{ $dp->departure_date }}</div>
+                                </td>
+                                <td style="padding: 12px 16px; font-weight: 700; color: #087f55; white-space: nowrap;">
+                                    {{ $dp->departure_time }}
+                                </td>
+                                <td style="padding: 12px 16px; color: #475569; white-space: nowrap;">
+                                    {{ $dp->arrival_time }}
+                                </td>
+                                <td style="padding: 12px 16px; white-space: nowrap;">
+                                    @if($dp->is_paid)
+                                        <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 700;">
+                                            Lunas
+                                        </span>
+                                    @else
+                                        <span style="display: inline-block; padding: 3px 10px; border-radius: 999px; background: #fef3c7; color: #b45309; font-size: 11px; font-weight: 700;">
+                                            Belum Lunas
+                                        </span>
+                                    @endif
+                                </td>
+                                <td style="padding: 12px 16px; text-align: right; white-space: nowrap;">
+                                    <a href="{{ route('dashboard.admin.pemesanan.show', $dp->booking_id) }}" style="color: #087f55; font-size: 12px; font-weight: 700; text-decoration: none;">
+                                        Detail
+                                    </a>
+                                    @if($dp->schedule_id)
+                                        <span style="color: #cbd5e1; margin: 0 4px;">|</span>
+                                        <a href="{{ route('dashboard.admin.pemesanan.manifes', $dp->schedule_id) }}" style="color: #1e293b; font-size: 12px; font-weight: 700; text-decoration: none;">
+                                            Manifes
+                                        </a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div style="padding: 32px 20px; text-align: center; color: #76857e; font-size: 13px;">
+                Belum ada penumpang aktif pada jadwal berjalan milik driver ini.
+            </div>
+        @endif
+    </div>
+
 </div>
 
 @endsection

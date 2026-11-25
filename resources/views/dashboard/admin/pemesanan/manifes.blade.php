@@ -445,12 +445,12 @@
                 <tr>
                     <th style="width: 40px; text-align: center;">No</th>
                     <th style="width: 70px; text-align: center;">Kursi</th>
+                    <th>Kode QR / Booking</th>
                     <th>Nama Lengkap Penumpang</th>
                     <th>No. WhatsApp / HP</th>
-                    <th>Kode Booking / Tiket</th>
-                    <th>Titik Jemput / Catatan Khusus</th>
+                    <th>Tujuan &amp; Catatan</th>
+                    <th style="width: 110px; text-align: center;">Berangkat / Sampai</th>
                     <th style="width: 110px; text-align: center;">Status Bayar</th>
-                    <th style="width: 70px; text-align: center;">Boarding</th>
                 </tr>
             </thead>
             <tbody>
@@ -460,30 +460,34 @@
                         <td style="text-align: center;">
                             <span class="seat-cell-tag">{{ $passenger['seat_number'] }}</span>
                         </td>
+                        <td style="font-family: monospace; font-weight: 700; font-size: 11px;">
+                            {{ $passenger['qr_code'] ?? $passenger['booking_code'] }}
+                            @if(($passenger['ticket_number'] ?? '-') !== '-')
+                                <div style="color: #64748b; font-weight: normal;">{{ $passenger['ticket_number'] }}</div>
+                            @endif
+                        </td>
                         <td>
                             <strong style="font-size: 13px;">{{ $passenger['passenger_name'] }}</strong>
                         </td>
                         <td>
                             {{ $passenger['phone'] }}
                         </td>
-                        <td style="font-family: monospace; font-weight: 700; font-size: 11px;">
-                            {{ $passenger['booking_code'] }}
-                            @if($passenger['ticket_number'] !== '-')
-                                <div style="color: #64748b; font-weight: normal;">{{ $passenger['ticket_number'] }}</div>
+                        <td style="font-size: 11px; color: #475569;">
+                            <strong style="color: #1e293b;">{{ $passenger['dropoff_point'] ?? '-' }}</strong>
+                            @if(($passenger['special_request'] ?? '-') !== '-')
+                                <div>{{ $passenger['special_request'] }}</div>
                             @endif
                         </td>
-                        <td style="font-size: 11px; color: #475569;">
-                            {{ $passenger['special_request'] }}
+                        <td style="text-align: center; font-size: 11px; color: #1e293b;">
+                            <strong>{{ $passenger['departure_time'] ?? ($depTime.' WIB') }}</strong>
+                            <div style="color: #64748b;">s/d {{ $passenger['arrival_time'] ?? '-' }}</div>
                         </td>
                         <td style="text-align: center; font-weight: 700; font-size: 11px;">
                             @if($passenger['is_paid'])
                                 <span style="color: #15803d;">LUNAS</span>
                             @else
-                                <span style="color: #b45309;">BAYAR LOKET</span>
+                                <span style="color: #b45309;">BELUM LUNAS</span>
                             @endif
-                        </td>
-                        <td style="text-align: center;">
-                            <span class="boarding-checkbox-box"></span>
                         </td>
                     </tr>
                 @empty

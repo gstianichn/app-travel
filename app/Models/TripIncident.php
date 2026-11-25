@@ -13,6 +13,7 @@ class TripIncident extends Model
     protected $fillable = [
         'schedule_id',
         'driver_id',
+        'vehicle_id',
         'category',
         'severity',
         'description',
@@ -21,7 +22,9 @@ class TripIncident extends Model
         'longitude',
         'status',
         'emergency_dispatched',
+        'needs_replacement_vehicle',
         'reported_at',
+        'activated_at',
         'resolved_at',
         'resolution_notes',
     ];
@@ -32,7 +35,9 @@ class TripIncident extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'emergency_dispatched' => 'boolean',
+            'needs_replacement_vehicle' => 'boolean',
             'reported_at' => 'datetime',
+            'activated_at' => 'datetime',
             'resolved_at' => 'datetime',
         ];
     }
@@ -47,15 +52,21 @@ class TripIncident extends Model
         return $this->belongsTo(Driver::class);
     }
 
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
+    }
+
     /**
      * Label kategori insiden / kendala jalan
      */
     public function categoryLabel(): string
     {
         return match ($this->category) {
-            'ban_bocor' => 'Ban Bocor / Kempes',
+            'ban_bocor' => 'Ban Bocor / Insiden',
             'macet_parah' => 'Macet Total / Parah',
-            'mesin_mogok' => 'Kendala Mesin / Mogok',
+            'mesin_mogok' => 'Mobil Mogok / Kerusakan Mesin',
+            'driver_sakit' => 'Driver Mendadak Sakit',
             'penumpang_batal' => 'Penumpang Batal Mendadak',
             'kecelakaan' => 'Insiden Tabrakan / Kecelakaan',
             'darurat_medis' => 'Darurat Medis / Sakit',
@@ -113,6 +124,7 @@ class TripIncident extends Model
     public function statusLabel(): string
     {
         return match ($this->status) {
+            'active' => 'Aktif (Langsung Diteruskan)',
             'in_progress', 'diproses' => 'Sedang Ditangani',
             'resolved', 'selesai' => 'Selesai Ditangani',
             default => 'Telah Dilaporkan',

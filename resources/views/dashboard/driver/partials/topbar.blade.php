@@ -1,9 +1,6 @@
-<!-- ========================================
-     TOPBAR DRIVER OPERASIONAL (TRAVELKU STAFF SYSTEM)
-========================================= -->
+<!-- TOPBAR DRIVER OPERASIONAL -->
 <header class="topbar">
-    <div class="topbar-left" style="display: flex; align-items: center; gap: 14px; min-width: 0;">
-        <!-- Tombol Hamburger Mobile -->
+    <div class="topbar-left flex items-center gap-3 min-w-0">
         <button type="button" class="btn-sidebar-toggle" onclick="toggleSidebar()" aria-label="Buka Menu Navigasi" style="display: none; background: none; border: none; cursor: pointer; color: var(--lp-ink); padding: 4px;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -12,37 +9,40 @@
             </svg>
         </button>
 
-        <div class="page-title" style="min-width: 0;">
-            <p><strong>TravelKu</strong>, driver</p>
+        <div class="page-title min-w-0">
+            <p class="m-0 text-sm text-slate-600 truncate">
+                <strong class="text-emerald-950">TravelKu</strong> &middot; Panel Driver
+            </p>
         </div>
     </div>
 
-    <!-- Status Operasional, Tombol SOS & Profil Driver -->
-    <div class="topbar-right" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
-        <!-- Status GPS Live -->
-        <div class="ds-badge ds-badge--ok" id="topbarGpsBadge" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; padding: 4px 10px;">
-            <span class="live-dot" style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #0C7950; box-shadow: 0 0 6px rgba(12, 121, 80, 0.6);"></span>
-            <span id="gpsTextIndicator">GPS Aktif</span>
+    <div class="topbar-right flex items-center gap-3 shrink-0">
+        <!-- Ikon Lonceng Notifikasi -->
+        <div class="relative">
+            <a href="{{ route('dashboard.driver.notifikasi') }}"
+               class="relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-[#DEDAC9] bg-[#FFFDF8] text-[#13201B] hover:bg-[#EEF6F1] transition"
+               title="Notifikasi Masuk"
+               aria-label="Notifikasi Masuk ({{ $unreadNotificationsCount ?? 0 }} belum dibaca)">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                @if (($unreadNotificationsCount ?? 0) > 0)
+                    <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
+                        {{ $unreadNotificationsCount > 9 ? '9+' : $unreadNotificationsCount }}
+                    </span>
+                @endif
+            </a>
         </div>
 
-        <!-- Tombol SOS Darurat -->
-        <button type="button" class="ds-btn ds-btn--danger" onclick="openSosModal()" title="Buka Akses Darurat Instan" style="min-height: 38px; padding: 0 14px; font-size: 12px; font-weight: 800; border-radius: 8px;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            <span>SOS DARURAT</span>
-        </button>
-
-        <!-- Driver Profile Component -->
+        <!-- Profil Driver -->
         <div class="profile">
             <div class="avatar">
                 {{ strtoupper(substr($user->name ?? 'D', 0, 1)) }}
             </div>
             <div class="profile-info">
-                <strong>
-                    {{ \Illuminate\Support\Str::before($user->name ?? 'Pengemudi', ' ') }}
-                </strong>
-                <span>
-                    {{ $activeSchedule->vehicle?->plate_number ?? 'D 7812 AB' }}
-                </span>
+                <strong>{{ $user->name ?? 'Pengemudi' }}</strong>
+                <span>{{ $activeSchedule->vehicle?->plate_number ?? 'Standby' }}</span>
             </div>
         </div>
     </div>

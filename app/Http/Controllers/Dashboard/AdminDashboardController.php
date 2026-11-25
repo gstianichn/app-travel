@@ -19,6 +19,7 @@ use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Notifications\BookingStatusNotification;
+use App\Notifications\DriverOperationalNotification;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -1204,7 +1205,56 @@ class AdminDashboardController extends Controller
             ->latest()
             ->paginate(8);
 
-        return view('dashboard.admin.kelola-driver.show', compact('driver', 'admin', 'schedules'));
+        // Daftar penumpang aktif yang sedang terdata di akun driver (tersinkronisasi langsung dengan tabel Daftar Penumpang Driver)
+        $activeDriverBookings = Booking::with([
+            'schedule.route.origin',
+            'schedule.route.destination',
+            'schedule.vehicle',
+            'passengers.seat',
+            'user',
+            'payment',
+            'ticket',
+        ])
+            ->whereHas('schedule', function ($q) use ($driver) {
+                $q->where('driver_id', $driver->id)
+                    ->whereDate('departure_date', '>=', Carbon::today()->subDays(1))
+                    ->whereNotIn('trip_status', ['completed', 'cancelled'])
+                    ->whereNotIn('status', ['completed', 'Completed', 'Cancelled', 'cancelled', 'Selesai', 'selesai']);
+            })
+            ->whereNotIn('status', ['Cancelled', 'cancelled', 'batal', 'Batal', 'refunded', 'Refunded'])
+            ->latest()
+            ->get();
+
+        $driverPassengers = collect();
+        foreach ($activeDriverBookings as $b) {
+            $sched = $b->schedule;
+            $bookingStatusLower = strtolower((string) $b->status);
+            $paymentStatusLower = strtolower((string) ($b->payment?->status ?? ''));
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'completed', 'checked_in', 'boarded', 'selesai'], true)
+                || in_array($paymentStatusLower, ['paid', 'success', 'settlement', 'lunas'], true);
+
+            foreach ($b->passengers as $p) {
+                $driverPassengers->push((object) [
+                    'id' => $p->id,
+                    'booking_id' => $b->id,
+                    'booking_code' => $b->booking_code,
+                    'schedule_id' => $sched?->id,
+                    'qr_code' => $b->ticket?->qr_code ?: $b->booking_code,
+                    'name' => $p->name,
+                    'phone' => $p->phone ?: ($b->user?->phone ?? '-'),
+                    'seat_number' => $p->seat?->seat_number ?? '-',
+                    'dropoff_point' => $p->dropoffLabel(),
+                    'route_label' => ($sched?->route?->origin?->name ?? 'Asal').' → '.($sched?->route?->destination?->name ?? 'Tujuan'),
+                    'departure_date' => $sched?->departure_date ? $sched->departure_date->format('d M Y') : '-',
+                    'departure_time' => $sched ? $sched->formattedDepartureTime() : '-',
+                    'arrival_time' => $sched ? $sched->estimatedArrivalTime() : '-',
+                    'is_paid' => $isPaid,
+                    'boarding_status' => $p->boarding_status ?: 'belum_hadir',
+                ]);
+            }
+        }
+
+        return view('dashboard.admin.kelola-driver.show', compact('driver', 'admin', 'schedules', 'driverPassengers'));
     }
 
     /**
@@ -1689,10 +1739,10 @@ class AdminDashboardController extends Controller
         $today = now()->startOfDay();
         $totalBookings = Booking::count();
         $todayPaidBookings = Booking::whereDate('created_at', $today)
-            ->whereIn('status', ['Paid', 'Confirmed', 'paid', 'confirmed', 'success', 'lunas'])
+            ->whereIn('status', ['Paid', 'Confirmed', 'paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded'])
             ->count();
         $pendingBookings = Booking::whereIn('status', ['Pending', 'pending'])->count();
-        $walkInBookings = Booking::whereIn('source', ['walk_in', 'whatsapp', 'phone', 'loket'])->count();
+        $walkInBookings = Booking::whereIn('source', ['walk_in', 'whatsapp', 'phone', 'loket', 'offline'])->count();
 
         $query = Booking::with([
             'user',
@@ -1700,6 +1750,7 @@ class AdminDashboardController extends Controller
             'schedule.route.destination',
             'schedule.travelRoute',
             'schedule.vehicle',
+            'schedule.driver.user',
             'passengers.seat',
             'payment',
             'ticket',
@@ -1936,7 +1987,10 @@ class AdminDashboardController extends Controller
                     'seat_id' => $seatId,
                     'name' => $pName,
                     'phone' => $pPhone,
+                    'pickup_point' => $schedule->route?->origin?->name,
+                    'dropoff_point' => $schedule->route?->destination?->name,
                     'special_request' => $pSpecial,
+                    'boarding_status' => 'belum_hadir',
                 ]);
             }
 
@@ -1962,6 +2016,24 @@ class AdminDashboardController extends Controller
 
             // Perbarui sisa kursi jadwal
             $schedule->recalculateAvailableSeats();
+
+            // Kirim notifikasi langsung ke akun driver yang bertugas pada jadwal ini
+            $schedule->loadMissing(['driver.user', 'route.origin', 'route.destination']);
+            if ($schedule->driver?->user) {
+                $schedule->driver->user->notify(new DriverOperationalNotification(
+                    title: 'Penumpang Baru Masuk dari Admin',
+                    message: "{$passengerCount} penumpang baru ({$booking->booking_code}) ditambahkan ke jadwal {$schedule->formattedDepartureTime()} rute ".($schedule->route?->origin?->name ?? 'Asal').' → '.($schedule->route?->destination?->name ?? 'Tujuan').'.',
+                    statusType: 'new_passenger',
+                    deepLinkUrl: route('dashboard.driver.penumpang', ['schedule_id' => $schedule->id]),
+                    actionLabel: 'Lihat Daftar Penumpang',
+                    meta: [
+                        'booking_id' => $booking->id,
+                        'booking_code' => $booking->booking_code,
+                        'schedule_id' => $schedule->id,
+                        'passenger_count' => $passengerCount,
+                    ]
+                ));
+            }
 
             return redirect()
                 ->route('dashboard.admin.pemesanan.show', $booking->id)
@@ -2059,15 +2131,24 @@ class AdminDashboardController extends Controller
         // Ekstraksi seluruh penumpang pada jadwal ini diurutkan berdasarkan nomor kursi
         $passengers = collect();
         foreach ($schedule->bookings as $b) {
+            $bookingStatusLower = strtolower((string) $b->status);
+            $paymentStatusLower = strtolower((string) ($b->payment?->status ?? ''));
+            $isPaid = in_array($bookingStatusLower, ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed', 'selesai'], true)
+                || in_array($paymentStatusLower, ['paid', 'success', 'settlement', 'lunas'], true);
+
             foreach ($b->passengers as $p) {
                 $passengers->push([
                     'seat_number' => $p->seat?->seat_number ?? '-',
                     'passenger_name' => $p->name,
                     'phone' => $p->phone ?: ($b->user?->phone ?? '-'),
                     'booking_code' => $b->booking_code,
+                    'qr_code' => $b->ticket?->qr_code ?: $b->booking_code,
+                    'dropoff_point' => $p->dropoffLabel(),
+                    'departure_time' => $schedule->formattedDepartureTime(),
+                    'arrival_time' => $schedule->estimatedArrivalTime(),
                     'booking_id' => $b->id,
                     'payment_status' => $b->statusLabel(),
-                    'is_paid' => in_array(strtolower($b->status), ['paid', 'confirmed', 'success', 'lunas', 'checked_in', 'boarded', 'completed']),
+                    'is_paid' => $isPaid,
                     'special_request' => $p->special_request ?: ($b->notes ?: '-'),
                     'ticket_number' => $b->ticket?->ticket_number ?? '-',
                     'booking_source' => $b->sourceLabel(),

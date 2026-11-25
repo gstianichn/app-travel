@@ -80,12 +80,12 @@
         @endif
 
         {{-- Dynamic Content Area --}}
-        <main class="content driver-main-content main-canvas" id="section-dashboard">
+        <main class="content driver-main-content main-canvas pb-24 md:pb-8" id="section-dashboard">
             @yield('content')
         </main>
 
         {{-- Footer Driver Minimalis --}}
-        <footer style="margin-top: auto; padding: 20px 32px; font-size: 12px; color: var(--lp-muted); border-top: 1px solid var(--lp-line); display: flex; justify-content: space-between; align-items: center;">
+        <footer class="hidden md:flex mt-auto px-8 py-5 text-xs text-[#5C6862] border-t border-[#DEDAC9] justify-between items-center">
             <span>&copy; {{ date('Y') }} TravelKu &bull; Driver Operasional</span>
             <span>TravelKu Staff Suite</span>
         </footer>

@@ -24,10 +24,14 @@ class Schedule extends Model
         'arrival_at',
         'status',
         'trip_status',
+        'departing_at',
         'pickup_started_at',
         'departed_at',
         'arrived_at',
         'completed_at',
+        'cancelled_at',
+        'cancellation_reason',
+        'cancelled_by',
         'current_latitude',
         'current_longitude',
         'last_gps_at',
@@ -40,10 +44,12 @@ class Schedule extends Model
             'departure_time' => 'datetime:H:i',
             'departure_at' => 'datetime',
             'arrival_at' => 'datetime',
+            'departing_at' => 'datetime',
             'pickup_started_at' => 'datetime',
             'departed_at' => 'datetime',
             'arrived_at' => 'datetime',
             'completed_at' => 'datetime',
+            'cancelled_at' => 'datetime',
             'last_gps_at' => 'datetime',
             'current_latitude' => 'decimal:7',
             'current_longitude' => 'decimal:7',
@@ -317,6 +323,9 @@ class Schedule extends Model
     public function tripStatusKey(): string
     {
         $status = strtolower($this->trip_status ?? 'scheduled');
+        if (in_array($status, ['departing', 'segera_berangkat'])) {
+            return 'departing';
+        }
         if (in_array($status, ['pickup', 'mulai_jemput', 'jemput'])) {
             return 'pickup';
         }
@@ -329,6 +338,9 @@ class Schedule extends Model
         if (in_array($status, ['completed', 'selesai', 'finish'])) {
             return 'completed';
         }
+        if (in_array($status, ['cancelled', 'dibatalkan', 'batal'])) {
+            return 'cancelled';
+        }
 
         return 'scheduled';
     }
@@ -339,10 +351,12 @@ class Schedule extends Model
     public function tripStatusLabel(): string
     {
         return match ($this->tripStatusKey()) {
+            'departing' => 'Segera Berangkat',
             'pickup' => 'Proses Penjemputan',
             'departed' => 'Dalam Perjalanan',
             'arrived' => 'Tiba di Tujuan',
             'completed' => 'Perjalanan Selesai',
+            'cancelled' => 'Dibatalkan',
             default => 'Menunggu Keberangkatan',
         };
     }
@@ -353,10 +367,12 @@ class Schedule extends Model
     public function tripStatusBadgeClass(): string
     {
         return match ($this->tripStatusKey()) {
+            'departing' => 'badge-status-pickup',
             'pickup' => 'badge-status-pickup',
             'departed' => 'badge-status-departed',
             'arrived' => 'badge-status-arrived',
             'completed' => 'badge-status-completed',
+            'cancelled' => 'badge-status-scheduled',
             default => 'badge-status-scheduled',
         };
     }

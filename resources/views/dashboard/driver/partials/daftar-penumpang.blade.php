@@ -54,7 +54,7 @@
                             <select id="scheduleSelector" onchange="if(this.value) window.location.href = '{{ request()->url() }}?schedule_id=' + this.value" style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; outline: none;">
                                 @foreach($availableDriverSchedules as $s)
                                     <option value="{{ $s->id }}" {{ $s->id == $activeSchedule->id ? 'selected' : '' }}>
-                                        {{ $s->departure_date ? $s->departure_date->format('d M') : 'Hari ini' }} - {{ \Carbon\Carbon::parse($s->departure_time)->format('H:i') }} WIB ({{ $s->route?->origin?->city ?? 'Asal' }} ➔ {{ $s->route?->destination?->city ?? 'Tujuan' }})
+                                        {{ $s->departure_date ? $s->departure_date->format('d M') : 'Hari ini' }} - {{ \Carbon\Carbon::parse($s->departure_time)->format('H:i') }} WIB ({{ $s->route?->origin?->city ?? 'Asal' }} ➔ {{ $s->route?->destination?->city ?? 'Tujuan' }})@if(($s->active_bookings_count ?? 0) > 0) • {{ $s->active_bookings_count }} pesanan @endif
                                     </option>
                                 @endforeach
                             </select>
