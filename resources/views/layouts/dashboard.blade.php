@@ -84,6 +84,17 @@
                                     <span>Profil dan akun</span>
                                 </a>
 
+                                @if ($layoutUser->role === 'user')
+                                <a href="{{ route('dashboard.user.bantuan-cs') }}"
+                                   class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-brand-900 transition-colors">
+                                    <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                                        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                                    </svg>
+                                    <span>Bantuan Customer Service</span>
+                                </a>
+                                @endif
+
                                 <a href="{{ route('home') }}"
                                    class="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-brand-900 transition-colors">
                                     <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -152,6 +163,20 @@
             @endforeach
         </div>
     </nav>
+    @endif
+
+    {{-- Tombol Mengambang Bantuan Customer Service untuk semua halaman akun user --}}
+    @if ($layoutUser && $layoutUser->role === 'user' && ! request()->routeIs('dashboard.user.bantuan-cs*'))
+        <a href="{{ route('dashboard.user.bantuan-cs') }}"
+           aria-label="Chat Customer Service"
+           title="Butuh bantuan? Chat Customer Service"
+           class="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 inline-flex items-center gap-2 rounded-full bg-brand-700 px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-brand-800 transition-all">
+            <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+            </svg>
+            <span class="hidden sm:inline">Customer Service</span>
+        </a>
     @endif
 
     @include('dashboard.user.partials.feedback-taxonomy')

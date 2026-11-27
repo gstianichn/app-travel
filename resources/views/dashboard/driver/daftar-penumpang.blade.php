@@ -67,6 +67,11 @@
                                 </td>
                                 <td class="py-4 px-5">
                                     <div class="font-bold text-[#13201B]">{{ $p->name }}</div>
+                                    @if (! empty($p->phone) && $p->phone !== '-')
+                                        <div class="mt-0.5 font-mono text-xs font-semibold text-[#5C6862]">
+                                            {{ $p->phone }}
+                                        </div>
+                                    @endif
                                     <div class="flex items-center gap-2 mt-1 text-xs">
                                         @if (! empty($p->phone) && $p->phone !== '-')
                                             <a href="tel:{{ preg_replace('/[^0-9+]/', '', $p->phone) }}" class="text-[#5C6862] hover:text-[#0C7950] font-semibold">
@@ -74,7 +79,9 @@
                                             </a>
                                         @endif
                                         @if (! empty($p->wa_phone))
-                                            <span class="text-[#DEDAC9]">&middot;</span>
+                                            @if (! empty($p->phone) && $p->phone !== '-')
+                                                <span class="text-[#DEDAC9]">&middot;</span>
+                                            @endif
                                             <a href="https://wa.me/{{ $p->wa_phone }}?text={{ urlencode('Halo '.$p->name.', saya driver TravelKu untuk jadwal '.$activeSchedule->formattedDepartureTime().'.') }}"
                                                target="_blank"
                                                rel="noopener"
@@ -134,6 +141,9 @@
                         </div>
 
                         <div class="text-[#5C6862] space-y-1">
+                            @if (! empty($p->phone) && $p->phone !== '-')
+                                <p><strong class="text-[#13201B]">No. HP / WA:</strong> <span class="font-mono font-semibold">{{ $p->phone }}</span></p>
+                            @endif
                             <p><strong class="text-[#13201B]">Tujuan:</strong> {{ $p->dropoff_point }}</p>
                             <p>
                                 <strong class="text-[#13201B]">Berangkat:</strong> {{ $activeSchedule->formattedDepartureTime() }}

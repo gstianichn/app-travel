@@ -1,0 +1,188 @@
+@extends('layouts.customer-service')
+
+@section('title', 'Profil Saya - Customer Service TravelKu')
+
+@php
+    $rawName = trim((string) ($user->name ?? 'Customer Service'));
+    $cleanName = trim((string) preg_replace('/\s*\([^)]*\)\s*/', ' ', $rawName)) ?: $rawName;
+    $parts = preg_split('/\s+/', $cleanName) ?: [];
+    $initials = count($parts) >= 2
+        ? strtoupper(mb_substr($parts[0], 0, 1).mb_substr($parts[1], 0, 1))
+        : strtoupper(mb_substr($cleanName, 0, 2));
+@endphp
+
+@section('content')
+<div class="space-y-6 text-[#13201B]">
+    <header>
+        <h1 class="text-2xl font-extrabold text-[#0C392F]">Profil Saya</h1>
+        <p class="text-sm text-[#5C6862] mt-1">
+            Kelola informasi akun dan keamanan kata sandi Customer Service Anda.
+        </p>
+    </header>
+
+    {{-- Kartu Ringkasan Akun --}}
+    <section class="rounded-2xl border border-[#DEDAC9] bg-[#FFFDF8] p-6 shadow-xs">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#0C392F] text-lg font-extrabold text-[#FFFDF8] tracking-wide">
+                    {{ $initials }}
+                </div>
+                <div>
+                    <h2 class="text-lg font-extrabold text-[#0C392F]">{{ $cleanName }}</h2>
+                    <p class="text-xs text-[#5C6862] mt-0.5">{{ $user->email }}</p>
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center rounded-full border border-[#B8DFC9] bg-[#EEF6F1] px-2.5 py-0.5 text-[11px] font-bold text-[#0C5A3E]">
+                            Customer Service
+                        </span>
+                        @if ($user->branch)
+                            <span class="inline-flex items-center rounded-full border border-[#DEDAC9] bg-[#F6F4EC] px-2.5 py-0.5 text-[11px] font-semibold text-[#4B5D55]">
+                                {{ $user->branch }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 sm:min-w-[280px]">
+                <div class="rounded-xl border border-[#ECE8DA] bg-[#F6F4EC]/70 px-3 py-2.5 text-center">
+                    <p class="text-lg font-extrabold text-[#0C392F] tabular-nums">{{ $agentStats['reported'] }}</p>
+                    <p class="text-[11px] font-semibold text-[#5C6862]">Dicatat</p>
+                </div>
+                <div class="rounded-xl border border-[#ECE8DA] bg-[#F6F4EC]/70 px-3 py-2.5 text-center">
+                    <p class="text-lg font-extrabold text-[#0C7950] tabular-nums">{{ $agentStats['resolved'] }}</p>
+                    <p class="text-[11px] font-semibold text-[#5C6862]">Selesai</p>
+                </div>
+                <div class="rounded-xl border border-[#ECE8DA] bg-[#F6F4EC]/70 px-3 py-2.5 text-center">
+                    <p class="text-lg font-extrabold text-purple-800 tabular-nums">{{ $agentStats['escalated'] }}</p>
+                    <p class="text-[11px] font-semibold text-[#5C6862]">Eskalasi</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {{-- Form Informasi Profil --}}
+        <section class="rounded-2xl border border-[#DEDAC9] bg-[#FFFDF8] p-6 shadow-xs space-y-4">
+            <div>
+                <h2 class="text-base font-extrabold text-[#0C392F]">Informasi Profil</h2>
+                <p class="text-xs text-[#5C6862] mt-0.5">Perbarui nama, alamat email, atau nomor HP aktif Anda.</p>
+            </div>
+
+            <form method="POST" action="{{ route('dashboard.customer-service.profil.update') }}" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label for="cs-profile-name" class="block text-xs font-bold text-[#0C392F] mb-1">
+                        Nama Lengkap <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="text"
+                           id="cs-profile-name"
+                           name="name"
+                           value="{{ old('name', $user->name) }}"
+                           required
+                           class="w-full rounded-xl border border-[#DEDAC9] bg-white px-3.5 py-2.5 text-sm font-medium text-[#13201B] focus:border-[#0C7950] focus:outline-none focus:ring-2 focus:ring-[#0C7950]/20">
+                    @error('name')
+                        <p class="mt-1 text-xs font-semibold text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="cs-profile-email" class="block text-xs font-bold text-[#0C392F] mb-1">
+                        Alamat Email <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="email"
+                           id="cs-profile-email"
+                           name="email"
+                           value="{{ old('email', $user->email) }}"
+                           required
+                           class="w-full rounded-xl border border-[#DEDAC9] bg-white px-3.5 py-2.5 text-sm font-medium text-[#13201B] focus:border-[#0C7950] focus:outline-none focus:ring-2 focus:ring-[#0C7950]/20">
+                    @error('email')
+                        <p class="mt-1 text-xs font-semibold text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="cs-profile-phone" class="block text-xs font-bold text-[#0C392F] mb-1">
+                        Nomor HP
+                    </label>
+                    <input type="text"
+                           id="cs-profile-phone"
+                           name="phone"
+                           value="{{ old('phone', $user->phone) }}"
+                           placeholder="08xxxxxxxxxx"
+                           class="w-full rounded-xl border border-[#DEDAC9] bg-white px-3.5 py-2.5 text-sm font-medium text-[#13201B] focus:border-[#0C7950] focus:outline-none focus:ring-2 focus:ring-[#0C7950]/20">
+                    @error('phone')
+                        <p class="mt-1 text-xs font-semibold text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="pt-1">
+                    <button type="submit" class="rounded-xl bg-[#0C7950] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0C5A3E] transition">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        {{-- Form Ubah Password --}}
+        <section class="rounded-2xl border border-[#DEDAC9] bg-[#FFFDF8] p-6 shadow-xs space-y-4">
+            <div>
+                <h2 class="text-base font-extrabold text-[#0C392F]">Ubah Password</h2>
+                <p class="text-xs text-[#5C6862] mt-0.5">Gunakan kata sandi minimal 8 karakter untuk menjaga keamanan akun.</p>
+            </div>
+
+            <form method="POST" action="{{ route('dashboard.customer-service.profil.password') }}" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label for="cs-current-password" class="block text-xs font-bold text-[#0C392F] mb-1">
+                        Password Saat Ini <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="password"
+                           id="cs-current-password"
+                           name="current_password"
+                           required
+                           autocomplete="current-password"
+                           class="w-full rounded-xl border border-[#DEDAC9] bg-white px-3.5 py-2.5 text-sm font-medium text-[#13201B] focus:border-[#0C7950] focus:outline-none focus:ring-2 focus:ring-[#0C7950]/20">
+                    @error('current_password')
+                        <p class="mt-1 text-xs font-semibold text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="cs-new-password" class="block text-xs font-bold text-[#0C392F] mb-1">
+                        Password Baru <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="password"
+                           id="cs-new-password"
+                           name="password"
+                           required
+                           autocomplete="new-password"
+                           class="w-full rounded-xl border border-[#DEDAC9] bg-white px-3.5 py-2.5 text-sm font-medium text-[#13201B] focus:border-[#0C7950] focus:outline-none focus:ring-2 focus:ring-[#0C7950]/20">
+                    @error('password')
+                        <p class="mt-1 text-xs font-semibold text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="cs-confirm-password" class="block text-xs font-bold text-[#0C392F] mb-1">
+                        Konfirmasi Password Baru <span class="text-rose-600">*</span>
+                    </label>
+                    <input type="password"
+                           id="cs-confirm-password"
+                           name="password_confirmation"
+                           required
+                           autocomplete="new-password"
+                           class="w-full rounded-xl border border-[#DEDAC9] bg-white px-3.5 py-2.5 text-sm font-medium text-[#13201B] focus:border-[#0C7950] focus:outline-none focus:ring-2 focus:ring-[#0C7950]/20">
+                </div>
+
+                <div class="pt-1">
+                    <button type="submit" class="rounded-xl bg-[#0C392F] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#0C5A3E] transition">
+                        Perbarui Password
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+@endsection

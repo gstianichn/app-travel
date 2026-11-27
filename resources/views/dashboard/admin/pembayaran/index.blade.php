@@ -156,15 +156,26 @@
 
     .filter-form {
         display: grid;
-        grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
-        gap: 12px;
-        align-items: flex-end;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 14px 16px;
+        align-items: end;
     }
 
     .filter-group {
         display: flex;
         flex-direction: column;
         gap: 6px;
+        min-width: 0;
+    }
+
+    .filter-group--search {
+        grid-column: span 6;
+    }
+
+    .filter-group--status,
+    .filter-group--method,
+    .filter-group--date {
+        grid-column: span 3;
     }
 
     .filter-label {
@@ -173,10 +184,15 @@
         color: #4b5852;
         text-transform: uppercase;
         letter-spacing: 0.4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .filter-input,
     .filter-select {
+        width: 100%;
+        min-width: 0;
         height: 40px;
         padding: 0 12px;
         border: 1px solid #d4dfda;
@@ -185,7 +201,7 @@
         color: #17221d;
         background: #fbfdfc;
         outline: none;
-        transition: border-color 0.2s ease;
+        transition: border-color 0.2s ease, background 0.2s ease;
     }
 
     .filter-input:focus,
@@ -195,8 +211,11 @@
     }
 
     .filter-buttons {
+        grid-column: span 6;
         display: flex;
-        gap: 8px;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
     }
 
     .btn-filter-submit {
@@ -207,8 +226,15 @@
         background: #087f55;
         color: white;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(8, 127, 85, 0.18);
         transition: background 0.2s ease;
     }
 
@@ -218,16 +244,19 @@
 
     .btn-filter-reset {
         height: 40px;
-        padding: 0 14px;
+        padding: 0 16px;
         border: 1px solid #d4dfda;
         border-radius: 8px;
         background: white;
-        color: #61736b;
+        color: #4b5852;
         font-size: 13px;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
         text-decoration: none;
         transition: all 0.2s ease;
     }
@@ -235,6 +264,40 @@
     .btn-filter-reset:hover {
         background: #f1f5f3;
         color: #17221d;
+    }
+
+    @media (max-width: 1024px) {
+        .filter-group--search {
+            grid-column: span 12;
+        }
+
+        .filter-group--status,
+        .filter-group--method,
+        .filter-group--date {
+            grid-column: span 6;
+        }
+
+        .filter-buttons {
+            grid-column: span 12;
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .filter-group--status,
+        .filter-group--method,
+        .filter-group--date {
+            grid-column: span 12;
+        }
+
+        .filter-buttons {
+            flex-wrap: wrap;
+        }
+
+        .btn-filter-submit,
+        .btn-filter-reset {
+            flex: 1 1 auto;
+        }
     }
 
     /* TABLE CARD */
@@ -699,7 +762,7 @@
     <div class="filter-card">
         <form action="{{ route('dashboard.admin.pembayaran.index') }}" method="GET" class="filter-form admin-filter-form">
             {{-- Search input --}}
-            <div class="filter-group">
+            <div class="filter-group filter-group--search">
                 <label class="filter-label" for="search">Cari Invoice / Booking / Nama / HP</label>
                 <input
                     type="text"
@@ -713,7 +776,7 @@
             </div>
 
             {{-- Status Filter --}}
-            <div class="filter-group">
+            <div class="filter-group filter-group--status">
                 <label class="filter-label" for="status">Status Pembayaran</label>
                 <select name="status" id="status" class="filter-select">
                     <option value="all">Semua Status</option>
@@ -725,7 +788,7 @@
             </div>
 
             {{-- Payment Method Filter --}}
-            <div class="filter-group">
+            <div class="filter-group filter-group--method">
                 <label class="filter-label" for="method">Metode Pembayaran</label>
                 <select name="method" id="method" class="filter-select">
                     <option value="all">Semua Metode</option>
@@ -737,7 +800,7 @@
             </div>
 
             {{-- Dari Tanggal --}}
-            <div class="filter-group">
+            <div class="filter-group filter-group--date">
                 <label class="filter-label" for="date_from">Dari Tanggal</label>
                 <input
                     type="date"
@@ -749,7 +812,7 @@
             </div>
 
             {{-- Sampai Tanggal --}}
-            <div class="filter-group">
+            <div class="filter-group filter-group--date">
                 <label class="filter-label" for="date_to">Sampai Tanggal</label>
                 <input
                     type="date"
@@ -760,13 +823,14 @@
                 >
             </div>
 
-            <div class="filter-buttons" style="display:flex; align-items:flex-end; gap:8px;">
-                <button type="submit" class="btn-filter-submit" style="height: 40px; padding: 0 18px; border: none; border-radius: 8px; background: #087f55; color: white; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(8, 127, 85, 0.2);">
+            <div class="filter-buttons">
+                <button type="submit" class="btn-filter-submit">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                     <span>Terapkan Filter</span>
                 </button>
-                <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter" style="height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d4dfda; border-radius: 8px; background: white; color: #4b5852; font-size: 13px; text-decoration: none; font-weight: 600;">
-                    ↺ Reset
+                <a href="{{ route('dashboard.admin.pembayaran.index') }}" class="btn-filter-reset" title="Reset Filter">
+                    <span>&#8634;</span>
+                    <span>Reset</span>
                 </a>
             </div>
         </form>

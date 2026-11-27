@@ -783,6 +783,32 @@
                     </span>
                 </a>
 
+                @php
+                    $openCsEscalationsCount = \App\Models\CustomerComplaint::where('is_escalated', true)
+                        ->where('status', '!=', 'selesai')
+                        ->count();
+                @endphp
+                <a
+                    href="{{ route('dashboard.admin.eskalasi.index') }}"
+                    class="admin-menu-link {{ request()->routeIs('dashboard.admin.eskalasi.*') ? 'active' : '' }}"
+                >
+                    <span class="admin-menu-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </span>
+                    <span style="display:flex; align-items:center; justify-content:space-between; flex:1; gap:8px;">
+                        <span>Eskalasi CS</span>
+                        @if ($openCsEscalationsCount > 0)
+                            <span style="background:#dc2626; color:#fff; font-size:11px; font-weight:800; padding:1px 7px; border-radius:999px; line-height:1.4;">
+                                {{ $openCsEscalationsCount }}
+                            </span>
+                        @endif
+                    </span>
+                </a>
+
                 <a
                     href="{{ route('dashboard.admin.laporan.index') }}"
                     class="admin-menu-link {{ request()->routeIs('dashboard.admin.laporan.*') ? 'active' : '' }}"

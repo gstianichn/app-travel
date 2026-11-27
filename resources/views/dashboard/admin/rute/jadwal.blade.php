@@ -171,15 +171,32 @@
 
     .filter-form {
         display: grid;
-        grid-template-columns: 1.2fr 2fr 1.2fr 1fr auto;
-        gap: 12px;
-        align-items: flex-end;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 14px 16px;
+        align-items: end;
     }
 
     .filter-group {
         display: flex;
         flex-direction: column;
         gap: 6px;
+        min-width: 0;
+    }
+
+    .filter-group--date {
+        grid-column: span 3;
+    }
+
+    .filter-group--route {
+        grid-column: span 5;
+    }
+
+    .filter-group--vehicle {
+        grid-column: span 4;
+    }
+
+    .filter-group--status {
+        grid-column: span 4;
     }
 
     .filter-label {
@@ -187,23 +204,39 @@
         font-weight: 700;
         color: #4b5852;
         text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .filter-input,
     .filter-select {
+        width: 100%;
+        min-width: 0;
         height: 40px;
         padding: 0 12px;
         border: 1px solid #d4dfda;
         border-radius: 8px;
         font-size: 13px;
+        color: #17221d;
         background: #fbfdfc;
         outline: none;
+        transition: border-color 0.2s ease, background 0.2s ease;
     }
 
     .filter-input:focus,
     .filter-select:focus {
         border-color: #087f55;
         background: white;
+    }
+
+    .filter-buttons {
+        grid-column: span 8;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
     }
 
     .btn-filter-submit {
@@ -214,12 +247,44 @@
         background: #087f55;
         color: white;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(8, 127, 85, 0.18);
+        transition: background 0.2s ease;
     }
 
     .btn-filter-submit:hover {
         background: #066b47;
+    }
+
+    .btn-filter-reset {
+        height: 40px;
+        padding: 0 16px;
+        border: 1px solid #d4dfda;
+        border-radius: 8px;
+        background: white;
+        color: #4b5852;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-filter-reset:hover {
+        background: #f1f5f3;
+        color: #17221d;
     }
 
     /* TABLE CARD */
@@ -636,11 +701,38 @@
     }
 
     @media (max-width: 1024px) {
-        .filter-form {
-            grid-template-columns: 1fr 1fr;
+        .filter-group--date,
+        .filter-group--route,
+        .filter-group--vehicle,
+        .filter-group--status {
+            grid-column: span 6;
         }
+
+        .filter-buttons {
+            grid-column: span 12;
+            justify-content: flex-start;
+        }
+
         .stats-row {
             grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .filter-group--date,
+        .filter-group--route,
+        .filter-group--vehicle,
+        .filter-group--status {
+            grid-column: span 12;
+        }
+
+        .filter-buttons {
+            flex-wrap: wrap;
+        }
+
+        .btn-filter-submit,
+        .btn-filter-reset {
+            flex: 1 1 auto;
         }
     }
 </style>
@@ -727,12 +819,12 @@
     {{-- FILTER FORM --}}
     <div class="filter-card">
         <form action="{{ route('dashboard.admin.rute.jadwal') }}" method="GET" class="filter-form admin-filter-form">
-            <div class="filter-group">
+            <div class="filter-group filter-group--date">
                 <label class="filter-label" for="date">Tanggal Keberangkatan</label>
                 <input type="date" name="date" id="date" class="filter-input" value="{{ request('date', now()->toDateString()) }}">
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group filter-group--route">
                 <label class="filter-label" for="route_id">Pilih Rute</label>
                 <select name="route_id" id="route_id" class="filter-select">
                     <option value="all">Semua Rute</option>
@@ -744,7 +836,7 @@
                 </select>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group filter-group--vehicle">
                 <label class="filter-label" for="vehicle_id">Armada</label>
                 <select name="vehicle_id" id="vehicle_id" class="filter-select">
                     <option value="all">Semua Unit</option>
@@ -756,7 +848,7 @@
                 </select>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group filter-group--status">
                 <label class="filter-label" for="status">Status</label>
                 <select name="status" id="status" class="filter-select">
                     <option value="all">Semua Status</option>
@@ -767,13 +859,14 @@
                 </select>
             </div>
 
-            <div class="filter-buttons" style="display: flex; gap: 8px; align-items: flex-end;">
-                <button type="submit" class="btn-filter-submit" style="display: inline-flex; align-items: center; gap: 6px;">
+            <div class="filter-buttons">
+                <button type="submit" class="btn-filter-submit">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                     <span>Terapkan</span>
                 </button>
-                <a href="{{ route('dashboard.admin.rute.jadwal') }}" title="Reset Filter" style="height: 40px; display: inline-flex; align-items: center; padding: 0 14px; border: 1px solid #d4dfda; border-radius: 8px; background: white; color: #4b5852; font-size: 13px; text-decoration: none; font-weight: 600; transition: background 0.2s;">
-                    ↺ Reset
+                <a href="{{ route('dashboard.admin.rute.jadwal') }}" class="btn-filter-reset" title="Reset Filter">
+                    <span>&#8634;</span>
+                    <span>Reset</span>
                 </a>
             </div>
         </form>

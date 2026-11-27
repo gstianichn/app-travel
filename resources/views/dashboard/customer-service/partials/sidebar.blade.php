@@ -1,5 +1,5 @@
 <!-- ========================================
-     SIDEBAR CUSTOMER SERVICE (SESUAI PRD 4.5)
+     SIDEBAR CUSTOMER SERVICE
 ========================================= -->
 
 <aside id="cs-sidebar" class="sidebar">
@@ -23,23 +23,9 @@
         </button>
     </div>
 
-    <!-- Agent Quick Status Card -->
-    <div class="sidebar-agent-card">
-        <div class="agent-avatar-wrap">
-            <div class="agent-avatar">
-                {{ strtoupper(substr(auth()->user()->name ?? 'CS', 0, 2)) }}
-            </div>
-            
-        </div>
-        <div class="agent-meta">
-            <div class="agent-name">{{ auth()->user()->name ?? 'Customer Service' }}</div>
-            <div class="agent-role-badge">Agent ID #{{ str_pad(auth()->id() ?? 1, 4, '0', STR_PAD_LEFT) }} &bull; CS Specialist</div>
-        </div>
-    </div>
-
-    <!-- Navigasi Menu Sesuai PRD 4.5 -->
+    <!-- Navigasi Menu Inti Customer Service -->
     <nav class="menu">
-        <div class="menu-title">Fitur Layanan CS</div>
+        <div class="menu-title">Menu Utama CS</div>
 
         <ul class="menu-list">
             <!-- 1. Dashboard -->
@@ -56,7 +42,7 @@
                 </a>
             </li>
 
-            <!-- 2. Layanan Pelanggan -->
+            <!-- 2. Live Chat & SLA -->
             <li class="menu-item">
                 <a href="{{ route('dashboard.customer-service.live-chat') }}"
                    class="menu-link {{ request()->routeIs('dashboard.customer-service.live-chat*') ? 'active' : '' }}">
@@ -65,75 +51,59 @@
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
                     </span>
-                    <span class="menu-text">Layanan Pelanggan</span>
-                    <span class="menu-badge">Contoh</span>
+                    <span class="menu-text">Live Chat &amp; SLA</span>
                 </a>
             </li>
 
-            <!-- 3. Melihat Konteks Booking -->
+            <!-- 2. Cek Tiket Penumpang (Read-Only) -->
             <li class="menu-item">
-                <a href="{{ route('dashboard.customer-service.booking-context') }}"
-                   class="menu-link {{ request()->routeIs('dashboard.customer-service.booking-context*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.customer-service.cek-tiket') }}"
+                   class="menu-link {{ request()->routeIs('dashboard.customer-service.cek-tiket*') ? 'active' : '' }}">
                     <span class="menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </span>
-                    <span class="menu-text">Melihat Konteks Booking</span>
+                    <span class="menu-text">Cek Tiket Penumpang</span>
                 </a>
             </li>
 
-            <!-- 4. Melihat Riwayat Chat -->
+            <!-- 3. Laporan & Tiket Kendala -->
             <li class="menu-item">
-                <a href="{{ route('dashboard.customer-service.chat-history') }}"
-                   class="menu-link {{ request()->routeIs('dashboard.customer-service.chat-history*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.customer-service.laporan-kendala') }}"
+                   class="menu-link {{ request()->routeIs('dashboard.customer-service.laporan-kendala*') ? 'active' : '' }}">
                     <span class="menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 14 14"></polyline>
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                            <path d="M3 3v5h5"></path>
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
                         </svg>
                     </span>
-                    <span class="menu-text">Melihat Riwayat Chat</span>
+                    <span class="menu-text">Laporan Kendala</span>
                 </a>
             </li>
 
-
-            <!-- 5. Mengirim Gambar/File -->
+            <!-- 4. Pantauan Armada Hari Ini -->
             <li class="menu-item">
-                <a href="{{ route('dashboard.customer-service.send-file') }}"
-                   class="menu-link {{ request()->routeIs('dashboard.customer-service.send-file*') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.customer-service.pantauan-armada') }}"
+                   class="menu-link {{ request()->routeIs('dashboard.customer-service.pantauan-armada*') ? 'active' : '' }}">
                     <span class="menu-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            <rect x="1" y="3" width="15" height="13"></rect>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
                         </svg>
                     </span>
-                    <span class="menu-text">Mengirim Gambar/File</span>
-                </a>
-            </li>
-
-            <!-- 7. Melakukan Eskalasi ke Admin -->
-            <li class="menu-item">
-                <a href="{{ route('dashboard.customer-service.escalation') }}"
-                   class="menu-link {{ request()->routeIs('dashboard.customer-service.escalation*') ? 'active' : '' }}">
-                    <span class="menu-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                        </svg>
-                    </span>
-                    <span class="menu-text">Melakukan Eskalasi ke Admin</span>
+                    <span class="menu-text">Pantauan Armada</span>
                 </a>
             </li>
         </ul>
     </nav>
 
-    <!-- Logout & Status Footer -->
+    <!-- Logout Footer -->
     <div class="sidebar-footer">
         <form method="POST" action="{{ route('logout') }}" id="cs-logout-form">
             @csrf

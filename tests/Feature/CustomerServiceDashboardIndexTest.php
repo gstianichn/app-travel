@@ -35,14 +35,15 @@ test('customer service can access dashboard index with all modular components lo
     $response->assertSee('Logout');
     $response->assertSee('Customer service');
 
-    // Home built from database numbers, with honest empty states
+    // Home built from monthly complaint statistics
     $response->assertSee('Halo, Customer.');
     $response->assertSee('Cari pesanan');
-    $response->assertSee('Keberangkatan tersisa hari ini');
-    $response->assertSee('Pembayaran belum selesai');
-    $response->assertSee('Refund menunggu admin');
-    $response->assertSee('Tidak ada keberangkatan lagi hari ini.');
-    $response->assertSee('Tidak ada pembayaran tertunda.');
+    $response->assertSee('Statistik Kendala Bulan');
+    $response->assertSee('Total Kendala');
+    $response->assertSee('Baru Masuk');
+    $response->assertSee('Sedang Dicek');
+    $response->assertSee('Selesai');
+    $response->assertSee('Dieskalasi');
 
     // The invented feed, satisfaction score and escalation cases are gone
     $response->assertDontSee('98.4%');
@@ -78,7 +79,7 @@ test('customer service can look up a booking by code or passenger phone', functi
     ]);
 
     // Lookup by booking code
-    $byCode = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'CS-LOOKUP']));
+    $byCode = $this->actingAs($this->cs)->get(route('dashboard.customer-service.cek-tiket', ['q' => 'CS-LOOKUP']));
     $byCode->assertOk();
     $byCode->assertSee('TRV-CS-LOOKUP');
     $byCode->assertSee('Dewi Lestari');
@@ -86,11 +87,11 @@ test('customer service can look up a booking by code or passenger phone', functi
     $byCode->assertSee('Lunas');
 
     // Lookup by phone
-    $byPhone = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => '081299990000']));
+    $byPhone = $this->actingAs($this->cs)->get(route('dashboard.customer-service.cek-tiket', ['q' => '081299990000']));
     $byPhone->assertSee('TRV-CS-LOOKUP');
 
     // Lookup by user name
-    $byName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'Dewi Lestari']));
+    $byName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.cek-tiket', ['q' => 'Dewi Lestari']));
     $byName->assertOk();
     $byName->assertSee('TRV-CS-LOOKUP');
     $byName->assertSee('Dewi Lestari');
@@ -114,18 +115,18 @@ test('customer service can look up a booking by code or passenger phone', functi
         'phone' => '081311112222',
     ]);
 
-    $byPassengerName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'Siti Khadijah']));
+    $byPassengerName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.cek-tiket', ['q' => 'Siti Khadijah']));
     $byPassengerName->assertOk();
     $byPassengerName->assertSee('TRV-GUEST-NAME');
     $byPassengerName->assertSee('Siti Khadijah');
 
     // Lookup by contact name
-    $byContactName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'Pemesan Walkin']));
+    $byContactName = $this->actingAs($this->cs)->get(route('dashboard.customer-service.cek-tiket', ['q' => 'Pemesan Walkin']));
     $byContactName->assertOk();
     $byContactName->assertSee('TRV-GUEST-NAME');
     $byContactName->assertSee('Pemesan Walkin');
 
-    $noMatch = $this->actingAs($this->cs)->get(route('dashboard.customer-service.index', ['q' => 'TIDAK-ADA']));
+    $noMatch = $this->actingAs($this->cs)->get(route('dashboard.customer-service.cek-tiket', ['q' => 'TIDAK-ADA']));
     $noMatch->assertSee('Tidak ada pesanan yang cocok');
 });
 

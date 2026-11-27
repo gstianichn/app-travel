@@ -393,7 +393,7 @@
         {{-- KOP SURAT --}}
         <div class="manifest-header">
             <div class="manifest-brand">
-                <h2>ANTIGRAVITY TRAVEL</h2>
+                <h2>TRAVELKU</h2>
                 <p>Layanan Transportasi Antar Kota Eksekutif Minibus & Van</p>
                 <p style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Jl. Raya Utama No. 123 &bull; Call Center / CS: (021) 555-1234</p>
             </div>

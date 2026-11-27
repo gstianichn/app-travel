@@ -96,40 +96,183 @@
             gap: 6px;
         }
 
-        /* DESTINATION PILL TABS */
-        .dest-pills {
+        /* SEARCHABLE DROPDOWN FILTER BAR */
+        .trip-filter-form {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 185px minmax(0, 1fr) minmax(0, 1fr) auto;
+            gap: 14px;
+            align-items: end;
+        }
+
+        .trip-filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+        }
+
+        .trip-filter-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text-light);
+        }
+
+        .combo-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .combo-input-box {
+            position: relative;
             display: flex;
             align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 24px;
         }
 
-        .dest-pill {
+        .combo-icon-left {
+            position: absolute;
+            left: 11px;
+            color: var(--text-light);
+            pointer-events: none;
+            display: inline-flex;
+        }
+
+        .combo-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 34px 0 34px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            background: var(--white);
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .combo-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8, 127, 85, 0.12);
+        }
+
+        .combo-toggle-btn {
+            position: absolute;
+            right: 6px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            color: var(--text-light);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 9px 18px;
-            border-radius: 999px;
-            background: var(--white);
-            color: #475569;
-            border: 1.5px solid var(--border);
-            font-size: 13px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
         }
 
-        .dest-pill:hover {
-            border-color: var(--primary);
+        .combo-toggle-btn:hover {
+            background: var(--accent-light);
             color: var(--primary);
         }
 
-        .dest-pill.active {
-            background: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(8, 127, 85, 0.25);
+        .combo-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+            padding: 5px;
+            display: none;
+            z-index: 80;
+        }
+
+        .combo-dropdown.is-open {
+            display: block;
+        }
+
+        .combo-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.12s ease;
+        }
+
+        .combo-option:hover,
+        .combo-option.is-selected {
+            background: var(--accent-light);
+            color: var(--primary);
+        }
+
+        .combo-option-count {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-light);
+            background: #f1f5f3;
+            padding: 2px 7px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .combo-empty {
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .trip-filter-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar-meta-bar {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-top: 12px;
+            border-top: 1px solid #edf2ef;
+            font-size: 12.5px;
+        }
+
+        @media (max-width: 1024px) {
+            .trip-filter-form {
+                grid-template-columns: 1fr 1fr;
+            }
+            .trip-filter-actions {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .trip-filter-form {
+                grid-template-columns: 1fr;
+            }
+            .trip-filter-actions {
+                grid-column: span 1;
+            }
         }
 
         /* DESTINATION GROUP SECTION */
@@ -512,74 +655,213 @@
         <section class="content">
 
             <!-- 1. TOOLBAR TANGGAL & STATUS -->
-            <div class="toolbar-panel">
-                <form method="GET" action="{{ route('dashboard.admin-biasa.perjalanan') }}" class="date-filter-group">
-                    <label for="scheduleDateInput" style="font-size: 13px; font-weight: 700; color: var(--text-dark);">
-                        Tanggal Keberangkatan:
-                    </label>
-                    <input
-                        type="date"
-                        id="scheduleDateInput"
-                        name="date"
-                        value="{{ $selectedDate }}"
-                        class="date-input"
-                    >
-                    @if($destinationFilter && $destinationFilter !== 'all')
-                        <input type="hidden" name="destination" value="{{ $destinationFilter }}">
-                    @endif
-                    <button type="submit" class="btn-date-apply">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>Terapkan</span>
-                    </button>
-                    @if($selectedDate !== \Carbon\Carbon::today()->toDateString())
-                        <a href="{{ route('dashboard.admin-biasa.perjalanan') }}" class="btn-date-today">
-                            <span>Hari Ini</span>
-                        </a>
-                    @endif
+            <div class="toolbar-panel" style="flex-direction: column; align-items: stretch; gap: 14px;">
+                <form method="GET" action="{{ route('dashboard.admin-biasa.perjalanan') }}" class="trip-filter-form" id="staffTripFilterForm">
+                    {{-- 1. Tanggal Keberangkatan --}}
+                    <div class="trip-filter-field">
+                        <label for="scheduleDateInput" class="trip-filter-label">Tanggal Keberangkatan</label>
+                        <input
+                            type="date"
+                            id="scheduleDateInput"
+                            name="date"
+                            value="{{ $selectedDate }}"
+                            class="date-input"
+                            style="width: 100%; height: 40px;"
+                        >
+                    </div>
+
+                    {{-- 2. Pencarian + Dropdown Tempat Keberangkatan --}}
+                    <div class="trip-filter-field">
+                        <label for="originSearchInput" class="trip-filter-label">Tempat Keberangkatan</label>
+                        <div class="combo-wrap" data-combo="origin">
+                            <input type="hidden" name="origin" id="originHiddenInput" value="{{ $originFilter !== '' ? $originFilter : 'all' }}">
+                            <div class="combo-input-box">
+                                <span class="combo-icon-left" aria-hidden="true">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                    </svg>
+                                </span>
+                                <input type="text"
+                                       id="originSearchInput"
+                                       class="combo-input"
+                                       value="{{ ($originFilter !== '' && strtolower($originFilter) !== 'all') ? $originFilter : '' }}"
+                                       placeholder="Semua Keberangkatan (ketik untuk cari...)"
+                                       autocomplete="off">
+                                <button type="button" class="combo-toggle-btn" aria-label="Buka daftar keberangkatan">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                            </div>
+                            <div class="combo-dropdown" role="listbox">
+                                <button type="button"
+                                        class="combo-option {{ ($originFilter === '' || strtolower($originFilter) === 'all') ? 'is-selected' : '' }}"
+                                        data-value="all"
+                                        data-label="">
+                                    <span>Semua Keberangkatan</span>
+                                    <span class="combo-option-count">{{ $trips->count() }}</span>
+                                </button>
+                                @foreach($availableOrigins as $originCityName)
+                                    @php $originCount = $trips->where('origin_city', $originCityName)->count(); @endphp
+                                    <button type="button"
+                                            class="combo-option {{ $originFilter === $originCityName ? 'is-selected' : '' }}"
+                                            data-value="{{ $originCityName }}"
+                                            data-label="{{ $originCityName }}">
+                                        <span>{{ $originCityName }}</span>
+                                        <span class="combo-option-count">{{ $originCount }}</span>
+                                    </button>
+                                @endforeach
+                                <div class="combo-empty" style="display:none;">Lokasi keberangkatan tidak ditemukan.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 3. Pencarian + Dropdown Tempat Tujuan --}}
+                    <div class="trip-filter-field">
+                        <label for="destinationSearchInput" class="trip-filter-label">Tempat Tujuan</label>
+                        <div class="combo-wrap" data-combo="destination">
+                            <input type="hidden" name="destination" id="destinationHiddenInput" value="{{ $destinationFilter !== '' ? $destinationFilter : 'all' }}">
+                            <div class="combo-input-box">
+                                <span class="combo-icon-left" aria-hidden="true">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                </span>
+                                <input type="text"
+                                       id="destinationSearchInput"
+                                       class="combo-input"
+                                       value="{{ ($destinationFilter !== '' && strtolower($destinationFilter) !== 'all') ? $destinationFilter : '' }}"
+                                       placeholder="Semua Tujuan (ketik untuk cari...)"
+                                       autocomplete="off">
+                                <button type="button" class="combo-toggle-btn" aria-label="Buka daftar tujuan">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                            </div>
+                            <div class="combo-dropdown" role="listbox">
+                                <button type="button"
+                                        class="combo-option {{ ($destinationFilter === '' || strtolower($destinationFilter) === 'all') ? 'is-selected' : '' }}"
+                                        data-value="all"
+                                        data-label="">
+                                    <span>Semua Tujuan</span>
+                                    <span class="combo-option-count">{{ $trips->count() }}</span>
+                                </button>
+                                @foreach($availableDestinations as $groupName)
+                                    @php $groupCount = $trips->where('destination_group', $groupName)->count(); @endphp
+                                    <button type="button"
+                                            class="combo-option {{ $destinationFilter === $groupName ? 'is-selected' : '' }}"
+                                            data-value="{{ $groupName }}"
+                                            data-label="{{ $groupName }}">
+                                        <span>{{ $groupName }}</span>
+                                        <span class="combo-option-count">{{ $groupCount }}</span>
+                                    </button>
+                                @endforeach
+                                <div class="combo-empty" style="display:none;">Lokasi tujuan tidak ditemukan.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 4. Tombol Aksi --}}
+                    <div class="trip-filter-actions">
+                        <button type="submit" class="btn-date-apply" style="height: 40px; white-space: nowrap;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <span>Cari Jadwal</span>
+                        </button>
+                        @if(($originFilter !== '' && strtolower($originFilter) !== 'all') || ($destinationFilter !== '' && strtolower($destinationFilter) !== 'all') || $selectedDate !== \Carbon\Carbon::today()->toDateString())
+                            <a href="{{ route('dashboard.admin-biasa.perjalanan') }}" class="btn-date-today" style="height: 40px; white-space: nowrap;">
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
                 </form>
 
-                <div style="display: flex; align-items: center; gap: 12px; font-size: 13px;">
-                    <span style="display: inline-flex; align-items: center; gap: 5px; color: #087f55; font-weight: 700;">
+                <div class="toolbar-meta-bar">
+                    <span style="display: inline-flex; align-items: center; gap: 6px; color: #087f55; font-weight: 700;">
                         <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
                         Sinkron Live dengan Website Pelanggan
                     </span>
-                    <span style="color: var(--text-light);">&bull;</span>
                     <span style="font-weight: 700; color: var(--text-dark);">
-                        Total {{ $stats['total_trips'] }} Trip Armada
+                        Menampilkan {{ $filteredTrips->count() }} dari {{ $stats['total_trips'] }} Trip Armada
                     </span>
                 </div>
             </div>
 
-            <!-- 2. FILTER PILLS TUJUAN KEBERANGKATAN -->
-            @if($availableDestinations->count() > 1)
-                <div class="dest-pills">
-                    <a
-                        href="{{ route('dashboard.admin-biasa.perjalanan', ['date' => $selectedDate, 'destination' => 'all']) }}"
-                        class="dest-pill {{ (!$destinationFilter || $destinationFilter === 'all') ? 'active' : '' }}"
-                    >
-                        <span>Semua Tujuan</span>
-                        <span style="font-size: 11px; opacity: 0.85;">({{ $trips->count() }})</span>
-                    </a>
+            <script>
+                (function () {
+                    document.querySelectorAll('.combo-wrap').forEach(function (wrap) {
+                        var hiddenInput = wrap.querySelector('input[type="hidden"]');
+                        var textInput = wrap.querySelector('.combo-input');
+                        var toggleBtn = wrap.querySelector('.combo-toggle-btn');
+                        var dropdown = wrap.querySelector('.combo-dropdown');
+                        var options = Array.from(wrap.querySelectorAll('.combo-option'));
+                        var emptyMsg = wrap.querySelector('.combo-empty');
 
-                    @foreach($availableDestinations as $groupName)
-                        @php
-                            $groupCount = $trips->where('destination_group', $groupName)->count();
-                            $isActive = ($destinationFilter === $groupName);
-                        @endphp
-                        <a
-                            href="{{ route('dashboard.admin-biasa.perjalanan', ['date' => $selectedDate, 'destination' => $groupName]) }}"
-                            class="dest-pill {{ $isActive ? 'active' : '' }}"
-                        >
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
-                            <span>{{ $groupName }}</span>
-                            <span style="font-size: 11px; opacity: 0.85;">({{ $groupCount }})</span>
-                        </a>
-                    @endforeach
-                </div>
-            @endif
+                        function openDropdown() {
+                            document.querySelectorAll('.combo-dropdown.is-open').forEach(function (d) {
+                                if (d !== dropdown) d.classList.remove('is-open');
+                            });
+                            dropdown.classList.add('is-open');
+                        }
+
+                        function filterOptions(keyword) {
+                            var q = (keyword || '').trim().toLowerCase();
+                            var visibleCount = 0;
+                            options.forEach(function (opt) {
+                                var label = (opt.textContent || '').toLowerCase();
+                                var isAll = opt.getAttribute('data-value') === 'all';
+                                var match = q === '' || label.includes(q) || isAll;
+                                opt.style.display = match ? 'flex' : 'none';
+                                if (match && !isAll) visibleCount++;
+                            });
+                            if (emptyMsg) {
+                                emptyMsg.style.display = (q !== '' && visibleCount === 0) ? 'block' : 'none';
+                            }
+                        }
+
+                        textInput.addEventListener('focus', function () {
+                            filterOptions(textInput.value);
+                            openDropdown();
+                        });
+
+                        textInput.addEventListener('input', function () {
+                            var val = textInput.value.trim();
+                            hiddenInput.value = val === '' ? 'all' : val;
+                            filterOptions(val);
+                            openDropdown();
+                        });
+
+                        toggleBtn.addEventListener('click', function (e) {
+                            e.stopPropagation();
+                            if (dropdown.classList.contains('is-open')) {
+                                dropdown.classList.remove('is-open');
+                            } else {
+                                filterOptions('');
+                                openDropdown();
+                                textInput.focus();
+                            }
+                        });
+
+                        options.forEach(function (opt) {
+                            opt.addEventListener('click', function () {
+                                var val = opt.getAttribute('data-value') || 'all';
+                                var label = opt.getAttribute('data-label') || '';
+                                hiddenInput.value = val;
+                                textInput.value = label;
+                                options.forEach(function (o) { o.classList.remove('is-selected'); });
+                                opt.classList.add('is-selected');
+                                dropdown.classList.remove('is-open');
+                            });
+                        });
+                    });
+
+                    document.addEventListener('click', function (e) {
+                        if (!e.target.closest('.combo-wrap')) {
+                            document.querySelectorAll('.combo-dropdown.is-open').forEach(function (d) {
+                                d.classList.remove('is-open');
+                            });
+                        }
+                    });
+                })();
+            </script>
 
             <!-- 3. GROUPING BERDASARKAN TUJUAN KEBERANGKATAN -->
             @forelse($groupedByDestination as $groupTitle => $groupTrips)

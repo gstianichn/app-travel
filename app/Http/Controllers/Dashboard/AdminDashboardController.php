@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\Booking;
 use App\Models\BookingPassenger;
+use App\Models\CsConversation;
+use App\Models\CsMessage;
+use App\Models\CustomerComplaint;
 use App\Models\Driver;
 use App\Models\Location;
 use App\Models\LoginSession;
@@ -4540,5 +4543,199 @@ class AdminDashboardController extends Controller
 
         return redirect()->route('dashboard.admin.pengaturan.index', ['tab' => 'keamanan'])
             ->with('success', 'Kata sandi berhasil diperbarui.');
+    }
+
+    /**
+     * Daftar Eskalasi dari Customer Service:
+     * - Pesan Eskalasi Masuk (tampilan pesan/inbox untuk yang belum selesai)
+     * - Riwayat Eskalasi Selesai (tampilan tabel data ringkas)
+     */
+    public function eskalasiIndex(Request $request): View
+    {
+        $search = trim((string) $request->query('q', ''));
+        $selectedId = $request->integer('ticket');
+
+        $baseQuery = CustomerComplaint::query()
+            ->where('is_escalated', true)
+            ->with([
+                'booking.schedule.route.origin',
+                'booking.schedule.route.destination',
+                'booking.schedule.vehicle',
+                'reporter',
+                'escalatedBy',
+            ]);
+
+        if ($search !== '') {
+            $like = '%'.$search.'%';
+            $baseQuery->where(function ($q) use ($like) {
+                $q->where('ticket_code', 'like', $like)
+                    ->orWhere('booking_code', 'like', $like)
+                    ->orWhere('customer_name', 'like', $like)
+                    ->orWhere('escalation_reason', 'like', $like)
+                    ->orWhere('description', 'like', $like);
+            });
+        }
+
+        $openEscalations = (clone $baseQuery)
+            ->where('status', '!=', 'selesai')
+            ->latest('escalated_at')
+            ->latest('id')
+            ->get();
+
+        $activeEscalation = null;
+        if ($selectedId > 0) {
+            $activeEscalation = $openEscalations->firstWhere('id', $selectedId);
+        }
+        if (! $activeEscalation && $openEscalations->isNotEmpty()) {
+            $activeEscalation = $openEscalations->first();
+        }
+
+        $resolvedEscalations = (clone $baseQuery)
+            ->where('status', 'selesai')
+            ->latest('resolved_at')
+            ->latest('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        $stats = [
+            'total' => CustomerComplaint::where('is_escalated', true)->count(),
+            'open' => CustomerComplaint::where('is_escalated', true)->where('status', '!=', 'selesai')->count(),
+            'resolved' => CustomerComplaint::where('is_escalated', true)->where('status', 'selesai')->count(),
+        ];
+
+        return view('dashboard.admin.eskalasi.index', [
+            'openEscalations' => $openEscalations,
+            'activeEscalation' => $activeEscalation,
+            'resolvedEscalations' => $resolvedEscalations,
+            'stats' => $stats,
+            'search' => $search,
+        ]);
+    }
+
+    /**
+     * Admin memperbarui status & catatan penyelesaian tiket eskalasi dari CS.
+     */
+    public function eskalasiUpdate(Request $request, CustomerComplaint $complaint): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in(['sedang_dicek', 'selesai'])],
+            'follow_up_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $wasResolved = $complaint->status === 'selesai';
+        $notes = isset($validated['follow_up_notes']) && trim((string) $validated['follow_up_notes']) !== ''
+            ? trim((string) $validated['follow_up_notes'])
+            : $complaint->follow_up_notes;
+
+        $complaint->update([
+            'status' => $validated['status'],
+            'follow_up_notes' => $notes,
+            'resolved_at' => $validated['status'] === 'selesai' ? ($complaint->resolved_at ?? now()) : null,
+        ]);
+
+        if ($validated['status'] === 'selesai' && ! $wasResolved) {
+            $this->finalizeEscalatedConversationAndNotifyUser($complaint);
+        }
+
+        return redirect()
+            ->route('dashboard.admin.eskalasi.index', array_filter([
+                'q' => $request->input('redirect_q'),
+            ]))
+            ->with('success', "Tiket eskalasi {$complaint->ticket_code} diperbarui menjadi \"{$complaint->statusLabel()}\".");
+    }
+
+    /**
+     * Tutup otomatis percakapan Live Chat terkait, kirim pesan penutup dari CS,
+     * dan kirim notifikasi ke akun user bahwa kendala telah diatasi.
+     */
+    private function finalizeEscalatedConversationAndNotifyUser(CustomerComplaint $complaint): void
+    {
+        $complaint->loadMissing(['booking.user']);
+
+        // 1. Cari percakapan Live Chat terkait tiket eskalasi ini
+        $conversation = null;
+
+        if (preg_match('/\b(CHT-\d{8}-[A-Z0-9]+)\b/', (string) $complaint->description, $matches)) {
+            $conversation = CsConversation::where('conversation_code', $matches[1])->first();
+        }
+
+        if (! $conversation) {
+            $escalationMsg = CsMessage::query()
+                ->where('message_type', 'escalation')
+                ->where(function ($q) use ($complaint) {
+                    $q->where('meta->complaint_id', $complaint->id)
+                        ->orWhere('meta->ticket_code', $complaint->ticket_code)
+                        ->orWhere('body', 'like', '%'.$complaint->ticket_code.'%');
+                })
+                ->latest('id')
+                ->first();
+
+            $conversation = $escalationMsg?->conversation;
+        }
+
+        if (! $conversation && $complaint->booking_id) {
+            $conversation = CsConversation::query()
+                ->where('booking_id', $complaint->booking_id)
+                ->latest('id')
+                ->first();
+        }
+
+        $targetUser = $conversation?->user ?? $complaint->booking?->user;
+        if (! $targetUser && $complaint->customer_phone) {
+            $targetUser = User::where('role', 'user')->where('phone', $complaint->customer_phone)->first();
+        }
+
+        $customerName = $complaint->customer_name ?: ($targetUser?->name ?? 'Pelanggan');
+        $notesText = ! empty($complaint->follow_up_notes)
+            ? "\nCatatan penyelesaian: {$complaint->follow_up_notes}"
+            : '';
+
+        $closingBody = "Halo {$customerName}, kendala Anda ({$complaint->ticket_code}) telah selesai diatasi oleh tim Admin TravelKu.{$notesText}\n\nPercakapan ini telah ditutup otomatis karena kendala sudah selesai. Terima kasih telah menggunakan layanan TravelKu.";
+
+        // 2. Kirim pesan penutup CS ke user & kunci percakapan sebagai selesai
+        if ($conversation) {
+            $now = now();
+
+            CsMessage::create([
+                'conversation_id' => $conversation->id,
+                'sender_id' => $conversation->assigned_to ?: auth()->id(),
+                'sender_type' => 'agent',
+                'message_type' => 'text',
+                'body' => $closingBody,
+                'meta' => [
+                    'auto_closed_by_admin' => true,
+                    'complaint_id' => $complaint->id,
+                    'ticket_code' => $complaint->ticket_code,
+                ],
+            ]);
+
+            $conversation->update([
+                'status' => 'resolved',
+                'resolved_at' => $now,
+                'last_agent_reply_at' => $now,
+                'last_message_at' => $now,
+            ]);
+        }
+
+        // 3. Kirim notifikasi ke akun user bahwa kendala sudah diatasi
+        if ($targetUser) {
+            $deepLink = $conversation
+                ? route('dashboard.user.bantuan-cs', ['conversation' => $conversation->id])
+                : route('dashboard.user.bantuan-cs');
+
+            $targetUser->notify(new DriverOperationalNotification(
+                title: "Kendala Anda Telah Diatasi ({$complaint->ticket_code})",
+                message: 'Kendala yang Anda laporkan telah selesai ditangani oleh tim TravelKu.'
+                    .(! empty($complaint->follow_up_notes) ? " Catatan: {$complaint->follow_up_notes}" : ''),
+                statusType: 'complaint_resolved',
+                deepLinkUrl: $deepLink,
+                actionLabel: 'Lihat Riwayat Chat CS',
+                meta: [
+                    'complaint_id' => $complaint->id,
+                    'ticket_code' => $complaint->ticket_code,
+                    'conversation_id' => $conversation?->id,
+                ],
+            ));
+        }
     }
 }

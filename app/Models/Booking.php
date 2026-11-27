@@ -79,6 +79,11 @@ class Booking extends Model
         return $this->hasOne(TripReview::class);
     }
 
+    public function complaints(): HasMany
+    {
+        return $this->hasMany(CustomerComplaint::class);
+    }
+
     /**
      * Cek apakah pemesanan berasal dari kasir / loket / offline.
      */

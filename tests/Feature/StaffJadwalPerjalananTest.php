@@ -203,3 +203,55 @@ test('endpoint manifest penumpang armada mengembalikan daftar penumpang dan nomo
         ->and($response->json('passengers.0.seat_number'))->toBe('1A')
         ->and($response->json('passengers.0.is_boarded'))->toBeTrue();
 });
+
+test('staff dapat memfilter jadwal perjalanan berdasarkan tempat keberangkatan dan tujuan', function () {
+    $today = Carbon::today()->toDateString();
+
+    $originJakarta = Location::create([
+        'code' => 'JKT-ORG-FLT',
+        'name' => 'Pool Tebet (Jakarta)',
+        'city' => 'Jakarta',
+        'type' => 'pool',
+        'is_active' => true,
+    ]);
+
+    $routeJktToBogor = TravelRoute::create([
+        'origin_id' => $originJakarta->id,
+        'destination_id' => $this->destBogor->id,
+        'price' => 95000,
+        'duration' => '1 Jam 30 Menit',
+        'is_active' => true,
+    ]);
+
+    Schedule::create([
+        'route_id' => $this->routeJakarta->id,
+        'vehicle_id' => $this->vehicleHiace->id,
+        'driver_id' => $this->driver->id,
+        'departure_date' => $today,
+        'departure_time' => '23:00:00',
+        'price' => 120000,
+        'status' => 'scheduled',
+    ]);
+
+    Schedule::create([
+        'route_id' => $routeJktToBogor->id,
+        'vehicle_id' => $this->vehicleInnova->id,
+        'driver_id' => $this->driver->id,
+        'departure_date' => $today,
+        'departure_time' => '23:30:00',
+        'price' => 95000,
+        'status' => 'scheduled',
+    ]);
+
+    $filtered = $this->actingAs($this->staff)->get(route('dashboard.admin-biasa.perjalanan', [
+        'date' => $today,
+        'origin' => 'Jakarta',
+        'destination' => 'Bogor',
+    ]));
+
+    $filtered->assertOk();
+    $filtered->assertSee('Tempat Keberangkatan');
+    $filtered->assertSee('Tempat Tujuan');
+    $filtered->assertSee('B 5678 XYZ');
+    $filtered->assertDontSee('D 1234 ABC');
+});

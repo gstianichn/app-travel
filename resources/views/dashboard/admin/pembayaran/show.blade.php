@@ -473,7 +473,7 @@
     <div class="invoice-card">
         <div class="invoice-header">
             <div class="invoice-header-brand">
-                <h2>ANTIGRAVITY TRAVEL</h2>
+                <h2>TRAVELKU</h2>
                 <p>Faktur Resmi Pembayaran & Konfirmasi Tiket Travel Antar Kota</p>
             </div>
             <div class="invoice-header-meta">

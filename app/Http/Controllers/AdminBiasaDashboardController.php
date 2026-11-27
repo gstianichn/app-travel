@@ -824,7 +824,8 @@ class AdminBiasaDashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today();
         $selectedDate = $request->query('date', $today->toDateString());
-        $destinationFilter = $request->query('destination');
+        $originFilter = trim((string) $request->query('origin', ''));
+        $destinationFilter = trim((string) $request->query('destination', ''));
 
         Schedule::ensureUpcomingSchedulesExist(2);
 
@@ -870,6 +871,7 @@ class AdminBiasaDashboardController extends Controller
 
         $trips = $schedules->map(function (Schedule $sched) {
             $origin = $sched->route?->origin?->name ?? 'Pool Asal';
+            $originCity = $sched->route?->origin?->city ?? $origin;
             $dest = $sched->route?->destination?->name ?? 'Pool Tujuan';
             $destCity = $sched->route?->destination?->city ?? $dest;
             $destinationGroup = 'Tujuan '.($destCity ?: $dest);
@@ -934,6 +936,7 @@ class AdminBiasaDashboardController extends Controller
                 'driver_wa_url' => $cleanPhone !== '' ? 'https://wa.me/'.$cleanPhone.'?text='.urlencode("Halo Pak {$driverName}, staf loket mengonfirmasi kesiapan armada {$plateNumber} untuk rute {$origin} - {$dest}.") : '#',
                 'driver_tel_url' => $driverPhone !== '-' ? 'tel:'.$driverPhone : '#',
                 'origin_pool' => $origin,
+                'origin_city' => $originCity,
                 'destination_pool' => $dest,
                 'destination_city' => $destCity,
                 'destination_group' => $destinationGroup,
@@ -952,20 +955,30 @@ class AdminBiasaDashboardController extends Controller
             ];
         });
 
-        // Filter berdasarkan tujuan bila dipilih
-        if ($destinationFilter && $destinationFilter !== 'all') {
-            $filteredTrips = $trips->filter(function ($t) use ($destinationFilter) {
-                return $t->destination_city === $destinationFilter
-                    || $t->destination_pool === $destinationFilter
-                    || $t->destination_group === $destinationFilter;
+        // Filter berdasarkan tempat keberangkatan & tujuan bila dipilih
+        $filteredTrips = $trips;
+
+        if ($originFilter !== '' && strtolower($originFilter) !== 'all') {
+            $originNeedle = mb_strtolower($originFilter);
+            $filteredTrips = $filteredTrips->filter(function ($t) use ($originNeedle) {
+                return str_contains(mb_strtolower((string) $t->origin_city), $originNeedle)
+                    || str_contains(mb_strtolower((string) $t->origin_pool), $originNeedle);
             })->values();
-        } else {
-            $filteredTrips = $trips;
+        }
+
+        if ($destinationFilter !== '' && strtolower($destinationFilter) !== 'all') {
+            $destNeedle = mb_strtolower($destinationFilter);
+            $filteredTrips = $filteredTrips->filter(function ($t) use ($destNeedle) {
+                return str_contains(mb_strtolower((string) $t->destination_city), $destNeedle)
+                    || str_contains(mb_strtolower((string) $t->destination_pool), $destNeedle)
+                    || str_contains(mb_strtolower((string) $t->destination_group), $destNeedle);
+            })->values();
         }
 
         // Grouping Berdasarkan Tujuan Keberangkatan
         $groupedByDestination = $filteredTrips->groupBy('destination_group');
-        $availableDestinations = $trips->pluck('destination_group')->unique()->values();
+        $availableDestinations = $trips->pluck('destination_group')->unique()->sort()->values();
+        $availableOrigins = $trips->pluck('origin_city')->filter()->unique()->sort()->values();
 
         // Statistik unit
         $stats = [
@@ -983,7 +996,9 @@ class AdminBiasaDashboardController extends Controller
             'trips',
             'filteredTrips',
             'groupedByDestination',
+            'availableOrigins',
             'availableDestinations',
+            'originFilter',
             'destinationFilter',
             'selectedDate',
             'stats'

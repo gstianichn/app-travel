@@ -98,10 +98,71 @@
             font-weight: 800;
         }
 
+        .driver-profile-wrap {
+            position: relative;
+        }
+
         .profile {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            padding: 5px 10px 5px 6px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .profile:hover,
+        .profile.is-active {
+            background: var(--brand-bg, #F6F4EC);
+            border-color: var(--brand-border, #DEDAC9);
+        }
+
+        .profile-chevron {
+            display: inline-flex;
+            align-items: center;
+            color: var(--lp-muted, #5C6862);
+            margin-left: 2px;
+        }
+
+        .driver-profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 185px;
+            background: var(--brand-surface, #FFFDF8);
+            border: 1px solid var(--brand-border, #DEDAC9);
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(12, 57, 47, 0.1);
+            padding: 6px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .driver-profile-dropdown.show {
+            display: block;
+        }
+
+        .driver-profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--lp-ink, #13201B);
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+
+        .driver-profile-dropdown-item:hover,
+        .driver-profile-dropdown-item.is-active {
+            background: #EEF6F1;
+            color: #0C5A3E;
         }
 
         .avatar {

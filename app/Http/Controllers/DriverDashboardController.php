@@ -17,8 +17,12 @@ use App\Notifications\DriverOperationalNotification;
 use App\Notifications\OperationalInfoNotification;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class DriverDashboardController extends Controller
 {
@@ -177,7 +181,9 @@ class DriverDashboardController extends Controller
 
         // Pastikan armada memiliki relasi kursi dan kelengkapan spesifikasi
         if ($activeSchedule->vehicle) {
-            $activeSchedule->vehicle->ensureSeatsExist();
+            if ($activeSchedule->vehicle->exists) {
+                $activeSchedule->vehicle->ensureSeatsExist();
+            }
             if (! $activeSchedule->vehicle->stnk_tax_due_date) {
                 $activeSchedule->vehicle->stnk_tax_due_date = Carbon::now()->addMonths(8);
             }
@@ -300,7 +306,7 @@ class DriverDashboardController extends Controller
                         'booking_code' => $b->booking_code,
                         'qr_code' => $b->ticket?->qr_code ?: $b->booking_code,
                         'name' => $p->name,
-                        'phone' => $p->phone ?: ($b->user?->phone ?? '-'),
+                        'phone' => $p->phone ?: ($b->contact_phone ?: ($b->user?->phone ?? '-')),
                         'wa_phone' => $p->waPhone(),
                         'seat_number' => $p->seat?->seat_number ?? '1A',
                         'seat_id' => $p->seat_id,
@@ -1530,5 +1536,94 @@ class DriverDashboardController extends Controller
         $schedule->update([
             'available_seats' => max(0, $cap - 5),
         ]);
+    }
+
+    /**
+     * Halaman Profil Akun Driver.
+     */
+    public function profil(Request $request): View
+    {
+        return view('dashboard.driver.profil', $this->getDriverDashboardData($request));
+    }
+
+    /**
+     * Perbarui informasi profil akun Driver.
+     */
+    public function updateProfil(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]{8,20}$/'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:120'],
+            'emergency_contact_phone' => ['nullable', 'string', 'max:25'],
+        ], [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format alamat email tidak valid.',
+            'email.unique' => 'Alamat email tersebut sudah digunakan akun lain.',
+            'phone.regex' => 'Nomor HP harus berupa 8–20 digit angka tanpa spasi atau simbol.',
+        ]);
+
+        $cleanPhone = isset($validated['phone']) && trim((string) $validated['phone']) !== ''
+            ? trim((string) $validated['phone'])
+            : null;
+
+        $user->update([
+            'name' => trim($validated['name']),
+            'email' => trim($validated['email']),
+            'phone' => $cleanPhone,
+        ]);
+
+        if ($user->driver) {
+            $user->driver->update([
+                'phone' => $cleanPhone ?? $user->driver->phone,
+                'address' => isset($validated['address']) && trim((string) $validated['address']) !== ''
+                    ? trim((string) $validated['address'])
+                    : null,
+                'emergency_contact_name' => isset($validated['emergency_contact_name']) && trim((string) $validated['emergency_contact_name']) !== ''
+                    ? trim((string) $validated['emergency_contact_name'])
+                    : null,
+                'emergency_contact_phone' => isset($validated['emergency_contact_phone']) && trim((string) $validated['emergency_contact_phone']) !== ''
+                    ? trim((string) $validated['emergency_contact_phone'])
+                    : null,
+            ]);
+        }
+
+        return redirect()
+            ->route('dashboard.driver.profil')
+            ->with('success', 'Informasi profil driver berhasil diperbarui.');
+    }
+
+    /**
+     * Perbarui kata sandi akun Driver.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'current_password.current_password' => 'Password saat ini tidak sesuai.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal terdiri dari 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return redirect()
+            ->route('dashboard.driver.profil')
+            ->with('success', 'Password akun berhasil diperbarui.');
     }
 }

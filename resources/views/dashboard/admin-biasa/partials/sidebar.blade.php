@@ -6,7 +6,6 @@
         ['route' => 'dashboard.admin-biasa.validasi-tiket', 'label' => 'Validasi E-Ticket', 'icon' => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v2h-2zM14 18h6v2h-6z'],
         ['route' => 'dashboard.admin-biasa.booking', 'label' => 'Semua Booking', 'sub' => 'Manajemen Booking', 'icon' => 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01'],
         ['route' => 'dashboard.admin-biasa.perjalanan', 'label' => 'Jadwal Perjalanan', 'sub' => 'Melihat Informasi Perjalanan', 'icon' => 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14'],
-        ['route' => 'dashboard.admin-biasa.profil', 'label' => 'Profil Saya', 'icon' => 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z'],
     ];
 @endphp
 

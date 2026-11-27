@@ -35,15 +35,71 @@
             </a>
         </div>
 
-        <!-- Profil Driver -->
-        <div class="profile">
-            <div class="avatar">
-                {{ strtoupper(substr($user->name ?? 'D', 0, 1)) }}
-            </div>
-            <div class="profile-info">
-                <strong>{{ $user->name ?? 'Pengemudi' }}</strong>
-                <span>{{ $activeSchedule->vehicle?->plate_number ?? 'Standby' }}</span>
+        <!-- Profil Driver Dropdown -->
+        <div class="driver-profile-wrap" id="driverProfileWrap">
+            <button type="button"
+                    class="profile {{ request()->routeIs('dashboard.driver.profil') ? 'is-active' : '' }}"
+                    id="driverProfileTrigger"
+                    onclick="toggleDriverProfileDropdown(event)"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="driverProfileDropdown"
+                    aria-label="Menu profil {{ $user->name ?? 'Pengemudi' }}">
+                <div class="avatar">
+                    {{ strtoupper(substr($user->name ?? 'D', 0, 1)) }}
+                </div>
+                <div class="profile-info">
+                    <strong>{{ $user->name ?? 'Pengemudi' }}</strong>
+                    <span>{{ $activeSchedule->vehicle?->plate_number ?? 'Standby' }}</span>
+                </div>
+                <span class="profile-chevron" aria-hidden="true">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </span>
+            </button>
+
+            <div class="driver-profile-dropdown" id="driverProfileDropdown" role="menu">
+                <a href="{{ route('dashboard.driver.profil') }}"
+                   class="driver-profile-dropdown-item {{ request()->routeIs('dashboard.driver.profil') ? 'is-active' : '' }}"
+                   role="menuitem">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span>Profil Saya</span>
+                </a>
             </div>
         </div>
     </div>
 </header>
+
+<script>
+    function toggleDriverProfileDropdown(event) {
+        if (event) event.stopPropagation();
+        var dropdown = document.getElementById('driverProfileDropdown');
+        var trigger = document.getElementById('driverProfileTrigger');
+        if (!dropdown || !trigger) return;
+        var isOpen = dropdown.classList.toggle('show');
+        trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    document.addEventListener('click', function (event) {
+        var wrap = document.getElementById('driverProfileWrap');
+        var dropdown = document.getElementById('driverProfileDropdown');
+        var trigger = document.getElementById('driverProfileTrigger');
+        if (wrap && dropdown && !wrap.contains(event.target)) {
+            dropdown.classList.remove('show');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            var dropdown = document.getElementById('driverProfileDropdown');
+            var trigger = document.getElementById('driverProfileTrigger');
+            if (dropdown) dropdown.classList.remove('show');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+    });
+</script>

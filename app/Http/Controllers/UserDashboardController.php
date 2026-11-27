@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Mail\TicketIssuedMail;
 use App\Models\Booking;
 use App\Models\BookingPassenger;
+use App\Models\CsConversation;
+use App\Models\CsMessage;
+use App\Models\CustomerComplaint;
 use App\Models\Location;
 use App\Models\Payment;
 use App\Models\Refund;
@@ -2372,5 +2375,214 @@ class UserDashboardController extends Controller
         }
 
         abort_unless($this->bookingAccess->canAccess($booking), 403, 'Pesanan ini tidak bisa dibuka dari sesi ini.');
+    }
+
+    /**
+     * Halaman Bantuan & Live Chat Customer Service untuk penumpang.
+     */
+    public function bantuanCs(Request $request): View
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $selectedId = $request->integer('conversation');
+
+        // Sinkronkan percakapan yang eskalasinya sudah diselesaikan Admin agar statusnya "Sudah Diatasi"
+        $openUserConversations = CsConversation::query()
+            ->where('user_id', $user->id)
+            ->where('status', '!=', 'resolved')
+            ->with(['messages' => fn ($q) => $q->where('message_type', 'escalation')])
+            ->get();
+
+        foreach ($openUserConversations as $openConv) {
+            $ticketCodes = $openConv->messages
+                ->map(fn (CsMessage $m) => $m->meta['ticket_code'] ?? null)
+                ->filter()
+                ->values();
+
+            $resolvedComplaint = CustomerComplaint::query()
+                ->where('is_escalated', true)
+                ->where('status', 'selesai')
+                ->where(function ($q) use ($ticketCodes, $openConv) {
+                    if ($ticketCodes->isNotEmpty()) {
+                        $q->whereIn('ticket_code', $ticketCodes);
+                    }
+                    $q->orWhere('description', 'like', '%'.$openConv->conversation_code.'%');
+                })
+                ->latest('resolved_at')
+                ->first();
+
+            if ($resolvedComplaint) {
+                $now = $resolvedComplaint->resolved_at ?? now();
+                $notesText = ! empty($resolvedComplaint->follow_up_notes)
+                    ? "\nCatatan penyelesaian: {$resolvedComplaint->follow_up_notes}"
+                    : '';
+
+                CsMessage::create([
+                    'conversation_id' => $openConv->id,
+                    'sender_id' => $openConv->assigned_to,
+                    'sender_type' => 'agent',
+                    'message_type' => 'text',
+                    'body' => "Halo {$openConv->customer_name}, kendala Anda ({$resolvedComplaint->ticket_code}) telah selesai diatasi oleh tim Admin TravelKu.{$notesText}\n\nPercakapan ini telah ditutup otomatis karena kendala sudah selesai. Terima kasih telah menggunakan layanan TravelKu.",
+                    'meta' => [
+                        'auto_closed_by_admin' => true,
+                        'complaint_id' => $resolvedComplaint->id,
+                        'ticket_code' => $resolvedComplaint->ticket_code,
+                    ],
+                ]);
+
+                $openConv->update([
+                    'status' => 'resolved',
+                    'resolved_at' => $now,
+                    'last_agent_reply_at' => $now,
+                    'last_message_at' => $now,
+                ]);
+            }
+        }
+
+        $conversations = CsConversation::query()
+            ->where('user_id', $user->id)
+            ->with([
+                'booking.schedule.route.origin',
+                'booking.schedule.route.destination',
+                'assignedAgent',
+                'messages' => fn ($q) => $q->where('message_type', '!=', 'internal_note')->latest('id')->limit(1),
+            ])
+            ->orderByDesc('last_message_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $activeConversation = null;
+        if ($selectedId > 0) {
+            $activeConversation = CsConversation::query()
+                ->where('user_id', $user->id)
+                ->with([
+                    'booking.schedule.route.origin',
+                    'booking.schedule.route.destination',
+                    'booking.schedule.vehicle',
+                    'assignedAgent',
+                    'messages' => fn ($q) => $q->where('message_type', '!=', 'internal_note')->orderBy('created_at')->orderBy('id'),
+                ])
+                ->find($selectedId);
+        }
+
+        if (! $activeConversation && $conversations->isNotEmpty()) {
+            $activeConversation = CsConversation::query()
+                ->where('user_id', $user->id)
+                ->with([
+                    'booking.schedule.route.origin',
+                    'booking.schedule.route.destination',
+                    'booking.schedule.vehicle',
+                    'assignedAgent',
+                    'messages' => fn ($q) => $q->where('message_type', '!=', 'internal_note')->orderBy('created_at')->orderBy('id'),
+                ])
+                ->find($conversations->first()->id);
+        }
+
+        $userBookings = Booking::query()
+            ->where('user_id', $user->id)
+            ->with(['schedule.route.origin', 'schedule.route.destination'])
+            ->latest()
+            ->take(15)
+            ->get();
+
+        return view('dashboard.user.user-bantuan-cs', [
+            'conversations' => $conversations,
+            'activeConversation' => $activeConversation,
+            'userBookings' => $userBookings,
+        ]);
+    }
+
+    /**
+     * Penumpang memulai percakapan Live Chat baru dengan Customer Service.
+     */
+    public function storeCsConversation(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'booking_id' => ['nullable', 'integer'],
+            'subject' => ['nullable', 'string', 'max:160'],
+            'message' => ['required', 'string', 'min:3', 'max:2000'],
+        ], [
+            'message.required' => 'Pesan untuk Customer Service wajib diisi.',
+            'message.min' => 'Pesan minimal 3 karakter.',
+        ]);
+
+        $booking = null;
+        if (! empty($validated['booking_id'])) {
+            $booking = Booking::query()
+                ->where('id', $validated['booking_id'])
+                ->where('user_id', $user->id)
+                ->first();
+        }
+
+        $now = now();
+
+        $conversation = CsConversation::create([
+            'conversation_code' => CsConversation::generateCode(),
+            'user_id' => $user->id,
+            'booking_id' => $booking?->id,
+            'customer_name' => $user->name,
+            'customer_phone' => $user->phone,
+            'subject' => trim((string) ($validated['subject'] ?? '')) ?: ($booking ? "Bantuan Booking {$booking->booking_code}" : 'Bantuan Pelanggan'),
+            'status' => 'unassigned',
+            'last_customer_message_at' => $now,
+            'last_message_at' => $now,
+        ]);
+
+        CsMessage::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $user->id,
+            'sender_type' => 'customer',
+            'message_type' => 'text',
+            'body' => trim($validated['message']),
+        ]);
+
+        return redirect()
+            ->route('dashboard.user.bantuan-cs', ['conversation' => $conversation->id])
+            ->with('success', 'Pesan Anda telah terkirim ke Customer Service TravelKu.');
+    }
+
+    /**
+     * Penumpang mengirim balasan lanjutan pada percakapan Customer Service miliknya.
+     */
+    public function replyCsConversation(Request $request, CsConversation $conversation): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        abort_unless((int) $conversation->user_id === (int) $user->id, 403, 'Percakapan ini bukan milik akun Anda.');
+
+        if ($conversation->status === 'resolved') {
+            return redirect()
+                ->route('dashboard.user.bantuan-cs', ['conversation' => $conversation->id])
+                ->with('error', 'Percakapan ini telah ditutup karena kendala Anda sudah selesai diatasi. Silakan mulai percakapan baru jika membutuhkan bantuan lain.');
+        }
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'min:1', 'max:2000'],
+        ], [
+            'message.required' => 'Isi pesan tidak boleh kosong.',
+        ]);
+
+        $now = now();
+
+        CsMessage::create([
+            'conversation_id' => $conversation->id,
+            'sender_id' => $user->id,
+            'sender_type' => 'customer',
+            'message_type' => 'text',
+            'body' => trim($validated['message']),
+        ]);
+
+        $conversation->update([
+            'last_customer_message_at' => $now,
+            'last_message_at' => $now,
+        ]);
+
+        return redirect()
+            ->route('dashboard.user.bantuan-cs', ['conversation' => $conversation->id])
+            ->with('success', 'Pesan terkirim ke Customer Service.');
     }
 }

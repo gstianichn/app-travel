@@ -289,20 +289,71 @@
            PROFILE
         ========================================= */
 
+        .staff-profile-wrap {
+            position: relative;
+        }
+
         .profile {
             display: flex;
             align-items: center;
-
             gap: 12px;
-            padding: 6px 10px 6px 6px;
+            padding: 6px 12px 6px 6px;
             border-radius: 999px;
+            border: none;
+            background: transparent;
+            text-decoration: none;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .profile:hover,
+        .profile.is-active {
+            background: var(--accent-light);
+        }
+
+        .profile-chevron {
+            display: inline-flex;
+            align-items: center;
+            color: var(--text-light);
+            margin-left: 2px;
+        }
+
+        .staff-profile-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            min-width: 190px;
+            background: var(--white, #ffffff);
+            border: 1px solid var(--border, #e2e8f0);
+            border-radius: 12px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+            padding: 6px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .staff-profile-dropdown.show {
+            display: block;
+        }
+
+        .staff-profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
             text-decoration: none;
             transition: background 0.15s ease;
         }
 
-        a.profile:hover,
-        a.profile.is-active {
+        .staff-profile-dropdown-item:hover,
+        .staff-profile-dropdown-item.is-active {
             background: var(--accent-light);
+            color: var(--primary);
         }
 
         .avatar {

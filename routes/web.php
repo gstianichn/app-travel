@@ -471,6 +471,21 @@ Route::middleware(['auth', 'role:admin_utama,admin'])
 
         /*
         |--------------------------------------------------------------------------
+        | Eskalasi Customer Service
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/eskalasi', [
+            AdminDashboardController::class,
+            'eskalasiIndex',
+        ])->name('dashboard.admin.eskalasi.index');
+
+        Route::patch('/eskalasi/{complaint}', [
+            AdminDashboardController::class,
+            'eskalasiUpdate',
+        ])->name('dashboard.admin.eskalasi.update');
+
+        /*
+        |--------------------------------------------------------------------------
         | Laporan (Rekonsiliasi Pembukuan, Keterisian Kursi, Manifes, & Refund)
         |--------------------------------------------------------------------------
         */
@@ -804,6 +819,21 @@ Route::middleware(['auth', 'role:driver'])
             'triggerSos',
         ])->name('dashboard.driver.schedule.sos');
 
+        Route::get('/driver/profil', [
+            DriverDashboardController::class,
+            'profil',
+        ])->name('dashboard.driver.profil');
+
+        Route::post('/driver/profil', [
+            DriverDashboardController::class,
+            'updateProfil',
+        ])->name('dashboard.driver.profil.update');
+
+        Route::post('/driver/profil/password', [
+            DriverDashboardController::class,
+            'updatePassword',
+        ])->name('dashboard.driver.profil.password');
+
     });
 
 /*
@@ -820,10 +850,80 @@ Route::middleware(['auth', 'role:cs,customer_service'])
             'index',
         ])->name('dashboard.customer-service.index');
 
+        Route::get('/customer-service/cek-tiket', [
+            CustomerServiceDashboardController::class,
+            'cekTiket',
+        ])->name('dashboard.customer-service.cek-tiket');
+
+        Route::get('/customer-service/laporan-kendala', [
+            CustomerServiceDashboardController::class,
+            'laporanKendala',
+        ])->name('dashboard.customer-service.laporan-kendala');
+
+        Route::get('/customer-service/pantauan-armada', [
+            CustomerServiceDashboardController::class,
+            'pantauanArmada',
+        ])->name('dashboard.customer-service.pantauan-armada');
+
+        Route::get('/customer-service/profil', [
+            CustomerServiceDashboardController::class,
+            'profil',
+        ])->name('dashboard.customer-service.profil');
+
+        Route::post('/customer-service/profil', [
+            CustomerServiceDashboardController::class,
+            'updateProfil',
+        ])->name('dashboard.customer-service.profil.update');
+
+        Route::post('/customer-service/profil/password', [
+            CustomerServiceDashboardController::class,
+            'updatePassword',
+        ])->name('dashboard.customer-service.profil.password');
+
+        Route::post('/customer-service/complaints', [
+            CustomerServiceDashboardController::class,
+            'storeComplaint',
+        ])->name('dashboard.customer-service.complaints.store');
+
+        Route::patch('/customer-service/complaints/{complaint}', [
+            CustomerServiceDashboardController::class,
+            'updateComplaint',
+        ])->name('dashboard.customer-service.complaints.update');
+
+        Route::post('/customer-service/complaints/{complaint}/escalate', [
+            CustomerServiceDashboardController::class,
+            'escalateComplaint',
+        ])->name('dashboard.customer-service.complaints.escalate');
+
         Route::get('/customer-service/live-chat', [
             CustomerServiceDashboardController::class,
             'liveChat',
         ])->name('dashboard.customer-service.live-chat');
+
+        Route::post('/customer-service/live-chat', [
+            CustomerServiceDashboardController::class,
+            'storeConversation',
+        ])->name('dashboard.customer-service.live-chat.store');
+
+        Route::post('/customer-service/live-chat/{conversation}/reply', [
+            CustomerServiceDashboardController::class,
+            'replyConversation',
+        ])->name('dashboard.customer-service.live-chat.reply');
+
+        Route::post('/customer-service/live-chat/{conversation}/send-eticket', [
+            CustomerServiceDashboardController::class,
+            'sendEticket',
+        ])->name('dashboard.customer-service.live-chat.send-eticket');
+
+        Route::patch('/customer-service/live-chat/{conversation}/status', [
+            CustomerServiceDashboardController::class,
+            'updateConversationStatus',
+        ])->name('dashboard.customer-service.live-chat.status');
+
+        Route::post('/customer-service/live-chat/{conversation}/escalate', [
+            CustomerServiceDashboardController::class,
+            'escalateConversation',
+        ])->name('dashboard.customer-service.live-chat.escalate');
 
         Route::get('/customer-service/booking-context', [
             CustomerServiceDashboardController::class,
@@ -987,6 +1087,22 @@ Route::middleware(['auth', 'role:user'])
             UserDashboardController::class,
             'submitReview',
         ])->name('dashboard.user.tiket.review');
+
+        // Layanan Bantuan & Live Chat Customer Service
+        Route::get('/user/bantuan-cs', [
+            UserDashboardController::class,
+            'bantuanCs',
+        ])->name('dashboard.user.bantuan-cs');
+
+        Route::post('/user/bantuan-cs', [
+            UserDashboardController::class,
+            'storeCsConversation',
+        ])->name('dashboard.user.bantuan-cs.store');
+
+        Route::post('/user/bantuan-cs/{conversation}/reply', [
+            UserDashboardController::class,
+            'replyCsConversation',
+        ])->name('dashboard.user.bantuan-cs.reply');
 
     });
 

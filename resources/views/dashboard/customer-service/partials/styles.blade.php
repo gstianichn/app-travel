@@ -2,10 +2,25 @@
     /* ============================================================
        PALET WARNA & VARIABEL IDENTIK DASHBOARD ADMIN UTAMA
     ============================================================ */
-    *, *::before, *::after {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    @layer base {
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        a, button {
+            font-family: inherit;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            cursor: pointer;
+        }
     }
 
     :root {
@@ -59,19 +74,6 @@
         min-height: 100vh;
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
-    }
-
-    a, button {
-        font-family: inherit;
-    }
-
-    a {
-        color: inherit;
-        text-decoration: none;
-    }
-
-    button {
-        cursor: pointer;
     }
 
     /* ============================================================
@@ -590,9 +592,10 @@
     .profile {
         display: flex;
         align-items: center;
-        gap: 11px;
-        padding: 4px 8px;
-        border-radius: var(--radius-md);
+        gap: 10px;
+        padding: 5px 10px 5px 6px;
+        border: 1px solid transparent;
+        border-radius: 12px;
         cursor: pointer;
         position: relative;
         transition: var(--transition);
@@ -600,43 +603,56 @@
 
     .profile:hover {
         background: var(--page);
+        border-color: var(--border);
     }
 
     .profile-avatar {
-        width: 42px;
-        height: 42px;
-        border-radius: 13px;
-        background: var(--brand-light);
-        color: var(--brand);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--brand-deep);
+        color: #fffdf8;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 12.5px;
         font-weight: 700;
+        letter-spacing: 0.03em;
+        flex-shrink: 0;
     }
 
     .profile-info {
-        text-align: right;
+        text-align: left;
+        min-width: 0;
     }
 
     .profile-name {
         display: block;
-        font-size: 13px;
+        font-size: 13.5px;
         font-weight: 700;
         color: var(--text);
-        line-height: 1.2;
+        line-height: 1.25;
+        white-space: nowrap;
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .profile-role {
         display: block;
-        margin-top: 2px;
-        font-size: 11px;
+        margin-top: 1px;
+        font-size: 11.5px;
         color: var(--text-muted);
         font-weight: 500;
+        line-height: 1.2;
     }
 
     .profile-chevron {
+        display: flex;
+        align-items: center;
         color: var(--text-muted);
+        margin-left: 2px;
+        flex-shrink: 0;
     }
 
     .profile-dropdown {

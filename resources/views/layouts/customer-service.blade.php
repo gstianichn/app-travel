@@ -81,13 +81,18 @@
 
             <!-- Dynamic Content Area -->
             <main class="cs-main-content">
-                @unless (request()->routeIs('dashboard.customer-service.index'))
+                @if (request()->routeIs(
+                    'dashboard.customer-service.booking-context*',
+                    'dashboard.customer-service.chat-history*',
+                    'dashboard.customer-service.send-file*',
+                    'dashboard.customer-service.escalation*'
+                ))
                     {{-- TODO: live chat, chat history, file sending and escalation have no backend yet --}}
                     <p class="ds-notice" role="note" style="margin-bottom: 20px;">
                         <b>Contoh tampilan.</b> Percakapan, nama, dan nomor di halaman ini belum tersambung ke data sistem.
-                        Untuk mencari pesanan sungguhan, pakai <a href="{{ route('dashboard.customer-service.index') }}" style="font-weight:700; text-decoration:underline;">pencarian di beranda</a>.
+                        Untuk mencari pesanan sungguhan, pakai <a href="{{ route('dashboard.customer-service.cek-tiket') }}" style="font-weight:700; text-decoration:underline;">halaman Cek Tiket Penumpang</a>.
                     </p>
-                @endunless
+                @endif
                 @yield('content')
             </main>
 

@@ -1,152 +1,97 @@
 @extends('layouts.customer-service')
 
-@section('title', 'Beranda Customer Service - TravelKu')
-
-@php
-    $cityOf = fn ($location) => $location?->city ?: $location?->name ?: '-';
-    $statusBadge = fn (string $status) => match (strtolower($status)) {
-        'paid', 'confirmed', 'success', 'lunas' => ['Lunas', 'ok'],
-        'pending' => ['Menunggu bayar', 'warn'],
-        'completed' => ['Selesai', 'muted'],
-        'cancelled', 'expired', 'batal' => ['Batal', 'danger'],
-        default => [ucfirst($status), 'muted'],
-    };
-@endphp
+@section('title', 'Dashboard Customer Service - TravelKu')
 
 @section('content')
-<div class="ds">
-    <header class="ds-head">
-        <div>
-            <h1>Halo, {{ \Illuminate\Support\Str::before(auth()->user()->name ?? 'CS', ' ') }}.</h1>
-            <p>{{ now()->translatedFormat('l, d F Y') }}.</p>
+<div class="space-y-8 text-[#13201B]">
+    {{-- Sapaan --}}
+    <header class="rounded-2xl border border-[#DEDAC9] bg-[#FFFDF8] p-6 sm:p-8 shadow-xs">
+        <div class="inline-flex items-center gap-2 rounded-full border border-[#DEDAC9] bg-[#EEF6F1] px-3 py-1 text-xs font-bold text-[#0C5A3E] mb-3">
+            <span class="h-2 w-2 rounded-full bg-[#0C7950]"></span>
+            Customer Service Helpdesk &middot; {{ $monthLabel }}
         </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0C392F]">
+            Halo, {{ \Illuminate\Support\Str::before(auth()->user()->name ?? 'CS', ' ') }}.
+        </h1>
+        <p class="text-sm text-[#5C6862] mt-1.5">
+            {{ now()->translatedFormat('l, d F Y') }} &middot; Berikut ringkasan statistik laporan kendala pelanggan pada bulan <strong class="text-[#0C392F]">{{ $monthLabel }}</strong>.
+        </p>
     </header>
 
-    @if ($query !== '')
-        <section class="ds-panel" aria-labelledby="hasil-pencarian">
-            <div class="ds-panel-head" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 id="hasil-pencarian">Hasil pencarian "{{ $query }}"</h2>
-                <a href="{{ route('dashboard.customer-service.index') }}" class="ds-btn ds-btn--secondary" style="font-size: 13px; padding: 6px 14px;">Hapus pencarian</a>
+    {{-- Statistik Kendala Bulan Ini --}}
+    <section aria-labelledby="heading-statistik-bulan-ini" class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h2 id="heading-statistik-bulan-ini" class="text-lg font-extrabold text-[#0C392F]">
+                Statistik Kendala Bulan {{ $monthLabel }}
+            </h2>
+            <span class="text-xs font-semibold text-[#5C6862]">
+                Periode {{ now()->startOfMonth()->translatedFormat('d M') }} &ndash; {{ now()->endOfMonth()->translatedFormat('d M Y') }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div class="rounded-2xl border border-[#DEDAC9] bg-[#FFFDF8] p-5 shadow-xs">
+                <p class="text-xs font-bold uppercase tracking-wider text-[#5C6862]">Total Kendala</p>
+                <p class="mt-2 text-3xl font-extrabold text-[#0C392F] tabular-nums">{{ $monthlyStats['total'] }}</p>
+                <p class="mt-1 text-xs text-[#5C6862]">laporan bulan ini</p>
             </div>
 
-            @if ($searchResults->isEmpty())
-                <p class="ds-empty"><b>Tidak ada pesanan yang cocok dengan "{{ $query }}".</b> Coba kode booking lengkap, atau nomor HP tanpa spasi.</p>
-            @else
-                <div class="ds-table-wrap">
-                    <table class="ds-table">
-                        <caption class="ds-visually-hidden">Hasil pencarian pesanan</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">Kode</th>
-                                <th scope="col">Penumpang</th>
-                                <th scope="col">Perjalanan</th>
-                                <th scope="col">Kursi</th>
-                                <th scope="col">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($searchResults as $booking)
-                                @php [$label, $tone] = $statusBadge((string) $booking->status); @endphp
-                                <tr>
-                                    <td>
-                                        <b>{{ $booking->booking_code }}</b>
-                                        @if ($booking->ticket)
-                                            <div class="ds-sub">{{ $booking->ticket->ticket_number }}</div>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php
-                                            $bookerName = $booking->contact_name ?: ($booking->user?->name ?: null);
-                                            $passengersList = $booking->passengers->pluck('name')->filter()->unique()->values();
-                                            $primaryName = $bookerName ?: ($passengersList->first() ?: '-');
-                                            $phone = $booking->contact_phone ?: ($booking->user?->phone ?: ($booking->passengers->first()?->phone ?: ''));
-                                            $email = $booking->contact_email ?: ($booking->user?->email ?: '');
-                                        @endphp
-                                        <b>{{ $primaryName }}</b>
-                                        @if ($passengersList->isNotEmpty() && ($passengersList->count() > 1 || ($bookerName && ! $passengersList->contains($bookerName))))
-                                            <div class="ds-sub" style="font-size: 11px;">
-                                                Penumpang: {{ $passengersList->implode(', ') }}
-                                            </div>
-                                        @endif
-                                        <div class="ds-sub">{{ $phone ?: $email }}</div>
-                                    </td>
-                                    <td>
-                                        {{ $cityOf($booking->schedule?->route?->origin) }} ke {{ $cityOf($booking->schedule?->route?->destination) }}
-                                        @if ($booking->schedule)
-                                            <div class="ds-sub">{{ $booking->schedule->departureCarbon()->translatedFormat('d M Y, H:i') }} WIB</div>
-                                        @endif
-                                    </td>
-                                    <td>{{ $booking->passengerSeatNumbers() ?: $booking->total_passenger.' orang' }}</td>
-                                    <td><span class="ds-badge ds-badge--{{ $tone }}">{{ $label }}</span></td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-5 shadow-xs">
+                <p class="text-xs font-bold uppercase tracking-wider text-amber-800">Baru Masuk</p>
+                <p class="mt-2 text-3xl font-extrabold text-amber-700 tabular-nums">{{ $monthlyStats['baru_masuk'] }}</p>
+                <p class="mt-1 text-xs text-amber-800/80">menunggu pengecekan</p>
+            </div>
+
+            <div class="rounded-2xl border border-sky-200 bg-sky-50/50 p-5 shadow-xs">
+                <p class="text-xs font-bold uppercase tracking-wider text-sky-800">Sedang Dicek</p>
+                <p class="mt-2 text-3xl font-extrabold text-sky-700 tabular-nums">{{ $monthlyStats['sedang_dicek'] }}</p>
+                <p class="mt-1 text-xs text-sky-800/80">dalam proses penanganan</p>
+            </div>
+
+            <div class="rounded-2xl border border-[#B8DFC9] bg-[#EEF6F1] p-5 shadow-xs">
+                <p class="text-xs font-bold uppercase tracking-wider text-[#0C5A3E]">Selesai</p>
+                <p class="mt-2 text-3xl font-extrabold text-[#0C7950] tabular-nums">{{ $monthlyStats['selesai'] }}</p>
+                <p class="mt-1 text-xs text-[#0C5A3E]/80">kendala tertangani</p>
+            </div>
+
+            <div class="rounded-2xl border border-purple-200 bg-purple-50/50 p-5 shadow-xs">
+                <p class="text-xs font-bold uppercase tracking-wider text-purple-800">Dieskalasi</p>
+                <p class="mt-2 text-3xl font-extrabold text-purple-800 tabular-nums">{{ $monthlyStats['escalated'] }}</p>
+                <p class="mt-1 text-xs text-purple-800/80">diteruskan ke Admin</p>
+            </div>
+        </div>
+    </section>
+
+    {{-- Sebaran Kategori Kendala Bulan Ini --}}
+    <section aria-labelledby="heading-kategori-bulan-ini" class="rounded-2xl border border-[#DEDAC9] bg-[#FFFDF8] p-6 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <h2 id="heading-kategori-bulan-ini" class="text-base font-extrabold text-[#0C392F]">
+                    Sebaran Kategori Kendala ({{ $monthLabel }})
+                </h2>
+                <p class="text-xs text-[#5C6862] mt-0.5">
+                    Jumlah laporan yang masuk berdasarkan jenis kendala pelanggan selama bulan ini.
+                </p>
+            </div>
+            <a href="{{ route('dashboard.customer-service.laporan-kendala') }}"
+               class="inline-flex items-center gap-1.5 rounded-xl bg-[#0C7950] px-4 py-2 text-xs font-bold text-white hover:bg-[#0C5A3E] transition">
+                Kelola Laporan Kendala &rarr;
+            </a>
+        </div>
+
+        <div class="space-y-3">
+            @foreach ($monthlyByCategory as $cat)
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-[#13201B]">{{ $cat->label }}</span>
+                        <span class="font-semibold text-[#5C6862] tabular-nums">{{ $cat->count }} laporan ({{ $cat->percent }}%)</span>
+                    </div>
+                    <div class="h-2.5 w-full overflow-hidden rounded-full bg-[#ECE8DA]">
+                        <div class="h-full rounded-full bg-[#0C7950] transition-all" style="width: {{ $cat->percent }}%;"></div>
+                    </div>
                 </div>
-            @endif
-        </section>
-    @endif
-
-    <dl class="ds-stats">
-        <div class="ds-stat ds-stat--lead">
-            <dt>Keberangkatan tersisa hari ini</dt>
-            <dd>{{ $stats['departures_left'] }}<small>dari {{ $stats['departures_today'] }} jadwal</small></dd>
+            @endforeach
         </div>
-        <div class="ds-stat">
-            <dt>Pembayaran belum selesai</dt>
-            <dd>{{ $stats['pending_payments'] }}<small>masih dalam batas waktu</small></dd>
-        </div>
-        <div class="ds-stat">
-            <dt>Refund menunggu admin</dt>
-            <dd>{{ $stats['pending_refunds'] }}<small>diproses admin utama</small></dd>
-        </div>
-    </dl>
-
-    <div class="ds-grid-2">
-        <section class="ds-panel" aria-labelledby="berangkat-berikutnya">
-            <div class="ds-panel-head">
-                <h2 id="berangkat-berikutnya">Berangkat berikutnya</h2>
-                <p>Hari ini, termasuk yang baru berangkat 30 menit terakhir.</p>
-            </div>
-            @if ($nextDepartures->isEmpty())
-                <p class="ds-empty"><b>Tidak ada keberangkatan lagi hari ini.</b> Jadwal besok muncul di sini mulai tengah malam.</p>
-            @else
-                <ol class="ds-list">
-                    @foreach ($nextDepartures as $schedule)
-                        <li>
-                            <b>{{ $schedule->departureCarbon()->format('H:i') }}, {{ $schedule->route?->origin?->name ?? '-' }} ke {{ $schedule->route?->destination?->name ?? '-' }}</b>
-                            <span class="ds-sub">
-                                {{ $schedule->vehicle?->name ?? 'Kendaraan belum ditugaskan' }}@if ($schedule->vehicle), {{ $schedule->vehicle->plate_number }}@endif.
-                                Sopir {{ $schedule->driver?->user?->name ?? 'belum ditugaskan' }}.
-                                Sisa {{ $schedule->available_seats }} kursi.
-                            </span>
-                        </li>
-                    @endforeach
-                </ol>
-            @endif
-        </section>
-
-        <section class="ds-panel" aria-labelledby="menunggu-bayar">
-            <div class="ds-panel-head">
-                <h2 id="menunggu-bayar">Menunggu pembayaran</h2>
-                <p>Kursi dilepas otomatis saat batas waktu habis.</p>
-            </div>
-            @if ($pendingBookings->isEmpty())
-                <p class="ds-empty"><b>Tidak ada pembayaran tertunda.</b></p>
-            @else
-                <ul class="ds-list">
-                    @foreach ($pendingBookings as $booking)
-                        <li>
-                            <b>{{ $booking->booking_code }}, {{ $booking->user?->name ?? 'Penumpang' }}</b>
-                            <span class="ds-sub">
-                                {{ $cityOf($booking->schedule?->route?->origin) }} ke {{ $cityOf($booking->schedule?->route?->destination) }}.
-                                Batas bayar {{ $booking->expired_at->format('H:i') }} WIB ({{ $booking->expired_at->diffForHumans() }}).
-                            </span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </section>
-    </div>
+    </section>
 </div>
 @endsection
